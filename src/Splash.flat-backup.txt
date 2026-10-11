@@ -1,0 +1,47 @@
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Animated, Easing, Image, useWindowDimensions } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+
+const LOGO = require('../assets/splash.png');
+const BLUE = '#2F5BFF', MUTE = '#8A93A6', TRACK = '#E8ECF4';
+const LOGO_W = 220, LOGO_H = Math.round((220 * 934) / 900); // same size and place as the phone's own splash screen (app.json), so nothing jumps
+
+// Clean start screen: white background, the logo exactly where the phone's own splash draws it, a thin progress line and the
+// maker's name. No 3D, no moving shapes. It stays for `duration` ms (App.tsx: SPLASH_MS), waits for the app to be ready, then fades out.
+export default function AnimatedSplash({ done, onGone, duration = 2200 }: { done: boolean; onGone: () => void; duration?: number }) {
+  const { width } = useWindowDimensions();
+  const fadeIn = useRef(new Animated.Value(0)).current;  // progress line + footer
+  const prog = useRef(new Animated.Value(0)).current;    // progress 0 -> 1
+  const out = useRef(new Animated.Value(1)).current;     // whole-screen fade-out
+  const bar = Math.min(150, width * 0.4);
+
+  useEffect(() => {
+    Animated.timing(fadeIn, { toValue: 1, duration: 500, delay: 150, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    Animated.timing(prog, { toValue: 1, duration, easing: Easing.bezier(0.3, 0.1, 0.2, 1), useNativeDriver: true }).start();
+  }, []);
+
+  useEffect(() => {
+    if (!done) return;
+    Animated.timing(out, { toValue: 0, duration: 350, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(() => onGone());
+  }, [done]);
+
+  return (
+    <Animated.View
+      pointerEvents={done ? 'none' : 'auto'}
+      onLayout={() => SplashScreen.hideAsync().catch(() => {})}
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', zIndex: 100, elevation: 100, opacity: out }}
+    >
+      <Image source={LOGO} style={{ width: LOGO_W, height: LOGO_H }} resizeMode="contain" />
+
+      <Animated.View style={{ position: 'absolute', top: '50%', marginTop: LOGO_H / 2 + 34, alignItems: 'center', opacity: fadeIn }}>
+        <View style={{ width: bar, height: 3, borderRadius: 2, backgroundColor: TRACK, overflow: 'hidden' }}>
+          <Animated.View style={{ width: bar, height: 3, backgroundColor: BLUE, transform: [{ translateX: prog.interpolate({ inputRange: [0, 1], outputRange: [-bar, 0] }) }] }} />
+        </View>
+      </Animated.View>
+
+      <Animated.Text style={{ position: 'absolute', bottom: 44, color: MUTE, fontSize: 11.5, letterSpacing: 0.5, opacity: fadeIn }}>
+        Powered by <Text style={{ color: BLUE, fontWeight: '800' }}>Bahu Technology</Text>
+      </Animated.Text>
+    </Animated.View>
+  );
+}

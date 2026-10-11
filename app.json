@@ -1,0 +1,86 @@
+{
+  "expo": {
+    "name": "Chart Reader",
+    "slug": "chart-reader",
+    "version": "2.10.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#080B12",
+    "icon": "./assets/icon.png",
+    "android": {
+      "package": "com.chartreader.app",
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.VIBRATE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "googleServicesFile": "./google-services.json"
+    },
+    "ios": {
+      "bundleIdentifier": "com.chartreader.app"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Chart Reader needs your photos to analyze chart screenshots and set your profile picture.",
+          "cameraPermission": "Chart Reader needs the camera to take your profile photo.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#080B12",
+          "sounds": [
+            "./assets/alarm.wav"
+          ]
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Chart Reader uses Face ID to unlock the app."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF",
+          "imageWidth": 220
+        }
+      ],
+      "expo-updates"
+    ],
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "name": "Chart Reader",
+      "shortName": "Chart Reader",
+      "description": "Chart Reader: ICT, SMC and price-action analysis for forex, metals, crypto and synthetic indices.",
+      "backgroundColor": "#080B12",
+      "themeColor": "#080B12",
+      "lang": "en"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5d430318-ff8b-49ff-ab33-9e72a9d188c8"
+      }
+    },
+    "owner": "faahtech",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5d430318-ff8b-49ff-ab33-9e72a9d188c8"
+    }
+  }
+}

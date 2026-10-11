@@ -1,0 +1,24 @@
+{
+ "compilerOptions": {
+  "baseUrl": "..",
+  "module": "esnext",
+  "moduleResolution": "bundler",
+  "target": "es2022",
+  "strict": true,
+  "skipLibCheck": true,
+  "paths": {
+   "react-native": [
+    "tests/stubs/rn.ts"
+   ],
+   "@react-native-async-storage/async-storage": [
+    "tests/stubs/storage.ts"
+   ],
+   "expo-secure-store": [
+    "tests/stubs/expo.ts"
+   ],
+   "expo-crypto": [
+    "tests/stubs/expo.ts"
+   ]
+  }
+ }
+}

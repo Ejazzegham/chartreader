@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+dist/
+*.apk
+*.aab
+.env
+server/db.json
+server/db.json.tmp
+*.tmp

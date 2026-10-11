@@ -1,0 +1,11 @@
+# Files that must never be uploaded with the app build (EAS uses this file INSTEAD of .gitignore when it exists)
+node_modules/
+.expo/
+dist/
+*.apk
+*.aab
+*.zip
+.env
+# the server and its database (user emails, session secret) are not part of the app
+server/
+tests/
