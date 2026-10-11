@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { useWindowDimensions } from './win';
+import { useRealWindow as useWindowDimensions } from './win';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 import { useApp } from './store';

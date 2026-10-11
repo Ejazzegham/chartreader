@@ -1,7 +1,14 @@
 # Chart Reader as a website
 
 The same app now also runs in a browser (Chrome, Safari, Edge, Firefox). The phone app is unchanged.
-On a wide screen it shows in a centred phone-width column (520 px); on a phone browser it fills the screen.
+
+**Desktop website (browser window 900 px or wider)**
+- Before login: a front page with the brand, a live candle chart, the six main features, the prices, and the login form next to it.
+- After login: a left sidebar with the whole menu (Trade, Pro tools, More) and your account, the page in the middle (up to 980 px wide), and from 1240 px a **Market watch** panel on the right (live prices, news warning, forex sessions).
+- Pop-ups open as centred dialogs.
+
+**Phone or tablet browser (under 900 px):** the phone layout with the bottom bar, full width (centred, at most 640 px on a tablet).
+The layout rules are in `src/win.web.ts`; the sidebar and panel are in `src/Desktop.web.tsx`; the landing page is `src/Landing.tsx`.
 
 ## 1. Update your server first (needed for the website)
 
@@ -41,7 +48,8 @@ The site must be served over **https** (the app's PIN hashing and the licence de
 | Phone | Website |
 |---|---|
 | Secure store (Keychain / Keystore) | The same values are kept in this browser's localStorage (`sec_...` keys), private to the site |
-| Pop-ups are drawn over the whole phone | Pop-ups are drawn inside the app column; Escape closes them |
+| Pop-ups are drawn over the whole phone | Pop-ups are centred dialogs inside the website; Escape closes them |
+| Bottom bar + slide-out menu | Left sidebar on a wide screen (bottom bar on a phone browser) |
 | Alert / Share dialogs | Browser confirm box; Share uses the browser share sheet, else copies to the clipboard |
 | TradingView chart in a WebView | TradingView chart in an iframe (the pair cannot follow the chart's own symbol box, a browser cannot read inside another site) |
 | Pinch zoom, touch-and-hold crosshair | Mouse wheel zooms around the pointer, hovering shows the crosshair, drag pans |

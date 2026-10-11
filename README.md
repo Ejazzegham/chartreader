@@ -200,4 +200,3 @@ Settings > **Server address** (visible to the admin, or to anyone who sees a lic
 - **Screenshot analysis removed.** Gemini is used for "Analysis of this chart" (live candles of the open pair), the plan review in the Trade plan panel and the ICT Lab refine button. Every chart analysis is saved in History.
 - **Admin has no passcode.** An admin is an email on the server's admin list (`ADMIN_EMAILS`) that has been confirmed. Open it from the sidebar (Admin panel), the Home card, or Settings. Gemini key and model live in Admin panel > Setup.
 - **Nothing pre-filled in the trade desk.** Balance, risk %, daily loss limit and max trades start empty (Journal > options button). Home shows `RUNNING 0` until you set a limit.
-"# charreader" 

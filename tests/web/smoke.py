@@ -33,40 +33,56 @@ def handler(route):
         return js({'ok':True})
     return route.abort()
 
-# ---- the test: log in on the website (Firebase + server are faked) and check the parts that differ from the phone ----
+# ---- the test: the website at desktop size (Firebase + server are faked) and at phone size ----
 # Run:  npx expo export --platform web && (cd dist && python3 -m http.server 8099) &   then   python3 tests/web/smoke.py
 fails=0
 def ok(c,m):
     global fails
     if not c: fails+=1
     print(('ok   ' if c else 'FAIL ')+m)
+def login(pg):
+    pg.get_by_text('Log in', exact=True).first.click(); pg.wait_for_timeout(500)
+    bx=pg.get_by_role('textbox'); bx.nth(0).fill('t@example.com'); bx.nth(1).fill('secret12'); pg.get_by_text('Log in', exact=True).last.click(); pg.wait_for_timeout(3500)
 if __name__=='__main__':
     with sync_playwright() as p:
-        b=p.chromium.launch(); ctx=b.new_context(viewport={'width':1280,'height':900}); pg=ctx.new_page(); errs=[]
+        b=p.chromium.launch()
+        # ---------------- desktop ----------------
+        ctx=b.new_context(viewport={'width':1440,'height':900}); pg=ctx.new_page(); errs=[]
         pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.on('dialog', lambda d: (seen['dialogs'].append(d.type), d.dismiss()))
         pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800)
-        col=pg.evaluate("(()=>{const e=[...document.querySelectorAll('div')].find(x=>getComputedStyle(x).maxWidth==='520px');if(!e)return [0,99999];const r=e.getBoundingClientRect();return [Math.round(r.left),Math.round(r.width)]})()")
-        ok(col[1]<=520 and col[0]>300, f'app sits in a centred column (x={col[0]}, width={col[1]})')
-        pg.get_by_text('Log in', exact=True).first.click(); pg.wait_for_timeout(500)
-        bx=pg.get_by_role('textbox'); bx.nth(0).fill('t@example.com'); bx.nth(1).fill('secret12'); pg.get_by_text('Log in', exact=True).last.click(); pg.wait_for_timeout(3500)
+        ok(pg.get_by_text('Read the market.').count()>=1 and pg.get_by_text('Create account').count()==1, 'desktop: landing page (front page + login) is shown before login')
+        login(pg)
         ok(pg.get_by_text('Hello, Test').count()==1, 'login works (Firebase sign-in, licence, sync)')
+        box=pg.get_by_text('Hello, Test').bounding_box()
+        ok(box['x']>244, f'desktop: page sits to the right of the sidebar (x={round(box["x"])})')
+        ok(pg.get_by_text('TRADE', exact=True).count()==1 and pg.get_by_text('PRO TOOLS', exact=True).count()==1, 'desktop: left sidebar menu with groups')
+        ok(pg.get_by_text('Market watch').count()==1, 'desktop: market watch panel on the right')
+        ok(pg.evaluate("document.documentElement.scrollWidth <= innerWidth"), 'desktop: no sideways scroll')
         ok(set(['sec_account','sec_lic','sec_remember','sec_device_id'])<=set(pg.evaluate("Object.keys(localStorage)")), 'login data is kept in the browser (secure store replacement)')
         ok('/register' in seen['post'] and '/sync/get' in seen['post'], 'server calls work from the browser (CORS headers accepted)')
         ok(any('faireconomy' in x[0] and x[1]=='1' for x in seen['proxy']), 'news calendar goes through the server proxy')
-        pg.get_by_text('Settings', exact=True).last.click(); pg.wait_for_timeout(700); pg.get_by_text('Edit profile', exact=True).first.click(); pg.wait_for_timeout(800)
-        r=pg.evaluate("(()=>{const d=[...document.querySelectorAll('*')].find(e=>getComputedStyle(e).zIndex==='1000');if(!d)return null;const b=d.getBoundingClientRect();return [Math.round(b.left),Math.round(b.width)]})()")
-        ok(r is not None and r[1]<=520, f'pop-up opens inside the column ({r})')
-        pg.mouse.move(640,500); pg.mouse.wheel(0,2500); pg.get_by_text('Delete account', exact=True).click(); pg.wait_for_timeout(400); pg.mouse.wheel(0,2500)
+        pg.get_by_text('Settings', exact=True).first.click(); pg.wait_for_timeout(700); pg.get_by_text('Edit profile', exact=True).first.click(); pg.wait_for_timeout(800)
+        r=pg.evaluate("(()=>{const o=[...document.querySelectorAll('*')].find(e=>getComputedStyle(e).zIndex==='1000');if(!o)return null;const d=[...o.querySelectorAll('*')].find(e=>getComputedStyle(e).borderRadius==='16px');if(!d)return null;const b=d.getBoundingClientRect();return [Math.round(b.left),Math.round(b.width)]})()")
+        ok(r is not None and 500<=r[1]<=980 and r[0]>244, f'desktop: pop-up is a centred dialog, not full screen ({r})')
+        pg.mouse.move(700,500); pg.mouse.wheel(0,2500); pg.get_by_text('Delete account', exact=True).click(); pg.wait_for_timeout(400); pg.mouse.wheel(0,2500)
         pg.get_by_placeholder('Your password').last.fill('secret12'); pg.get_by_text('Delete my account', exact=True).click(); pg.wait_for_timeout(500)
         ok('confirm' in seen['dialogs'], 'confirm question shows as a browser confirm box')
         pg.keyboard.press('Escape'); pg.wait_for_timeout(400)
         ok(not pg.evaluate("[...document.querySelectorAll('*')].some(e=>getComputedStyle(e).zIndex==='1000')"), 'Escape closes the pop-up')
-        pg.get_by_text('Analysis', exact=True).last.click(); pg.wait_for_timeout(900); pg.get_by_text('ICT Analysis', exact=True).first.click(); pg.wait_for_timeout(14000)
+        pg.get_by_text('Analysis', exact=True).first.click(); pg.wait_for_timeout(900)
+        ok(pg.get_by_text('Chart Reader', exact=True).locator('visible=true').count()==1, 'desktop: Analysis page has no second brand header (sidebar has it)')
+        pg.get_by_text('ICT Analysis', exact=True).first.click(); pg.wait_for_timeout(14000)
         ok(any('yahoo' in x[0] for x in seen['proxy']), 'backup prices (Yahoo) come through the server proxy')
-        n0=pg.evaluate("document.querySelectorAll('svg rect').length"); pg.mouse.move(600,700)
+        n0=pg.evaluate("document.querySelectorAll('svg rect').length"); pg.mouse.move(700,600)
         for _ in range(6): pg.mouse.wheel(0,-300); pg.wait_for_timeout(100)
         pg.wait_for_timeout(400); n1=pg.evaluate("document.querySelectorAll('svg rect').length")
         ok(n1<n0, f'mouse wheel zooms the chart ({n0} -> {n1} shapes)')
-        ok(not errs, f'no page errors {errs[:2]}')
+        ok(not errs, f'no page errors {errs[:2]}'); ctx.close()
+        # ---------------- phone browser ----------------
+        ctx=b.new_context(viewport={'width':390,'height':844}, is_mobile=True, has_touch=True); pg=ctx.new_page(); errs=[]
+        pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800); login(pg)
+        ok(pg.get_by_text('Hello, Test').count()==1, 'phone browser: login works')
+        ok(pg.get_by_text('Market watch').count()==0 and pg.get_by_text('PRO TOOLS', exact=True).count()==0, 'phone browser: phone layout (bottom bar, no sidebar)')
+        ok(not pg.evaluate("document.documentElement.scrollWidth > innerWidth") and not errs, f'phone browser: no sideways scroll, no page errors {errs[:2]}'); ctx.close()
         b.close()
     print('FAILED' if fails else 'all web tests pass'); raise SystemExit(1 if fails else 0)

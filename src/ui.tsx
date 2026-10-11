@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View, Pressable, ActivityIndicator, TextInput, TextInputProps, ViewStyle, Animated } from 'react-native';
 import { showAlert } from './dialog';
-import { useWindowDimensions } from './win';
+import { useWindowDimensions, useLayout } from './win';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Line, Rect } from 'react-native-svg';
@@ -85,13 +85,14 @@ export const BellButton = () => {
 // Top row shared by every page (same as the Analysis page): logo opens the menu, brand name, PRO, feed status, alerts bell.
 export const AppHeader = () => {
   const { th } = useApp();
+  const desk = useLayout().mode === 'desktop'; // website: the sidebar already has the menu and the name, so only the status chips remain
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, direction: 'ltr' }}>
-      <MenuButton />
-      <View style={{ flex: 1 }}>
+      {!desk && <MenuButton />}
+      {desk ? <View style={{ flex: 1 }} /> : <View style={{ flex: 1 }}>
         <Text accessibilityRole="header" style={{ color: th.accent, fontSize: 21, fontWeight: '900', letterSpacing: -0.4 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>Chart Reader</Text>
         <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '700', letterSpacing: 1.2 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65}>ANALYZE • LEARN • TRADE</Text>
-      </View>
+      </View>}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 28, paddingHorizontal: 9, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '1F' }}>
         <MaterialCommunityIcons name="crown" size={13} color={th.gold} />
         <Text style={{ color: th.gold, fontSize: 10, fontWeight: '900', letterSpacing: 0.6 }}>PRO</Text>
@@ -144,6 +145,7 @@ export const PageHero = ({ title, subtitle, icon, right, tag }: { title: string;
 // Every other page gets the same header row and hero banner as the Analysis page.
 export const Screen = ({ title, subtitle, right, children, bare, scrollKey, icon, tag }: { title: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string }) => {
   const { th } = useApp();
+  const L = useLayout();
   const insets = useSafeAreaInsets();
   const scroller = useRef<ScrollView>(null);
   const [lock, setLock] = useState(false); // a finger is on a chart: the page must not scroll
@@ -151,9 +153,9 @@ export const Screen = ({ title, subtitle, right, children, bare, scrollKey, icon
   return (
     <View style={{ flex: 1 }}>
       {/* soft accent glow behind the header: gives every page the same premium depth */}
-      <LinearGradient pointerEvents="none" colors={[th.accent + (th.dark ? '2E' : '1C'), th.accent2 + (th.dark ? '0E' : '08'), th.bg + '00']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280 }} />
+      {L.mode !== 'desktop' && <LinearGradient pointerEvents="none" colors={[th.accent + (th.dark ? '2E' : '1C'), th.accent2 + (th.dark ? '0E' : '08'), th.bg + '00']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280 }} />}
       <ScrollLockContext.Provider value={setLock}>
-      <ScrollView ref={scroller} scrollEnabled={!lock} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scroller} scrollEnabled={!lock} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36, ...(L.mode === 'desktop' ? { width: '100%', maxWidth: L.content, alignSelf: 'center' } : null) }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {!bare && <View style={{ gap: 14, marginBottom: 16 }}>
           <AppHeader />
           <PageHero title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />

@@ -1,4 +1,14 @@
-# Latest: the app also runs as a website (see WEB.md)
+# Latest: a real desktop website layout (not just the phone app in a column)
+
+- **Desktop (browser 900 px or wider):** left sidebar menu (`src/Desktop.web.tsx`), the page in the middle (wider, up to 980 px), and from 1240 px a **Market watch** panel on the right (live prices, news banner, forex sessions). The bottom bar and the slide-out menu are not used there.
+- **Landing page + login (`src/Landing.tsx`, `src/LiveCandles.tsx`, `src/AuthFlow.tsx`):** on a wide screen the welcome / login / sign-up screens show the brand, the headline, a live candle chart, six feature cards, "3-day free trial, Weekly $8, Monthly $20", with the form on the right.
+- **Layout rules (`src/win.web.ts`):** under 900 px = phone layout (bottom bar, full width, centred and at most 640 px); 900 px and up = desktop. `useWindowDimensions()` now returns the width of the PAGE area, so every screen and chart sizes itself to it. `useLayout()` gives `mode`, `sidebar`, `rail`, `content`. On the phone app `src/win.ts` keeps the normal window size, so nothing changes there.
+- `src/ui.tsx`: on desktop the page header shows only the status chips (the sidebar has the menu and the name), the page container is centred up to the page width, and the top glow band is skipped. The Analysis page now uses the shared `AppHeader` (it had its own copy with a menu button).
+- `src/Modal.web.tsx`: on desktop pop-ups are centred dialogs over a dim backdrop. `src/Splash.tsx` and `src/Glass.tsx` use the real window size (the splash keeps a centred phone-sized column).
+- Tests: `tests/layout.test.ts` (layout rules at 14 widths) and an updated `tests/web/smoke.py` (desktop: landing, login, sidebar, market watch, centred dialog, confirm box, proxy, chart, wheel zoom; phone browser: phone layout). All pass, plus the 17 unit test files, the type-check and an Android bundle build.
+- Not tested here: the live Deriv feed and the real TradingView chart (no internet on the test machine), real Firebase and your real server (faked).
+
+# Earlier: the app also runs as a website (see WEB.md)
 
 - Same code, built with `npm run build:web` (Expo web). Phone app unchanged. Hosting files added: `vercel.json`, `netlify.toml`. Full guide: `WEB.md`.
 - **Secure storage**: `expo-secure-store` has nothing on the web, so login, licence and PIN counters use `src/secureStore.ts` (phone: the real secure store) and `src/secureStore.web.ts` (browser: localStorage).

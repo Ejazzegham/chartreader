@@ -5,11 +5,27 @@ import { useApp } from './store';
 import { WaveHeader, Btn, Field, Icon, Card } from './ui';
 import PinScreen from './PinScreen';
 import { LogoFull } from './Brand';
+import { useDesktop } from './Desktop';
+import Landing from './Landing';
 
 const Logo = () => <LogoFull width={150} radius={8} />;
 
 const Page = ({ h = 230, title, children }: { h?: number; title: string; children: React.ReactNode }) => {
   const { th } = useApp();
+  const desk = useDesktop();
+  if (desk) return ( // website on a wide screen: the front page on the left, the form on the right
+    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: th.bg }}>
+      <Landing />
+      <KeyboardAvoidingView style={{ flex: 0.85, minWidth: 420 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <View style={{ width: '100%', maxWidth: 440 }}>
+            <Text accessibilityRole="header" style={{ color: th.text, fontSize: 30, fontWeight: '800', letterSpacing: -0.8, textAlign: 'center', marginBottom: 18 }}>{title}</Text>
+            <Card style={{ padding: 24 }}>{children}</Card>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
+  );
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: th.bg }}>
       <WaveHeader height={h}><Logo /></WaveHeader>

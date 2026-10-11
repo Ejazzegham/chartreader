@@ -29,6 +29,7 @@ import AnimatedSplash from './src/Splash';
 import ErrorBoundary from './src/ErrorBoundary';
 import GlassBackdrop from './src/Glass';
 import Frame from './src/Frame';
+import { useDesktop, DesktopShell } from './src/Desktop';
 import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {}); // keep the phone's splash up until our animated one is drawn
@@ -55,6 +56,7 @@ function Root() {
   const [minTime, setMinTime] = useState(false); // start screen: shown for at least SPLASH_MS
   const [gone, setGone] = useState(false);
   useEffect(() => { const id = setTimeout(() => setMinTime(true), SPLASH_MS); return () => clearTimeout(id); }, []);
+  const desk = useDesktop(); // website on a wide screen: sidebar + page + market watch instead of the bottom bar
   const splash = !gone && <AnimatedSplash done={ready && minTime} duration={SPLASH_MS} onGone={() => setGone(true)} />;
 
   // One stable tree: the splash stays mounted on top (same position) while the app underneath finishes loading.
@@ -68,13 +70,23 @@ function Root() {
         <PinScreen mode="unlock" onDone={enter} />
       ) : (
         <View style={{ flex: 1 }}>
-          <View style={{ flex: 1 }}>
-            {TABS.map(({ key, Comp }, i) => (
-              <Page key={key} active={tab === i}><Comp /></Page>
-            ))}
-          </View>
-          <Dock />
-          <RightSidebar />
+          {desk ? (
+            <DesktopShell>
+              {TABS.map(({ key, Comp }, i) => (
+                <Page key={key} active={tab === i}><Comp /></Page>
+              ))}
+            </DesktopShell>
+          ) : (
+            <>
+              <View style={{ flex: 1 }}>
+                {TABS.map(({ key, Comp }, i) => (
+                  <Page key={key} active={tab === i}><Comp /></Page>
+                ))}
+              </View>
+              <Dock />
+              <RightSidebar />
+            </>
+          )}
           <TradeHistory />
           <NotificationCenter />
           <Tracker />

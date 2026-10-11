@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Animated, Easing, Image, Platform } from 'react-native';
-import { useWindowDimensions } from './win';
+import { useRealWindow } from './win';
 import Svg, { Defs, LinearGradient, Stop, Path, Rect, Line, Circle, G, ClipPath, Text as SText } from 'react-native-svg';
 import { LinearGradient as Grad } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,8 @@ const MSGS = ['Loading market structure', 'Reading price action', 'Detecting liq
 // with volume and an EMA, ten flowing lines on each side of the logo, a progress line and the maker's name.
 // It stays for `duration` ms (App.tsx: SPLASH_MS), waits for the app to be ready, then fades out. The drawing maths is in src/splashMath.ts.
 export default function AnimatedSplash({ done, onGone, duration = 3600 }: { done: boolean; onGone: () => void; duration?: number }) {
-  const { width: W, height: H } = useWindowDimensions();
+  const { width: winW, height: H } = useRealWindow();
+  const W = Math.min(winW, 520); // on a wide browser window the splash keeps its phone-sized column, centred
   const ins = useSafeAreaInsets();
   const L = useMemo(() => makeLayout(W, H, ins.top, ins.bottom), [W, H, ins.top, ins.bottom]);
   const vr = useRef<Vr>({ lo: 0, hi: 0, set: false, t: 0 }).current;
@@ -56,6 +57,7 @@ export default function AnimatedSplash({ done, onGone, duration = 3600 }: { done
       onLayout={() => SplashScreen.hideAsync().catch(() => {})}
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#FFFFFF', zIndex: 100, elevation: 100, opacity: out, direction: 'ltr' }}
     >
+      <View style={{ position: 'absolute', top: 0, bottom: 0, left: (winW - W) / 2, width: W }}>
       <Svg width={W} height={H} style={{ position: 'absolute', top: 0, left: 0 }} pointerEvents="none">
         <Defs>
           {Array.from({ length: BUCKETS }, (_, b) => (
@@ -136,6 +138,7 @@ export default function AnimatedSplash({ done, onGone, duration = 3600 }: { done
       <Animated.Text style={{ position: 'absolute', bottom: L.bottom + 34, left: 0, right: 0, textAlign: 'center', color: MUTE, fontSize: 11.5, letterSpacing: 0.5, opacity: fadeIn }}>
         Powered by <Text style={{ color: BLUE, fontWeight: '800' }}>Bahu Technology</Text>
       </Animated.Text>
+      </View>
     </Animated.View>
   );
 }

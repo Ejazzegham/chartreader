@@ -3,10 +3,9 @@ import { View, Text, Pressable, ScrollView, TextInput, Switch, BackHandler } fro
 import { useWindowDimensions } from '../win';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, LinearGradient as SvgGradient, Stop, Text as SvgText, Rect, Line, Path } from 'react-native-svg';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../store';
-import { Screen, Card, Dim, Body, Icon, LiveDot, MenuButton, BellButton } from '../ui';
+import { Screen, Card, Dim, Body, Icon, AppHeader } from '../ui';
 import { SYMBOLS, TFS, Candle, symOf, isBad, useFeed, watchCandles, quotes } from '../markets';
 import { analyzeAll } from '../refine';
 import { MDEFS, MDef, MKey, Host, mdef, MethodIcon, MiniRing } from '../MethodArt';
@@ -153,21 +152,7 @@ export default function Analysis() {
   const recent = [...signals].sort((a, b) => b.date - a.date).slice(0, 8);
 
   // ---------------------------------------------------------------- pieces
-  const header = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <MenuButton />
-      <View style={{ flex: 1 }}>
-        <Text accessibilityRole="header" style={{ color: th.accent, fontSize: 21, fontWeight: '900', letterSpacing: -0.4 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>Chart Reader</Text>
-        <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '700', letterSpacing: 1.2 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65}>ANALYZE • LEARN • TRADE</Text>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 28, paddingHorizontal: 9, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '1F' }}>
-        <MaterialCommunityIcons name="crown" size={13} color={th.gold} />
-        <Text style={{ color: th.gold, fontSize: 10, fontWeight: '900', letterSpacing: 0.6 }}>PRO</Text>
-      </View>
-      <LiveDot />
-      <BellButton />
-    </View>
-  );
+  const header = <AppHeader />; // same row as every page (on the website the sidebar already has the menu and the name)
 
   const fs = Math.max(17, Math.min(24, Math.round(W * 0.058)));
   const banner = (
