@@ -4,11 +4,16 @@ The same app now also runs in a browser (Chrome, Safari, Edge, Firefox). The pho
 
 **Desktop website (browser window 900 px or wider)**
 - Before login: a front page with the brand, a live candle chart, the six main features, the prices, and the login form next to it.
-- After login: a left sidebar with the whole menu (Trade, Pro tools, More) and your account, the page in the middle (up to 980 px wide), and from 1240 px a **Market watch** panel on the right (live prices, news warning, forex sessions).
+- After login, a trading dashboard:
+  - **Left sidebar:** the whole menu (Analysis opens its method list), a Pro card, and your account.
+  - **Top bar:** search for any market (press Ctrl+K), live status, notifications, PRO badge, your account.
+  - **Home dashboard:** hero (Analyze / Plan / Execute), **Choose Analysis Method** tiles (ICT, SMC, Top-Down, Scanner, VSA, Candlestick), **Select Market** with **Watchlist / Forex / Crypto / Deriv** tabs and symbol cards, the chart panel (timeframes 1m to 1D; **Pro chart** = TradingView with its drawing tools, **Quick** = the app's own candle chart, which also works for Deriv), and Today's Analysis, Quick Tools and Risk Management cards. "Open ICT analysis" jumps to the full Analysis page with that pair and method.
+  - **Right panel (from 1240 px):** Market Watch table (Forex / Crypto / Deriv, star to keep a market in your watchlist), Forex Sessions with local times, the news warning and a daily reminder.
+- Other pages (Analysis, Markets, Journal, ...) are the same screens as on the phone, shown wide, with the same sidebar, top bar and right panel.
 - Pop-ups open as centred dialogs.
 
 **Phone or tablet browser (under 900 px):** the phone layout with the bottom bar, full width (centred, at most 640 px on a tablet).
-The layout rules are in `src/win.web.ts`; the sidebar and panel are in `src/Desktop.web.tsx`; the landing page is `src/Landing.tsx`.
+The layout rules are in `src/win.web.ts`; the sidebar, top bar and right panel are in `src/Desktop.web.tsx`; the home dashboard is `src/DesktopHome.web.tsx`; what the dashboard is showing (pair, method, timeframe, market) is in `src/dash.ts`; the landing page is `src/Landing.tsx`.
 
 ## 1. Update your server first (needed for the website)
 

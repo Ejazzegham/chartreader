@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import DesktopHome from '../DesktopHome';
+import { useDesktop } from '../Desktop';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../store';
@@ -26,7 +28,7 @@ const TIPS = [
 
 type Tool = { key: string; icon: string; tab: number; desc: string; tint: [string, string] };
 
-export default function Home() {
+function PhoneHome() {
   const { th, t, account, history, journal, signals, desk, setTab, setAmethod, tab, settings, setHistOpen } = useApp();
   const guide = (CONTENT[settings.lang] ?? CONTENT.en).guide;
   const guideTab = NAV.findIndex((n) => n.key === 'tabGuide');
@@ -351,4 +353,9 @@ export default function Home() {
       </View>
     </Screen>
   );
+}
+
+export default function Home() {
+  const desk = useDesktop(); // website on a wide screen: the dashboard
+  return desk ? <DesktopHome /> : <PhoneHome />;
 }

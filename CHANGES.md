@@ -1,4 +1,13 @@
-# Latest: a real desktop website layout (not just the phone app in a column)
+# Latest: trading dashboard for the desktop website (Forex, Crypto, Deriv)
+
+- **Home on the website is now a dashboard** (`src/DesktopHome.web.tsx`; the phone keeps its Home screen, `src/screens/Home.tsx` picks which one): hero "Analyze / Plan / Execute" with real counts (analysis methods, live markets, 24/7 Crypto & Deriv, 3 take profits), **Choose Analysis Method** tiles, **Select Market** with Watchlist / Forex / Crypto / Deriv tabs, symbol search and symbol cards with live price and change, a chart panel (1m 5m 15m 1h 4h 1D; Pro chart = TradingView, Quick = the app's own candle chart, used for Deriv too), then Today's Analysis (bullish / bearish / neutral from the app's signal), Quick Tools (Scanner, Planner, Killzones, News) and Risk Management. "Open ICT analysis" opens the Analysis page with that pair and method.
+- **Shell (`src/Desktop.web.tsx`)**: new sidebar (Analysis expands into its methods, Pro card, account), a **top bar** with market search (Ctrl+K), live status, notifications, PRO badge and account, and a right **Market Watch** panel (Forex / Crypto / Deriv table with stars, Forex Sessions in local time, news warning, daily reminder). Page headers no longer repeat the status chips on desktop (`src/ui.tsx`).
+- **`src/dash.ts`**: shared state for what the dashboard shows (pair, method, timeframe, market tab) and the market lists; the search bar, the right panel and the dashboard all use it.
+- Page width on big monitors is now up to 1120 px (`src/win.web.ts`).
+- Tests: `tests/layout.test.ts` updated; `tests/web/smoke.py` now also checks the dashboard (market tabs, method tile, Ctrl+K search, sidebar Analysis menu, market watch + sessions). All pass, plus the 17 unit test files, the type-check and the Android bundle build.
+- Not tested here: live prices and the real TradingView chart (the test machine had no internet; prices show a dash and the Pro chart area stays empty there). The new dashboard text is English only.
+
+# Earlier: a real desktop website layout (not just the phone app in a column)
 
 - **Desktop (browser 900 px or wider):** left sidebar menu (`src/Desktop.web.tsx`), the page in the middle (wider, up to 980 px), and from 1240 px a **Market watch** panel on the right (live prices, news banner, forex sessions). The bottom bar and the slide-out menu are not used there.
 - **Landing page + login (`src/Landing.tsx`, `src/LiveCandles.tsx`, `src/AuthFlow.tsx`):** on a wide screen the welcome / login / sign-up screens show the brand, the headline, a live candle chart, six feature cards, "3-day free trial, Weekly $8, Monthly $20", with the form on the right.

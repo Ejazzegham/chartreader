@@ -85,7 +85,8 @@ export const BellButton = () => {
 // Top row shared by every page (same as the Analysis page): logo opens the menu, brand name, PRO, feed status, alerts bell.
 export const AppHeader = () => {
   const { th } = useApp();
-  const desk = useLayout().mode === 'desktop'; // website: the sidebar already has the menu and the name, so only the status chips remain
+  const desk = useLayout().mode === 'desktop'; // website: the sidebar has the menu and the name, the top bar has the status chips
+  if (desk) return null;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, direction: 'ltr' }}>
       {!desk && <MenuButton />}
