@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Linking } from 'react-native';
 import { useApp } from '../store';
-import { Screen, Card, Body, Btn, SectionTitle, Icon, Group } from '../ui';
+import { Screen, Card, Body, Btn, SectionTitle, Icon, Group, Cols } from '../ui';
 import { LogoMark, PoweredBy } from '../Brand';
 import { CONTENT, CONTACT_EMAIL } from '../guideContent';
 
@@ -12,7 +12,7 @@ export default function About() {
 
   return (
     <Screen icon="information-circle" title={t('tabAbout')} subtitle={t('navDescAbout')}>
-      <View style={{ gap: 14 }}>
+      <Cols>
         <Card glow style={{ alignItems: 'center', gap: 10, paddingVertical: 22 }}>
           <LogoMark size={72} radius={8} />
           <Text style={{ color: th.text, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 }}>Chart Reader</Text>
@@ -55,7 +55,7 @@ export default function About() {
           <Text style={{ color: th.dim, fontSize: 12 }}>{c.madeBy}</Text>
           <PoweredBy />
         </View>
-      </View>
+      </Cols>
     </Screen>
   );
 }

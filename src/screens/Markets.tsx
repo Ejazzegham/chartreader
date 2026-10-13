@@ -4,6 +4,7 @@ import Modal from '../Modal';
 import Svg, { Polyline } from 'react-native-svg';
 import { useApp } from '../store';
 import { Screen, Card, Body, Dim, Icon, Btn, Chip, SectionHeader } from '../ui';
+import { useLayout } from '../win';
 import { SYMBOLS, Sym, useFeed, chg, isBad, isClosed, toggleFav, flags, catalog, setWatch, runDiagnostics, symOf, Diag, bnState, loadCrypto } from '../markets';
 import { QUOTES } from '../crypto';
 import { SymbolSheet, Coin } from '../MarketWidgets';
@@ -70,6 +71,7 @@ export default function Markets() {
   }, [tab === 2, key, favKey]);
   const live = status === 'live';
   const count = (c: string) => (c === 'fav' ? db.favs.length : SYMBOLS.filter((s) => s.cat === c && !isBad(s.id)).length);
+  const desk = useLayout().mode === 'desktop';
   const nCrypto = SYMBOLS.filter((s) => s.cat === 'crypto').length;
 
   return (
@@ -136,14 +138,15 @@ export default function Markets() {
       )}
 
       {list.length === 0 && <Body color={th.dim}>{cat === 'fav' && !term ? t('noFav') : t('noMatch')}</Body>}
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 10, ...(desk ? { flexDirection: 'row', flexWrap: 'wrap' } : null) }}>
         {list.map((s, i) => {
           const x = quotes[s.id];
           const c = chg(s.id), col = c >= 0 ? th.buy : th.sell, fav = db.favs.includes(s.id);
           const head = !crypto && s.sub && s.sub !== list[i - 1]?.sub;
           return (
-            <View key={s.id} style={{ gap: 10 }}>
-              {head && <Text style={{ color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 1.2, marginTop: i ? 8 : 0 }}>{s.sub!.toUpperCase()}</Text>}
+            <React.Fragment key={s.id}>
+              {head && <Text style={{ width: '100%', color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 1.2, marginTop: i ? 8 : 0 }}>{s.sub!.toUpperCase()}</Text>}
+              <View style={{ gap: 10, ...(desk ? { width: '48.9%' } : null) }}>
               <Pressable onPress={() => setSel(s)} style={({ pressed }) => ({ opacity: pressed ? 0.88 : 1 })}>
                 <Card style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 12 }}>
                   <Coin s={s} />
@@ -161,7 +164,8 @@ export default function Markets() {
                   </Pressable>
                 </Card>
               </Pressable>
-            </View>
+              </View>
+            </React.Fragment>
           );
         })}
       </View>

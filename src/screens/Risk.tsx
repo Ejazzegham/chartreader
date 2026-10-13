@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useLayout } from '../win';
 import { View, Text } from 'react-native';
 import { useApp } from '../store';
-import { Screen, Card, Field, Btn, Row, Dim, SectionTitle, StatTile } from '../ui';
+import { Screen, Card, Field, Btn, Row, Dim, SectionTitle, StatTile, Cols } from '../ui';
 import { TpLadder } from '../ProUI';
 import { TP_SPLIT } from '../gemini';
 
@@ -56,9 +57,10 @@ export default function Risk() {
     </View>
   );
 
+  const desk = useLayout().mode === 'desktop';
   return (
     <Screen icon="calculator" title={t('calcTitle')} subtitle={t('navDescRisk')}>
-      <View style={{ gap: 12 }}>
+      <Cols>
         {!!from && <Card style={{ borderColor: th.accent }}><Dim>{t('prefilled')} {from}</Dim></Card>}
         <Card>
           <SectionTitle icon="wallet-outline">{t('account')}</SectionTitle>
@@ -80,6 +82,13 @@ export default function Risk() {
         </Card>
         {!!err && <Text style={{ color: th.sell, lineHeight: 20 }}>{err}</Text>}
 
+        {!out && desk && (
+          <Card>
+            <SectionTitle icon="analytics-outline">Your plan</SectionTitle>
+            <View style={{ height: 8 }} />
+            <Dim>Enter your balance, the risk % and your levels, then press Calculate. The position size, the risk amount and the take-profit ladder appear here.</Dim>
+          </Card>
+        )}
         {out && (
           <>
             <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -102,7 +111,7 @@ export default function Risk() {
             </Card>
           </>
         )}
-      </View>
+      </Cols>
     </Screen>
   );
 }

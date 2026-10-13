@@ -3,7 +3,7 @@ import { View, Text, Pressable, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../store';
-import { Screen, Card, Dim, Btn, Badge, SectionTitle, Icon } from '../ui';
+import { Screen, Card, Dim, Btn, Badge, SectionTitle, Icon, Cols } from '../ui';
 import { ScoreRing } from '../ProUI';
 
 const KEY = 'pretrade.v1';
@@ -76,7 +76,7 @@ export default function Checklist() {
 
   return (
     <Screen icon="shield-checkmark" title={t('tabChecklist')} subtitle={t('navDescChecklist')} right={<Badge label="PRO" color={th.gold} />}>
-      <View style={{ gap: 12 }}>
+      <Cols>
         <LinearGradient colors={[col + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, borderWidth: 1, borderColor: col + '66', padding: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
             <ScoreRing score={score} color={col} label={`${done}/${total}`} size={78} />
@@ -132,7 +132,7 @@ export default function Checklist() {
           </Card>
         )}
         <Dim>A trade that fails your own rules is a trade you planned not to take. Educational tool, not financial advice.</Dim>
-      </View>
+      </Cols>
     </Screen>
   );
 }

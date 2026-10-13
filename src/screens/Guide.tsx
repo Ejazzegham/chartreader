@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useApp } from '../store';
-import { Screen, Card, Body, SectionTitle, Icon, Group } from '../ui';
+import { Screen, Card, Body, SectionTitle, Icon, Group, Cols } from '../ui';
 import { NAV } from '../nav';
 import { CONTENT } from '../guideContent';
 
@@ -12,7 +12,7 @@ export default function Guide() {
 
   return (
     <Screen icon="help-circle" title={t('tabGuide')} subtitle={t('navDescGuide')}>
-      <View style={{ gap: 14 }}>
+      <Cols>
         <Card glow><Body>{c.intro}</Body></Card>
 
         <Group title={c.stepsTitle}>
@@ -93,7 +93,7 @@ export default function Guide() {
         <Card style={{ borderColor: th.gold + '66' }}>
           <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 19 }}>{c.disc}</Text>
         </Card>
-      </View>
+      </Cols>
     </Screen>
   );
 }

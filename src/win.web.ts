@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import { useWindowDimensions as real } from 'react-native';
 
 // Website layout. Under 900 px wide the app keeps its phone layout (bottom bar), centred and at most PHONE_MAX wide.
@@ -13,4 +14,6 @@ export function layoutFor(w: number): LayoutInfo {
 }
 export const useRealWindow = real;
 export const useLayout = (): LayoutInfo => layoutFor(real().width);
-export function useWindowDimensions() { const d = real(); return { ...d, width: layoutFor(d.width).content }; }
+// Cols (ui.tsx) puts cards in two columns; inside a column every screen part sizes itself to that column's width.
+export const WidthCtx = createContext<number | null>(null);
+export function useWindowDimensions() { const d = real(), o = useContext(WidthCtx); return { ...d, width: o ?? layoutFor(d.width).content }; }

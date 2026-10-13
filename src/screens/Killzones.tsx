@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useApp } from '../store';
-import { Screen, Card, Dim, Body, Badge, SectionTitle } from '../ui';
+import { Screen, Card, Dim, Body, Badge, SectionTitle, Cols } from '../ui';
 import { Sessions } from '../MarketWidgets';
 import { killzonesFor, killzoneAt, nextKillzone } from '../ict';
 import { fxWeekendClosed } from '../markets';
@@ -22,7 +22,7 @@ export default function Killzones() {
 
   return (
     <Screen icon="alarm" title={t('tabKillzones')} subtitle={t('navDescKz')}>
-      <View style={{ gap: 12 }}>
+      <Cols>
         <Card style={{ borderColor: cur ? th.buy : th.line }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Dim>UTC {pad(now.getUTCHours())}:{pad(now.getUTCMinutes())}:{pad(now.getUTCSeconds())}</Dim>
@@ -76,7 +76,7 @@ export default function Killzones() {
           <View style={{ height: 8 }} />
           {[t('kzRule1'), t('kzRule2'), t('kzRule3'), t('kzRule4')].map((x, i) => <Body key={i}>• {x}</Body>)}
         </Card>
-      </View>
+      </Cols>
     </Screen>
   );
 }

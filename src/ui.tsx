@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View, Pressable, ActivityIndicator, TextInput, TextInputProps, ViewStyle, Animated } from 'react-native';
 import { showAlert } from './dialog';
-import { useWindowDimensions, useLayout } from './win';
+import { useWindowDimensions, useLayout, WidthCtx } from './win';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Line, Rect } from 'react-native-svg';
@@ -115,6 +115,32 @@ export const PageHero = ({ title, subtitle, icon, right, tag }: { title: string;
   const { th, rtl } = useApp();
   const { width } = useWindowDimensions();
   const W = width - 32, fs = Math.max(20, Math.min(26, Math.round(W * 0.064)));
+  const desk = useLayout().mode === 'desktop';
+  if (desk) return ( // website: same look as the home dashboard's header (eyebrow, big title, subtitle, a chart picture)
+    <View style={{ borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, minHeight: 128, justifyContent: 'center', direction: rtl ? 'rtl' : 'ltr' }}>
+      <LinearGradient colors={[th.accent + '26', th.accent2 + '10', th.accent + '00']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+      <View style={{ padding: 24, gap: 8, paddingRight: W >= 660 ? 300 : 24 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {!!icon && <Icon name={icon} size={15} color={th.accent} />}
+          <Text style={{ color: th.accent, fontSize: 11.5, fontWeight: '800', letterSpacing: 1.3 }}>{(tag ?? 'TRADING TOOLS').toUpperCase()}</Text>
+        </View>
+        <Text accessibilityRole="header" style={{ color: th.text, fontSize: 30, fontWeight: '900', letterSpacing: -0.9 }} numberOfLines={2}>{title}</Text>
+        {!!subtitle && <Text style={{ color: th.dim, fontSize: 14.5, lineHeight: 21, maxWidth: 520 }} numberOfLines={3}>{subtitle}</Text>}
+        {!!right && <View style={{ flexDirection: 'row', alignSelf: 'flex-start', marginTop: 4 }}>{right}</View>}
+      </View>
+      {W >= 660 && (
+        <View pointerEvents="none" style={{ position: 'absolute', right: 20, top: 16, bottom: 16, width: 262, borderRadius: 14, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}>
+          <Svg width="86%" height="86%" viewBox="0 0 120 80" preserveAspectRatio="xMidYMid meet">
+            <Path d="M4 68 C 30 66, 44 50, 62 40 S 94 22, 112 12" stroke={th.accent2} strokeWidth="2" strokeOpacity="0.45" fill="none" strokeLinecap="round" />
+            {HERO_CANDLES.map(([x, wt, wb, bt, bb, c], i) => {
+              const col = c === 'b' ? th.buy : c === 's' ? th.sell : th.accent2;
+              return (<React.Fragment key={i}><Line x1={x} y1={wt} x2={x} y2={wb} stroke={col} strokeWidth="1.6" strokeLinecap="round" /><Rect x={x - 3.4} y={bt} width="6.8" height={bb - bt} rx="1.6" fill={col} /></React.Fragment>);
+            })}
+          </Svg>
+        </View>
+      )}
+    </View>
+  );
   return (
     <LinearGradient colors={[th.accent + (th.dark ? '2E' : '16'), th.accent2 + (th.dark ? '38' : '26')]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
       style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', minHeight: 112, justifyContent: 'center', direction: 'ltr' }}>
@@ -170,8 +196,9 @@ export const Screen = ({ title, subtitle, right, children, bare, scrollKey, icon
 
 export const Card = ({ children, style, glow }: { children: React.ReactNode; style?: ViewStyle; glow?: boolean }) => {
   const { th } = useApp();
+  const desk = useLayout().mode === 'desktop';
   return (
-    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: 8, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.glass ? (th.dark ? 0.18 : 0.08) : glow ? (th.dark ? 0.3 : 0.14) : th.dark ? 0.22 : 0.05, shadowRadius: glow ? 16 : 10, shadowOffset: { width: 0, height: glow ? 6 : 4 }, elevation: th.glass ? 0 : glow ? 4 : 1 }, style]}>
+    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: desk ? 14 : 8, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.glass ? (th.dark ? 0.18 : 0.08) : glow ? (th.dark ? 0.3 : 0.14) : th.dark ? 0.22 : 0.05, shadowRadius: glow ? 16 : 10, shadowOffset: { width: 0, height: glow ? 6 : 4 }, elevation: th.glass ? 0 : glow ? 4 : 1 }, style]}>
       <LinearGradient pointerEvents="none" colors={th.glass ? ['transparent', th.dark ? '#FFFFFF66' : '#FFFFFFE6', 'transparent'] : ['transparent', th.accent + (th.dark ? '66' : '40'), 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 18, right: 18, height: 1 }} />
       {children}
     </View>
@@ -181,8 +208,9 @@ export const Card = ({ children, style, glow }: { children: React.ReactNode; sty
 // Rounded gradient icon tile (home tools, headers, empty states).
 export const IconTile = ({ icon, size = 44, colors }: { icon: string; size?: number; colors?: [string, string] }) => {
   const { th } = useApp();
+  const desk = useLayout().mode === 'desktop';
   return (
-    <LinearGradient colors={colors ?? [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: size, height: size, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
+    <LinearGradient colors={colors ?? [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: size, height: size, borderRadius: desk ? 12 : 8, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={icon} size={size * 0.5} color={th.onAccent} />
     </LinearGradient>
   );
@@ -191,12 +219,14 @@ export const IconTile = ({ icon, size = 44, colors }: { icon: string; size?: num
 // Section heading with an optional "See all" link.
 export const SectionHeader = ({ title, icon, action, onAction }: { title: string; icon?: string; action?: string; onAction?: () => void }) => {
   const { th } = useApp();
+  const desk = useLayout().mode === 'desktop';
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
+        {desk && !!icon ? <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={16} color={th.accent} /></View> : <>
         <View style={{ width: 3, height: 16, borderRadius: 2, backgroundColor: th.accent }} />
-        {!!icon && <Icon name={icon} size={16} color={th.accent} />}
-        <Text accessibilityRole="header" style={{ color: th.text, fontSize: 17, fontWeight: '800', letterSpacing: -0.2 }}>{title}</Text>
+        {!!icon && <Icon name={icon} size={16} color={th.accent} />}</>}
+        <Text accessibilityRole="header" style={{ color: th.text, fontSize: 17, fontWeight: desk ? '900' : '800', letterSpacing: -0.2 }}>{title}</Text>
       </View>
       {!!action && <Pressable onPress={onAction} hitSlop={10}><Text style={{ color: th.accent, fontWeight: '800', fontSize: 12.5 }}>{action} ›</Text></Pressable>}
     </View>
@@ -206,8 +236,9 @@ export const SectionHeader = ({ title, icon, action, onAction }: { title: string
 // Filter chip (categories, quote assets, news tabs).
 export const Chip = ({ label, on, onPress, icon, count }: { label: string; on: boolean; onPress: () => void; icon?: string; count?: number }) => {
   const { th } = useApp();
+  const desk = useLayout().mode === 'desktop';
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 38, borderRadius: 8, backgroundColor: on ? th.accent : th.panel, borderWidth: 1, borderColor: on ? th.accent : th.line, opacity: pressed ? 0.85 : 1 })}>
+    <Pressable onPress={onPress} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 38, borderRadius: desk ? 10 : 8, backgroundColor: on ? th.accent : th.panel, borderWidth: 1, borderColor: on ? th.accent : th.line, opacity: pressed ? 0.85 : 1 })}>
       {!!icon && <Icon name={icon} size={14} color={on ? th.onAccent : th.gold} />}
       <Text style={{ color: on ? th.onAccent : th.text, fontWeight: '800', fontSize: 13 }}>{label}</Text>
       {count !== undefined && <Text style={{ color: on ? th.onAccent + 'CC' : th.dim, fontWeight: '700', fontSize: 11 }}>{count}</Text>}
@@ -217,10 +248,11 @@ export const Chip = ({ label, on, onPress, icon, count }: { label: string; on: b
 
 export const SectionTitle = ({ icon, children }: { icon?: string; children: React.ReactNode }) => {
   const { th } = useApp();
+  const desk = useLayout().mode === 'desktop';
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
       {!!icon && <View style={{ width: 28, height: 28, borderRadius: 9, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={15} color={th.accent} /></View>}
-      <Text style={{ color: th.text, fontSize: 15, fontWeight: '800', letterSpacing: 0.2, flexShrink: 1 }}>{children}</Text>
+      <Text style={{ color: th.text, fontSize: desk ? 16 : 15, fontWeight: desk ? '900' : '800', letterSpacing: desk ? 0 : 0.2, flexShrink: 1 }}>{children}</Text>
     </View>
   );
 };
@@ -400,5 +432,32 @@ export const EmptyState = ({ icon, title, body, action, onAction }: { icon: stri
       {!!body && <Text style={{ color: th.dim, fontSize: 13.5, lineHeight: 20, textAlign: 'center', maxWidth: 300 }}>{body}</Text>}
       {!!action && !!onAction && <View style={{ alignSelf: 'stretch', marginTop: 6 }}><Btn label={action} onPress={onAction} /></View>}
     </Card>
+  );
+};
+
+// Cards in two balanced columns on a wide website page; a plain stack on the phone and on narrow pages.
+// The first pass puts cards left / right in turn, measures them, then fills the shorter column first. After that the placement is kept,
+// so a card never jumps while you use it. Inside a column every part sizes itself to the column's width (WidthCtx).
+export const Cols = ({ children, gap = 16 }: { children: React.ReactNode; gap?: number }) => {
+  const L = useLayout();
+  const { width } = useWindowDimensions();
+  const kids = React.Children.toArray(children).filter(Boolean);
+  const [h, setH] = useState<Record<number, number>>({});
+  const plan = useRef<number[] | null>(null);
+  if (L.mode !== 'desktop' || width < 760) return <View style={{ gap }}>{kids}</View>;
+  if (plan.current && plan.current.length !== kids.length) plan.current = null;
+  if (!plan.current && kids.every((_, i) => h[i] !== undefined)) {
+    const sums = [0, 0]; plan.current = kids.map((_, i) => { const j = sums[0] <= sums[1] ? 0 : 1; sums[j] += h[i] + gap; return j; });
+  }
+  const colW = (width - 32 - gap) / 2, cols: React.ReactNode[][] = [[], []];
+  kids.forEach((k, i) => cols[plan.current ? plan.current[i] : i % 2].push(
+    <View key={(k as any).key ?? i} onLayout={(e) => { const y = Math.round(e.nativeEvent.layout.height); setH((p) => (p[i] === y ? p : { ...p, [i]: y })); }}>{k}</View>));
+  return (
+    <WidthCtx.Provider value={colW + 32}>
+      <View style={{ flexDirection: 'row', gap, alignItems: 'flex-start' }}>
+        <View style={{ flex: 1, gap, minWidth: 0 }}>{cols[0]}</View>
+        <View style={{ flex: 1, gap, minWidth: 0 }}>{cols[1]}</View>
+      </View>
+    </WidthCtx.Provider>
   );
 };

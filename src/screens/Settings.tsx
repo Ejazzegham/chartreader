@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
 import Modal from '../Modal';
 import { useApp } from '../store';
-import { Screen, Card, Field, Dim, Btn, Segment, Icon, Group, confirmAction } from '../ui';
+import { Screen, Card, Field, Dim, Btn, Segment, Icon, Group, confirmAction, Cols } from '../ui';
 import { THEMES, themeId } from '../theme';
 import { LANGS } from '../i18n';
 import { PAY, PLANS, submitPayment, getServer, setServer, pushTest } from '../license';
@@ -116,7 +116,7 @@ export default function Settings() {
   return (
     <Screen icon="settings" title={t('tabSettings')} subtitle="Account, subscription, look and security in one place.">
       <EditProfile visible={editOpen} onClose={() => setEditOpen(false)} />
-      <View style={{ gap: 12 }}>
+      <Cols>
         <Group title="Account">
           <Card>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
@@ -299,7 +299,7 @@ export default function Settings() {
         )}
         <View style={{ height: 4 }} />
         <PoweredBy />
-      </View>
+      </Cols>
 
       <Modal visible={pinModal} animationType="slide" onRequestClose={() => setPinModal(false)}>
         <View style={{ flex: 1, direction: rtl ? 'rtl' : 'ltr', backgroundColor: th.bg }}>

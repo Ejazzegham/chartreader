@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useApp } from '../store';
-import { Screen, Card, Dim, Body, SectionTitle, StatTile } from '../ui';
+import { Screen, Card, Dim, Body, SectionTitle, StatTile, Cols } from '../ui';
 import EquityCurve from '../Equity';
 
 const f = (n: number, d = 2) => (isFinite(n) ? n.toLocaleString('en-US', { maximumFractionDigits: d }) : '-');
@@ -30,7 +30,7 @@ export default function Performance() {
 
   return (
     <Screen icon="stats-chart" title={t('tabPerf')} subtitle={t('navDescPerf')}>
-      <View style={{ gap: 12 }}>
+      <Cols>
         {n === 0 && <Card><Body color={th.dim}>{t('perfEmpty')}</Body></Card>}
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <StatTile label={t('pnl')} value={`${total >= 0 ? '+' : ''}${f(total)}`} color={total >= 0 ? th.buy : th.sell} icon="cash-outline" />
@@ -87,7 +87,7 @@ export default function Performance() {
             </View>
           )}
         </Card>
-      </View>
+      </Cols>
     </Screen>
   );
 }
