@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { yahooId, yahooOnly, yahooQuote, yahooCandles } from './fallback';
 import { remote } from './remote';
 import { isBn, bnRaw, QUOTES, bnPairs, loadBnPairs, bnTickers, watchBnCandles } from './crypto';
+import { REAL_VOL, RealVolume } from './realvol';
 import { IS_WEB } from './net';
 
 // One shared Deriv public WebSocket serves forex, metals, crypto and synthetic indices (no API key needed).
@@ -385,15 +386,18 @@ export function watchCandles(sym: string, gran: number, cb: (c: Candle[]) => voi
   if (isBn(sym)) { // crypto pairs come from Binance, not Deriv
     return watchBnCandles(bnRaw(sym), gran, (c) => { onSrc?.('binance'); cb(c); }, onErr, count);
   }
+  // Real volume for VSA: Deriv sends price only, so the volume of the real market (Binance for crypto, the futures contract for forex and metals) is merged in.
+  const rv = REAL_VOL[sym] ? new RealVolume(sym, gran, cb) : null, out: (c: Candle[]) => void = rv ? (c) => rv.feed(c) : cb;
+  rv?.start();
   if (yahooOnly(sym)) { // DXY: not on Deriv, so skip the 6 s wait and read the Yahoo source straight away
     let off = false, t: any = null, first = true;
     const run = async () => {
-      try { const c = await yahooCandles(sym, gran, count); if (off) return; if (c.length > 1) { onSrc?.('backup'); cb(c); } else if (first) onErr(NODATA); } catch { if (first && !off) onErr(NODATA); }
+      try { const c = await yahooCandles(sym, gran, count); if (off) return; if (c.length > 1) { onSrc?.('backup'); out(c); } else if (first) onErr(NODATA); } catch { if (first && !off) onErr(NODATA); }
       first = false;
       if (!off) t = setTimeout(run, 10000);
     };
     run();
-    return () => { off = true; clearTimeout(t); };
+    return () => { off = true; clearTimeout(t); rv?.stop(); };
   }
   let arr: Candle[] = [], subId = '', dead = false, got = false, fbTimer: any = null;
   if (!ws) { initBase(); clearTimeout(retryT); connect(); }
@@ -408,7 +412,7 @@ export function watchCandles(sym: string, gran: number, cb: (c: Candle[]) => voi
       arr = last && last.t === c.t ? [...arr.slice(0, -1), c] : [...arr.slice(-(count - 1)), c];
     } else return;
     if (!got) { got = true; clearTimeout(waitT); clearTimeout(fbTimer); onSrc?.('deriv'); }
-    cb(arr);
+    out(arr);
   }, false, true); // chart requests jump ahead of the startup queue
 
   const fb = async (first: boolean) => {
@@ -416,14 +420,14 @@ export function watchCandles(sym: string, gran: number, cb: (c: Candle[]) => voi
     try {
       const c = await yahooCandles(sym, gran, count);
       if (dead || got) return;
-      if (c.length > 1) { onSrc?.('backup'); cb(c); } else if (first) onErr(NODATA);
+      if (c.length > 1) { onSrc?.('backup'); out(c); } else if (first) onErr(NODATA);
     } catch { if (first && !dead && !got) onErr(NODATA); }
     if (!dead && !got) fbTimer = setTimeout(() => fb(false), 10000);
   };
   const waitT = setTimeout(() => { if (got || dead) return; if (yahooId(sym)) fb(true); else onErr(NODATA); }, 6000);
 
   return () => {
-    dead = true; hs.delete(id); clearTimeout(waitT); clearTimeout(fbTimer);
+    dead = true; hs.delete(id); clearTimeout(waitT); clearTimeout(fbTimer); rv?.stop();
     if (subId) { subs.delete(subId); if (ws && ws.readyState === 1) ws.send(JSON.stringify({ forget: subId })); }
   };
 }

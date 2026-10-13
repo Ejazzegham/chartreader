@@ -47,7 +47,18 @@ export const VSA_NAMES: Record<VsaTag, string> = {
   ND: 'No demand', NS: 'No supply', SOS: 'Sign of strength', SOW: 'Sign of weakness', EFF: 'Effort, no result',
 };
 
-export function vsaAnalyze(c: Candle[]): VSA {
+// The newest bar may still be forming, so its volume so far is only part of its final volume. Project it to a full bar (never more than 4x)
+// before comparing with the average; otherwise every new bar would look like "low volume / no demand". Closed bars are never touched.
+export function projectForming(c: Candle[], now = Date.now() / 1000): Candle[] {
+  const n = c.length;
+  if (n < 3 || !((c[n - 1].v ?? 0) > 0)) return c;
+  const gran = c[n - 1].t - c[n - 2].t, frac = gran > 0 ? (now - c[n - 1].t) / gran : 1;
+  if (!(frac >= 0 && frac < 1)) return c;
+  return [...c.slice(0, -1), { ...c[n - 1], v: (c[n - 1].v as number) / Math.max(0.25, frac) }];
+}
+
+export function vsaAnalyze(c0: Candle[]): VSA {
+  const c = projectForming(c0);
   const n = c.length;
   const empty: VSA = { ok: false, hasVolume: false, signals: [], score: 0, bias: 'wait' };
   if (n < 30) return { ...empty, reason: 'Need at least 30 candles.' };
@@ -62,6 +73,7 @@ export function vsaAnalyze(c: Candle[]): VSA {
   for (let i = from; i < n; i++) {
     const x = c[i], s = sp(x);
     if (s <= 0) continue;
+    if (hasVolume && !((x.v ?? 0) > 0)) continue; // volume for this bar is not known yet: do not judge it
     const win = c.slice(i - 20, i);
     const aS = avg(win.map(sp)), aV = hasVolume ? avg(win.map((y) => y.v ?? 0)) : 0;
     const vr = hasVolume && aV > 0 ? (x.v ?? 0) / aV : 1;

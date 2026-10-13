@@ -21,7 +21,7 @@ The layout rules are in `src/win.web.ts`; the sidebar, top bar and right panel a
 Copy the new `server/proxy.js` and the updated `server/server.js` to the machine that runs your server, then restart it.
 
 - `server/proxy.js` (new): browsers block most sites (CORS), so the backup prices (Yahoo), the economic calendar and the headlines
-  go through your server at `/proxy?u=...`. It only reads a short list of known sites over https, caches for 20 s, and limits each visitor to 120 requests a minute.
+  go through your server at `/proxy?u=...`. It only reads a short list of known sites over https, caches for 20 s, and limits each visitor to 240 requests a minute.
 - `server/server.js`: now answers the browser's pre-check (it allows the `ngrok-skip-browser-warning` header and `GET`/`POST`) and calls the proxy.
 - The server address in `src/license.ts` (`SERVER`) must be **https** (an http address is blocked on an https website). Visitors can also change it in Settings > Server address.
 
@@ -48,6 +48,12 @@ The site must be served over **https** (the app's PIN hashing and the licence de
 
 - Firebase console > Authentication > Settings > **Authorized domains**: add your website's domain.
 - If the Firebase **Web API key** is restricted in Google Cloud (Credentials), add your website's address under "HTTP referrers".
+
+## Real volume for VSA (app, website and server)
+
+VSA reads real traded volume, not spread. Crypto: Binance spot volume. Forex, gold, silver, DXY: volume of the matching CME / COMEX / ICE futures contract (spot forex has no central exchange). Deriv synthetic indices have no market volume, so VSA reads spread there and says so. The VSA screen names the volume source. Details: `src/realvol.ts` and CHANGES.md.
+
+**Copy to your server and restart it:** `server/alerts.js`, `server/proxy.js`, `server/build-analysis.js` and the whole `server/analysis/` folder (new: `realvol.js`, `net.js`; changed: `fallback.js`, `vsa.js`). Without it the website and app use real volume, but the server's background alerts still score VSA from spread.
 
 ## What is different in the browser
 

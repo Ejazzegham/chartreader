@@ -1,6 +1,6 @@
 // Read-only proxy for the website. Browsers block most third-party sites (CORS), so the website asks this server
 // (GET /proxy?u=<https url>) and the server reads the page for it. Only the sites listed below are allowed, over https,
-// so it cannot be used to reach anything else. Answers are cached for 20 s and each visitor gets 120 requests per minute.
+// so it cannot be used to reach anything else. Answers are cached for 20 s and each visitor gets 240 requests per minute.
 const HOSTS = [
   'query1.finance.yahoo.com', 'query2.finance.yahoo.com',   // backup prices (forex, metals, DXY, crypto)
   'nfs.faireconomy.media',                                  // economic calendar
@@ -9,7 +9,7 @@ const HOSTS = [
 ];
 const UA = 'Mozilla/5.0 (compatible; ChartReader/1.0)';
 
-module.exports = function makeProxy({ hosts = HOSTS, allowHttp = false, ttl = 20e3, maxBytes = 2e6, perMin = 120 } = {}) {
+module.exports = function makeProxy({ hosts = HOSTS, allowHttp = false, ttl = 20e3, maxBytes = 2e6, perMin = 240 } = {}) {
   const cache = new Map(), hits = new Map();
   const ok = (u) => (u.protocol === 'https:' || (allowHttp && u.protocol === 'http:')) && hosts.includes(u.hostname);
   setInterval(() => { const n = Date.now(); for (const [k, v] of cache) if (n - v.at > ttl) cache.delete(k); hits.clear(); }, 60e3).unref();

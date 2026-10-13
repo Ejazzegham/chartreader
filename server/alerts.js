@@ -10,9 +10,10 @@ const PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 const LEVEL = { entry: 'entry now', near: 'near entry, wait for the reaction' };
 const okSym = (x) => typeof x === 'string' && /^[\w.\-]{2,30}$/.test(x);
 
-let analyze = null, judge = null, session = null, yahoo = null, bn = null, HTF_OF = {};
+let analyze = null, judge = null, session = null, yahoo = null, bn = null, rvol = null, HTF_OF = {};
 try { analyze = require('./analysis/refine').analyzeAll; judge = require('./analysis/verdict').judge; session = require('./analysis/session'); HTF_OF = require('./analysis/entry').HTF_OF || {}; yahoo = require('./analysis/fallback'); bn = require('./analysis/crypto'); }
 catch (e) { console.log('alerts: analysis files missing (run: node build-analysis.js). Price alerts work, the scanner is off. ' + e.message); }
+try { rvol = require('./analysis/realvol'); } catch (e) { console.log('alerts: real volume module missing (run: node build-analysis.js). VSA falls back to spread. ' + e.message); }
 
 // ---- market data: Deriv public socket (forex, metals, synthetics, crypto), Binance for bn* pairs, Yahoo as backup / for DXY ----
 const EPS = ['wss://api.derivws.com/trading/v1/options/ws/public', 'wss://ws.derivws.com/websockets/v3?app_id=1089', 'wss://ws.binaryws.com/websockets/v3?app_id=1089'];
@@ -45,6 +46,12 @@ function derivClient() {
 function realFeed() {
   const dv = derivClient();
   const isBn = (id) => bn && bn.isBn(id);
+  const raw = async (id, gran, count) => {
+    if (isBn(id)) return bn.bnCandles(bn.bnRaw(id), gran, count);
+    if (yahoo && yahoo.yahooOnly(id)) return yahoo.yahooCandles(id, gran, count);
+    try { const c = await dv.candles(id, gran, count); if (c.length) return c; } catch {}
+    return yahoo && yahoo.yahooId(id) ? yahoo.yahooCandles(id, gran, count).catch(() => []) : [];
+  };
   return {
     async price(id) {
       if (isBn(id)) { const raw = bn.bnRaw(id), r = await bn.bnTickers([raw]); return r[raw]?.price; }
@@ -53,10 +60,9 @@ function realFeed() {
       if (yahoo && yahoo.yahooId(id)) return (await yahoo.yahooQuote(id).catch(() => null))?.price;
     },
     async candles(id, gran, count = 150) {
-      if (isBn(id)) return bn.bnCandles(bn.bnRaw(id), gran, count);
-      if (yahoo && yahoo.yahooOnly(id)) return yahoo.yahooCandles(id, gran, count);
-      try { const c = await dv.candles(id, gran, count); if (c.length) return c; } catch {}
-      return yahoo && yahoo.yahooId(id) ? yahoo.yahooCandles(id, gran, count).catch(() => []) : [];
+      const c = await raw(id, gran, count);
+      // Real volume for VSA (same as the app): Binance for crypto, the futures contract for forex and metals. Skipped for the long backtest downloads.
+      return rvol && count <= 1000 && !isBn(id) ? rvol.addRealVolume(id, gran, c).catch(() => c) : c;
     },
   };
 }

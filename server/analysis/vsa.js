@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VSA_NAMES = exports.VSA_HELP = exports.VSA_RULE = void 0;
+exports.projectForming = projectForming;
 exports.vsaAnalyze = vsaAnalyze;
 const ta_1 = require("./ta");
 exports.VSA_RULE = 'Every entry needs a breakout on low volume, then a retest, and you execute only on the confirmation candle.';
@@ -17,7 +18,19 @@ exports.VSA_NAMES = {
     SC: 'Selling climax', BC: 'Buying climax', ST: 'Stopping volume', UT: 'Upthrust', SP: 'Shakeout',
     ND: 'No demand', NS: 'No supply', SOS: 'Sign of strength', SOW: 'Sign of weakness', EFF: 'Effort, no result',
 };
-function vsaAnalyze(c) {
+// The newest bar may still be forming, so its volume so far is only part of its final volume. Project it to a full bar (never more than 4x)
+// before comparing with the average; otherwise every new bar would look like "low volume / no demand". Closed bars are never touched.
+function projectForming(c, now = Date.now() / 1000) {
+    const n = c.length;
+    if (n < 3 || !((c[n - 1].v ?? 0) > 0))
+        return c;
+    const gran = c[n - 1].t - c[n - 2].t, frac = gran > 0 ? (now - c[n - 1].t) / gran : 1;
+    if (!(frac >= 0 && frac < 1))
+        return c;
+    return [...c.slice(0, -1), { ...c[n - 1], v: c[n - 1].v / Math.max(0.25, frac) }];
+}
+function vsaAnalyze(c0) {
+    const c = projectForming(c0);
     const n = c.length;
     const empty = { ok: false, hasVolume: false, signals: [], score: 0, bias: 'wait' };
     if (n < 30)
@@ -34,6 +47,8 @@ function vsaAnalyze(c) {
         const x = c[i], s = sp(x);
         if (s <= 0)
             continue;
+        if (hasVolume && !((x.v ?? 0) > 0))
+            continue; // volume for this bar is not known yet: do not judge it
         const win = c.slice(i - 20, i);
         const aS = avg(win.map(sp)), aV = hasVolume ? avg(win.map((y) => y.v ?? 0)) : 0;
         const vr = hasVolume && aV > 0 ? (x.v ?? 0) / aV : 1;

@@ -8,6 +8,7 @@ import NewsBanner from '../NewsBanner';
 import { analyzeAll, methodsContext } from '../refine';
 import MethodChart, { Method } from '../MethodChart';
 import { VSA_NAMES, VSA_RULE, VSA_HELP } from '../vsa';
+import { realVolumeSource } from '../realvol';
 import { GUIDE } from '../candles';
 import { analyzeMarket, MarketAI, TP_SPLIT } from '../gemini';
 import { useSignalLog, Logged } from '../signalLog';
@@ -296,6 +297,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
               <Tile label={t('vsaFeed')} value={vsa.hasVolume ? t('vsaReal') : t('vsaSpread')} color={vsa.hasVolume ? th.buy : th.gold} />
             </View>
             {!vsa.ok && <Card><Body color={th.gold}>{vsa.reason ?? t('planNoData')}</Body></Card>}
+            {vsa.ok && vsa.hasVolume && !!realVolumeSource(symId) && <Dim>{`Volume source: ${realVolumeSource(symId)!.label}${realVolumeSource(symId)!.proxy ? ' (proxy: this pair has no futures of its own)' : ''}. Real traded volume, not spread or tick count.`}</Dim>}
             {vsa.ok && !vsa.hasVolume && <Card><Body color={th.gold}>{t('vsaNoVol')}</Body></Card>}
             {vsa.ok && vsa.signals.length === 0 && <Card><Body color={th.dim}>{t('vsaNone')}</Body></Card>}
             {vsa.ok && <VsaCard vsa={vsa} f={f} />}

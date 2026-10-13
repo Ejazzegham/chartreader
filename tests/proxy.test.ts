@@ -29,7 +29,7 @@ const up = http.createServer((req, res) => {
     r = await call(`http://127.0.0.1:${port}/redir-bad`); ok(r.status === 502, 'redirect to a site that is not allowed is stopped');
     r = await call(`http://127.0.0.1:${port}/big`); ok(r.status === 502, 'answer over the size limit is refused');
     r = await call(`http://127.0.0.1:${port}/429`); ok(r.status === 429, "the site's own error status is passed on (so the app can say rate-limited)");
-    r = await call(`http://127.0.0.1:${port}/json`); ok(r.status === 429, 'one visitor is limited to 120 per minute (9 in this test)');
+    r = await call(`http://127.0.0.1:${port}/json`); ok(r.status === 429, 'one visitor is limited per minute (9 in this test)');
     const o = await fetch(`http://127.0.0.1:${fp}/other`); ok(o.status === 404, 'other paths are left to the main server');
     console.log(fails ? `${fails} FAILED` : 'all proxy tests pass'); up.close(); front.close(); process.exit(fails ? 1 : 0);
   });

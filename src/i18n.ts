@@ -262,7 +262,7 @@ const PRO_EN: Record<string, string> = {
   smcNoSetup: "No SMC point of interest right now", smcNoSetupText: "No unmitigated decisional order block, supply / demand base or breaker lines up with the trend. Wait for a pullback into a zone, or try another timeframe.",
   smcEntryNote: "Entry at the near edge of the zone, stop beyond the far side. It works best after the inducement has been swept.", smcZones: "Supply, demand, order blocks and breakers",
   vsaBias: "VSA bias", vsaFeed: "Volume feed", vsaReal: "Real volume", vsaSpread: "Spread only",
-  vsaNoVol: "This market has no volume feed. VSA is read from spread, close position and follow-through, which is less reliable than real volume.",
+  vsaNoVol: "No real volume is available for this market right now (Deriv synthetic indices have none; for crypto, forex and metals the volume source did not answer). VSA is read from spread, close position and follow-through, which is less reliable than real volume.",
   vsaNone: "No clear VSA signal in the last 40 candles.", vsaSignals: "VSA signals", barsAgo: "bars ago",
   patNone: "No clear chart pattern", patNoneText: "No double top / bottom, head and shoulders, triangle, wedge or rectangle is complete enough right now.",
   patName: "Pattern", patStatus: "Status", pat_forming: "Forming", pat_breakout: "Breakout", pat_confirmed: "Confirmed", patFound: "Patterns found", patTarget: "target",

@@ -5,9 +5,10 @@ now=int(time.time())
 JWT=b64({'alg':'none','typ':'JWT'})+'.'+b64({'sub':'uid1','user_id':'uid1','email':'t@example.com','email_verified':True,'iat':now,'exp':now+3600,'aud':'chart-reader-45c13','iss':'https://securetoken.google.com/chart-reader-45c13','auth_time':now,'firebase':{'sign_in_provider':'password','identities':{}}})+'.x'
 CORS={'access-control-allow-origin':'*','access-control-allow-headers':'authorization, content-type, ngrok-skip-browser-warning, x-firebase-gmpid, x-client-version','access-control-allow-methods':'GET, POST, OPTIONS'}
 LIC={'token':'tok','admin':False,'status':'paid','entitled':True,'trialEnd':(now+86400*30)*1000,'paidUntil':(now+86400*30)*1000}
-def yahoo():
-    t0=now-3600*24; ts=[t0+i*900 for i in range(300)]; c=[1.08+0.004*math.sin(i/12)+0.0006*math.sin(i*1.7) for i in range(300)]
-    return {'chart':{'result':[{'timestamp':ts,'indicators':{'quote':[{'open':[x-0.0002 for x in c],'high':[x+0.0006 for x in c],'low':[x-0.0006 for x in c],'close':c,'volume':[1000+i for i in range(300)]}]}}]}}
+def yahoo(vol=True):
+    t0=(now-3600*24)//900*900; ts=[t0+i*900 for i in range(300)]; c=[1.08+0.004*math.sin(i/12)+0.0006*math.sin(i*1.7) for i in range(300)]
+    v=[(1000+i if i!=290 else 9000) for i in range(300)] if vol else [0]*300     # spot forex bars carry no volume, futures bars do
+    return {'chart':{'result':[{'timestamp':ts,'indicators':{'quote':[{'open':[x-0.0002 for x in c],'high':[x+0.0006 for x in c],'low':[x-0.0006 for x in c],'close':c,'volume':v}]}}]}}
 seen={'proxy':[], 'post':[], 'dialogs':[]}
 def handler(route):
     req=route.request; u=req.url
@@ -23,7 +24,7 @@ def handler(route):
         path=urllib.parse.urlparse(u).path
         if path=='/proxy':
             target=urllib.parse.parse_qs(urllib.parse.urlparse(u).query)['u'][0]; seen['proxy'].append((target[:70], req.headers.get('ngrok-skip-browser-warning'), req.headers.get('user-agent','')[:20]))
-            if 'yahoo' in target: return js(yahoo())
+            if 'yahoo' in target: return js(yahoo(vol=('%3DF' in target or '=F' in target)))
             if 'faireconomy' in target: return js([])
             if 'alternative.me' in target: return js({'data':[{'value':'50','value_classification':'Neutral'}]})
             return route.fulfill(status=200, headers={**CORS,'content-type':'application/xml'}, body='<rss><channel></channel></rss>')
@@ -86,6 +87,11 @@ if __name__=='__main__':
         ok(pg.get_by_text('Chart Reader', exact=True).locator('visible=true').count()==1, 'desktop: Analysis page has no second brand header (sidebar has it)')
         pg.get_by_text('ICT Analysis', exact=True).first.click(); pg.wait_for_timeout(14000)
         ok(any('yahoo' in x[0] for x in seen['proxy']), 'backup prices (Yahoo) come through the server proxy')
+        pg.get_by_text('VSA Analysis', exact=True).first.click(); pg.wait_for_timeout(16000)
+        ok(any('6E%3DF' in x[0] for x in seen['proxy']), 'VSA: real volume is requested from the Euro FX futures (6E) through the server proxy')
+        ok(pg.get_by_text('Volume source: CME Euro FX futures (6E)', exact=False).locator('visible=true').count()==1, 'VSA: the screen names the real volume source')
+        ok(pg.get_by_text('Real volume', exact=True).locator('visible=true').count()>=1 and pg.get_by_text('Spread only', exact=True).locator('visible=true').count()==0, 'VSA: reads real volume, not spread, for forex')
+        pg.get_by_text('ICT Analysis', exact=True).first.click(); pg.wait_for_timeout(6000)
         n0=pg.evaluate("document.querySelectorAll('svg rect').length"); pg.mouse.move(700,600)
         for _ in range(6): pg.mouse.wheel(0,-300); pg.wait_for_timeout(100)
         pg.wait_for_timeout(400); n1=pg.evaluate("document.querySelectorAll('svg rect').length")

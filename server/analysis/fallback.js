@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.yahooOnly = exports.yahooId = void 0;
+exports.yahooGet = yahooGet;
 exports.parseCandles = parseCandles;
 exports.yahooCandles = yahooCandles;
 exports.yahooQuote = yahooQuote;
+const net_1 = require("./net");
 // Backup source (Yahoo Finance public chart data) for forex, metals and crypto when the Deriv feed is unreachable.
 // Deriv synthetic indices (Volatility, Boom/Crash, Step) exist only on Deriv, so they have no backup.
 const YM = {
@@ -18,11 +20,11 @@ exports.yahooId = yahooId;
 const yahooOnly = (id) => id === 'frxDXY';
 exports.yahooOnly = yahooOnly;
 const RANGE = { 60: ['1m', '1d'], 180: ['1m', '1d'], 300: ['5m', '5d'], 900: ['15m', '5d'], 1800: ['30m', '1mo'], 3600: ['60m', '1mo'], 7200: ['60m', '3mo'], 14400: ['60m', '3mo'], 86400: ['1d', '1y'] };
-async function get(y, interval, range) {
+async function yahooGet(y, interval, range) {
     // time limit: without it a silent network made the backup feed wait forever and never retry
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 10000);
     try {
-        const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(y)}?interval=${interval}&range=${range}`, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: ctl.signal });
+        const r = await (0, net_1.xfetch)(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(y)}?interval=${interval}&range=${range}`, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: ctl.signal });
         if (!r.ok)
             throw new Error(`HTTP ${r.status}`);
         return (await r.json())?.chart?.result?.[0];
@@ -56,13 +58,13 @@ async function yahooCandles(id, gran, count = 120) {
     const y = YM[id], rg = RANGE[gran];
     if (!y || !rg)
         return [];
-    return parseCandles(await get(y, rg[0], rg[1]), gran, count);
+    return parseCandles(await yahooGet(y, rg[0], rg[1]), gran, count);
 }
 async function yahooQuote(id) {
     const y = YM[id];
     if (!y)
         return null;
-    const m = (await get(y, '1d', '5d'))?.meta;
+    const m = (await yahooGet(y, '1d', '5d'))?.meta;
     const price = Number(m?.regularMarketPrice), prev = Number(m?.chartPreviousClose ?? m?.previousClose);
     return isFinite(price) ? { price, prev: isFinite(prev) ? prev : price } : null;
 }

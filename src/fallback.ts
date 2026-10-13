@@ -15,7 +15,7 @@ export const yahooOnly = (id: string) => id === 'frxDXY';
 
 const RANGE: Record<number, [string, string]> = { 60: ['1m', '1d'], 180: ['1m', '1d'], 300: ['5m', '5d'], 900: ['15m', '5d'], 1800: ['30m', '1mo'], 3600: ['60m', '1mo'], 7200: ['60m', '3mo'], 14400: ['60m', '3mo'], 86400: ['1d', '1y'] };
 
-async function get(y: string, interval: string, range: string): Promise<any> {
+export async function yahooGet(y: string, interval: string, range: string): Promise<any> {
   // time limit: without it a silent network made the backup feed wait forever and never retry
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 10000);
   try {
@@ -48,13 +48,13 @@ export function parseCandles(res: any, gran: number, count = 120): Candle[] {
 export async function yahooCandles(id: string, gran: number, count = 120): Promise<Candle[]> {
   const y = YM[id], rg = RANGE[gran];
   if (!y || !rg) return [];
-  return parseCandles(await get(y, rg[0], rg[1]), gran, count);
+  return parseCandles(await yahooGet(y, rg[0], rg[1]), gran, count);
 }
 
 export async function yahooQuote(id: string): Promise<{ price: number; prev: number } | null> {
   const y = YM[id];
   if (!y) return null;
-  const m = (await get(y, '1d', '5d'))?.meta;
+  const m = (await yahooGet(y, '1d', '5d'))?.meta;
   const price = Number(m?.regularMarketPrice), prev = Number(m?.chartPreviousClose ?? m?.previousClose);
   return isFinite(price) ? { price, prev: isFinite(prev) ? prev : price } : null;
 }
