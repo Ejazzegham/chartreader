@@ -2,6 +2,7 @@
 // takes the setup the app would show, places the order the way the entry plan says, then manages it with the app's own 3 targets
 // (close 50% / 30% / 20%, stop moved to break-even after TP1). Stop is checked before targets inside one candle (the pessimistic case).
 const { analyzeAll } = require('./analysis/refine');
+const { qualify } = require('./analysis/verdict');
 const W = [0.5, 0.3, 0.2], EXPIRE = 20, MAX_BARS = 120;
 const HTF = { 60: 900, 180: 900, 300: 3600, 900: 3600, 1800: 14400, 3600: 14400, 7200: 86400, 14400: 86400 };
 exports.HTF = HTF;
@@ -22,13 +23,14 @@ function manage(c, from, side, fill, sl, tps, costR) {
 
 // c: candles oldest first. htf: higher timeframe candles (optional). gran: seconds per candle. Returns the list of trades.
 exports.simulate = function simulate(c, htf, gran, o = {}) {
-  const { step = 3, warm = 220, sess = false, cost = 0.03, minScore = 0 } = o, hg = HTF[gran] || 0, trades = [];
+  const { step = 3, warm = 220, sess = false, cost = 0.03, minScore = 0, gate = false, id = 'x', cat = 'forex' } = o, hg = HTF[gran] || 0, trades = [];
   let last = '', lastAt = -999, i = warm;
   while (i < c.length - 2) {
     const win = c.slice(i - 199, i + 1), t = c[i].t;
     let h; if (htf && hg) { h = htf.filter((x) => x.t + hg <= t + gran).slice(-150); if (h.length < 40) h = undefined; }
     const a = analyzeAll(win, new Date(t * 1000), { sessions: sess, htf: h }), cb = a.combo;
     if (!cb || cb.score < minScore) { i += step; continue; }
+    if (gate && !qualify(a, { id, cat, now: new Date(t * 1000), c: win }).trade) { i += step; continue; } // the same TRADE / WAIT rule the app uses
     const key = cb.side + cb.entry.toFixed(5);
     if (key === last && i - lastAt < EXPIRE) { i += step; continue; }
     last = key; lastAt = i;

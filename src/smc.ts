@@ -1,5 +1,5 @@
 import type { Candle } from './markets';
-import { atr, pivots, ladder } from './ta';
+import { atr, pivots, ladder, zoneSpent } from './ta';
 
 // =====================================================================================
 // SMC - Smart Money Concepts. Follows "Smart Money Concepts (SMC): The Complete A to Z Guide" step by step:
@@ -389,6 +389,8 @@ export function smcAnalyze(c: Candle[], opts: { htf?: Candle[]; params?: Partial
   const slOf = (z: SmcZone) => { const e = entryOf(z); let sl = buy ? z.bottom - pad : z.top + pad; if (Math.abs(e - sl) < 0.4 * a) sl = buy ? e - 0.4 * a : e + 0.4 * a; return sl; };
   let cands = K.zones.filter((z) => z.side === side && (buy ? z.top < price + 0.2 * a : z.bottom > price - 0.2 * a) && Math.abs(z.mean - price) <= 12 * a);
   if (useEv && ev) cands = cands.filter((z) => z.i >= ev.i - 1);
+  cands = cands.filter((z) => !zoneSpent(c, buy, z.top, z.bottom, z.i, z.fresh, entryOf(z), slOf(z))); // a zone whose move already reached TP1 is spent: look for the next one
+  { const reach = cands.filter((z) => Math.abs(z.mean - price) <= 6 * a); if (reach.length) cands = reach; } // a zone price can still reach (within 6 ATR) beats a higher-scored one that is far away
   if (!cands.length) {
     out.zones = shortlist(K.zones);
     out.next = `No unmitigated ${buy ? 'demand' : 'supply'} zone (order block, FVG, breaker) near price. ${buy ? 'Wait for a sweep of sell-side liquidity, then a bullish CHoCH with displacement.' : 'Wait for a sweep of buy-side liquidity, then a bearish CHoCH with displacement.'}`;

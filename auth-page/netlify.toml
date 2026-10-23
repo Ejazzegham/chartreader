@@ -1,0 +1,19 @@
+# Chart Reader - account email pages (reset password, verify email ...). Static site: no build step.
+[build]
+  publish = "."
+
+# The Firebase link opens  https://YOUR-SITE.netlify.app/?mode=...&oobCode=...  (a path like /auth works too)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # the link carries a one-time code: never send it to another site
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Cache-Control = "no-store"
+    Content-Security-Policy = "default-src 'none'; script-src 'self' https://www.gstatic.com; connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com; img-src 'self' data:; style-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"

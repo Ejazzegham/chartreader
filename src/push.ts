@@ -4,6 +4,9 @@ import { Platform } from 'react-native';
 import { pushRegister, pushUnregister } from './license';
 
 export const CHANNEL = 'alarm_v1'; // the server sends to this channel (server/alerts.js)
+export const CHAT_CHANNEL = 'support_v1'; // chat replies and payment answers: normal notification sound, not the trading alarm
+export const DIGEST_CHANNEL = 'digest_v1'; // the "analysis every 90 s" notification: silent, low importance, so it never rings like an alarm (server/alerts.js)
+export const INFO_CHANNEL = 'info_v1'; // news and daily high / low breaks: normal notification sound, not the trading alarm (server/alerts.js)
 export type PushState = 'on' | 'denied' | 'unsupported' | 'error';
 
 let N: any = null, token = '';
@@ -24,8 +27,11 @@ async function makeChannel(n: any) {
   await n.setNotificationChannelAsync(CHANNEL, {
     name: 'Alarms (price alerts and setups)', importance: n.AndroidImportance.MAX, sound: 'alarm.wav',
     vibrationPattern: [0, 600, 350, 600, 350, 600, 900], enableVibrate: true, lockscreenVisibility: n.AndroidNotificationVisibility?.PUBLIC ?? 1,
-    bypassDnd: true, audioAttributes: { usage: n.AndroidAudioUsage?.ALARM ?? 4, contentType: n.AndroidAudioContentType?.SONIFICATION ?? 4 },
+    showBadge: true, bypassDnd: true, audioAttributes: { usage: n.AndroidAudioUsage?.ALARM ?? 4, contentType: n.AndroidAudioContentType?.SONIFICATION ?? 4 },
   });
+  await n.setNotificationChannelAsync(DIGEST_CHANNEL, { name: 'Analysis every 90 s (silent)', importance: n.AndroidImportance.LOW, sound: null, enableVibrate: false, showBadge: false });
+  await n.setNotificationChannelAsync(INFO_CHANNEL, { name: 'News and daily high / low breaks', importance: n.AndroidImportance.HIGH, sound: 'default', enableVibrate: true, showBadge: true });
+  await n.setNotificationChannelAsync(CHAT_CHANNEL, { name: 'Support messages', importance: n.AndroidImportance.HIGH, sound: 'default', enableVibrate: true, showBadge: true });
 }
 
 export async function registerPush(session: string): Promise<{ state: PushState; msg?: string }> {
@@ -44,3 +50,27 @@ export async function registerPush(session: string): Promise<{ state: PushState;
   } catch (e: any) { return { state: 'error', msg: String(e?.message || e) }; }
 }
 export async function unregisterPush(session: string) { if (token && session) { try { await pushUnregister(session, token); } catch {} } }
+
+// The number on the app icon. iPhone: exact. Android: shown by phones whose launcher supports numbers (Samsung, Xiaomi, Oppo, Huawei ...); a Pixel / stock launcher shows a dot instead, that is the phone's choice.
+export async function setBadge(n: number) { const m = mod(); if (!m) return; try { await m.setBadgeCountAsync(Math.max(0, Math.round(n))); } catch {} }
+
+// Tells the app a notification arrived (while it is open) or was tapped. A tap that opened the app from closed is delivered too, once.
+let handledTap = '';
+// A tap is told apart by the notification's id AND its time (a remote push can come without an id).
+const tapKey = (r: any) => String(r?.notification?.request?.identifier || '') + '|' + String(r?.notification?.date || '');
+// On a tap the second argument is the data the server put into the push (type, sym / symId ...), so the app can open the right place.
+export function onPushEvent(cb: (tapped: boolean, data?: any) => void): () => void {
+  const m = mod(); if (!m) return () => {};
+  let a: any, b: any;
+  try {
+    const dataOf = (r: any) => r?.notification?.request?.content?.data;
+    const clear = () => { try { if (m.clearLastNotificationResponse) m.clearLastNotificationResponse(); else m.clearLastNotificationResponseAsync?.(); } catch {} }; // handled once: never replayed when this listener is set up again
+    a = m.addNotificationReceivedListener(() => cb(false));
+    b = m.addNotificationResponseReceivedListener((r: any) => { handledTap = tapKey(r); cb(true, dataOf(r)); clear(); });
+    // The app was closed and the tap started it: the tap happened before this listener existed, so ask for it. Newer expo-notifications has the plain function, older ones the Async one.
+    let last: any = null;
+    try { last = m.getLastNotificationResponse ? m.getLastNotificationResponse() : null; } catch {}
+    Promise.resolve(last ?? m.getLastNotificationResponseAsync?.()).then((r: any) => { if (!r?.notification) return; const k = tapKey(r); if (k !== handledTap) { handledTap = k; cb(true, dataOf(r)); clear(); } }).catch(() => {});
+  } catch {}
+  return () => { try { a?.remove?.(); b?.remove?.(); } catch {} };
+}

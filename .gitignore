@@ -7,3 +7,4 @@ dist/
 server/db.json
 server/db.json.tmp
 *.tmp
+server/db.json.media/

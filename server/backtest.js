@@ -4,15 +4,15 @@
 // per score bucket, per entry status and with / against the higher timeframe. Use it to pick the minimum score you trust.
 const { simulate, report, stats, HTF } = require('./backtest-core');
 const { realFeed } = require('./alerts');
-const [, , symArg, tfArg = '900', stepArg = '3', minArg = '0'] = process.argv;
-if (!symArg) { console.log('node backtest.js frxEURUSD,frxXAUUSD 900 [step=3] [minScore=0]'); process.exit(1); }
+const [, , symArg, tfArg = '900', stepArg = '3', minArg = '0', gateArg = 'gate'] = process.argv; // last argument: gate (only the setups the app calls TRADE, default) or all (every setup)
+if (!symArg) { console.log('node backtest.js frxEURUSD,frxXAUUSD 900 [step=3] [minScore=0] [gate|all]'); process.exit(1); }
 (async () => {
   const feed = realFeed(), gran = Number(tfArg), all = [];
   for (const id of symArg.split(',')) {
     try {
       const c = await feed.candles(id, gran, 5000); const h = HTF[gran] ? await feed.candles(id, HTF[gran], 3000) : undefined;
       if (!c || c.length < 400) { console.log(id + ': not enough candles'); continue; }
-      const sess = /^frx|^OTC/.test(id), t = simulate(c, h, gran, { step: Number(stepArg), sess, minScore: Number(minArg) });
+      const sess = /^frx|^OTC/.test(id), t = simulate(c, h, gran, { step: Number(stepArg), sess, minScore: Number(minArg), gate: gateArg !== 'all', id, cat: /^cry|^bn/.test(id) ? 'crypto' : /^frx/.test(id) ? 'forex' : 'deriv' });
       console.log(`\n=== ${id}  ${c.length} candles  ${t.length} orders`, JSON.stringify(stats(t))); all.push(...t.map((x) => ({ ...x, id })));
     } catch (e) { console.log(id + ' failed: ' + e.message); }
   }

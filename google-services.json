@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "745148948540",
+    "project_id": "chart-reader-45c13",
+    "storage_bucket": "chart-reader-45c13.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745148948540:android:9f17c186233957b6dd6339",
+        "android_client_info": {
+          "package_name": "com.chartreader.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "745148948540-k9cs0495i50v4o774c0k4k6mbbcenqkj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpL2WIjoe4HCtB50C0T4KgcC6SokR4Xwo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "745148948540-k9cs0495i50v4o774c0k4k6mbbcenqkj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

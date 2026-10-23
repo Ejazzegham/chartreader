@@ -5,15 +5,44 @@ import * as Crypto from 'expo-crypto';
 export const SERVER = 'https://mockup-borrowing-overprice.ngrok-free.dev';
 export const PAY = { TRON: 'TKvEQSzioWQGZBHdrzSLGWUnmQhJsEHUhA', BSC: '0xd7065772295fb0d563c1c6b00e4464bcd4b03f81' };
 export const PLANS = { weekly: 8, monthly: 20 };
+// The address people can write to. Emails sent here reach the admin panel (see EMAIL_TO_APP.md in the server folder).
+export const SUPPORT_EMAIL = 'bahutechnology@gmail.com';
+// The link friends get from "Invite friends" (Settings). Change it to your store page / website.
+export const APP_DOWNLOAD_URL = 'https://play.google.com/store/apps/details?id=com.chartreader.app';
 
-export type Lic = { token: string; admin: boolean; adminEmail?: boolean; status: 'trial' | 'paid' | 'expired' | 'admin'; entitled: boolean; trialEnd: number; paidUntil: number };
+export type Lic = { token: string; admin: boolean; adminEmail?: boolean; status: 'trial' | 'paid' | 'expired' | 'admin'; entitled: boolean; trialEnd: number; paidUntil: number; now?: number; provisional?: boolean };
+export const TRIAL_MS = 3 * 864e5; // same length as the server's TRIAL (server/server.js)
 export const NO_LIC: Lic = { token: '', admin: false, status: 'expired', entitled: false, trialEnd: 0, paidUntil: 0 };
+
+// ---- trial without the license server ----
+// Signing up is done by Firebase (Google), not by our server. When our server is off, the account is created but the server never issued a trial,
+// so the app stayed locked. Now the trial is also worked out on the phone from the date Firebase says the account was created (a Google clock,
+// not the phone's). It is marked `provisional`: as soon as the server answers, its record replaces it (see refreshLic in store.tsx).
+// A provisional license has no session token, so nothing that needs the server (cloud backup, background push, AI proxy) runs until the server is back.
+export function localTrial(createdMs: number, now: number): Lic | null {
+  if (!isFinite(createdMs) || createdMs <= 0 || !isFinite(now)) return null;
+  const start = Math.min(createdMs, now); // an account cannot be created in the future. (A phone clock that is behind is corrected from Firebase's time right after sign-in, see grantLocalTrial in store.tsx.)
+  const end = start + TRIAL_MS, left = now < end;
+  return { token: '', admin: false, status: left ? 'trial' : 'expired', entitled: left, trialEnd: end, paidUntil: 0, provisional: true };
+}
+// An error that means "the server could not be reached or is broken" (not "the server said no"). Only these may start a provisional trial.
+export const isNetworkError = (e: unknown): boolean => !!(e as any)?.network;
 
 const deviceId = async () => {
   let d = await SecureStore.getItemAsync('device_id');
   if (!d) { d = Crypto.randomUUID(); await SecureStore.setItemAsync('device_id', d); }
   return d;
 };
+// ---- trusted clock ----
+// The trial end is a date. If the app simply trusted the phone's clock, moving the date back would give free days.
+// So: (1) the server's clock is used whenever the server answered, (2) the newest time ever seen is remembered and time never runs backwards.
+let skew = 0, seen = 0;
+const SEEN_KEY = 'seen_at';
+export const trustedNow = (): number => { const n = Date.now() + skew; if (n > seen) seen = n; return seen; };
+export const syncClock = (serverNow?: number) => { if (typeof serverNow === 'number' && serverNow > 1e12) { skew = serverNow - Date.now(); seen = serverNow; } }; // the server is the authority, also when the phone clock was wrong in the other direction
+export async function loadClock() { const v = Number(await SecureStore.getItemAsync(SEEN_KEY).catch(() => '')); if (v > seen) seen = v; }
+export const saveClock = () => { SecureStore.setItemAsync(SEEN_KEY, String(trustedNow())).catch(() => {}); };
+
 // The address can be changed inside the app (Settings > Server address), so a new tunnel or host never needs an app update.
 let base = SERVER;
 const SERVER_KEY = 'server_url';
@@ -30,28 +59,84 @@ export async function setServer(raw: string): Promise<string> {
   base = v; await SecureStore.setItemAsync(SERVER_KEY, v).catch(() => {});
   return '';
 }
-async function post(path: string, body: any, token = '') {
-  if (base.includes('YOUR-SERVER-URL')) throw new Error('License server is not set up yet. Set the server address in Settings.');
+async function post(path: string, body: any, token = '', ms = 25000) {
+  const net = (m: string) => Object.assign(new Error(m), { network: true }); // marks "server not reachable" so the app can carry on offline (see localTrial)
+  if (base.includes('YOUR-SERVER-URL')) throw net('License server is not set up yet. Set the server address in Settings.');
   // A dead tunnel used to leave every screen waiting forever. Give up after 25 s with a message the user can act on.
-  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 25000);
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
   let r: Response;
   try {
     r = await fetch(base + path, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, body: JSON.stringify(body) });
   } catch (e: any) {
-    throw new Error(e?.name === 'AbortError' ? 'The server took too long to answer. Check your connection and try again.' : 'Cannot reach the server. Check your internet connection and try again.');
+    throw net(e?.name === 'AbortError' ? 'The server took too long to answer. Check your connection and try again.' : 'Cannot reach the server. Check your internet connection and try again.');
   } finally { clearTimeout(to); }
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.error || (r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'Server error'));
+  const j = await r.json().catch(() => null);
+  // Our server always answers in JSON. An HTML page (ngrok "tunnel offline", a proxy error) or a 5xx means the server itself is not there.
+  if (j === null || r.status >= 500) throw net(r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'The server is not running right now. Try again in a minute.');
+  if (!r.ok) throw new Error(j.error || 'Server error');
   return j;
 }
+// Account emails (reset password, confirm email, change email) in our own design. They are sent by a Netlify Function,
+// NOT by the license server, so they work even when your server is switched off.
+export const AUTH_MAIL_URL = 'https://genuine-pika-2ac700.netlify.app/.netlify/functions/auth-mail';
+// false = never use Firebase's own plain email. If Netlify cannot send, the person sees an error and can try again.
+export const AUTH_MAIL_FIREBASE_FALLBACK = false;
+// 'fallback' = Netlify is not set up / not reachable; the caller decides what to do (see AUTH_MAIL_FIREBASE_FALLBACK).
+export const authMail = async (kind: 'reset' | 'verify' | 'change-email', body: any): Promise<'sent' | 'limited' | 'fallback'> => {
+  if (AUTH_MAIL_URL.includes('YOUR-SITE')) return 'fallback';
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(AUTH_MAIL_URL, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ...body }) });
+    if (r.status === 429) return 'limited';
+    return r.ok ? 'sent' : 'fallback';
+  } catch { return 'fallback'; } finally { clearTimeout(to); }
+};
 // idToken = the Firebase ID token of the signed-in user; the server verifies it and reads the email from it.
-export const registerLic = async (idToken: string): Promise<Lic> => post('/register', { idToken, deviceId: await deviceId() });
+// accountCreated = when Firebase created the account (ms). The server uses it so a trial that already ran offline is not started again from zero.
+export const registerLic = async (idToken: string, accountCreated?: number): Promise<Lic> => post('/register', { idToken, deviceId: await deviceId(), ...(accountCreated && accountCreated > 0 ? { accountCreated } : {}) });
 export type AdminUser = { id?: string; email: string; status: 'paid' | 'trial' | 'expired'; trialEnd: number; paidUntil: number; created: number; last: number };
-export type AdminPay = { txid: string; email: string; network: string; usd: number; days: number; at: number };
-export type AdminStats = { users: number; paid: number; trial: number; expired: number; new24h: number; payments: number; revenue: number; keySet: boolean; model: string; list: AdminUser[]; pays: AdminPay[] };
+export type PayStatus = 'review' | 'approved' | 'rejected';
+export type AdminPay = { txid: string; pid?: string; email: string; network: string; usd: number; days: number; at: number; status: PayStatus; wallet: string; plan: string; suggest: number; verified: boolean; from: string; note: string; decidedAt: number };
+export type AdminStats = { users: number; paid: number; trial: number; expired: number; new24h: number; payments: number; pending: number; chats: number; revenue: number; keySet: boolean; model: string; list: AdminUser[]; pays: AdminPay[] };
 export const adminStats = (token: string): Promise<AdminStats> => post('/admin/stats', {}, token);
 export const adminGrant = (token: string, email: string, days: number) => post('/admin/grant', { email, days }, token);
-export const submitPayment = (token: string, network: 'TRON' | 'BSC', txid: string): Promise<Lic> => post('/pay', { network, txid }, token);
+// A payment is a CLAIM: the TxID and the wallet it was sent from. The admin approves it; only then are days added.
+export const submitPayment = (token: string, network: 'TRON' | 'BSC', txid: string, wallet: string, plan: 'weekly' | 'monthly'): Promise<{ status: 'review'; txid: string }> => post('/pay', { network, txid, wallet, plan }, token);
+export type MyPay = { txid: string; network: 'TRON' | 'BSC'; status: PayStatus; usd: number; days: number; at: number; plan: string; note: string };
+export const myPayments = (token: string): Promise<{ pays: MyPay[] }> => post('/pay/mine', {}, token);
+export const adminPayDecide = (token: string, txid: string, action: 'approve' | 'reject', days?: number, note?: string) => post('/admin/pay/decide', { txid, action, days, note }, token);
+
+// ---- support chat (works while the app is locked, too) ----
+export type ChatMedia = { id: string; kind: 'image' | 'video'; mime: string; size: number };
+export type ChatMsg = { id: number; from: 'user' | 'admin'; text: string; at: number; via?: string; media?: ChatMedia };
+export const supportSend = (token: string, text: string, media = ''): Promise<{ message: ChatMsg }> => post('/support/send', { text, media }, token);
+// Photo / video of the chat. The file is sent as raw bytes (not base64 inside JSON), so a video of 25 MB does not become 33 MB of text.
+export const mediaUrl = (m: ChatMedia) => `${base}/media/${m.id}`;
+export const MEDIA_HEADERS = { 'ngrok-skip-browser-warning': '1' };
+export async function uploadChatMedia(token: string, uri: string): Promise<ChatMedia> {
+  if (base.includes('YOUR-SERVER-URL')) throw new Error('License server is not set up yet. Set the server address in Settings.');
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 180000); // a video on a slow mobile line can take minutes
+  try {
+    const blob = await (await fetch(uri)).blob();
+    const r = await fetch(base + '/support/upload', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/octet-stream', Authorization: 'Bearer ' + token, ...MEDIA_HEADERS }, body: blob });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || (r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'Upload failed'));
+    return j.media;
+  } catch (e: any) {
+    if (e?.name === 'AbortError') throw new Error('The upload took too long. Check your connection and try again.');
+    if (e instanceof TypeError || /Network request failed/i.test(e?.message ?? '')) throw new Error('Cannot reach the server. Check your internet connection and try again.');
+    throw e;
+  } finally { clearTimeout(to); }
+}
+export const supportPull = (token: string, since: number): Promise<{ msgs: ChatMsg[]; unread: number; seq: number }> => post('/support/pull', { since }, token);
+export const supportRead = (token: string) => post('/support/read', {}, token);
+export type Translated = { text: string; from: string; to: string; same: boolean };  // from = English name of the language the text was written in; same = it was already in the target language
+export const translateText = (token: string, text: string, to: string): Promise<Translated> => post('/translate', { text, to }, token);
+export type ChatThread = { key: string; email: string; name: string; guest: boolean; unread: number; last: { from: 'user' | 'admin'; text: string; at: number } };
+export const adminBadge = (token: string): Promise<{ chats: number; pays: number }> => post('/admin/badge', {}, token);
+export const adminChats = (token: string): Promise<{ threads: ChatThread[]; unread: number }> => post('/admin/support/list', {}, token);
+export const adminChat = (token: string, key: string): Promise<{ key: string; email: string; name: string; phone: string; guest: boolean; msgs: ChatMsg[] }> => post('/admin/support/thread', { key }, token);
+export const adminChatReply = (token: string, key: string, text: string, media = ''): Promise<{ message: ChatMsg }> => post('/admin/support/reply', { key, text, media }, token);
 export const saveServerKey = (token: string, key: string, model = '') => post('/admin/key', { key, model }, token);
 
 
@@ -67,3 +152,10 @@ export const pushRegister = (token: string, expoToken: string) => post('/push/re
 export const pushUnregister = (token: string, expoToken: string) => post('/push/unregister', { token: expoToken }, token);
 export const pushTest = (token: string) => post('/push/test', {}, token);
 export const alertsSync = (token: string, body: { alerts?: any[]; scan?: any }): Promise<{ ok: boolean; fired: string[]; scanner: boolean }> => post('/alerts/sync', body, token);
+
+// ---- notification inbox: everything the server sent, so a push that arrived while the app was closed (or was swiped away) is still in the bell ----
+// setups: the A / A+ setups behind a scanner notification (entry, stop, 3 targets). The app copies them into the Journal.
+export type InboxSetup = { symId: string; name: string; side: 'buy' | 'sell'; entry: number; sl: number; tps: number[]; score: number; grade: string; basis?: string; zone?: [number, number]; why?: string[]; tf?: number | string };
+export type InboxItem = { id: number; at: number; title: string; body: string; type: string; sym?: string; setups?: InboxSetup[] };
+export const inboxPull = (token: string, since: number): Promise<{ items: InboxItem[]; seq: number; ack: number; unread: number }> => post('/inbox/pull', { since }, token);
+export const inboxAck = (token: string, upTo: number): Promise<{ ok: boolean; unread: number }> => post('/inbox/ack', { upTo }, token);

@@ -7,7 +7,7 @@ import TradeChart from './TradeChart';
 import { VSA_RULE } from './vsa';
 import { useApp } from './store';
 import { Btn, Icon } from './ui';
-import { Signal, totalR, fmtR, money } from './trades';
+import { Signal, floatR, stopAtBE, money, sourceName } from './trades';
 import { fmtLots, parseLots } from './lots';
 
 // What the trader can do with a running trade. Used from the Journal ("Manage") and from the take-profit alarm.
@@ -17,10 +17,12 @@ export function TradeActions({ s, price, onDone }: { s: Signal; price?: number; 
   const [custom, setCustom] = useState('');
   const f = (n: number) => n.toFixed(s.dec);
   const open = 1 - s.done, lotsOpen = (s.lots ?? 0) * open;
-  const r = price ? totalR(s, price) : s.banked, pnl = r * s.risk, c = r >= 0 ? th.buy : th.sell;
-  const beDone = s.stop === s.fill;
+  // Money only (no R): what is still open floats, what the closed shares earned is booked.
+  const leftPct = Math.round(open * 100), donePct = Math.round(s.done * 100), booked = s.banked * s.risk;
+  const openPnl = price ? open * floatR(s, price) * s.risk : 0, c = openPnl >= 0 ? th.buy : th.sell;
+  const beDone = stopAtBE(s);
   const planShare = s.tpAlert && s.plan ? s.plan[s.tpAlert - 1] ?? 0 : 0; // the share the trader chose for the take profit that just rang
-  const row = (a: string, b: string, col?: string) => <View key={a} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 }}><Text style={{ color: th.dim, fontSize: 13 }}>{a}</Text><Text style={{ color: col ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{b}</Text></View>;
+  const row = (a: string, b: string, col?: string) => <View key={a} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 3 }}><Text style={{ flex: 1, minWidth: 0, color: th.dim, fontSize: 13 }}>{a}</Text><Text style={{ flexShrink: 1, maxWidth: '62%', textAlign: 'right', color: col ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{b}</Text></View>;
 
   const closeShare = (share: number) => { // share of what is still open
     if (!price) { toast('No live price yet.', 'bad'); return; }
@@ -44,10 +46,10 @@ export function TradeActions({ s, price, onDone }: { s: Signal; price?: number; 
     <View style={{ gap: 12 }}>
       <View style={{ backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12 }}>
         {row('Live price', price ? f(price) : '…')}
-        {row('Floating result', `${money(pnl)}  (${fmtR(r)})`, c)}
+        {row(s.done > 0 ? `Remaining ${leftPct}% · floating` : 'Floating result', price ? money(openPnl) : '…', price ? c : th.dim)}
+        {s.done > 0 && row(`Booked · ${donePct}% closed`, money(booked), booked >= 0 ? th.buy : th.sell)}
         {!!s.lots && row('Size', `${fmtLots(s.lots)} lots · ${fmtLots(lotsOpen)} still open`)}
-        {s.banked !== 0 && row('Already locked in', fmtR(s.banked), s.banked >= 0 ? th.buy : th.sell)}
-        {row('Stop', `${f(s.stop)}${beDone ? '  (break-even)' : ''}`, beDone ? th.gold : th.sell)}
+        {row('Stop', `${f(s.stop)}${s.stop === s.fill ? '  (break-even)' : beDone ? '  (profit locked)' : ''}`, beDone ? th.gold : th.sell)}
         {s.tps.map((p, i) => row(`TP${i + 1}${s.hits > i ? '  ✓ reached' : ''}`, f(p), s.hits > i ? th.buy : th.dim))}
       </View>
 
@@ -62,7 +64,7 @@ export function TradeActions({ s, price, onDone }: { s: Signal; price?: number; 
         <View style={{ width: 110 }}><Btn tone="danger" label="Close" onPress={closeLots} disabled={!custom.trim() || !price} /></View>
       </View>
 
-      <Btn tone="danger" label={price ? `Close ALL now  ${money(pnl)}` : 'Waiting for price'} icon="close-circle-outline" disabled={!price} onPress={() => { closeSignal(s.id, price!); onDone(); }} />
+      <Btn tone="danger" label={price ? (s.done > 0 ? `Close the remaining ${leftPct}% now  ${money(openPnl)}` : `Close ALL now  ${money(openPnl)}`) : 'Waiting for price'} icon="close-circle-outline" disabled={!price} onPress={() => { closeSignal(s.id, price!); onDone(); }} />
       <View style={{ flexDirection: 'row', gap: 10 }}>
         {!beDone && <View style={{ flex: 1 }}><Btn tone="warn" label="Stop to break-even" icon="shield-half-outline" onPress={() => { const e = breakEven(s.id, price); if (e) toast(e, 'bad'); else onDone(); }} /></View>}
         <View style={{ flex: 1 }}><Btn ghost label={s.tpAlert ? 'Hold, keep running' : 'Back'} icon={s.tpAlert ? 'hourglass-outline' : 'arrow-back'} onPress={() => { if (s.tpAlert) ackTp(s.id); onDone(); }} /></View>
@@ -80,10 +82,10 @@ function methodInfo(s: Signal): { name: string; how: string } {
   if (low.includes('ict')) return { name: 'ICT', how: 'Liquidity is swept, structure shifts, then price retraces into a fair value gap / order block (optimal trade entry). Enter on the reaction from the zone, stop beyond the sweep.' };
   if (low.startsWith('candle')) return { name: src, how: 'A candlestick pattern at a key level. Enter only after the confirmation candle closes, stop beyond the pattern.' };
   if (low.startsWith('pattern')) return { name: src, how: 'A chart pattern. Enter on the break and retest of its neckline / boundary, stop on the other side of the pattern.' };
-  if (low.startsWith('scalp')) return { name: 'Scalp', how: 'A short-term trigger on a fast timeframe. Quick targets, tight stop. Close early when momentum fades.' };
+  if (low.startsWith('scalp')) return { name: 'Scalp', how: 'A reversal candle (doji, hammer, shooting star, engulfing, tweezer, morning / evening star ...) on a supply / demand zone, entered on the confirmation candle. Stop beyond the pattern extreme. Close when price breaks the previous candle low (buy) or high (sell).' };
   if (low.startsWith('top')) return { name: 'Top-Down', how: 'The higher timeframe sets the direction, the lower timeframe gives the entry. Trade only with the higher-timeframe trend.' };
   if (low.startsWith('scanner') || low.startsWith('combined')) return { name: src.replace('Scanner · ', 'Scanner: '), how: 'ICT, SMC, VSA and pattern votes combined into one entry. The zone gives the location, the other methods confirm it.' };
-  return { name: src || 'Manual', how: 'Entry, stop and targets as planned when the trade was taken.' };
+  return { name: sourceName(src), how: 'Entry, stop and targets as planned when the trade was taken.' };
 }
 
 function WhyPanel({ s }: { s: Signal }) {

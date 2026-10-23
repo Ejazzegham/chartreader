@@ -4,14 +4,14 @@ const fs = require('fs'), path = require('path');
 let ts; try { ts = require('typescript'); } catch { ts = require(path.join(__dirname, '../node_modules/typescript')); }
 const SRC = path.join(__dirname, '../src'), OUT = path.join(__dirname, 'analysis');
 const seen = new Set();
+const SKIP = new Set(['net', 'license']); // phone / website only (net.ts uses react-native); the server gets a plain-fetch stand-in below
+SKIP.forEach((f) => seen.add(f));
 const go = (f) => {
   if (seen.has(f)) return; seen.add(f);
   const code = fs.readFileSync(path.join(SRC, f + '.ts'), 'utf8');
   for (const m of code.matchAll(/^(?:import|export) (?!type)[^'"]*from '\.\/(\w+)'/gm)) go(m[1]);
 };
-const SKIP = new Set(['net', 'license']); // phone / website only (net.ts uses react-native); the server gets a plain-fetch stand-in below
-SKIP.forEach((f) => seen.add(f));
-['refine', 'fallback', 'crypto', 'entry', 'verdict', 'session', 'realvol'].forEach(go); // analysis maths + the price / candle sources the app already uses
+['refine', 'fallback', 'crypto', 'entry', 'verdict', 'session'].forEach(go); // analysis maths + the price / candle sources the app already uses
 fs.mkdirSync(OUT, { recursive: true });
 for (const f of seen) {
   if (SKIP.has(f)) continue;

@@ -9,7 +9,7 @@ import { Avatar } from './Brand';
 
 // Edit profile: name, phone, email (confirmed by a link sent to the new address), cloud backup status, delete account.
 export default function EditProfile({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const { th, t, account, avatar, cloud, syncNow, saveProfile, changeEmail, deleteAccount, emailVerified } = useApp();
+  const { th, t, account, avatar, cloud, syncNow, saveProfile, changeEmail, deleteAccount, emailVerified, googleOnly } = useApp();
   const insets = useSafeAreaInsets();
   const [name, setName] = useState(''), [phone, setPhone] = useState('');
   const [pBusy, setPBusy] = useState(false), [pMsg, setPMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -68,12 +68,13 @@ export default function EditProfile({ visible, onClose }: { visible: boolean; on
 
             <Card>
               <Text style={{ color: th.text, fontSize: 15, fontWeight: '900', marginBottom: 2 }}>Email address</Text>
+              {googleOnly ? <Dim>{account?.email}. You signed in with Google, so this email comes from your Google account and cannot be changed here.</Dim> : <>
               <Dim>{emailVerified ? 'Your email is verified.' : 'Your email is not verified yet.'} To change it, enter the new address and your current password. We send a confirmation link to the new address.</Dim>
               <View style={{ height: 10 }} />
               <Field label="New email" value={em} onChangeText={setEm} placeholder="new@email.com" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
               <Field label="Current password" value={emPw} onChangeText={setEmPw} secureTextEntry autoCapitalize="none" placeholder="Your password" />
               <Btn ghost label="Send confirmation link" icon="mail-outline" onPress={doEmail} busy={eBusy} disabled={!em.trim() || !emPw} />
-              <Note m={eMsg} />
+              <Note m={eMsg} /></>}
             </Card>
 
             <Card>
@@ -100,7 +101,7 @@ export default function EditProfile({ visible, onClose }: { visible: boolean; on
                 <View style={{ marginTop: 10 }}>
                   <Dim>This erases your account, your paper-trading history and your cloud backup from this phone and from the server. It cannot be undone.</Dim>
                   <View style={{ height: 10 }} />
-                  <Field label="Password" value={delPw} onChangeText={setDelPw} secureTextEntry autoCapitalize="none" placeholder="Your password" />
+                  {googleOnly ? <Dim>You will be asked to confirm with your Google account.</Dim> : <Field label="Password" value={delPw} onChangeText={setDelPw} secureTextEntry autoCapitalize="none" placeholder="Your password" />}
                   <Btn danger label="Delete my account" icon="trash-outline" onPress={doDelete} busy={dBusy} />
                   {!!dMsg && <Text style={{ color: th.sell, fontSize: 12.5, marginTop: 6 }}>{dMsg}</Text>}
                 </View>

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bnLoaded = exports.bnPairs = exports.QUOTES = exports.bnRaw = exports.isBn = exports.BN_PREFIX = exports.BN_HOSTS = void 0;
+exports.bnId = exports.cryBn = exports.bnLoaded = exports.bnPairs = exports.QUOTES = exports.bnRaw = exports.isBn = exports.BN_PREFIX = exports.BN_HOSTS = void 0;
 exports.bnGet = bnGet;
 exports.loadBnPairs = loadBnPairs;
 exports.bnTickers = bnTickers;
@@ -53,6 +53,19 @@ const bnPairs = () => pairs;
 exports.bnPairs = bnPairs;
 const bnLoaded = () => pairs.length > 0;
 exports.bnLoaded = bnLoaded;
+// Deriv's own crypto ids (cryBTCUSD ...) are priced from Binance too (BTCUSD -> BTCUSDT), so every crypto price in the app is the Binance price.
+// If the Binance list is loaded and does not contain that pair, undefined is returned and the id is left alone.
+const cryBn = (id) => {
+    const m = id.match(/^cry([A-Z0-9]+?)USD$/);
+    if (!m)
+        return undefined;
+    const b = exports.BN_PREFIX + m[1] + 'USDT';
+    return pairs.length && !pairs.some((x) => x.id === b) ? undefined : b;
+};
+exports.cryBn = cryBn;
+// The Binance id behind any crypto id (a Binance id is itself).
+const bnId = (id) => ((0, exports.isBn)(id) ? id : (0, exports.cryBn)(id));
+exports.bnId = bnId;
 const mk = (x) => {
     const raw = String(x.symbol ?? '');
     const quote = exports.QUOTES.find((q) => raw.endsWith(q) && raw.length > q.length);
@@ -99,8 +112,19 @@ async function bnTickers(raws) {
             put(x); });
         return out;
     }
-    const j = await bnGet(`/api/v3/ticker/24hr?type=MINI&symbols=${encodeURIComponent(JSON.stringify(raws))}`);
+    const sy = encodeURIComponent(JSON.stringify(raws));
+    const [j, bk] = await Promise.all([
+        bnGet(`/api/v3/ticker/24hr?type=MINI&symbols=${sy}`),
+        bnGet(`/api/v3/ticker/bookTicker?symbols=${sy}`, 6000).catch(() => null), // the spread is a bonus: the price must still arrive if this one fails
+    ]);
     (Array.isArray(j) ? j : [j]).forEach(put);
+    (Array.isArray(bk) ? bk : bk ? [bk] : []).forEach((x) => {
+        const t = out[String(x.symbol)], bid = Number(x.bidPrice), ask = Number(x.askPrice);
+        if (t && bid > 0 && ask >= bid) {
+            t.bid = bid;
+            t.ask = ask;
+        }
+    });
     return out;
 }
 // ---------- candles ----------

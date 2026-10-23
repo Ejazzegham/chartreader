@@ -7,9 +7,11 @@ export const TV_INTERVAL: Record<string, string> = { '60': '1', '180': '3', '300
 
 // Deriv symbol -> TradingView symbol. Deriv indices use TradingView's DERIV: exchange, named from the display name
 // (e.g. "Volatility 100 (1s) Index" -> DERIV:VOLATILITY_100_1S_INDEX, "Boom 1000 Index" -> DERIV:BOOM_1000_INDEX).
+// Markets that are not a 6-letter currency pair (the dollar index and oil) have their own TradingView symbols.
+const TV_FIXED: Record<string, string> = { frxDXY: 'TVC:DXY', frxWTI: 'TVC:USOIL', frxBRENT: 'TVC:UKOIL', frxBROUSD: 'TVC:UKOIL' };
 export function tvSymbol(s: Sym): string | null {
   const id = s.id;
-  if (id === 'frxBROUSD') return 'TVC:UKOIL';
+  if (TV_FIXED[id]) return TV_FIXED[id];
   if (id.startsWith('frx')) {
     const p = id.slice(3);
     if (!/^[A-Z]{6}$/.test(p)) return null;

@@ -3,7 +3,7 @@
 import { alertsSync } from './license';
 
 type Item = { id: string; name: string; sess: boolean };
-export type RemoteScan = { on: boolean; minProb: number; tf: number; items: Item[]; mute?: string[] }; // mute: "symId:side" of trades that already run, the server stays quiet about them
+export type RemoteScan = { watch?: boolean; digest?: boolean; dayBreaks?: boolean; news?: boolean; spikeOnly?: boolean; on: boolean; minProb: number; tf: number; items: Item[]; mute?: string[] }; // mute: "symId:side" of trades that already run, the server stays quiet about them
 
 let token = '', getAlerts: () => any[] = () => [], scan: RemoteScan | undefined, timer: any = null, retry = 0;
 let onFired: (ids: string[]) => void = () => {};

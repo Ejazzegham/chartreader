@@ -9,3 +9,9 @@ dist/
 # the server and its database (user emails, session secret) are not part of the app
 server/
 tests/
+
+# email page + Firebase email templates: hosted separately (firebase deploy --only hosting), not part of the app build
+auth-page/
+firebase-templates/
+firebase.json
+.firebaserc

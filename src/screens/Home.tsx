@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, ScrollView } from 'react-native';
 import DesktopHome from '../DesktopHome';
 import { useDesktop } from '../Desktop';
-import { View, Text, Pressable, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../store';
 import { Screen, Card, Body, Icon, IconTile, SectionHeader, Badge } from '../ui';
@@ -12,6 +12,8 @@ import NewsBanner from '../NewsBanner';
 import GuardBanner from '../Guard';
 import AdminAccess from '../AdminAccess';
 import { totalR, money, todayPnl } from '../trades';
+import { totalPnl } from '../positions';
+import { MANUAL_TAB } from '../manualTarget';
 import { NAV } from '../nav';
 import { CONTENT } from '../guideContent';
 
@@ -29,7 +31,7 @@ const TIPS = [
 type Tool = { key: string; icon: string; tab: number; desc: string; tint: [string, string] };
 
 function PhoneHome() {
-  const { th, t, account, history, journal, signals, desk, setTab, setAmethod, tab, settings, setHistOpen } = useApp();
+  const { th, t, account, history, journal, signals, positions, desk, setTab, setAmethod, tab, settings, setHistOpen, setHelpOpen, supportUnread } = useApp();
   const guide = (CONTENT[settings.lang] ?? CONTENT.en).guide;
   const guideTab = NAV.findIndex((n) => n.key === 'tabGuide');
   const gradeCol: Record<string, string> = { 'A+': th.buy, A: th.accent, B: th.gold, C: th.sell };
@@ -95,6 +97,18 @@ function PhoneHome() {
       <View style={{ gap: 16 }}>
         <NewsBanner active={tab === 0} />
         <AdminAccess />
+        {supportUnread > 0 && (
+          <Pressable onPress={() => setHelpOpen(true)} accessibilityRole="button" style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+            <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderColor: th.accent + '88' }}>
+              <IconTile icon="chatbubbles" size={42} colors={[th.accent, th.accent2]} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: th.text, fontSize: 15, fontWeight: '900' }}>{t('helpNew')}</Text>
+                <Text style={{ color: th.dim, fontSize: 12.5, marginTop: 2 }}>{t('helpTitle')}</Text>
+              </View>
+              <Badge label={String(supportUnread)} color={th.sell} />
+            </Card>
+          </Pressable>
+        )}
         <GuardBanner />
 
         {/* ---------- quick actions ---------- */}
@@ -108,6 +122,26 @@ function PhoneHome() {
             </Pressable>
           ))}
         </View>
+
+        {/* ---------- manual trade: one-click SELL / BUY like MetaTrader 5 ---------- */}
+        {(() => {
+          const flo = positions.reduce((a, p) => { const x = quotes[p.symId], m = p.side === 'buy' ? (x?.bid ?? x?.price) : (x?.ask ?? x?.price); return a + (m !== undefined ? totalPnl(p, m) : p.realized); }, 0);
+          return (
+            <Pressable onPress={() => setTab(MANUAL_TAB)} accessibilityRole="button" accessibilityLabel="Demo Trade" style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+              <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderColor: th.accent + '77' }}>
+                <LinearGradient colors={[th.buy, th.sell]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 48, height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', direction: 'ltr' }}>
+                  <Icon name="swap-vertical" size={26} color="#FFFFFF" />
+                </LinearGradient>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>Demo Trade</Text>
+                  <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 17, marginTop: 2 }}>{positions.length ? `${positions.length} running · floating ${money(flo)}` : 'Practice SELL / BUY on any pair with virtual money, like MetaTrader 5.'}</Text>
+                </View>
+                {positions.length > 0 && <Badge label={String(positions.length)} color={flo >= 0 ? th.buy : th.sell} />}
+                <Icon name="chevron-forward" size={18} color={th.dim} />
+              </Card>
+            </Pressable>
+          );
+        })()}
 
         {/* ---------- hero ---------- */}
         <Pressable onPress={() => setTab(1)} style={({ pressed }) => ({ opacity: pressed ? 0.94 : 1 })}>

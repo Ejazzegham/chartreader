@@ -1,6 +1,6 @@
 {
   "name": "chart-reader",
-  "version": "2.12.0",
+  "version": "2.15.0",
   "main": "index.ts",
   "private": true,
   "scripts": {
@@ -14,39 +14,40 @@
     "serve:web": "npx serve dist -s"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~57.0.16",
     "@expo/vector-icons": "latest",
     "@react-native-async-storage/async-storage": "latest",
-    "expo": "latest",
+    "@react-native-google-signin/google-signin": "^16.1.5",
+    "expo": "^57.0.29",
     "expo-build-properties": "latest",
     "expo-constants": "latest",
-    "expo-crypto": "latest",
+    "expo-crypto": "~57.0.4",
     "expo-font": "latest",
-    "expo-image-manipulator": "latest",
+    "expo-image-manipulator": "~57.0.21",
     "expo-image-picker": "latest",
     "expo-linear-gradient": "latest",
     "expo-local-authentication": "latest",
-    "expo-notifications": "latest",
+    "expo-notifications": "~57.0.23",
     "expo-secure-store": "latest",
-    "expo-splash-screen": "latest",
+    "expo-splash-screen": "~57.0.10",
     "expo-status-bar": "latest",
-    "expo-updates": "latest",
-    "firebase": "^12.19.0",
-    "react": "*",
-    "react-dom": "19.2.3",
-    "react-native": "*",
+    "expo-updates": "~57.0.26",
+    "firebase": "^9.14.0",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "latest",
-    "react-native-web": "~0.21.0",
-    "react-native-webview": "latest"
+    "react-native-webview": "latest",
+    "@expo/metro-runtime": "~57.0.16",
+    "react-dom": "19.2.3",
+    "react-native-web": "~0.21.0"
   },
   "devDependencies": {
     "@types/react": "*",
-    "typescript": "*",
+    "typescript": "~5.9.3",
     "@types/react-dom": "*"
   },
   "allowScripts": {
     "@firebase/util@1.15.3": true,
-    "protobufjs@7.6.6": true
+    "protobufjs@6.11.6": true
   }
 }

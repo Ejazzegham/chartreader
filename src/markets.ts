@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Vibration } from 'react-native';
 import { notify as notice, askNotifyPermission } from './dialog';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { yahooId, yahooOnly, yahooQuote, yahooCandles } from './fallback';
-import { remote } from './remote';
-import { isBn, bnRaw, QUOTES, bnPairs, loadBnPairs, bnTickers, watchBnCandles } from './crypto';
-import { REAL_VOL, RealVolume } from './realvol';
 import { IS_WEB } from './net';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { yahooId, yahooOnly, yahooQuote, yahooCandles, noteSpot, futAligned } from './fallback';
+import { remote } from './remote';
+import { isBn, bnRaw, bnId, QUOTES, bnPairs, loadBnPairs, bnTickers, watchBnCandles } from './crypto';
+import { withVolume } from './volumeFeed';
+import { tickBarsFrom, TICK_MAX_GRAN } from './volume';
 
 // One shared Deriv public WebSocket serves forex, metals, crypto and synthetic indices (no API key needed).
 // Deriv's current public feed (no key) first, then the legacy endpoints. The app rotates to the next one when an endpoint is unreachable.
@@ -19,14 +20,14 @@ let epIdx = 0;
 
 export type Cat = 'forex' | 'crypto' | 'deriv' | 'indices'; // gold and silver are part of forex now
 export type Sym = { id: string; name: string; cat: Cat; sub?: string; quote?: string };
-export type Q = { price: number; open: number; dec: number; pts: number[]; dir: number };
+export type Q = { price: number; open: number; dec: number; pts: number[]; dir: number; fut?: boolean; bid?: number; ask?: number }; // bid / ask: the real spread of the source (Deriv tick, Binance order book); absent when the source gives only one price // fut: a backup FUTURES price whose gap to spot is not known yet (never used for trades or alarms)
 export type Candle = { t: number; o: number; h: number; l: number; c: number; v?: number };
 export type PriceAlert = { id: string; sym: string; level: number; dir: 'above' | 'below' };
 
 const S = (cat: Cat, l: [string, string][]): Sym[] => l.map(([id, name]) => ({ id, name, cat }));
 export const EXTRA: Sym[] = [{ id: 'frxDXY', name: 'DXY (US Dollar Index)', cat: 'forex', sub: 'Index' }];
 export const SYMBOLS: Sym[] = [
-  ...S('forex', [['frxDXY', 'DXY (US Dollar Index)'], ['frxXAUUSD', 'Gold / USD'], ['frxXAGUSD', 'Silver / USD'], ['frxEURUSD', 'EUR/USD'], ['frxGBPUSD', 'GBP/USD'], ['frxUSDJPY', 'USD/JPY'], ['frxAUDUSD', 'AUD/USD'], ['frxUSDCAD', 'USD/CAD'], ['frxUSDCHF', 'USD/CHF'], ['frxNZDUSD', 'NZD/USD'], ['frxEURJPY', 'EUR/JPY'], ['frxGBPJPY', 'GBP/JPY']]),
+  ...S('forex', [['frxDXY', 'DXY (US Dollar Index)'], ['frxXAUUSD', 'Gold / USD'], ['frxXAGUSD', 'Silver / USD'], ['frxWTI', 'Oil WTI (US Crude)'], ['frxBRENT', 'Oil Brent'], ['frxEURUSD', 'EUR/USD'], ['frxGBPUSD', 'GBP/USD'], ['frxUSDJPY', 'USD/JPY'], ['frxAUDUSD', 'AUD/USD'], ['frxUSDCAD', 'USD/CAD'], ['frxUSDCHF', 'USD/CHF'], ['frxNZDUSD', 'NZD/USD'], ['frxEURJPY', 'EUR/JPY'], ['frxGBPJPY', 'GBP/JPY']]),
   ...S('crypto', [['cryBTCUSD', 'Bitcoin'], ['cryETHUSD', 'Ethereum'], ['cryLTCUSD', 'Litecoin'], ['cryBNBUSD', 'BNB'], ['cryXRPUSD', 'XRP']]),
   ...S('deriv', [['R_100', 'Volatility 100'], ['R_75', 'Volatility 75'], ['R_50', 'Volatility 50'], ['R_25', 'Volatility 25'], ['R_10', 'Volatility 10'], ['1HZ100V', 'Volatility 100 (1s)'], ['BOOM1000', 'Boom 1000'], ['CRASH1000', 'Crash 1000'], ['BOOM500', 'Boom 500'], ['CRASH500', 'Crash 500'], ['BOOM300N', 'Boom 300'], ['CRASH300N', 'Crash 300'], ['BOOM600', 'Boom 600'], ['CRASH600', 'Crash 600'], ['BOOM900', 'Boom 900'], ['CRASH900', 'Crash 900'], ['stpRNG', 'Step Index 100'], ['stpRNG2', 'Step Index 200'], ['stpRNG3', 'Step Index 300'], ['stpRNG4', 'Step Index 400'], ['stpRNG5', 'Step Index 500'], ['JD10', 'Jump 10'], ['JD25', 'Jump 25'], ['JD50', 'Jump 50'], ['JD75', 'Jump 75'], ['JD100', 'Jump 100']]),
 ];
@@ -72,6 +73,14 @@ export const chg = (id: string) => {
   if (!q) return 0;
   const o = opens[id] ?? q.open;
   return o ? ((q.price - o) / o) * 100 : 0;
+};
+
+// Spread of the price source, in price units and as a percent of the price. Only when the source really sent a bid and an ask (Deriv forex / metals, Binance).
+export const spreadOf = (id: string): { abs: number; pct: number; text: string } | null => {
+  const q = quotes[id];
+  if (!q || !(q.bid! > 0) || !(q.ask! > q.bid!)) return null;
+  const abs = q.ask! - q.bid!, pct = (abs / q.price) * 100;
+  return { abs, pct, text: `${abs.toFixed(Math.min(10, q.dec + 1))} (${pct < 0.001 ? pct.toFixed(4) : pct.toFixed(3)}%)` };
 };
 
 const listeners = new Set<() => void>();
@@ -147,6 +156,7 @@ const req = (msg: any, cb: (d: any) => void, once = false, first = false) => {
 
 // Symbols are subscribed on demand (only what a screen is showing), so 100+ Deriv symbols never flood the socket.
 const watchers = new Map<string, string[]>();
+let cryAl: Record<string, string[]> = {}; // Binance id -> the Deriv-style crypto ids (cryBTCUSD) that show its price
 const tickReq = new Map<string, number>(); // symbol -> request id
 const tickSub = new Map<string, string>(); // symbol -> Deriv subscription id
 const histAsked = new Set<string>();
@@ -156,7 +166,12 @@ export function setWatch(key: string, ids: string[]) {
   if (ids.length) watchers.set(key, ids); else watchers.delete(key);
   const want = new Set<string>(), wantBn = new Set<string>();
   const wantY = new Set<string>();
-  watchers.forEach((v) => v.forEach((x) => { if (isBn(x)) wantBn.add(bnRaw(x)); else if (yahooOnly(x)) wantY.add(x); else want.add(x); })); // Binance pairs and DXY have their own price pollers
+  cryAl = {};
+  watchers.forEach((v) => v.forEach((x) => {
+    const b = bnId(x);
+    if (b) { wantBn.add(bnRaw(b)); if (b !== x) { const l = (cryAl[b] = cryAl[b] ?? []); if (!l.includes(x)) l.push(x); } } // cryBTCUSD is priced by Binance BTCUSDT
+    else if (yahooOnly(x)) wantY.add(x); else want.add(x);
+  })); // Binance pairs and DXY have their own price pollers
   yWanted = [...wantY];
   if (yWanted.length && !yTimer && !yBusy) yLoop(); else if (!yWanted.length && yTimer) { clearTimeout(yTimer); yTimer = null; }
   bnWanted = [...wantBn];
@@ -207,16 +222,19 @@ const bnLoop = async () => {
     try {
       const r = await bnTickers(bnWanted);
       Object.entries(r).forEach(([raw, tk]) => {
-        const id = 'bn' + raw, o = quotes[id];
-        opens[id] = tk.open;
-        quotes[id] = { price: tk.price, open: tk.open, dec: bnDec(tk.price), pts: [...(o?.pts ?? []), tk.price].slice(-40), dir: o ? Math.sign(tk.price - o.price) || o.dir : 0 };
-        checkAlerts(id, tk.price);
+        const bid = 'bn' + raw;
+        [bid, ...(cryAl[bid] ?? [])].forEach((id) => {
+          const o = quotes[id];
+          opens[id] = tk.open;
+          quotes[id] = { price: tk.price, open: tk.open, dec: bnDec(tk.price), pts: [...(o?.pts ?? []), tk.price].slice(-40), dir: o ? Math.sign(tk.price - o.price) || o.dir : 0, bid: tk.bid, ask: tk.ask };
+          checkAlerts(id, tk.price);
+        });
       });
       bnState.ok = true; bnState.err = '';
     } catch (e: any) { bnState.ok = false; bnState.err = e?.message ?? 'Cannot reach Binance.'; }
     bnBusy = false; notify();
   }
-  bnTimer = setTimeout(bnLoop, bnWanted.length > 40 ? 10000 : 4000); // a long list refreshes slower (one big request)
+  bnTimer = setTimeout(bnLoop, bnWanted.length > 40 ? 10000 : 2000); // a long list refreshes slower (one big request); a short list every 2 s
 };
 // Adds every Binance pair to the symbol list and seeds a price + 24h change for each, so the lists show numbers immediately.
 const mergeBn = () => {
@@ -225,6 +243,8 @@ const mergeBn = () => {
   for (let i = SYMBOLS.length - 1; i >= 0; i--) if (isBn(SYMBOLS[i].id)) SYMBOLS.splice(i, 1);
   SYMBOLS.push(...list.map((p) => ({ id: p.id, name: p.name, cat: 'crypto' as Cat, sub: 'Binance', quote: p.quote })));
   list.forEach((p) => { if (!quotes[p.id]) { quotes[p.id] = { price: p.last, open: p.open, dec: bnDec(p.last), pts: [], dir: 0 }; opens[p.id] = p.open; } });
+  const known = new Set(SYMBOLS.map((s) => s.id));
+  list.forEach((p) => { const k = p.quote === 'USDT' ? `cry${p.base}USD` : ''; if (k && known.has(k) && !quotes[k]) { quotes[k] = { price: p.last, open: p.open, dec: bnDec(p.last), pts: [], dir: 0 }; opens[k] = p.open; } }); // Deriv-style crypto ids show the Binance snapshot
   bnState.loaded = true; bnState.count = list.length; notify();
 };
 export const loadCrypto = (force = false) => loadBnPairs(force).then(mergeBn).catch((e: any) => { bnState.err = e?.message ?? 'Cannot reach Binance.'; notify(); });
@@ -234,12 +254,14 @@ const onTick = (d: any) => {
   if (!tk) return;
   if (!tickReq.has(tk.symbol)) { if (d.subscription?.id) forget(d.subscription.id); return; } // no longer watched
   if (d.subscription?.id) tickSub.set(tk.symbol, d.subscription.id);
-  const price = Number(tk.quote), o = quotes[tk.symbol];
+  const price = Number(tk.quote), o = quotes[tk.symbol], bid = Number(tk.bid), ask = Number(tk.ask);
   quotes[tk.symbol] = {
     price, open: o?.open ?? price, dec: tk.pip_size ?? o?.dec ?? 2,
     pts: [...(o?.pts ?? []), price].slice(-40), dir: o ? Math.sign(price - o.price) || o.dir : 0,
+    ...(bid > 0 && ask > bid ? { bid, ask } : {}), // Deriv sends the bid and the ask with every tick: that is its spread
   };
   closedSet.delete(tk.symbol);
+  noteSpot(tk.symbol, price); // gold / silver: keeps the spot-vs-futures gap of the backup source up to date
   flags.lastTick = Date.now(); flags.backup = false;
   checkAlerts(tk.symbol, price);
   notify();
@@ -260,13 +282,14 @@ const fbLoop = async () => {
   if (users === 0 && !db.alerts.length) return;
   if (Date.now() - flags.lastTick > 15000) { // Deriv is not delivering ticks: fill forex/metals/crypto from the backup source
     for (const s of SYMBOLS.filter((x) => tickReq.has(x.id))) {
-      if (!yahooId(s.id)) continue;
+      if (!yahooId(s.id) || bnId(s.id)) continue; // crypto never takes a Yahoo price: Binance only
       try {
         const r = await yahooQuote(s.id), o = quotes[s.id];
         if (!r) continue;
         opens[s.id] = r.prev;
-        quotes[s.id] = { price: r.price, open: r.prev, dec: o?.dec ?? decOf(r.price), pts: [...(o?.pts ?? []), r.price].slice(-40), dir: o ? Math.sign(r.price - o.price) || o.dir : 0 };
-        flags.backup = true; checkAlerts(s.id, r.price);
+        const ok = futAligned(s.id); // gold / silver: the backup is a futures price, only used once its gap to spot is known
+        quotes[s.id] = { price: r.price, open: r.prev, dec: o?.dec ?? decOf(r.price), pts: [...(o?.pts ?? []), r.price].slice(-40), dir: o ? Math.sign(r.price - o.price) || o.dir : 0, ...(ok ? {} : { fut: true }) };
+        flags.backup = true; if (ok) checkAlerts(s.id, r.price);
       } catch {}
     }
     notify();
@@ -378,26 +401,63 @@ export function useFeed(active = true) {
   return { quotes, db, status: flags.status };
 }
 
+// ---- Deriv TICK volume: how many price updates fell inside each candle (see volume.ts) ----
+// Ticks are asked 5000 at a time, newest first, going back until the wanted start time. Only candles that are fully covered by the ticks
+// that were received are returned (the oldest, cut-off candle is dropped, so a count is never short). One symbol is counted at a time:
+// the loads wait in a line, and a screen that has already closed (alive() false) skips its turn, so a scanner pass cannot flood the socket.
+let tvChain: Promise<unknown> = Promise.resolve();
+const tickPage = (sym: string, end: number | 'latest', count: number): Promise<number[] | null> => new Promise((resolve) => {
+  let done = false, timer: any = null;
+  const fin = (v: number[] | null) => { if (done) return; done = true; clearTimeout(timer); resolve(v); };
+  const id = req({ ticks_history: sym, end, count, style: 'ticks' }, (d) => { if (d.error) fin(null); else fin((d.history?.times ?? []).map(Number)); }, true);
+  timer = setTimeout(() => { hs.delete(id); fin(null); }, 12000);
+});
+// The old limit was 7 pages (35 000 ticks): on a busy pair that covered only the newest ~29 candles, which is one reason VSA said "too little volume".
+// Now up to TICK_PAGES pages (225 000 ticks) are read within TICK_BUDGET_MS, newest first, and `onPart` is called every 3 pages with the candles
+// counted so far, so volume bars appear while the older history is still loading.
+export const TICK_PAGES = 45, TICK_BUDGET_MS = 60000;
+export function derivTickBars(sym: string, gran: number, fromT: number, alive: () => boolean, count = 5000, onPart?: (b: Candle[]) => void): Promise<Candle[]> {
+  const job = async (): Promise<Candle[]> => {
+    if (!/^frx/.test(sym) || yahooOnly(sym) || gran <= 0 || gran > TICK_MAX_GRAN) return [];
+    const times: number[] = [], t0 = Date.now();
+    let end: number | 'latest' = 'latest', oldest = Infinity;
+    for (let p = 0; p < TICK_PAGES && alive() && Date.now() - t0 < TICK_BUDGET_MS; p++) {
+      const t = await tickPage(sym, end, count);
+      if (!t || !t.length) break;
+      for (const x of t) { times.push(x); if (x < oldest) oldest = x; }
+      const done = oldest <= fromT || t.length < count;
+      if (!done && onPart && p % 3 === 2) onPart(tickBarsFrom(times, gran));
+      if (done) break;
+      end = oldest - 1;
+    }
+    if (!times.length) return [];
+    return tickBarsFrom(times, gran);
+  };
+  const run = tvChain.then(job, job);
+  tvChain = run.catch(() => {});
+  return run;
+}
+
 const NODATA = 'No chart data received. Check your internet connection (or VPN) and tap Retry.';
 
 // Live candles from Deriv (history, then streaming). If Deriv stays silent for 6s, forex/metals/crypto fall back
 // to the backup source (refreshed every 10s). Returns an unsubscribe function.
-export function watchCandles(sym: string, gran: number, cb: (c: Candle[]) => void, onErr: (m: string) => void, onSrc?: (s: 'deriv' | 'backup' | 'binance') => void, count = 120) {
-  if (isBn(sym)) { // crypto pairs come from Binance, not Deriv
-    return watchBnCandles(bnRaw(sym), gran, (c) => { onSrc?.('binance'); cb(c); }, onErr, count);
+export function watchCandles(sym: string, gran: number, cb0: (c: Candle[]) => void, onErr: (m: string) => void, onSrc?: (s: 'deriv' | 'backup' | 'binance') => void, count = 120) {
+  const bnS = bnId(sym);
+  if (bnS) { // crypto pairs (also cryBTCUSD ...) come from Binance, not Deriv (their candles already carry real volume)
+    return watchBnCandles(bnRaw(bnS), gran, (c) => { onSrc?.('binance'); cb0(c); }, onErr, count);
   }
-  // Real volume for VSA: Deriv sends price only, so the volume of the real market (Binance for crypto, the futures contract for forex and metals) is merged in.
-  const rv = REAL_VOL[sym] ? new RealVolume(sym, gran, cb) : null, out: (c: Candle[]) => void = rv ? (c) => rv.feed(c) : cb;
-  rv?.start();
-  if (yahooOnly(sym)) { // DXY: not on Deriv, so skip the 6 s wait and read the Yahoo source straight away
+  // Deriv and Yahoo candles carry no volume: real exchange volume (Binance spot / CME futures) is merged in for VSA, see volume.ts
+  const vf = withVolume(sym, gran, count, cb0, derivTickBars), cb = vf.push;
+  if (yahooOnly(sym)) { // DXY and oil: not on Deriv, so skip the 6 s wait and read the Yahoo source straight away
     let off = false, t: any = null, first = true;
     const run = async () => {
-      try { const c = await yahooCandles(sym, gran, count); if (off) return; if (c.length > 1) { onSrc?.('backup'); out(c); } else if (first) onErr(NODATA); } catch { if (first && !off) onErr(NODATA); }
+      try { const c = await yahooCandles(sym, gran, count); if (off) return; if (c.length > 1) { onSrc?.('backup'); cb(c); } else if (first) onErr(NODATA); } catch { if (first && !off) onErr(NODATA); }
       first = false;
       if (!off) t = setTimeout(run, 10000);
     };
     run();
-    return () => { off = true; clearTimeout(t); rv?.stop(); };
+    return () => { off = true; clearTimeout(t); vf.stop(); };
   }
   let arr: Candle[] = [], subId = '', dead = false, got = false, fbTimer: any = null;
   if (!ws) { initBase(); clearTimeout(retryT); connect(); }
@@ -405,14 +465,14 @@ export function watchCandles(sym: string, gran: number, cb: (c: Candle[]) => voi
     if (dead) return;
     if (d.error) { if (!yahooId(sym)) onErr(d.error.message); return; }
     if (d.subscription?.id) { subId = d.subscription.id; subs.set(subId, id); }
-    if (d.candles) arr = d.candles.map((x: any) => ({ t: x.epoch, o: +x.open, h: +x.high, l: +x.low, c: +x.close }));
+    if (d.candles) { arr = d.candles.map((x: any) => ({ t: x.epoch, o: +x.open, h: +x.high, l: +x.low, c: +x.close })); if (arr.length) noteSpot(sym, arr[arr.length - 1].c); }
     else if (d.ohlc) {
       const o = d.ohlc, c: Candle = { t: +o.open_time, o: +o.open, h: +o.high, l: +o.low, c: +o.close };
       const last = arr[arr.length - 1];
       arr = last && last.t === c.t ? [...arr.slice(0, -1), c] : [...arr.slice(-(count - 1)), c];
     } else return;
     if (!got) { got = true; clearTimeout(waitT); clearTimeout(fbTimer); onSrc?.('deriv'); }
-    out(arr);
+    cb(arr);
   }, false, true); // chart requests jump ahead of the startup queue
 
   const fb = async (first: boolean) => {
@@ -420,14 +480,14 @@ export function watchCandles(sym: string, gran: number, cb: (c: Candle[]) => voi
     try {
       const c = await yahooCandles(sym, gran, count);
       if (dead || got) return;
-      if (c.length > 1) { onSrc?.('backup'); out(c); } else if (first) onErr(NODATA);
+      if (c.length > 1) { onSrc?.('backup'); cb(c); } else if (first) onErr(NODATA);
     } catch { if (first && !dead && !got) onErr(NODATA); }
     if (!dead && !got) fbTimer = setTimeout(() => fb(false), 10000);
   };
   const waitT = setTimeout(() => { if (got || dead) return; if (yahooId(sym)) fb(true); else onErr(NODATA); }, 6000);
 
   return () => {
-    dead = true; hs.delete(id); clearTimeout(waitT); clearTimeout(fbTimer); rv?.stop();
+    dead = true; vf.stop(); hs.delete(id); clearTimeout(waitT); clearTimeout(fbTimer);
     if (subId) { subs.delete(subId); if (ws && ws.readyState === 1) ws.send(JSON.stringify({ forget: subId })); }
   };
 }

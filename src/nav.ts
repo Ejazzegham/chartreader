@@ -17,4 +17,5 @@ export const NAV: NavItem[] = [
   { key: 'tabNews', icon: 'newspaper', group: 'pro', desc: 'navDescNews' },
   { key: 'tabGuide', icon: 'help-circle', group: 'main', desc: 'navDescGuide' },
   { key: 'tabAbout', icon: 'information-circle', group: 'main', desc: 'navDescAbout' },
+  { key: 'tabManual', icon: 'swap-vertical', group: 'hidden', desc: 'navDescManual' }, // Manual Trade: opened from Home (and from a pair's chart in Markets), not part of the menu
 ];

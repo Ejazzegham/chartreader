@@ -5,8 +5,9 @@ exports.planEntry = planEntry;
 // Higher timeframe used as the trend filter for each scan timeframe (seconds).
 exports.HTF_OF = { 60: 900, 180: 900, 300: 3600, 900: 3600, 1800: 14400, 3600: 14400, 7200: 86400, 14400: 86400 };
 const EXPIRE = 20; // an unfilled limit order is cancelled after this many candles
-function planEntry(c, side, entry, sl, zTop, zBot, tp1, a, f = (n) => n.toFixed(4)) {
-    const buy = side === 'buy', n = c.length, last = c[n - 1], price = last.c, d = buy ? 1 : -1;
+function planEntry(c, side, entry, sl, zTop, zBot, tp1, a, f = (n) => n.toFixed(4), live, zoneI) {
+    // c = CLOSED candles (a reaction is read from candles that have closed, so it cannot disappear), live = the current price (where we would actually enter)
+    const buy = side === 'buy', n = c.length, last = c[n - 1], price = live !== undefined && isFinite(live) ? live : last.c, d = buy ? 1 : -1;
     const risk = Math.abs(entry - sl), dist = (price - entry) * d; // > 0: price is already beyond the entry in the trade direction
     const distAtr = Math.abs(price - entry) / a;
     const pad = 0.1 * a;
@@ -22,9 +23,29 @@ function planEntry(c, side, entry, sl, zTop, zBot, tp1, a, f = (n) => n.toFixed(
     const reaction = n >= 3 && (react(last, c[n - 2]) || react(c[n - 2], c[n - 3]));
     // already invalidated: price closed through the stop
     const stopped = buy ? price <= sl : price >= sl;
-    // already gone: price has already reached TP1 (the move happened without us), so the idea is spent
-    const ran = buy ? price >= tp1 : price <= tp1;
-    const tp1Hit = ran || c.slice(-40).some((x) => (buy ? x.h >= tp1 && x.t > (c[n - 41]?.t ?? 0) : x.l <= tp1)) && dist > 0 && distAtr > 2;
+    // already gone: price CAME BACK to the zone and then reached TP1, so the move happened without us.
+    // The candles that formed the zone are not a return (a pending zone must not be called "too late" just because the impulse that made it ran past TP1),
+    // and a zone price never came back to is still waiting, however far price ran from it.
+    let tp1Hit = false;
+    if (zoneI === undefined)
+        tp1Hit = buy ? price >= tp1 : price <= tp1; // no zone memory (candle / pattern level): spent once price is past TP1
+    else {
+        // look only at candles AFTER the zone formed: the decline or rally that passed through the same price before the zone existed is not a return
+        let away = false, ret = -1;
+        for (let k = Math.max(zoneI + 3, n - 120, 0); k < n; k++) {
+            const x = c[k], over = buy ? x.l <= zTop + pad && x.h >= zBot - pad : x.h >= zBot - pad && x.l <= zTop + pad, clear = buy ? x.l > zTop + pad : x.h < zBot - pad;
+            if (clear)
+                away = true;
+            else if (over && away)
+                ret = k;
+        }
+        if (ret >= 0) {
+            let pk = price;
+            for (let k = ret; k < n; k++)
+                pk = buy ? Math.max(pk, c[k].h) : Math.min(pk, c[k].l);
+            tp1Hit = buy ? pk >= tp1 : pk <= tp1;
+        }
+    }
     const rrNow = Math.abs(price - sl) > 0 ? ((tp1 - price) * d > 0 ? 1 : -1) * Math.abs(tp1 - price) / Math.abs(price - sl) : 0;
     const cancelIf = `Cancel if a candle closes ${buy ? 'below' : 'above'} ${f(sl)} before you are filled, if price reaches TP1 ${f(tp1)} first, or after ${EXPIRE} candles.`;
     let status, label, trigger;
@@ -48,7 +69,12 @@ function planEntry(c, side, entry, sl, zTop, zBot, tp1, a, f = (n) => n.toFixed(
         label = 'In the zone: wait for the reaction';
         trigger = `Wait for a candle that rejects the zone and closes ${buy ? 'above' : 'below'} ${f((zBot + zTop) / 2)} (wick back out of the zone or a close ${buy ? 'above the previous high' : 'below the previous low'}). Then enter.`;
     }
-    else if (distAtr > 6) {
+    else if (buy ? price < zBot - pad : price > zTop + pad) {
+        status = 'wait-trigger';
+        label = 'Price is through the zone: not a buy/sell limit any more';
+        trigger = `Do NOT place an order at ${f(entry)}: price is already ${buy ? 'below' : 'above'} the zone. Wait for a candle to close back ${buy ? 'above' : 'below'} ${f(buy ? zBot : zTop)} (the zone is reclaimed) and then react from it. If price closes ${buy ? 'below' : 'above'} ${f(sl)} the idea is dead.`;
+    }
+    else if (distAtr > 2.5) {
         status = 'far';
         label = `Far away (${distAtr.toFixed(1)} ATR): not close yet`;
         trigger = `Set an alert at ${f(buy ? zTop : zBot)}. Look for the reaction when price gets there.`;

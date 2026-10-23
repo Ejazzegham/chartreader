@@ -7,8 +7,9 @@ export type Theme = {
   grad: [string, string, string];       // backdrop gradient (glass themes; flat themes repeat bg)
   orbs: [string, string, string];       // soft colour glows drawn on the backdrop (glass themes)
   solid: string;                        // opaque version of `panel`: bottom sheets and pop-ups must not be see-through
+  sheen: number;                        // 0 to 1: a faint light across the top of the glass backdrop (the premium themes use it; 0 = none)
 };
-type Opt = 'panel2' | 'hair' | 'glass' | 'grad' | 'orbs' | 'solid';
+type Opt = 'panel2' | 'hair' | 'glass' | 'grad' | 'orbs' | 'solid' | 'sheen';
 type Base = Omit<Theme, Opt> & Partial<Pick<Theme, Opt>>;
 
 // Shared design tokens, so every screen uses the same spacing, corner and type scale.
@@ -25,11 +26,12 @@ const build = (b: Base): Theme => ({
   grad: b.grad ?? [b.bg, b.bg, b.bg],
   orbs: b.orbs ?? [b.accent, b.accent2, b.accent],
   solid: b.solid ?? b.panel,
+  sheen: b.sheen ?? 0,
   panel2: b.panel2 ?? mix(b.panel, b.dark ? '#FFFFFF' : b.text, b.dark ? 0.045 : 0.035),
   hair: b.hair ?? mix(b.panel, b.dark ? '#FFFFFF' : b.text, b.dark ? 0.08 : 0.08),
 });
 
-// Four themes, all glass: Glass Night, Glass Frost, Glass Aurora and Glass Rose.
+// Six themes, all glass: Glass Night, Glass Frost, Glass Aurora, Glass Rose and the two premium ones, Glass Obsidian (dark) and Glass Pearl (light).
 // Glass = translucent panels (8-digit hex colours) over a gradient backdrop with soft colour glows (src/Glass.tsx). No native blur module, so it ships with a normal `eas update`.
 // buy / sell / gold / poi stay as trading colours (green, red, amber, violet) so a buy never looks like a sell.
 const BASE: Record<string, Base> = {
@@ -39,6 +41,10 @@ const BASE: Record<string, Base> = {
   glassAurora: { dark: true, glass: true, bg: '#04141C', grad: ['#062A33', '#0B4048', '#1A2B63'], orbs: ['#14E3B0', '#3DB8FF', '#8B6CFF'], panel: '#0F3A4AA8', solid: '#0B2F3C', panel2: '#FFFFFF16', hair: '#BFF6FF22', line: '#BFF6FF3A', text: '#F2FCFF', dim: '#B5D8E2', accent: '#3DB8FF', accent2: '#8B7CFF', onAccent: '#04141E', buy: '#3EE6A5', sell: '#FF7A92', gold: '#F8D06A', poi: '#C2A8FF' },
   // Glass Rose: soft blush, lilac and sky light for the day. Orchid accent with white text.
   glassRose: { dark: false, glass: true, bg: '#F6E9F2', grad: ['#FFE0EA', '#EBDDFB', '#D9E8FF'], orbs: ['#FF9CBB', '#B79CFF', '#8CC4FF'], panel: '#FFFFFFB8', solid: '#FFF7FB', panel2: '#FFFFFF90', hair: '#B48ACC2E', line: '#B48ACC55', text: '#2A1236', dim: '#6A4F7C', accent: '#8E3FDB', accent2: '#D63D79', onAccent: '#FFFFFF', buy: '#0C9A74', sell: '#D92D3F', gold: '#A86A12', poi: '#7C3AED' },
+  // Glass Obsidian (premium, dark): warm black glass with champagne-gold light and a hint of sapphire. Gold accent, dark text on the buttons.
+  glassObsidian: { dark: true, glass: true, sheen: 0.07, bg: '#0B0A0E', grad: ['#1D150D', '#15121C', '#0A1520'], orbs: ['#D9A441', '#B8743A', '#3556C8'], panel: '#2C241EB4', solid: '#221C17', panel2: '#FFFFFF14', hair: '#F5E1B81C', line: '#F5E1B83C', text: '#FBF6EC', dim: '#CFC1A9', accent: '#DDB058', accent2: '#F2D89B', onAccent: '#1A1206', buy: '#3EE0A8', sell: '#FF7A8A', gold: '#F8D06A', poi: '#C9A8FF' },
+  // Glass Pearl (premium, light): ivory and pearl glass with champagne and blush light. Sapphire navy accent with bronze-gold as the second colour.
+  glassPearl: { dark: false, glass: true, sheen: 0.5, bg: '#F4F0EA', grad: ['#FBF2E3', '#ECEFF8', '#F5E3E5'], orbs: ['#E6C285', '#9DB2EA', '#E8A8B0'], panel: '#FFFFFFC4', solid: '#FFFDF9', panel2: '#FFFFFF96', hair: '#A08C6E2C', line: '#A08C6E56', text: '#1B1F33', dim: '#5C5E74', accent: '#27408B', accent2: '#9A6428', onAccent: '#FFFFFF', buy: '#0C9A74', sell: '#D92D3F', gold: '#A86A12', poi: '#6D3FD0' },
 };
 
 export const THEMES: Record<string, Theme> = Object.fromEntries(Object.entries(BASE).map(([k, v]) => [k, build(v)]));

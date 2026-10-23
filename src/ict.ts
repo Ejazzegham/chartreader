@@ -1,5 +1,5 @@
 import type { Candle } from './markets';
-import { atr, pivots, ladder } from './ta';
+import { atr, pivots, ladder, zoneSpent } from './ta';
 
 // =====================================================================================
 // ICT / Smart Money engine (runs on the phone and, built by server/build-analysis.js, on the server scanner).
@@ -118,7 +118,7 @@ export type ICT = {
   setup?: {
     side: 'buy' | 'sell'; model: string; entry: number; sl: number; tps: [number, number, number];
     rr: [number, number, number]; invalidation: number; confluence: { text: string; ok: boolean }[]; score: number; grade: 'A+' | 'A' | 'B' | 'C';
-    zoneTop: number; zoneBottom: number;
+    zoneTop: number; zoneBottom: number; zoneI: number;
     ready: boolean; missing: string[]; aggressive: number; slBasis: 'sweep' | 'zone'; zoneKind: 'OB' | 'FVG' | 'BRK'; unicorn: boolean;
   };
 };
@@ -406,7 +406,10 @@ export function ictAnalyze(c: Candle[], now = new Date(), opts: IctOpts = {}): I
   // ---- step 6 (zone): fair value gap left by the displacement, or the order block / breaker at the origin of the move
   const wantZ = buy ? 'bullish' : 'bearish';
   const moveFrom = sweepOk && sweep ? sweep.i : Math.max(0, n - 40);
-  const cands = [...B.obs, ...B.fvgs, ...B.brks].filter((z) => z.side === wantZ && (buy ? z.top < price + 0.2 * a : z.bottom > price - 0.2 * a));
+  const padZ = 0.15 * a;
+  const cands = [...B.obs, ...B.fvgs, ...B.brks].filter((z) => z.side === wantZ && (buy ? z.top < price + 0.2 * a : z.bottom > price - 0.2 * a))
+    // a zone price already returned to and then ran 1.5R away from is spent: the trade happened without us, so the next zone is the candidate
+    .filter((z) => !zoneSpent(c, buy, z.top, z.bottom, z.i, z.fresh, z.mean, buy ? Math.min(z.bottom - padZ, z.mean - 0.4 * a) : Math.max(z.top + padZ, z.mean + 0.4 * a)));
   const overlap = (z: Zone) => Math.min(z.top, ote.top) - Math.max(z.bottom, ote.bottom);
   const zs = (z: Zone) => (overlap(z) > 0 ? 3 : 0) + (z.kind === 'OB' ? 1 : 0) + (z.fresh ? 1 : 0) + (buy ? (z.mean < leg.eq ? 1 : 0) : (z.mean > leg.eq ? 1 : 0)) + (z.i >= moveFrom - 1 ? 2 : 0) + (z.unicorn ? 2 : 0) + (z.kind === 'FVG' && z.disp ? 0.5 : 0) - Math.abs(z.mean - price) / (6 * a);
   const best = cands.sort((x, y) => zs(y) - zs(x))[0];
@@ -465,7 +468,7 @@ export function ictAnalyze(c: Candle[], now = new Date(), opts: IctOpts = {}): I
       : best.kind === 'FVG' ? 'Liquidity sweep + MSS + fair value gap (ICT 2022 model)' : best.kind === 'BRK' ? 'Breaker block entry after sweep + MSS' : 'Order block entry after sweep + MSS')
     : `${best.kind === 'FVG' ? 'Fair value gap' : best.kind === 'OB' ? 'Order block' : 'Breaker'} in OTE (forming, not confirmed)`;
 
-  out.setup = { side, model, entry, sl, tps, rr, invalidation: sl, confluence: all, score, grade, zoneTop: best.top, zoneBottom: best.bottom, ready, missing, aggressive, slBasis: viaSweep ? 'sweep' : 'zone', zoneKind: best.kind, unicorn: !!best.unicorn };
+  out.setup = { side, model, entry, sl, tps, rr, invalidation: sl, confluence: all, score, grade, zoneTop: best.top, zoneBottom: best.bottom, zoneI: best.i, ready, missing, aggressive, slBasis: viaSweep ? 'sweep' : 'zone', zoneKind: best.kind, unicorn: !!best.unicorn };
   out.verdict = ready ? 'trade' : core.filter((x) => x.ok).length >= 5 ? 'wait' : 'no-trade';
   const firstBad = core.findIndex((x) => !x.ok);
   out.next = ready ? 'All 8 checks pass. Enter on the pullback into the zone, risk a small fixed percent and manage the trade.'

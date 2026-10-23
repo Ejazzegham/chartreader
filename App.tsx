@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider, useApp } from './src/store';
 import AuthFlow from './src/AuthFlow';
 import PinScreen from './src/PinScreen';
+import Paywall from './src/Paywall';
 import Home from './src/screens/Home';
 import Markets from './src/screens/Markets';
 import Journal from './src/screens/Journal';
@@ -18,10 +19,12 @@ import Checklist from './src/screens/Checklist';
 import News from './src/screens/News';
 import Guide from './src/screens/Guide';
 import About from './src/screens/About';
+import ManualTrade from './src/screens/ManualTrade';
 import RightSidebar from './src/RightSidebar';
 import TradeHistory from './src/TradeHistory';
 import NotificationCenter from './src/NotificationCenter';
 import AdminPanel from './src/screens/AdminPanel';
+import Help from './src/Help';
 import Dock from './src/Dock';
 import { Tracker, Toasts } from './src/Tracker';
 import { NAV } from './src/nav';
@@ -41,7 +44,7 @@ const Go = (method: string, slot: number) => function Go() {
   useEffect(() => { if (tab === slot) { setAmethod(method); setTab(1); } }, [tab]);
   return null;
 };
-const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), Killzones, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About]; // same order as NAV in src/nav.ts
+const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), Killzones, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade]; // same order as NAV in src/nav.ts
 const TABS = NAV.map((n, i) => ({ key: n.key, icon: n.icon, Comp: COMPS[i] }));
 
 // Every page stays mounted (so charts keep their state). The one you open fades and rises in.
@@ -52,11 +55,11 @@ function Page({ active, children }: { active: boolean; children: React.ReactNode
 }
 
 function Root() {
-  const { th, rtl, ready, loggedIn, locked, covered, tab, enter, adminOpen, setAdminOpen, lic } = useApp();
+  const { th, rtl, ready, loggedIn, locked, covered, tab, enter, adminOpen, setAdminOpen, lic, live } = useApp();
   const [minTime, setMinTime] = useState(false); // start screen: shown for at least SPLASH_MS
   const [gone, setGone] = useState(false);
-  useEffect(() => { const id = setTimeout(() => setMinTime(true), SPLASH_MS); return () => clearTimeout(id); }, []);
   const desk = useDesktop(); // website on a wide screen: sidebar + page + market watch instead of the bottom bar
+  useEffect(() => { const id = setTimeout(() => setMinTime(true), SPLASH_MS); return () => clearTimeout(id); }, []);
   const splash = !gone && <AnimatedSplash done={ready && minTime} duration={SPLASH_MS} onGone={() => setGone(true)} />;
 
   // One stable tree: the splash stays mounted on top (same position) while the app underneath finishes loading.
@@ -68,6 +71,9 @@ function Root() {
         <AuthFlow />
       ) : locked ? (
         <PinScreen mode="unlock" onDone={enter} />
+      ) : !live ? (
+        // Trial or plan ended (or access not confirmed yet): the whole app is locked. Only the payment page can be reached. It opens the app again by itself once access is valid.
+        <Paywall />
       ) : (
         <View style={{ flex: 1 }}>
           {desk ? (
@@ -95,6 +101,7 @@ function Root() {
           {covered && <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 }}><PinScreen mode="unlock" onDone={enter} /></View>}
         </View>
       ))}
+      {ready && loggedIn && !locked && <Help />}{/* the Help screen is outside the locked / unlocked branches, so it opens from the lock page too */}
       {splash}
     </View>
   );

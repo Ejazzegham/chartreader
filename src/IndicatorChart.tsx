@@ -1,42 +1,48 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, ActivityIndicator } from 'react-native';
-import Svg, { Line, Rect, G, Polyline, Polygon, Circle, Defs, LinearGradient as SvgGrad, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, { Line, Rect, G, Polyline, Polygon, Circle, Defs, ClipPath, LinearGradient as SvgGrad, Stop, Text as SvgText } from 'react-native-svg';
 import { ink } from './theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from './store';
 import { Icon } from './ui';
 import type { Candle } from './markets';
 import { candleLeft, fmtLeft } from './markets';
-import { useZoom, ZoomBar, CrossLayer, Readout, fmtTime } from './ChartZoom';
+import { useZoom, ChartHud, CrossLayer, Readout, fmtTime } from './ChartZoom';
+import { RadialWheel, Mt5Bar, WheelTf, WheelAction } from './Mt5Wheel';
+import { niceTicks, niceEvery } from './smoothZoom';
 import * as I from './indicators';
 import { candleMarks } from './candles';
 import { IndId, INDICATORS, GROUPS } from './indicators';
 
 export type Level = { label: string; price: number; color: string };
 type ChartType = 'candle' | 'ha' | 'line';
-type Saved = { on: IndId[]; hidden: boolean; type: ChartType };
+type Saved = { on: IndId[]; hidden: boolean; type: ChartType; volDefault?: boolean };
 const KEY = 'chart_ind_v2';
-const DEFAULT: Saved = { on: ['ema20', 'ema50'], hidden: false, type: 'candle' };
+const DEFAULT: Saved = { on: ['ema20', 'ema50', 'vol'], hidden: false, type: 'candle', volDefault: true }; // Volume is on by default, like TradingView
 const C = { ema200: '#38BDF8', sma20: '#FB923C', sma50: '#A3E635', boll: '#60A5FA', vwap: '#F472B6', tenkan: '#38BDF8', kijun: '#F43F5E', ma: '#C084FC' };
 const PANE_H = 92;
 
 // Candle chart for the Analysis View: indicators drawn on the price (overlays) and under it (panes). Every one can be switched on or off,
 // and the eye button hides or shows all of them at once without losing the selection.
-export default function IndicatorChart({ data: all, width, dec, height = 300, levels = [], gran, onAlert }: { data: Candle[]; width: number; dec: number; height?: number; levels?: Level[]; gran?: number; onAlert?: (price: number) => void }) {
+export default function IndicatorChart({ data: all, width: fullW, dec, height = 300, levels = [], gran, onAlert, tfs, onTf }: { data: Candle[]; width: number; dec: number; height?: number; levels?: Level[]; gran?: number; onAlert?: (price: number) => void; tfs?: WheelTf[]; onTf?: (k: string) => void }) {
   const { th } = useApp();
   const [st, setSt] = useState<Saved>(DEFAULT);
   const [panel, setPanel] = useState(false);
+  const [wheel, setWheel] = useState(false); // the MT5 round quick menu (tap the chart)
   const loaded = useRef(false);
-  useEffect(() => { AsyncStorage.getItem(KEY).then((v) => { if (v) { try { setSt({ ...DEFAULT, ...JSON.parse(v) }); } catch {} } }).catch(() => {}).finally(() => { loaded.current = true; }); }, []);
+  useEffect(() => { AsyncStorage.getItem(KEY).then((v) => { if (v) { try { const o = { ...DEFAULT, ...JSON.parse(v) } as Saved; if (!o.volDefault) { o.volDefault = true; if (!o.on.includes('vol')) o.on = [...o.on, 'vol']; } setSt(o); } catch {} } }).catch(() => {}).finally(() => { loaded.current = true; }); }, []); // saved settings from before the Volume default get the Volume pane added once
   const save = (n: Saved) => { setSt(n); AsyncStorage.setItem(KEY, JSON.stringify(n)).catch(() => {}); };
   const has = (id: IndId) => !st.hidden && st.on.includes(id);
   const toggle = (id: IndId) => save({ ...st, hidden: false, on: st.on.includes(id) ? st.on.filter((x) => x !== id) : [...st.on, id] });
 
-  const z = useZoom(all.length, width - 62);
+  const width = fullW; // no scroll bars: zoom like MT5 (pinch, drag, drag the price axis, double tap the axis to fit)
+  const z = useZoom(all.length, width - 62, height, { initial: 90, shift: 0.1, onTap: () => setWheel((w) => !w) });
+  useEffect(() => { z.reset(false); setWheel(false); }, [gran]); // a new timeframe starts from the default view
   const [tick, setTick] = useState(Date.now());
   useEffect(() => { if (!gran) return; const id = setInterval(() => setTick(Date.now()), 1000); return () => clearInterval(id); }, [gran]);
 
   const vol = useMemo(() => I.hasVolume(all), [all.length > 0 ? all[0].t : 0, all.length]);
+  const volAny = all.slice(-40).some((c) => (c.v ?? 0) > 0); // the Volume pane shows as soon as the newest candles have volume (VWAP / OBV still wait for most of the history)
   const off = st.hidden;
 
   // ---- indicator maths over ALL candles, recomputed only for what is switched on ----
@@ -71,6 +77,7 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
 
   const Toolbar = (
     <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 8, direction: 'ltr' }}>
+      <Mt5Bar tfLabel={tfs?.find((x) => x.k === String(gran))?.label} onWheel={() => setWheel(true)} crossMode={z.crossMode} onCross={() => z.setCrossMode(!z.crossMode)} onFit={() => z.reset()} fitOn={z.vzoomed} />
       {([['candle', 'stats-chart-outline'], ['ha', 'layers-outline'], ['line', 'trending-up']] as [ChartType, string][]).map(([k, ic]) => (
         <Pressable key={k} onPress={() => save({ ...st, type: k })} style={{ width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: st.type === k ? th.accent + '26' : 'transparent', borderWidth: 1, borderColor: st.type === k ? th.accent : th.line }}>
           <Icon name={ic} size={16} color={st.type === k ? th.accent : th.dim} />
@@ -101,7 +108,7 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
           <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 1.2, marginBottom: 6 }}>{g.toUpperCase()}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {INDICATORS.filter((d) => d.group === g).map((d) => {
-              const a = st.on.includes(d.id), dis = !!d.needsVolume && !vol;
+              const a = st.on.includes(d.id), dis = !!d.needsVolume && !(d.id === 'vol' ? volAny : vol);
               return (
                 <Pressable key={d.id} onPress={() => !dis && toggle(d.id)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, height: 34, borderRadius: 8, borderWidth: 1, borderColor: a ? th.accent : th.line, backgroundColor: a ? th.accent + '22' : th.panel, opacity: dis ? 0.4 : 1 }}>
                   {a && <Icon name="checkmark" size={13} color={th.accent} />}
@@ -112,7 +119,7 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
           </View>
         </View>
       ))}
-      {!vol && <Text style={{ color: th.dim, fontSize: 11.5 }}>Volume, VWAP and OBV need a feed with volume. Crypto pairs have it; Deriv forex and synthetic indices do not.</Text>}
+      {!vol && <Text style={{ color: th.dim, fontSize: 11.5 }}>Volume, VWAP and OBV need a feed with volume. Crypto pairs get Binance volume; forex, gold, silver, DXY and oil get futures volume (crosses: the two currency futures; M1 to H1: Deriv tick volume). Synthetic indices have none.</Text>}
     </View>
   ) : null;
 
@@ -122,9 +129,9 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
   const padR = 62, W = width - padR, s0 = z.start, e0 = z.end, n = z.slots, step = W / n, bw = Math.max(1, step * 0.66);
   const vis = ha.slice(s0, e0), real = all.slice(s0, e0);
   const lv = levels.filter((l) => isFinite(l.price));
-  const hi = Math.max(...vis.map((c) => c.h), ...lv.map((l) => l.price)), lo = Math.min(...vis.map((c) => c.l), ...lv.map((l) => l.price));
+  const { hi, lo } = z.fitY(Math.max(...vis.map((c) => c.h), ...lv.map((l) => l.price)), Math.min(...vis.map((c) => c.l), ...lv.map((l) => l.price)));
   const rng = hi - lo || 1, y = (v: number) => 8 + (1 - (v - lo) / rng) * (height - 16);
-  const X = (i: number) => (i - s0) * step + step / 2;   // i = index into the FULL arrays
+  const X = (i: number) => (i - s0) * step + step / 2 + z.shift;   // i = index into the FULL arrays (shift = the smooth, fractional scroll)
   const last = all[all.length - 1], lc = last.c >= last.o ? th.buy : th.sell;
   const path = (arr?: number[]) => { if (!arr) return ''; const p: string[] = []; for (let i = s0; i < e0; i++) if (isFinite(arr[i])) p.push(`${X(i)},${y(arr[i])}`); return p.join(' '); };
   const legend: { t: string; c: string }[] = [];
@@ -176,7 +183,7 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
   if (ind.macd) {
     const hv = [...vals(ind.macd.hist), ...vals(ind.macd.line), ...vals(ind.macd.signal)], m = Math.max(...hv.map(Math.abs), 1e-12);
     panes.push({ id: 'macd', title: 'MACD 12 26 9', value: `${(ind.macd.line[e0 - 1] ?? NaN).toFixed(dec + 1)}`, min: -m, max: m, guides: [{ v: 0 }], draw: (py) => <G>
-      {Array.from({ length: n }, (_, k) => { const i = s0 + k, h = ind.macd.hist[i]; if (!isFinite(h)) return null; const up = h >= 0; return <Rect key={k} x={X(i) - bw / 2} y={Math.min(py(0), py(h))} width={bw} height={Math.max(1, Math.abs(py(h) - py(0)))} fill={(up ? th.buy : th.sell) + 'AA'} />; })}
+      {Array.from({ length: e0 - s0 }, (_, k) => { const i = s0 + k, h = ind.macd.hist[i]; if (!isFinite(h)) return null; const up = h >= 0; return <Rect key={k} x={X(i) - bw / 2} y={Math.min(py(0), py(h))} width={bw} height={Math.max(1, Math.abs(py(h) - py(0)))} fill={(up ? th.buy : th.sell) + 'AA'} />; })}
       {pl(ind.macd.line, py, th.accent)}{pl(ind.macd.signal, py, th.gold)}</G> });
   }
   if (ind.stoch) panes.push({ id: 'stoch', title: 'Stoch 14 3 3', value: `${f2(ind.stoch.k)} / ${f2(ind.stoch.d)}`, min: 0, max: 100, guides: [{ v: 80 }, { v: 20 }], draw: (py) => <G>{pl(ind.stoch.k, py, th.accent)}{pl(ind.stoch.d, py, th.gold)}</G> });
@@ -184,13 +191,22 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
   if (ind.cci) { const m = Math.max(150, ...vals(ind.cci).map(Math.abs)); panes.push({ id: 'cci', title: 'CCI 20', value: f2(ind.cci), min: -m, max: m, guides: [{ v: 100 }, { v: 0 }, { v: -100 }], draw: (py) => pl(ind.cci, py, th.poi, 1.5) }); }
   if (ind.wpr) panes.push({ id: 'wpr', title: 'Williams %R 14', value: f2(ind.wpr), min: -100, max: 0, guides: [{ v: -20 }, { v: -80 }], draw: (py) => pl(ind.wpr, py, C.ma, 1.5) });
   if (ind.atr) { const v = vals(ind.atr); panes.push({ id: 'atr', title: 'ATR 14', value: (ind.atr[e0 - 1] ?? NaN).toFixed(dec), min: Math.min(...v, 0), max: Math.max(...v, 1e-12) * 1.1, draw: (py) => pl(ind.atr, py, th.gold, 1.5) }); }
-  if (has('vol') && vol) { const mv = Math.max(...real.map((c) => c.v ?? 0), 1); panes.push({ id: 'vol', title: 'Volume', value: real.length ? String(Math.round(real[real.length - 1].v ?? 0)) : '-', min: 0, max: mv * 1.1, draw: (py) => <G>{real.map((c, k) => <Rect key={k} x={X(s0 + k) - bw / 2} y={py(c.v ?? 0)} width={bw} height={Math.max(1, py(0) - py(c.v ?? 0))} fill={(c.c >= c.o ? th.buy : th.sell) + '99'} />)}</G> }); }
+  if (has('vol') && volAny) { const mv = Math.max(...real.map((c) => c.v ?? 0), 1); panes.push({ id: 'vol', title: 'Volume', value: real.length ? String(Math.round(real[real.length - 1].v ?? 0)) : '-', min: 0, max: mv * 1.1, draw: (py) => <G>{real.map((c, k) => <Rect key={k} x={X(s0 + k) - bw / 2} y={py(c.v ?? 0)} width={bw} height={Math.max(1, py(0) - py(c.v ?? 0))} fill={(c.c >= c.o ? th.buy : th.sell) + '99'} />)}</G> }); }
   if (ind.obv) { const v = vals(ind.obv); panes.push({ id: 'obv', title: 'OBV', value: String(Math.round(ind.obv[e0 - 1] ?? 0)), min: Math.min(...v), max: Math.max(...v) + 1e-9, draw: (py) => pl(ind.obv, py, C.vwap, 1.5) }); }
 
   const lastReal = real[real.length - 1] ?? last, firstReal = real[0] ?? last;
   const dChg = lastReal.c - firstReal.o, dCol = lastReal.c >= lastReal.o ? th.buy : th.sell;
   const fib: I.Fib | null | undefined = ind.fib;
   const fibCol = (r: number) => (r === 0.618 ? th.accent : r === 0.5 ? th.gold : r === 0.786 || r === 0.705 ? th.poi : r >= 1.27 ? th.sell : th.dim);
+
+  const objOn = st.on.includes('fib') || st.on.includes('sr');
+  const wheelActions: WheelAction[] = [
+    { key: 'type', icon: 'trending-up', label: 'Chart type', on: st.type !== 'candle', press: () => save({ ...st, type: st.type === 'candle' ? 'line' : st.type === 'line' ? 'ha' : 'candle' }) },
+    { key: 'cross', icon: 'locate', label: 'Crosshair', on: z.crossMode, press: () => z.setCrossMode(!z.crossMode) },
+    { key: 'ind', icon: 'options', label: 'Indicators', on: panel, press: () => setPanel(true) },
+    { key: 'obj', icon: 'shapes-outline', label: 'Fibonacci and support / resistance', on: objOn, press: () => save({ ...st, hidden: false, on: objOn ? st.on.filter((x) => x !== 'fib' && x !== 'sr') : [...st.on, 'fib', 'sr'] }) },
+    { key: 'fit', icon: 'copy-outline', label: 'Fit the chart', press: () => z.reset() },
+  ];
 
   return (
     <View>
@@ -200,34 +216,37 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
         {[['O', lastReal.o], ['H', lastReal.h], ['L', lastReal.l], ['C', lastReal.c]].map(([k, v]: any) => <Text key={k} style={{ color: th.dim, fontSize: 11 }}>{k} <Text style={{ color: dCol, fontWeight: '800' }}>{v.toFixed(dec)}</Text></Text>)}
         <Text style={{ color: dCol, fontSize: 11, fontWeight: '800' }}>{dChg >= 0 ? '+' : ''}{dChg.toFixed(dec)}</Text>
       </View>
-      <View {...z.handlers} style={{ direction: 'ltr' }}>
+      <View style={{ flexDirection: 'row', direction: 'ltr' }}>
+      <View {...z.handlers} style={{ width, direction: 'ltr' }}>
         <Svg width={width} height={height} style={{ overflow: 'hidden' }}>
           <Defs>
             <SvgGrad id="plotWashI" x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0" stopColor={th.accent} stopOpacity={th.dark ? 0.10 : 0.07} />
               <Stop offset="1" stopColor={th.accent} stopOpacity={0} />
             </SvgGrad>
+            <ClipPath id="plotClipI"><Rect x={0} y={0} width={W} height={height} /></ClipPath>
           </Defs>
           <Rect x={0} y={0} width={W} height={height} fill="url(#plotWashI)" />
           <Line x1={W} x2={W} y1={0} y2={height} stroke={th.hair} strokeWidth={1} />
-          {[0, 0.25, 0.5, 0.75, 1].map((f, i) => { const v = lo + f * rng; return <G key={i}><Line x1={0} x2={W} y1={y(v)} y2={y(v)} stroke={th.line} strokeOpacity={0.55} strokeWidth={0.6} strokeDasharray="1 4" /><SvgText x={W + 6} y={y(v) + 3} fontSize={9} fontWeight="600" fill={th.dim}>{v.toFixed(dec)}</SvgText></G>; })}
+          {niceTicks(lo, hi, Math.max(3, Math.round(height / 48))).map((v, i) => { return <G key={i}><Line x1={0} x2={W} y1={y(v)} y2={y(v)} stroke={th.line} strokeOpacity={0.55} strokeWidth={0.6} strokeDasharray="1 4" /><SvgText x={W + 6} y={y(v) + 3} fontSize={9} fontWeight="600" fill={th.dim}>{v.toFixed(dec)}</SvgText></G>; })}
 
+          {(() => { const every = niceEvery(step, 78), out: React.ReactNode[] = []; for (let i = Math.ceil(Math.max(0, z.startF) / every) * every; i < e0 && i < all.length; i += every) { const x = X(i); if (x > 24 && x < W - 24) out.push(<SvgText key={`tx${i}`} x={x} y={height - 3} fontSize={8.5} fontWeight="600" fill={th.dim} textAnchor="middle">{fmtTime(all[i].t, gran)}</SvgText>); } return out; })()}
           {cloud.map((q, i) => <Polygon key={`cl${i}`} points={q.pts} fill={(q.up ? th.buy : th.sell) + '22'} />)}
           {!!bollFill && <Polygon points={bollFill} fill={C.boll + '14'} />}
 
           {/* price: candles, Heikin Ashi or line */}
           {st.type === 'line' ? (
-            <Polyline points={vis.map((c, i) => `${i * step + step / 2},${y(c.c)}`).join(' ')} fill="none" stroke={th.accent} strokeWidth={2} />
+            <Polyline points={vis.map((c, i) => `${X(s0 + i)},${y(c.c)}`).join(' ')} fill="none" stroke={th.accent} strokeWidth={2} />
           ) : vis.map((c, i) => {
-            const col = c.c >= c.o ? th.buy : th.sell, x = i * step + step / 2;
-            return <G key={`${c.t}-${i}`}><Line x1={x} x2={x} y1={y(c.h)} y2={y(c.l)} stroke={col} strokeWidth={1} /><Rect x={x - bw / 2} y={Math.min(y(c.o), y(c.c))} width={bw} height={Math.max(1, Math.abs(y(c.o) - y(c.c)))} rx={Math.min(1.6, bw / 3)} fill={col} /></G>;
+            const col = c.c >= c.o ? th.buy : th.sell, x = X(s0 + i);
+            return <G key={`${c.t}-${i}`} clipPath="url(#plotClipI)"><Line x1={x} x2={x} y1={y(c.h)} y2={y(c.l)} stroke={col} strokeWidth={1} /><Rect x={x - bw / 2} y={Math.min(y(c.o), y(c.c))} width={bw} height={Math.max(1, Math.abs(y(c.o) - y(c.c)))} rx={Math.min(1.6, bw / 3)} fill={col} /></G>;
           })}
 
           {lines.map(([l, a, c]) => (a ? <Polyline key={l} points={path(a)} fill="none" stroke={c} strokeWidth={1.4} /> : null))}
           {ind.boll && <><Polyline points={path(ind.boll.up)} fill="none" stroke={C.boll} strokeWidth={1.1} /><Polyline points={path(ind.boll.lo)} fill="none" stroke={C.boll} strokeWidth={1.1} /><Polyline points={path(ind.boll.mid)} fill="none" stroke={C.boll} strokeWidth={0.9} strokeDasharray="3 3" /></>}
           {ind.ichi && <><Polyline points={path(ind.ichi.tenkan)} fill="none" stroke={C.tenkan} strokeWidth={1.1} /><Polyline points={path(ind.ichi.kijun)} fill="none" stroke={C.kijun} strokeWidth={1.1} /></>}
           {stRuns.map((r, i) => <Polyline key={`st${i}`} points={r.pts} fill="none" stroke={r.up ? th.buy : th.sell} strokeWidth={1.8} />)}
-          {ind.psar && Array.from({ length: n }, (_, k) => { const i = s0 + k, v = ind.psar.v[i]; return isFinite(v) ? <Circle key={`ps${k}`} cx={X(i)} cy={y(v)} r={1.6} fill={ind.psar.dir[i] === 1 ? th.buy : th.sell} /> : null; })}
+          {ind.psar && Array.from({ length: e0 - s0 }, (_, k) => { const i = s0 + k, v = ind.psar.v[i]; return isFinite(v) ? <Circle key={`ps${k}`} cx={X(i)} cy={y(v)} r={1.6} fill={ind.psar.dir[i] === 1 ? th.buy : th.sell} /> : null; })}
 
           {ind.sr && ind.sr.filter((s: I.SR) => clip(s.price)).map((s: I.SR, k: number) => (
             <G key={`sr${k}`}><Line x1={0} x2={W} y1={y(s.price)} y2={y(s.price)} stroke={s.kind === 'support' ? th.buy : th.sell} strokeWidth={1} strokeDasharray="2 4" /><SvgText x={W - 4} y={y(s.price) - 2} fontSize={8.5} fontWeight="800" fill={s.kind === 'support' ? th.buy : th.sell} textAnchor="end">{s.kind === 'support' ? 'S' : 'R'} x{s.touches}</SvgText></G>
@@ -275,20 +294,28 @@ export default function IndicatorChart({ data: all, width, dec, height = 300, le
           return <Readout c={all[ci]} prev={all[ci - 1]?.c} dec={dec} onClose={z.clearCross} onAlert={onAlert ? () => { onAlert(price); z.clearCross(); } : undefined} />;
         })()}
 
+        <ChartHud z={z} top={height - 50} right={padR + 8} />
+        {wheel && (
+          <View onTouchStart={(e) => e.stopPropagation()} style={{ position: 'absolute', left: 0, top: 0, width, height }}>
+            <RadialWheel w={width} h={height} tfs={tfs ?? []} current={gran ? String(gran) : undefined} onTf={onTf} onClose={() => setWheel(false)} actions={wheelActions} />
+          </View>
+        )}
+
         {panes.map((p) => {
           const py = (v: number) => 14 + (1 - (v - p.min) / (p.max - p.min || 1)) * (PANE_H - 22);
           return (
             <View key={p.id} style={{ marginTop: 6, borderTopWidth: 1, borderColor: th.line }}>
               <Svg width={width} height={PANE_H} style={{ overflow: 'hidden' }}>
+                <Defs><ClipPath id={`pc${p.id}`}><Rect x={0} y={0} width={W} height={PANE_H} /></ClipPath></Defs>
                 <SvgText x={4} y={10} fontSize={9} fontWeight="800" fill={th.dim}>{p.title}  <SvgText fill={th.text}>{p.value}</SvgText></SvgText>
                 {(p.guides ?? []).map((g, k) => <G key={k}><Line x1={0} x2={W} y1={py(g.v)} y2={py(g.v)} stroke={th.line} strokeWidth={0.8} strokeDasharray="3 3" /><SvgText x={W + 4} y={py(g.v) + 3} fontSize={8.5} fill={th.dim}>{g.v}</SvgText></G>)}
-                {p.draw(py, W)}
+                <G clipPath={`url(#pc${p.id})`}>{p.draw(py, W)}</G>
               </Svg>
             </View>
           );
         })}
       </View>
-      <ZoomBar z={z} />
+      </View>
     </View>
   );
 }

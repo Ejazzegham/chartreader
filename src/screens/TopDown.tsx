@@ -193,7 +193,7 @@ export default function TopDown({ embedded, on, symId: symProp, setSymId: setSym
           <>
             <Segment value={view} options={STAGES} onChange={setView} />
             <Card style={{ padding: 8, direction: 'ltr' }}>
-              {chartAll ? <MethodChart data={chartData} all={chartAll} method="ict" width={width - 48} dec={dec} lines={lines} plan={planLine} /> : <View style={{ padding: 20 }}><Dim>Loading chart…</Dim></View>}
+              {chartAll ? <MethodChart data={chartData} all={chartAll} method="ict" width={width - 48} dec={dec} lines={lines} plan={planLine} symId={symId} gran={Number(tfs[view === 'h4' ? 0 : view === 'h1' ? 1 : 2])} /> : <View style={{ padding: 20 }}><Dim>Loading chart…</Dim></View>}
             </Card>
           </>
         )}

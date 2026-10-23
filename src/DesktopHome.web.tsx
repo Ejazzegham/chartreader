@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from './store';
@@ -9,7 +9,10 @@ import LiveCandles from './LiveCandles';
 import ChartWeb from './ChartWeb';
 import { useFeed, chg, symOf, SYMBOLS, watchCandles, toggleFav, setWatch, Candle, Sym, TFS } from './markets';
 import { tvSymbol, tvHtml, TV_INTERVAL } from './tv';
-import { signal } from './ta';
+import { analyzeAll } from './refine';
+import { qualify } from './verdict';
+import { totalR, money, todayPnl } from './trades';
+import { MANUAL_TAB } from './manualTarget';
 import { useWindowDimensions } from './win';
 import { useDash, setDash, listFor, TF_BUTTONS, MarketTab } from './dash';
 
@@ -33,7 +36,7 @@ const Chip = ({ on, icon, label, onPress }: { on: boolean; icon?: string; label:
 };
 
 export default function DesktopHome() {
-  const { th, t, lic, setTab, setAmethod, setAsym } = useApp();
+  const { th, t, lic, setTab, setAmethod, setAsym, signals, journal, desk } = useApp();
   const { width } = useWindowDimensions();
   const inner = Math.max(520, width - 40);
   const d = useDash();
@@ -52,8 +55,16 @@ export default function DesktopHome() {
   }, [sym.id, d.tf]);
   const useTv = mode === 'pro' && !!tv;
   const c = chg(sym.id), col = c >= 0 ? th.buy : th.sell, fav = db.favs.includes(sym.id);
-  const sig = data.length > 20 ? signal(data) : null;
-  const verdict = !sig ? { l: 'Waiting for data', c: th.dim } : sig.dir === 'buy' ? { l: 'Bullish', c: th.buy } : sig.dir === 'sell' ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
+  // The same one answer as the phone: TRADE (every rule passed) or WAIT (with the reason), from the quality gate
+  const land = useMemo(() => (data.length > 40 ? analyzeAll(data, new Date()) : null), [data]);
+  const qual = useMemo(() => (land ? qualify(land, { id: sym.id, cat: sym.cat, now: new Date(), c: data }) : null), [land, data, sym.id]);
+  const side = land?.combo?.side;
+  const verdict = !qual ? { l: 'Waiting for data', c: th.dim } : qual.trade ? { l: `TRADE ${side === 'buy' ? 'BUY' : 'SELL'}`, c: side === 'buy' ? th.buy : th.sell } : { l: 'WAIT', c: th.gold };
+  const why = qual && !qual.trade ? (qual.reasons[0] ?? '') : '';
+  // trade desk numbers (same as Home on the phone)
+  const waiting = signals.filter((x) => x.status === 'signal'), runningT = signals.filter((x) => x.status !== 'signal');
+  const floatMoney = runningT.reduce((acc, x) => (x.status === 'open' && quotes[x.symId]?.price ? acc + totalR(x, quotes[x.symId].price) * x.risk : acc), 0);
+  const todayMoney = todayPnl(journal);
   const tfLabel = TFS.find((x) => x.k === d.tf)?.label ?? d.tf;
   const open = (k = d.method) => { setAsym(sym.id); setAmethod(k); setTab(1); };
   const goTool = (key: string, tab: number) => { if (key) setAmethod(key); setTab(tab); };
@@ -186,7 +197,8 @@ export default function DesktopHome() {
           <Pressable onPress={() => open()} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 11, borderRadius: 12, cursor: 'pointer', borderWidth: 1, borderColor: th.line, backgroundColor: s.hovered ? th.accent + '10' : th.panel2 })) as any}>
             <View style={{ flex: 1 }}>
               <Text style={{ color: th.text, fontSize: 14, fontWeight: '900' }}>{sym.name}</Text>
-              <Text style={{ color: th.dim, fontSize: 11.5 }}>{tfLabel} · {SHORT[d.method]}{sig ? ` · RSI ${Math.round(sig.rsi)}` : ''}</Text>
+              <Text style={{ color: th.dim, fontSize: 11.5 }}>{tfLabel} · {SHORT[d.method]}</Text>
+              {!!why && <Text style={{ color: th.dim, fontSize: 11 }} numberOfLines={2}>{why}</Text>}
             </View>
             <View style={{ paddingHorizontal: 11, paddingVertical: 5, borderRadius: 14, backgroundColor: verdict.c + '22' }}><Text style={{ color: verdict.c, fontSize: 12, fontWeight: '800' }}>{verdict.l}</Text></View>
             <Icon name="chevron-forward" size={16} color={th.dim} />
@@ -200,6 +212,29 @@ export default function DesktopHome() {
                 <Icon name={ic} size={19} color={th.accent} /><Text style={{ color: th.text, fontSize: 12, fontWeight: '700' }}>{l}</Text>
               </Pressable>
             ))}
+          </View>
+        </Card>
+        <Card style={{ flex: 1.3, minWidth: 300, padding: 16, gap: 10 }}>
+          <Pressable onPress={() => setTab(3)} style={{ gap: 10, cursor: 'pointer' } as any}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="briefcase-outline" size={17} color={th.accent} /><Text style={{ color: th.text, fontSize: 15, fontWeight: '900', flex: 1 }}>Trade desk</Text><Text style={{ color: th.accent, fontSize: 12, fontWeight: '800' }}>Journal ›</Text></View>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {([['SETUPS', String(waiting.length), waiting.length ? th.gold : th.dim, 'Waiting for you'], ['RUNNING', desk.maxOpen > 0 ? `${runningT.length}/${desk.maxOpen}` : String(runningT.length), runningT.length ? th.buy : th.dim, floatMoney ? money(floatMoney) : 'Live trades'], ['TODAY', money(todayMoney), todayMoney > 0 ? th.buy : todayMoney < 0 ? th.sell : th.dim, 'Closed result']] as [string, string, string, string][]).map(([k, v, c, sub]) => (
+                <View key={k} style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 10 }}>
+                  <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.7 }}>{k}</Text>
+                  <Text style={{ color: c, fontSize: 18, fontWeight: '900', marginTop: 2 }} numberOfLines={1}>{v}</Text>
+                  <Text style={{ color: th.dim, fontSize: 10.5 }} numberOfLines={1}>{sub}</Text>
+                </View>
+              ))}
+            </View>
+          </Pressable>
+        </Card>
+        <Card style={{ flex: 1, minWidth: 260, padding: 16, gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="swap-vertical" size={17} color={th.accent} /><Text style={{ color: th.text, fontSize: 15, fontWeight: '900' }}>Demo Trade</Text></View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Text style={{ flex: 1, color: th.dim, fontSize: 12.5, lineHeight: 18 }}>Practise on live prices with a Buy / Sell ticket, stop loss, take profit and partial close. No real money.</Text>
+            <Pressable onPress={() => setTab(MANUAL_TAB)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 14, borderRadius: 9, cursor: 'pointer', backgroundColor: th.accent, opacity: st.hovered ? 0.88 : 1 })) as any}>
+              <Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '800' }}>Open</Text><Icon name="arrow-forward" size={14} color={th.onAccent} />
+            </Pressable>
           </View>
         </Card>
         <Card style={{ flex: 1.2, minWidth: 280, padding: 16, gap: 8 }}>

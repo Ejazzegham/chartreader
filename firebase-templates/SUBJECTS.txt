@@ -1,0 +1,3 @@
+1-email-verification.html  ->  Subject: Confirm your Chart Reader account
+2-password-reset.html  ->  Subject: Reset your Chart Reader password
+3-email-address-change.html  ->  Subject: Your Chart Reader email address was changed

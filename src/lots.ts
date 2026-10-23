@@ -1,10 +1,11 @@
 // Position size in lots -> money. Pure maths, no React.
-// Contract size per 1.0 lot: forex 100,000 units, gold 100 oz, silver 5,000 oz, crypto and synthetic indices 1 unit.
+// Contract size per 1.0 lot: forex 100,000 units, gold 100 oz, silver 5,000 oz, oil 1,000 barrels, crypto and synthetic indices 1 unit.
 // Money per 1.0 price move = lots x contract size x (quote currency -> USD). Paper trading: the account is treated as USD.
 export const lotUnits = (symId: string): number => {
   if (symId === 'frxDXY') return 1000; // US Dollar Index CFD: 1.0 lot = $1,000 per 1.00 index move
   if (/^frxXAU/.test(symId)) return 100;
   if (/^frxXAG/.test(symId)) return 5000;
+  if (/^frx(WTI|BRENT)$/.test(symId)) return 1000; // oil CFD: 1.0 lot = 1,000 barrels
   if (/^frx(XPT|XPD)/.test(symId)) return 100;
   if (symId.startsWith('frx')) return 100000;
   return 1;
@@ -58,6 +59,7 @@ export function lotInfo(symId: string, price: number, rate?: (id: string) => num
   if (sp.market === 'forex') {
     if (/^frx(XAU|XPT|XPD)/.test(symId)) return `Forex lots · 1.00 lot = ${lotUnits(symId)} oz · ${usd(per)} per $1 move · ${limits}`;
     if (/^frxXAG/.test(symId)) return `Forex lots · 1.00 lot = 5,000 oz · ${usd(per)} per $1 move · ${limits}`;
+    if (/^frx(WTI|BRENT)$/.test(symId)) return `Forex lots · 1.00 lot = 1,000 barrels · ${usd(per)} per $1 move · ${limits}`;
     if (symId === 'frxDXY') return `Forex lots · 1.00 lot = ${usd(per)} per 1.00 index move · ${limits}`;
     const pip = symId.endsWith('JPY') ? 0.01 : 0.0001;
     return `Forex lots · 1.00 lot = 100,000 ${symId.slice(3, 6)} · about ${usd(per * pip)} per pip · ${limits}`;

@@ -46,7 +46,7 @@ export default function Performance() {
           <View style={{ height: 8 }} />
           {[[t('trades'), String(n), th.text], [t('avgWin'), `+${f(avgW)}`, th.buy], [t('avgLoss'), `-${f(avgL)}`, th.sell], [t('winStreak'), String(best), th.buy], [t('lossStreak'), String(Math.abs(worst)), th.sell],
             [t('bestTrade'), n ? `+${f(Math.max(...journal.map((j) => j.pnl)))}` : '-', th.buy], [t('worstTrade'), n ? f(Math.min(...journal.map((j) => j.pnl))) : '-', th.sell]].map(([k, v, c], i) => (
-            <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}><Body>{k}</Body><Text style={{ color: c, fontWeight: '800' }}>{v}</Text></View>
+            <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 4 }}><View style={{ flex: 1, minWidth: 0 }}><Body>{k}</Body></View><Text style={{ flexShrink: 1, maxWidth: '62%', textAlign: 'right', color: c, fontWeight: '800' }}>{v}</Text></View>
           ))}
         </Card>
         <Card>
@@ -67,7 +67,7 @@ export default function Performance() {
             <View style={{ height: 8 }} />
             {syms.slice(0, 8).map(([k, v]) => (
               <View key={k} style={{ marginBottom: 8 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Body bold>{k} <Text style={{ color: th.dim, fontWeight: '400' }}>· {v.n}</Text></Body><Text style={{ color: v.pnl >= 0 ? th.buy : th.sell, fontWeight: '800' }}>{v.pnl >= 0 ? '+' : ''}{f(v.pnl)}</Text></View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}><View style={{ flex: 1, minWidth: 0 }}><Body bold>{k} <Text style={{ color: th.dim, fontWeight: '400' }}>· {v.n}</Text></Body></View><Text style={{ flexShrink: 0, color: v.pnl >= 0 ? th.buy : th.sell, fontWeight: '800' }}>{v.pnl >= 0 ? '+' : ''}{f(v.pnl)}</Text></View>
                 <View style={{ height: 6, borderRadius: 3, backgroundColor: th.line, marginTop: 4, direction: 'ltr' }}><View style={{ height: 6, borderRadius: 3, width: `${Math.max(4, (Math.abs(v.pnl) / maxAbs) * 100)}%`, backgroundColor: v.pnl >= 0 ? th.buy : th.sell }} /></View>
               </View>
             ))}

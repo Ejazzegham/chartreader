@@ -57,7 +57,6 @@ export default function AnimatedSplash({ done, onGone, duration = 3600 }: { done
       onLayout={() => SplashScreen.hideAsync().catch(() => {})}
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#FFFFFF', zIndex: 100, elevation: 100, opacity: out, direction: 'ltr' }}
     >
-      <View style={{ position: 'absolute', top: 0, bottom: 0, left: (winW - W) / 2, width: W }}>
       <Svg width={W} height={H} style={{ position: 'absolute', top: 0, left: 0 }} pointerEvents="none">
         <Defs>
           {Array.from({ length: BUCKETS }, (_, b) => (
@@ -138,7 +137,6 @@ export default function AnimatedSplash({ done, onGone, duration = 3600 }: { done
       <Animated.Text style={{ position: 'absolute', bottom: L.bottom + 34, left: 0, right: 0, textAlign: 'center', color: MUTE, fontSize: 11.5, letterSpacing: 0.5, opacity: fadeIn }}>
         Powered by <Text style={{ color: BLUE, fontWeight: '800' }}>Bahu Technology</Text>
       </Animated.Text>
-      </View>
     </Animated.View>
   );
 }

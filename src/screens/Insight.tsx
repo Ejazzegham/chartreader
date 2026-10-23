@@ -78,7 +78,7 @@ export default function Insight({ on, symId = 'frxEURUSD', method = 'liquidity' 
       <Card style={{ padding: 8, direction: 'ltr' }}>
         {err ? (
           <View style={{ gap: 12, padding: 8 }}><Body color={th.sell}>{err}</Body><Btn ghost label="Retry" onPress={() => setNonce((x) => x + 1)} /></View>
-        ) : <MethodChart data={data} all={all} method={chartMethod} width={width - 48} dec={dec} gran={Number(tf)} />}
+        ) : <MethodChart data={data} all={all} method={chartMethod} width={width - 48} dec={dec} gran={Number(tf)} symId={symId} />}
       </Card>
 
       {/* ============================ Liquidity Map ============================ */}

@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import Svg, { Line, Rect, G, Circle, Polygon, Polyline, Defs, LinearGradient as SvgGrad, Stop, Text as SvgText } from 'react-native-svg';
+import Svg, { Line, Rect, G, Circle, Polygon, Polyline, Defs, ClipPath, LinearGradient as SvgGrad, Stop, Text as SvgText, TSpan } from 'react-native-svg';
 import { ink } from './theme';
 import { useApp } from './store';
 import type { Candle } from './markets';
 import type { All } from './refine';
-import { useZoom, ZoomBar, CrossLayer, Readout, fmtTime } from './ChartZoom';
+import { useZoom, ChartHud, CrossLayer, Readout, fmtTime } from './ChartZoom';
 import { candleMarks } from './candles';
+import { fmtVol, volMA, volPaneNote, hasVolumePath } from './volume';
 
 // Heikin Ashi candles (same length as the input, so analysis indexes still line up)
 export function heikin(c: Candle[]): Candle[] {
@@ -18,23 +19,34 @@ export function heikin(c: Candle[]): Candle[] {
   return out;
 }
 
-export type Method = 'ict' | 'smc' | 'vsa' | 'pat' | 'candle' | 'scalp' | 'all';
+export type Method = 'ict' | 'smc' | 'vsa' | 'pat' | 'candle' | 'scalp' | 'div' | 'all';
 export type ChartLine = { v: number[]; color: string; label: string };
 export type ChartPlan = { entry: number; sl: number; tps: number[]; tag: string };
 type Lv = { v: number; color: string; label: string; dash?: string; w?: number };
 
+// The Vol chip remembers its state while the app is open, so switching method or timeframe does not turn the volume pane back on.
+let VOL_PREF = true;
+
 // One candle chart for every method. Zoom and pan built in. The overlay changes with the selected method.
-export default function MethodChart({ data, all, method, width, dec, height = 330, lines, plan, marks, patterns, gran }: { data: Candle[]; all: All; method: Method; width: number; dec: number; height?: number; patterns?: boolean; gran?: number; lines?: ChartLine[]; plan?: ChartPlan | null; marks?: { v: number; color: string; label: string }[] }) {
+// Volume is a TradingView-style pane under the price on EVERY method and timeframe (candles carry real volume, see volume.ts); the Vol chip hides it.
+export default function MethodChart({ data, all, method, width: fullW, dec, height = 330, lines, plan, marks, patterns, gran, symId }: { data: Candle[]; all: All; method: Method; width: number; dec: number; height?: number; patterns?: boolean; gran?: number; symId?: string; lines?: ChartLine[]; plan?: ChartPlan | null; marks?: { v: number; color: string; label: string }[] }) {
   const { th } = useApp();
-  const z = useZoom(data.length, width - 62);
+  const width = fullW; // no scroll bars (MT5 style)
+  const [volPref, setVolPref] = React.useState(VOL_PREF);
+  const vma = React.useMemo(() => volMA(data), [data]);
+  const z = useZoom(data.length, width - 62, height, { initial: 100, shift: 0.08 });
   const showPat = method === 'candle' || !!patterns;
   const cmarks = React.useMemo(() => (showPat ? candleMarks(data) : []), [showPat, data]);
   if (data.length < 2) return <View style={{ height, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={th.accent} /></View>;
 
   const { ict, smc, vsa, pat, cdl, scalp, combo } = all;
   const padR = 62, W = width - padR, s0 = z.start, vis = data.slice(z.start, z.end), n = z.slots; // slots = candles + empty space on the right
-  const volOn = method === 'vsa' && vsa.hasVolume;
-  const plotH = height - 16 - (volOn ? height * 0.16 : 0);
+  const anyVol = data.some((c) => (c.v ?? 0) > 0);
+  const canVol = anyVol || (!!symId && !!gran && hasVolumePath(symId, gran)); // the pane also shows "Loading volume..." while the feed is still coming
+  const volOn = canVol && volPref;
+  const volH = volOn ? Math.round(height * 0.2) : 0;
+  const plotH = height - 16 - volH;
+  const toggleVol = () => { VOL_PREF = !VOL_PREF; setVolPref(VOL_PREF); };
 
   // entry / stop / targets for the selected method
   const pick = plan ? plan : method === 'scalp' ? (scalp.setup && { entry: scalp.setup.entry, sl: scalp.setup.sl, tps: scalp.setup.tps, tag: 'SCALP' })
@@ -51,10 +63,16 @@ export default function MethodChart({ data, all, method, width, dec, height = 33
   ] : [];
   const patTarget = method === 'pat' && pat.best ? pat.best.target : undefined;
 
-  const hi = Math.max(...vis.map((c) => c.h), ...lv.map((l) => l.v)), lo = Math.min(...vis.map((c) => c.l), ...lv.map((l) => l.v)), rng = hi - lo || 1;
+  const fit = { hi: Math.max(...vis.map((c) => c.h), ...lv.map((l) => l.v)), lo: Math.min(...vis.map((c) => c.l), ...lv.map((l) => l.v)) };
+  const { hi, lo } = z.fitY(fit.hi, fit.lo), rng = hi - lo || 1; // vertical zoom / scroll applied on top of the fitted range
   const y = (v: number) => 8 + (1 - (v - lo) / rng) * plotH;
-  const step = W / n, bw = Math.max(1, step * 0.62), X = (i: number) => (i - s0) * step + step / 2;
-  const maxV = volOn ? Math.max(...vis.map((c) => c.v ?? 0), 1) : 1;
+  const step = W / n, bw = Math.max(1, step * 0.62), X = (i: number) => (i - s0) * step + step / 2 + z.shift;
+  const maxV = Math.max(...vis.map((c) => c.v ?? 0), ...vis.map((_, i) => vma[s0 + i] || 0), 1);
+  const vTop = height - volH, vBase = height - 4, vSpan = Math.max(8, volH - 16); // the pane: bars grow up from vBase, the label sits above them
+  const vy = (v: number) => vBase - Math.min(1, v / maxV) * vSpan;
+  const vNote = volOn && !anyVol ? volPaneNote(symId, gran ?? 0, data) : '';
+  const lastVis = vis[vis.length - 1];
+  const volSel = z.cross ? data[z.idxAt(z.cross.x)] : lastVis; // the value in the label follows the crosshair
 
   const box = (top: number, bottom: number, i: number, color: string, label: string, k: string) => {
     if (i >= z.end) return null;
@@ -83,13 +101,16 @@ export default function MethodChart({ data, all, method, width, dec, height = 33
   const zx = (i: number) => i >= s0 && i < z.end;
 
   return (
-    <View {...z.handlers} style={{ direction: 'ltr' }}>
+    <View style={{ direction: 'ltr' }}>
+     <View style={{ flexDirection: 'row' }}>
+      <View {...z.handlers} style={{ width }}>
       <Svg width={width} height={height} style={{ overflow: 'hidden' }}>
         <Defs>
           <SvgGrad id="plotWash" x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={th.accent} stopOpacity={th.dark ? 0.10 : 0.07} />
             <Stop offset="1" stopColor={th.accent} stopOpacity={0} />
           </SvgGrad>
+          <ClipPath id="plotClipM"><Rect x={0} y={0} width={W} height={height} /></ClipPath>
         </Defs>
         <Rect x={0} y={0} width={W} height={height} fill="url(#plotWash)" />
         <Line x1={W} x2={W} y1={0} y2={height} stroke={th.hair} strokeWidth={1} />
@@ -141,6 +162,23 @@ export default function MethodChart({ data, all, method, width, dec, height = 33
 
         {/* ---------- SMC ---------- */}
         {method === 'smc' && smc.range && <Line x1={0} x2={W} y1={y(smc.range.eq)} y2={y(smc.range.eq)} stroke={th.accent2} strokeWidth={1} strokeDasharray="2 4" />}
+        {method === 'scalp' && [...scalp.zones].sort((p, q) => Math.abs((p.top + p.bottom) / 2 - data[data.length - 1].c) - Math.abs((q.top + q.bottom) / 2 - data[data.length - 1].c)).slice(0, 8).map((q, k) => box(q.top, q.bottom, q.i, q.kind === 'supply' ? th.sell : th.buy, `${q.kind === 'supply' ? 'Supply' : 'Demand'} ${q.strength.toFixed(1)}x`, `sd${k}`))}
+        {method === 'scalp' && scalp.setup && zx(scalp.setup.patternI) && (() => {
+          const st = scalp.setup, bu = st.side === 'buy', col = bu ? th.buy : th.sell, cx = X(st.patternI), sig = st.confirmI !== undefined && zx(st.confirmI) ? st.confirmI : -1;
+          const ly = bu ? y(data[st.patternI].l) + 22 : y(data[st.patternI].h) - 16;
+          return (
+            <G>
+              <Rect x={X(st.pattern.from) - step / 2} y={8} width={(st.patternI - st.pattern.from + 1) * step} height={plotH} fill={col + '16'} stroke={col + '66'} strokeWidth={0.8} strokeDasharray="3 3" />
+              <SvgText x={Math.min(W - 4, Math.max(4, cx))} y={ly} fontSize={9} fontWeight="900" fill={col} textAnchor={cx > W - 70 ? 'end' : cx < 70 ? 'start' : 'middle'}>{st.pattern.name}</SvgText>
+              {sig >= 0 && (
+                <G>
+                  <Polygon points={bu ? `${X(sig)},${y(data[sig].l) + 6} ${X(sig) - 5},${y(data[sig].l) + 15} ${X(sig) + 5},${y(data[sig].l) + 15}` : `${X(sig)},${y(data[sig].h) - 6} ${X(sig) - 5},${y(data[sig].h) - 15} ${X(sig) + 5},${y(data[sig].h) - 15}`} fill={col} />
+                  <SvgText x={Math.min(W - 4, Math.max(4, X(sig)))} y={bu ? y(data[sig].l) + 26 : y(data[sig].h) - 19} fontSize={9} fontWeight="900" fill={col} textAnchor={X(sig) > W - 40 ? 'end' : 'middle'}>{bu ? 'BUY' : 'SELL'}</SvgText>
+                </G>
+              )}
+            </G>
+          );
+        })()}
         {method === 'smc' && smc.zones.map((q, k) => box(q.top, q.bottom, q.i, q.kind === 'BRK' ? th.poi : q.side === 'bullish' ? th.buy : th.sell, q.label, `z${k}`))}
         {method === 'smc' && smc.idm && zx(smc.idm.i) && (
           <G>
@@ -190,10 +228,23 @@ export default function MethodChart({ data, all, method, width, dec, height = 33
         })}
 
         {/* candles */}
-        {volOn && vis.map((c, i) => <Rect key={`v${i}`} x={i * step + step / 2 - bw / 2} y={height - 6 - ((c.v ?? 0) / maxV) * height * 0.14} width={bw} height={((c.v ?? 0) / maxV) * height * 0.14} fill={(c.c >= c.o ? th.buy : th.sell) + '66'} />)}
+        {/* volume pane (every method): bars coloured by candle direction, 20-bar average line, last value and scale */}
+        {volOn && (
+          <G>
+            <Line x1={0} x2={W} y1={vTop} y2={vTop} stroke={th.line} strokeOpacity={0.8} strokeWidth={0.8} />
+            {vis.map((c, i) => (c.v ?? 0) > 0 ? <Rect key={`v${i}`} clipPath="url(#plotClipM)" x={X(s0 + i) - bw / 2} y={vy(c.v!)} width={bw} height={Math.max(1, vBase - vy(c.v!))} fill={(c.c >= c.o ? th.buy : th.sell) + '99'} /> : null)}
+            {(() => {
+              const pts = vis.map((_, i) => ({ i, v: vma[s0 + i] })).filter((q) => isFinite(q.v)).map((q) => `${X(s0 + q.i)},${vy(q.v)}`).join(' ');
+              return pts ? <Polyline points={pts} fill="none" stroke={th.gold} strokeWidth={1.1} /> : null;
+            })()}
+            <SvgText x={4} y={vTop + 10} fontSize={9} fontWeight="800" fill={th.dim}>Volume <TSpan fill={volSel && volSel.c >= volSel.o ? th.buy : th.sell}>{volSel && (volSel.v ?? 0) > 0 ? fmtVol(volSel.v!) : '-'}</TSpan></SvgText>
+            {!!vNote && <SvgText x={W / 2} y={vTop + volH / 2 + 4} fontSize={10} fontWeight="700" fill={th.dim} textAnchor="middle">{vNote}</SvgText>}
+            {anyVol && <SvgText x={W + 6} y={vTop + 10} fontSize={9} fontWeight="600" fill={th.dim}>{fmtVol(maxV)}</SvgText>}
+          </G>
+        )}
         {vis.map((c, i) => {
-          const col = c.c >= c.o ? th.buy : th.sell, x = i * step + step / 2;
-          return <G key={`${c.t}-${i}`}><Line x1={x} x2={x} y1={y(c.h)} y2={y(c.l)} stroke={col} strokeWidth={1} /><Rect x={x - bw / 2} y={Math.min(y(c.o), y(c.c))} width={bw} height={Math.max(1, Math.abs(y(c.o) - y(c.c)))} rx={Math.min(1.6, bw / 3)} fill={col} /></G>;
+          const col = c.c >= c.o ? th.buy : th.sell, x = X(s0 + i);
+          return <G key={`${c.t}-${i}`} clipPath="url(#plotClipM)"><Line x1={x} x2={x} y1={y(c.h)} y2={y(c.l)} stroke={col} strokeWidth={1} /><Rect x={x - bw / 2} y={Math.min(y(c.o), y(c.c))} width={bw} height={Math.max(1, Math.abs(y(c.o) - y(c.c)))} rx={Math.min(1.6, bw / 3)} fill={col} /></G>;
         })}
 
         {/* ICT structure break sits above the candles */}
@@ -259,8 +310,10 @@ export default function MethodChart({ data, all, method, width, dec, height = 33
           return <CrossLayer x={cx} y={cy} W={W} H={height - 2} padR={padR} price={price.toFixed(dec)} time={fmtTime(data[ci].t, gran)} />;
         })()}
       </Svg>
-      {z.cross && <Readout c={data[z.idxAt(z.cross.x)]} prev={data[z.idxAt(z.cross.x) - 1]?.c} dec={dec} onClose={z.clearCross} />}
-      <ZoomBar z={z} />
+      {z.cross && <Readout c={data[z.idxAt(z.cross.x)]} prev={data[z.idxAt(z.cross.x) - 1]?.c} dec={dec} vol={data[z.idxAt(z.cross.x)].v} onClose={z.clearCross} />}
+      <ChartHud z={z} top={8} right={padR + 8} vol={canVol ? { on: volPref, toggle: toggleVol } : undefined} />
+      </View>
+     </View>
     </View>
   );
 }

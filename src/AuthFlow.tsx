@@ -38,7 +38,7 @@ const Page = ({ h = 230, title, children }: { h?: number; title: string; childre
 };
 
 export default function AuthFlow() {
-  const { th, t, account, signup, login, resetPassword, enter, resetAccount } = useApp();
+  const { th, t, account, signup, login, resetPassword, enter, resetAccount, googleLogin } = useApp();
   const [step, setStep] = useState<'welcome' | 'login' | 'signup' | 'pin' | 'forgot'>(account ? 'login' : 'welcome');
   const [name, setName] = useState('');
   const [email, setEmail] = useState(account?.email ?? '');
@@ -66,6 +66,13 @@ export default function AuthFlow() {
     if (k) setErr(t(k));
   };
 
+  const doGoogle = async () => {
+    setBusy(true); setErr(''); setInfo('');
+    const r = await googleLogin();
+    setBusy(false);
+    if (r.err) setErr(t(r.err)); else if (r.isNew) setStep('pin'); // an existing account is already logged in; a new one sets its PIN first
+  };
+
   const doReset = async () => {
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setErr(t('errFields')); return; }
     setBusy(true); setErr(''); setInfo('');
@@ -83,6 +90,14 @@ export default function AuthFlow() {
     setStep('pin');
   };
 
+  const google = (
+    <View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 16 }}>
+        <View style={{ flex: 1, height: 1, backgroundColor: th.line }} /><Text style={{ color: th.dim, fontSize: 12.5 }}>{t('orWord')}</Text><View style={{ flex: 1, height: 1, backgroundColor: th.line }} />
+      </View>
+      <Btn ghost label={t('continueGoogle')} icon="logo-google" onPress={doGoogle} busy={busy} />
+    </View>
+  );
   const eye = <Pressable onPress={() => setShow(!show)}><Icon name={show ? 'eye-off-outline' : 'eye-outline'} color={th.dim} /></Pressable>;
   const infoMsg = !!info && <Text style={{ color: th.accent, marginBottom: 10, textAlign: 'center' }}>{info}</Text>;
   const error = !!err && <Text style={{ color: th.sell, marginBottom: 10, textAlign: 'center' }}>{err}</Text>;
@@ -102,6 +117,8 @@ export default function AuthFlow() {
           <Btn label={t('createAccount')} onPress={startSignup} />
           <Btn ghost label={t('login')} onPress={() => setStep('login')} />
         </View>
+        {error}
+        {google}
       </Page>
     );
 
@@ -130,6 +147,7 @@ export default function AuthFlow() {
         {error}{infoMsg}
         <Btn label={t('login')} onPress={doLogin} busy={busy} />
         <Pressable onPress={() => { setErr(''); setInfo(''); setStep('forgot'); }} disabled={busy} style={{ padding: 10, alignItems: 'center', marginTop: 6 }}><Text style={{ color: th.accent, fontWeight: '700' }}>{t('forgotPw')}</Text></Pressable>
+        {google}
         {link(t('newUser'), t('signup'), startSignup)}
       </Page>
     );
@@ -141,6 +159,7 @@ export default function AuthFlow() {
       <Field label={t('password')} value={pw} onChangeText={setPw} secureTextEntry={!show} autoCapitalize="none" right={eye} />
       {error}
       <Btn label={t('signup')} onPress={doSignup} busy={busy} />
+      {google}
       {link(t('haveAcct'), t('login'), () => setStep('login'))}
     </Page>
   );

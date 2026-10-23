@@ -101,7 +101,7 @@ export function IctBiasCard({ ict, htfLabel, f }: { ict: ICT; htfLabel: string; 
   const col = b.dir === 'bullish' ? th.buy : b.dir === 'bearish' ? th.sell : th.gold;
   return (
     <Card>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
         <SectionTitle icon="compass-outline">Bias and draw on liquidity</SectionTitle>
         <Badge label={b.source === 'htf' ? htfLabel : 'CHART ONLY'} color={b.source === 'htf' ? th.accent : th.gold} />
       </View>
@@ -128,7 +128,7 @@ export function IctTime({ ict }: { ict: ICT }) {
   const kz = ict.killzone, on = isEntryWindow(kz);
   return (
     <Card>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
         <SectionTitle icon="time-outline">Time: killzone</SectionTitle>
         <Badge label={on ? 'LIVE' : 'WAITING'} color={on ? th.buy : th.gold} />
       </View>

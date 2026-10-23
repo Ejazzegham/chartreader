@@ -8,12 +8,13 @@ import NewsBanner from '../NewsBanner';
 import { analyzeAll, methodsContext } from '../refine';
 import MethodChart, { Method } from '../MethodChart';
 import { VSA_NAMES, VSA_RULE, VSA_HELP } from '../vsa';
-import { realVolumeSource } from '../realvol';
 import { GUIDE } from '../candles';
+import { PATTERN_GUIDE } from '../patterns';
 import { analyzeMarket, MarketAI, TP_SPLIT } from '../gemini';
 import { useSignalLog, Logged } from '../signalLog';
 import TakeSkip from '../TakeSkip';
 import VsaCard from '../VsaCard';
+import { volMissingNote, hasVolumePath, volLabel, volTile } from '../volume';
 import { BodyProps } from '../embed';
 import { LANGS } from '../i18n';
 import { Candle, SYMBOLS, TFS, symOf, isBad, useFeed, watchCandles, quotes } from '../markets';
@@ -64,6 +65,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
   const all = useMemo(() => analyzeAll(data, new Date(), { sessions }), [data, sessions]);
   const { ict, smc, vsa, pat, cdl, combo } = all;
   const [guide, setGuide] = useState(false);
+  const [patGuide, setPatGuide] = useState(false);
   const newsText = useMemo(() => { const r = newsRisk(currenciesOf(symId), events, Date.now()); return r.level === 'danger' && r.event ? `${r.event.cur} ${r.event.title} in ${fmtIn(r.mins)}` : null; }, [events, symId, data]);
   const htfData = htfOn && htf.length >= 40 ? htf : undefined;
   const ictX = useMemo(() => (method === 'ict' ? ictAnalyze(data, new Date(), { htf: htfData, params: ictp.params, news: newsText }) : ict), [method, data, htfData, ictp.params, newsText, ict]);
@@ -107,7 +109,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
         ictX.orderBlocks.length && `order blocks ${ictX.orderBlocks.map((z) => `${z.side} ${f(z.bottom)}-${f(z.top)}`).join('; ')}`,
         ictX.fvgs.length && `FVGs ${ictX.fvgs.map((z) => `${z.side} ${f(z.bottom)}-${f(z.top)}`).join('; ')}`,
         s && `proposed ${s.side} entry ${f(s.entry)} SL ${f(s.sl)} TP ${s.tps.map(f).join('/')}`, ictX.killzone && `killzone ${ictX.killzone.name}`, methodsContext(all, f)].filter(Boolean).join(', ');
-      setAi(await analyzeMarket(apiKey.trim(), settings.model.trim(), lang, `${sym.name} (${sym.id})`, TFS.find((x) => x.k === tf)?.label ?? tf, data, dec, ctx));
+      setAi(await analyzeMarket(apiKey.trim(), settings.model.trim(), lang, `${sym.name} (${sym.id})`, TFS.find((x) => x.k === tf)?.label ?? tf, data, dec, ctx, volLabel(symId, Number(tf))));
     } catch (e: any) { setAiErr(e.message ?? 'Error'); } finally { setBusy(false); }
   };
   const ac = ai ? (ai.bias === 'buy' ? th.buy : ai.bias === 'sell' ? th.sell : th.gold) : th.dim;
@@ -124,8 +126,8 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
         {found.length > 0 && (
           <Card style={{ padding: 6 }}>
             {found.map((x) => (
-              <Pressable key={x.id} onPress={() => { setSymId(x.id); setQ(''); }} style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Body bold>{x.name}</Body><Dim>{x.id}</Dim>
+              <Pressable key={x.id} onPress={() => { setSymId(x.id); setQ(''); }} style={{ padding: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+                <View style={{ flex: 1, minWidth: 0 }}><Body bold>{x.name}</Body></View><View style={{ flexShrink: 1, maxWidth: '45%' }}><Dim>{x.id}</Dim></View>
               </Pressable>
             ))}
           </Card>
@@ -148,7 +150,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
         <Card style={{ padding: 8, direction: 'ltr' }}>
           {err ? (
             <View style={{ gap: 12, padding: 8 }}><Body color={th.sell}>{err}</Body><Btn ghost label={t('retry')} onPress={() => setNonce((n) => n + 1)} /></View>
-          ) : <MethodChart data={data} all={chartAll} method={method} width={width - 48} dec={dec} gran={Number(tf)} />}
+          ) : <MethodChart data={data} all={chartAll} method={method} width={width - 48} dec={dec} gran={Number(tf)} symId={symId} />}
         </Card>
 
         {method === 'all' && (
@@ -171,7 +173,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
 
             {s && (
               <Card>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   <SectionTitle icon="locate-outline">{s.ready ? 'Trade plan' : 'Plan (not ready yet)'}</SectionTitle>
                   <Badge label={s.ready ? 'READY' : 'WAIT'} color={s.ready ? th.buy : th.gold} />
                 </View>
@@ -294,13 +296,13 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
           <>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <Tile label={t('vsaBias')} value={vsa.bias === 'wait' ? t('wait') : t(vsa.bias)} color={vsa.bias === 'buy' ? th.buy : vsa.bias === 'sell' ? th.sell : th.gold} sub={`${vsa.score > 0 ? '+' : ''}${vsa.score}`} />
-              <Tile label={t('vsaFeed')} value={vsa.hasVolume ? t('vsaReal') : t('vsaSpread')} color={vsa.hasVolume ? th.buy : th.gold} />
+              <Tile label={t('vsaFeed')} value={vsa.hasVolume ? (volLabel(symId, Number(tf)).startsWith('Deriv tick') ? 'Tick volume' : t('vsaReal')) : hasVolumePath(symId, Number(tf)) ? volTile(symId, Number(tf)) : t('vsaSpread')} color={vsa.hasVolume ? th.buy : th.gold} />
             </View>
             {!vsa.ok && <Card><Body color={th.gold}>{vsa.reason ?? t('planNoData')}</Body></Card>}
-            {vsa.ok && vsa.hasVolume && !!realVolumeSource(symId) && <Dim>{`Volume source: ${realVolumeSource(symId)!.label}${realVolumeSource(symId)!.proxy ? ' (proxy: this pair has no futures of its own)' : ''}. Real traded volume, not spread or tick count.`}</Dim>}
-            {vsa.ok && !vsa.hasVolume && <Card><Body color={th.gold}>{t('vsaNoVol')}</Body></Card>}
-            {vsa.ok && vsa.signals.length === 0 && <Card><Body color={th.dim}>{t('vsaNone')}</Body></Card>}
-            {vsa.ok && <VsaCard vsa={vsa} f={f} />}
+            {vsa.ok && !vsa.hasVolume && <Card><Body color={th.gold}>{`${volMissingNote(symId, Number(tf), data)} ${vsa.reason ?? ''}`}</Body></Card>}
+            {vsa.ok && vsa.hasVolume && hasVolumePath(symId, Number(tf)) && <Card><Body color={th.dim}>{`Volume used by VSA: ${volLabel(symId, Number(tf))}. Signals are read on closed candles only.`}</Body></Card>}
+            {vsa.ok && vsa.hasVolume && vsa.signals.length === 0 && <Card><Body color={th.dim}>{t('vsaNone')}</Body></Card>}
+            {vsa.ok && vsa.hasVolume && <VsaCard vsa={vsa} f={f} />}
             {vsa.setup && (
               <SetupCard side={vsa.setup.side} model={VSA_NAMES[vsa.setup.tag]} score={Math.min(100, Math.abs(vsa.score) + 20)} grade={Math.abs(vsa.score) >= 60 ? 'A' : Math.abs(vsa.score) >= 40 ? 'B' : 'C'} entry={vsa.setup.entry} sl={vsa.setup.sl} tps={vsa.setup.tps} rr={vsa.setup.rr} f={f}
                 onSend={() => { setPrefill({ entry: vsa.setup!.entry, sl: vsa.setup!.sl, tps: [...vsa.setup!.tps], symbol: sym.name }); setTab(4); }} note={vsa.setup.note} />
@@ -406,6 +408,25 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
                 ))}
               </Card>
             )}
+            <Pressable onPress={() => setPatGuide(!patGuide)}>
+              <Card style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <SectionTitle icon="school-outline">{`Pattern guide (${PATTERN_GUIDE.length})`}</SectionTitle>
+                <Icon name={patGuide ? 'chevron-up' : 'chevron-down'} size={18} color={th.dim} />
+              </Card>
+            </Pressable>
+            {patGuide && (
+              <Card>
+                {PATTERN_GUIDE.map((g, i) => (
+                  <View key={g.name} style={{ marginBottom: i === PATTERN_GUIDE.length - 1 ? 0 : 12 }}>
+                    <Row k={`${g.dir === 'bullish' ? '▲' : g.dir === 'bearish' ? '▼' : '◆'} ${g.name}`} v={g.kind} color={g.dir === 'bullish' ? th.buy : g.dir === 'bearish' ? th.sell : th.gold} />
+                    <Dim>{g.shows}</Dim>
+                    <Dim>{`How to trade: ${g.trade}`}</Dim>
+                  </View>
+                ))}
+                <View style={{ height: 10 }} />
+                <Dim>Rules: wait for a candle to CLOSE beyond the line, not just a wick. Stops go just beyond the pattern. Targets use the pattern's own measured move (60%, 100% and 160% of it). Add volume or momentum when you can.</Dim>
+              </Card>
+            )}
           </>
         )}
 
@@ -413,7 +434,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
         {!!aiErr && <Text style={{ color: th.sell, lineHeight: 20 }}>{aiErr}</Text>}
         {ai && (
           <Card>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
               <SectionTitle icon="analytics">{t('ictAiResult')}</SectionTitle>
               {!!ai.ict?.grade && <Badge label={ai.ict.grade} color={ai.ict.grade.startsWith('A') ? th.buy : ai.ict.grade === 'B' ? th.gold : th.sell} />}
             </View>

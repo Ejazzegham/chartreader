@@ -20,8 +20,8 @@ export const planLevels = (p: PlanIn, th: { accent: string; sell: string; buy: s
   return o;
 };
 
-export default function TradePlan({ symbol, data, dec, tf, setTf, plan, setPlan }: {
-  symbol: string; data: Candle[]; dec: number; tf: string; setTf: (k: string) => void; plan: PlanIn; setPlan: (p: PlanIn) => void;
+export default function TradePlan({ symbol, data, dec, tf, setTf, plan, setPlan, noTf }: {
+  symbol: string; data: Candle[]; dec: number; tf: string; setTf: (k: string) => void; plan: PlanIn; setPlan: (p: PlanIn) => void; noTf?: boolean; // noTf: the screen already has its own timeframe bar
 }) {
   const { th, t, settings, apiKey, live } = useApp();
   const [ai, setAi] = useState<PlanAI | null>(null);
@@ -65,7 +65,7 @@ export default function TradePlan({ symbol, data, dec, tf, setTf, plan, setPlan 
     <Card>
       <Text style={{ color: th.text, fontSize: 18, fontWeight: '700', marginBottom: 2 }}>{t('planTitle')}</Text>
       <Dim>{t('planHint')}</Dim>
-      <TimeframeBar value={tf} options={TFS} onChange={(k) => { setTf(k); setAi(null); }} />
+      {!noTf && <TimeframeBar value={tf} options={TFS} onChange={(k) => { setTf(k); setAi(null); }} />}
       <View style={{ height: 12 }} />
       {pair('hi', 'lo', t('planHigher'), t('planLower'))}
       {pair('en', 'sl', t('planEntry'), t('planSl'))}

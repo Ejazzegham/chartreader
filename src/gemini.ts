@@ -1,4 +1,5 @@
 import { getServer } from './license';
+import { hasRealVolume } from './vsa';
 // Close split for the 3 take profits and their default distance in R.
 import { TP_SPLIT, TP_R } from './tpconst';
 export { TP_SPLIT, TP_R };
@@ -56,10 +57,17 @@ export function fillTPs(entry: number, sl: number, tps: number[]): number[] {
   return ok;
 }
 
-export async function analyzeMarket(key: string, model: string, lang: string, symbol: string, tf: string, candles: { o: number; h: number; l: number; c: number }[], dec: number, ictCtx = ''): Promise<MarketAI> {
-  const rows = candles.slice(-100).map((c) => [c.o, c.h, c.l, c.c].map((v) => v.toFixed(dec)).join(' ')).join('\n');
-  const text = `You are an expert price-action analyst who combines ICT (Inner Circle Trader), SMC (smart money concepts), VSA (volume spread analysis) and classic chart patterns. Below are the latest ${Math.min(100, candles.length)} candles (oldest first) for ${symbol} on the ${tf} timeframe, one per line as "open high low close". The last candle is still forming.
-Analyze trend, market structure (HH/HL/LH/LL, BOS, CHoCH/MSS), liquidity (equal highs/lows, sweeps), order blocks, fair value gaps, premium/discount of the dealing range and the OTE zone (62%-79%). Also weigh SMC (decisional order blocks, inducement, breaker blocks), VSA (spread and close position; no volume is supplied, so only judge spread, close and follow-through) and any chart pattern (double top/bottom, head and shoulders, triangles, wedges). Then REFINE the entry: put "entry" at the 50% mean threshold of the best order block or the consequent encroachment of the best FVG that overlaps OTE, put the stop loss beyond that block / swept liquidity, and give EXACTLY 3 take profits (TP1 nearest internal liquidity ~1.5R, TP2 ~2.5R, TP3 external range liquidity ~4R), nearest first.
+export async function analyzeMarket(key: string, model: string, lang: string, symbol: string, tf: string, candles: { o: number; h: number; l: number; c: number; v?: number }[], dec: number, ictCtx = '', volKind = ''): Promise<MarketAI> {
+  // REAL traded volume (futures volume for forex / metals / oil, exchange volume for crypto) is sent when the candles carry it, so VSA is read
+  // from volume against spread. Without it (synthetic indices, a feed that did not load) the old spread-only wording is kept, and says so.
+  const last100 = candles.slice(-100), withVol = hasRealVolume(last100 as any); // same rule as the VSA engine (vsa.ts)
+  const rows = last100.map((c) => [...[c.o, c.h, c.l, c.c].map((v) => v.toFixed(dec)), ...(withVol ? [String(Math.round(c.v ?? 0))] : [])].join(' ')).join('\n');
+  const cols = withVol ? 'open high low close volume' : 'open high low close';
+  const vsaWords = withVol
+    ? 'VSA (volume spread analysis: the last column is volume (' + (volKind || 'real traded volume') + '), so judge effort against result: climaxes, no demand / no supply, stopping volume, upthrust, shakeout, effort without result, and whether a breakout came on low or high volume; the forming candle has only PARTIAL volume so never read it as low volume)'
+    : 'VSA (spread and close position; no volume is supplied, so only judge spread, close and follow-through)';
+  const text = `You are an expert price-action analyst who combines ICT (Inner Circle Trader), SMC (smart money concepts), VSA (volume spread analysis) and classic chart patterns. Below are the latest ${Math.min(100, candles.length)} candles (oldest first) for ${symbol} on the ${tf} timeframe, one per line as "${cols}". The last candle is still forming.
+Analyze trend, market structure (HH/HL/LH/LL, BOS, CHoCH/MSS), liquidity (equal highs/lows, sweeps), order blocks, fair value gaps, premium/discount of the dealing range and the OTE zone (62%-79%). Also weigh SMC (decisional order blocks, inducement, breaker blocks), ${vsaWords} and any chart pattern (double top/bottom, head and shoulders, triangles, wedges). Then REFINE the entry: put "entry" at the 50% mean threshold of the best order block or the consequent encroachment of the best FVG that overlaps OTE, put the stop loss beyond that block / swept liquidity, and give EXACTLY 3 take profits (TP1 nearest internal liquidity ~1.5R, TP2 ~2.5R, TP3 external range liquidity ~4R), nearest first.
 Use REAL prices taken from the data. All price fields must be plain numbers. If the bias is unclear use "wait" and still give the nearest sensible levels. Be honest about uncertainty in "warnings".
 ${ictCtx ? `Our local engines (ICT, SMC, VSA, chart patterns) found (verify against the candles, correct anything wrong; where methods overlap, refine the entry there): ${ictCtx}\n` : ''}Write every human-readable text value (strength, summary, riskReward notes, reasoning, warnings, ict.model, ict.confluence) in ${lang}. Keep JSON keys and enum values (bullish, bearish, sideways, buy, sell, wait, A+, A, B, C) in English.
 Return ONLY JSON with this exact shape:

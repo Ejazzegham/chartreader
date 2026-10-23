@@ -4,18 +4,23 @@ import Modal from './Modal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from './store';
 import { Icon, confirmAction } from './ui';
+import { hasTarget, guessSym } from './notifTarget';
+import { SYMBOLS } from './markets';
 
 // The bell's window: every alert (order filled, take profit, stop, break-even, scanner setups) in one list, newest first.
 // Opening it marks everything as read, so the red badge on the bell disappears. "Clear all" empties the list.
+// A line from a price alert, a scanner setup or a support message can be tapped: it opens that pair in Analysis or the Help chat.
 export default function NotificationCenter() {
-  const { th, t, rtl, notes, notesOpen, setNotesOpen, markNotesRead, clearNotes, removeNote } = useApp();
+  const { th, t, rtl, notes, notesOpen, setNotesOpen, openNote, markNotesRead, clearNotes, removeNote } = useApp();
   const insets = useSafeAreaInsets();
   const [fresh, setFresh] = useState<Set<string>>(new Set()); // what was unread when the window opened, so those lines can be marked NEW while you read them
   useEffect(() => {
-    if (!notesOpen) return;
-    setFresh(new Set(notes.filter((n) => !n.read).map((n) => n.id)));
+    if (!notesOpen) { setFresh(new Set()); return; }
+    // also runs when a line arrives while the window is open (a notification that was still being downloaded), so that line is marked NEW too
+    const unread = notes.filter((n) => !n.read).map((n) => n.id);
+    if (unread.length) setFresh((f) => new Set([...f, ...unread]));
     markNotesRead();
-  }, [notesOpen]);
+  }, [notesOpen, notes.length]);
   if (!notesOpen) return null;
 
   const close = () => { markNotesRead(); setNotesOpen(false); };
@@ -51,9 +56,10 @@ export default function NotificationCenter() {
               <Text style={{ color: th.dim, fontSize: 13.5, lineHeight: 20, textAlign: 'center' }}>{t('notifEmptyText')}</Text>
             </View>
           ) : notes.map((n) => {
-            const c = colOf(n.kind), isNew = fresh.has(n.id);
+            const c = colOf(n.kind), isNew = fresh.has(n.id), guess = hasTarget(n) ? '' : guessSym(n.text, SYMBOLS), go = hasTarget(n) || !!guess, target = guess ? { type: 'trade', sym: guess } : n;
             return (
-              <View key={n.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: isNew ? c + '12' : th.panel, borderWidth: 1, borderColor: isNew ? c + '66' : th.line, borderRadius: 8, padding: 12 }}>
+              <Pressable key={n.id} disabled={!go} onPress={() => openNote(target)} accessibilityRole={go ? 'button' : undefined}
+                style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: isNew ? c + '12' : th.panel, borderWidth: 1, borderColor: isNew ? c + '66' : th.line, borderRadius: 8, padding: 12, opacity: go && pressed ? 0.7 : 1 })}>
                 <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: c }} />
                 <Icon name={iconOf(n.kind)} size={22} color={c} />
                 <View style={{ flex: 1 }}>
@@ -63,10 +69,11 @@ export default function NotificationCenter() {
                     {isNew && <Text style={{ color: c, fontSize: 10, fontWeight: '900', letterSpacing: 0.8 }}>{t('notifNew')}</Text>}
                   </View>
                 </View>
+                {go && <Icon name={rtl ? 'chevron-back' : 'chevron-forward'} size={18} color={th.dim} />}
                 <Pressable onPress={() => removeNote(n.id)} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('notifRemove')}>
                   <Icon name="close" size={18} color={th.dim} />
                 </Pressable>
-              </View>
+              </Pressable>
             );
           })}
         </ScrollView>

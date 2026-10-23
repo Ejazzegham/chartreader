@@ -49,7 +49,7 @@ for (let k = 0; k < 1500; k++) {
   if (!v.level) continue;
   nAlert++; if (!found) found = { a, c };
   const cb = a.combo, price = c[len - 1].c, buy = cb.side === 'buy';
-  const rules = cb.score >= ALERT_MIN && v.agree.length >= 3 && v.oppose.length === 0 && cb.htf !== 'against' && cb.rr[0] >= 1.39
+  const rules = cb.score >= ALERT_MIN && v.agree.length >= 3 && v.oppose.length === 0 && cb.htf !== 'against' && cb.rr[0] >= 0.94
     && v.agree.some((m) => m === 'ICT' || m === 'SMC') && v.agree.some((m) => m === 'VSA' || m === 'Pattern' || m === 'Candle')
     && (v.level === 'entry' ? cb.plan.status === 'enter-now' && cb.plan.inZone && cb.plan.reaction : cb.plan.inZone || (buy ? price - cb.zoneTop : cb.zoneBottom - price) <= 1.01 * (Math.abs(price - cb.entry) / cb.plan.distAtr || Infinity));
   if (!rules) bad++;
@@ -68,7 +68,7 @@ if (found) {
   ok('minProb 40 cannot lower the bar below 70', judge(withCombo({ score: 65 }), { ...base, minProb: 40 }).level === null);
   ok('minProb 90 raises the bar', a.combo.score >= 90 || judge(a, { ...base, minProb: 90 }).level === null);
   ok('higher timeframe against blocks', judge(withCombo({ htf: 'against' }), base).level === null);
-  ok('thin first target blocks', judge(withCombo({ rr: [1.0, 2, 3] }), base).level === null);
+  ok('thin first target blocks', judge(withCombo({ rr: [0.5, 2, 3] }), base).level === null);
   ok('high-impact news blocks', judge(a, { ...base, newsDanger: true }).level === null);
   ok('a far-away zone blocks (status far)', judge(withCombo({ plan: { ...a.combo.plan, status: 'far', inZone: false } }), base).level === null);
   ok('a method pointing the other way blocks', judge({ ...a, vsa: { ...a.vsa, ok: true, bias: a.combo.side === 'buy' ? 'bearish' : 'bullish' } } as any, base).level === null);

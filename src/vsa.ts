@@ -1,10 +1,13 @@
 import type { Candle } from './markets';
 import { atr, ladder } from './ta';
+import { VSA_MIN_COVER } from './volume';
 
 // =====================================================================================
-// VSA - Volume Spread Analysis. Reads effort (volume) against result (spread and close position).
-// Most forex / Deriv feeds carry no real volume. When volume is missing the engine still runs on
-// spread + close position + follow-through, and says so (hasVolume = false, lower confidence).
+// VSA - Volume Spread Analysis. Reads effort (REAL traded volume) against result (spread and close position).
+// VSA needs real volume. Candles get it from volume.ts (Binance spot for crypto, CME / COMEX / ICE futures for forex majors,
+// gold, silver and DXY). Where no real volume exists (synthetic indices, a few crosses) the engine does NOT guess from the
+// spread: it says so, gives no signal and no entry (hasVolume = false).
+// The caller passes CLOSED candles only (refine.ts drops the forming candle): its volume is partial, so a read from it would repaint.
 // =====================================================================================
 
 export type VsaTag = 'SC' | 'BC' | 'ST' | 'UT' | 'SP' | 'ND' | 'NS' | 'SOS' | 'SOW' | 'EFF';
@@ -47,24 +50,32 @@ export const VSA_NAMES: Record<VsaTag, string> = {
   ND: 'No demand', NS: 'No supply', SOS: 'Sign of strength', SOW: 'Sign of weakness', EFF: 'Effort, no result',
 };
 
-// The newest bar may still be forming, so its volume so far is only part of its final volume. Project it to a full bar (never more than 4x)
-// before comparing with the average; otherwise every new bar would look like "low volume / no demand". Closed bars are never touched.
-export function projectForming(c: Candle[], now = Date.now() / 1000): Candle[] {
-  const n = c.length;
-  if (n < 3 || !((c[n - 1].v ?? 0) > 0)) return c;
-  const gran = c[n - 1].t - c[n - 2].t, frac = gran > 0 ? (now - c[n - 1].t) / gran : 1;
-  if (!(frac >= 0 && frac < 1)) return c;
-  return [...c.slice(0, -1), { ...c[n - 1], v: (c[n - 1].v as number) / Math.max(0.25, frac) }];
-}
+export const VSA_NO_VOLUME = 'No real volume for this market, so VSA gives no signal. VSA reads volume against spread; guessing from the spread alone is not VSA.';
+// Average volume of a window, with spikes limited to 2x the median so one climax bar does not make everything after it look quiet
+// Candles with no volume (a futures break, a quiet minute) are left out, so a gap never drags the average down and fakes a high-volume bar.
+const baseVol = (all: number[]) => {
+  const w = all.filter((v) => v > 0);
+  if (!w.length) return 0;
+  const s = [...w].sort((x, y) => x - y), med = s[Math.floor(s.length / 2)], cap = med > 0 ? 2 * med : Infinity;
+  return w.reduce((t, v) => t + Math.min(v, cap), 0) / w.length;
+};
+// Real volume present: at least 70% of the last 40 candles carry a traded volume (VSA_MIN_COVER), and 2 of the newest 3 do, so the read
+// is about NOW and not about old candles. Candles without volume are skipped by the engine (no signal on them, left out of every average).
+export const hasRealVolume = (c: Candle[]) => {
+  const w = c.slice(-40);
+  if (w.length < 30) return false;
+  const has = (x: Candle) => (x.v ?? 0) > 0;
+  return w.filter(has).length >= Math.ceil(w.length * VSA_MIN_COVER) && w.slice(-3).filter(has).length >= 2;
+};
 
-export function vsaAnalyze(c0: Candle[]): VSA {
-  const c = projectForming(c0);
+export function vsaAnalyze(c: Candle[]): VSA {
   const n = c.length;
   const empty: VSA = { ok: false, hasVolume: false, signals: [], score: 0, bias: 'wait' };
   if (n < 30) return { ...empty, reason: 'Need at least 30 candles.' };
   const a = atr(c);
   if (!isFinite(a) || a <= 0) return { ...empty, reason: 'No volatility data.' };
-  const hasVolume = c.slice(-30).filter((x) => (x.v ?? 0) > 0).length >= 25;
+  if (!hasRealVolume(c)) return { ...empty, ok: true, reason: VSA_NO_VOLUME };
+  const hasVolume = true;
   const sp = (x: Candle) => x.h - x.l;
   const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / Math.max(1, arr.length);
   const signals: VsaSignal[] = [];
@@ -73,30 +84,30 @@ export function vsaAnalyze(c0: Candle[]): VSA {
   for (let i = from; i < n; i++) {
     const x = c[i], s = sp(x);
     if (s <= 0) continue;
-    if (hasVolume && !((x.v ?? 0) > 0)) continue; // volume for this bar is not known yet: do not judge it
     const win = c.slice(i - 20, i);
-    const aS = avg(win.map(sp)), aV = hasVolume ? avg(win.map((y) => y.v ?? 0)) : 0;
-    const vr = hasVolume && aV > 0 ? (x.v ?? 0) / aV : 1;
+    const aS = avg(win.map(sp)), aV = baseVol(win.map((y) => y.v ?? 0));
+    if (!(aV > 0) || !((x.v ?? 0) > 0)) continue; // a bar with no volume cannot be read
+    const vr = (x.v ?? 0) / aV;
     const pos = (x.c - x.l) / s; // 0 = closed on the low, 1 = closed on the high
     const up = x.c > x.o, down = x.c < x.o;
     const wide = s > 1.3 * aS, narrow = s < 0.7 * aS;
-    const hiV = hasVolume ? vr > 1.5 : wide, ultra = hasVolume ? vr > 2.2 : s > 2 * aS, lowV = hasVolume ? vr < 0.7 && (x.v ?? 0) < Math.min(c[i - 1].v ?? Infinity, c[i - 2].v ?? Infinity) : narrow;
+    const hiV = vr > 1.5, ultra = vr > 2.2, lowV = vr < 0.7 && (x.v ?? 0) < Math.min(c[i - 1].v ?? Infinity, c[i - 2].v ?? Infinity);
     const prior = c[i - 1].c - c[i - 8].c;
     const dn = prior < -0.8 * a, upTrend = prior > 0.8 * a;
     const lo10 = Math.min(...c.slice(i - 10, i).map((y) => y.l)), hi10 = Math.max(...c.slice(i - 10, i).map((y) => y.h));
-    const push = (tag: VsaTag, dir: 'bull' | 'bear', w: number, text: string) => signals.push({ i, tag, dir, w: hasVolume ? w : w * 0.6, text });
-    const vtxt = hasVolume ? 'high volume' : 'wide spread';
+    const push = (tag: VsaTag, dir: 'bull' | 'bear', w: number, text: string) => signals.push({ i, tag, dir, w, text });
+    const vtxt = `volume ${vr.toFixed(1)}x average`;
 
     if (down && wide && ultra && pos > 0.35 && dn) push('SC', 'bull', 3, `Selling climax: ${vtxt}, wide down bar closing off the low after a fall`);
     else if (up && wide && ultra && pos < 0.65 && upTrend) push('BC', 'bear', 3, `Buying climax: ${vtxt}, wide up bar closing off the high after a rally`);
-    else if (x.l < lo10 && x.c > lo10 && pos > 0.55) push('SP', 'bull', 3, 'Shakeout: price dipped under the recent low and closed back above it (trap for sellers)');
-    else if (x.h > hi10 && x.c < hi10 && pos < 0.45) push('UT', 'bear', 3, 'Upthrust: price poked above the recent high and closed back below it (trap for breakout buyers)');
-    else if (down && hiV && pos > 0.5 && !wide) push('ST', 'bull', 2, hasVolume ? 'Stopping volume: heavy volume on a down bar that closes mid/high (absorption)' : 'Absorption: down bar that closes mid/high');
-    else if (up && wide && hiV && pos > 0.7) push('SOS', 'bull', 2, `Sign of strength: ${vtxt}, up bar closing near the high`);
-    else if (down && wide && hiV && pos < 0.3) push('SOW', 'bear', 2, `Sign of weakness: ${vtxt}, down bar closing near the low`);
-    else if (up && narrow && lowV && prior > 0.4 * a) push('ND', 'bear', 1, hasVolume ? 'No demand: narrow up bar on low volume' : 'No demand: narrow up bar, buyers not pushing');
-    else if (down && narrow && lowV && prior < -0.4 * a) push('NS', 'bull', 1, hasVolume ? 'No supply: narrow down bar on low volume' : 'No supply: narrow down bar, sellers not pushing');
-    else if (hasVolume && vr > 1.8 && narrow) push('EFF', up ? 'bear' : 'bull', 1, 'Effort, no result: big volume but tiny spread, the move is being absorbed');
+    else if (x.l < lo10 && x.c > lo10 && pos > 0.55 && vr > 1.0) push('SP', 'bull', 3, `Shakeout: dipped under the recent low on ${vtxt} and closed back above it (trap for sellers)`);
+    else if (x.h > hi10 && x.c < hi10 && pos < 0.45 && vr > 1.0) push('UT', 'bear', 3, `Upthrust: poked above the recent high on ${vtxt} and closed back below it (trap for breakout buyers)`);
+    else if (down && hiV && pos > 0.5 && !wide) push('ST', 'bull', 2, `Stopping volume: ${vtxt} on a down bar that closes mid/high (absorption)`);
+    else if (up && wide && hiV && pos > 0.7) push('SOS', 'bull', 2, `Sign of strength: ${vtxt}, wide up bar closing near the high`);
+    else if (down && wide && hiV && pos < 0.3) push('SOW', 'bear', 2, `Sign of weakness: ${vtxt}, wide down bar closing near the low`);
+    else if (up && narrow && lowV && prior > 0.4 * a) push('ND', 'bear', 1, `No demand: narrow up bar on low volume (${vtxt})`);
+    else if (down && narrow && lowV && prior < -0.4 * a) push('NS', 'bull', 1, `No supply: narrow down bar on low volume (${vtxt})`);
+    else if (vr > 1.8 && narrow) push('EFF', up ? 'bear' : 'bull', 1, `Effort, no result: ${vtxt} but tiny spread, the move is being absorbed`);
   }
 
   // score -100..100, recent bars count more
@@ -107,7 +118,7 @@ export function vsaAnalyze(c0: Candle[]): VSA {
   const out: VSA = { ok: true, hasVolume, signals: signals.slice(-8), score, bias };
 
   // ---- reversal model: pattern -> low-volume breakout -> retest -> confirmation candle
-  const rev = findReversal(c, signals, a, hasVolume);
+  const rev = findReversal(c, signals, a);
   if (rev) {
     out.reversal = rev;
     if (rev.stage === 'confirmed') { out.bias = rev.side; out.score = rev.side === 'buy' ? Math.max(score, 60) : Math.min(score, -60); }
@@ -135,15 +146,15 @@ export function vsaAnalyze(c0: Candle[]): VSA {
 
 // ---------------------------------------------------------------------------------------------------------
 // Looks for the most advanced reversal among the VSA structures of the last 45 candles.
-function findReversal(c: Candle[], signals: VsaSignal[], a: number, hasVolume: boolean): VsaReversal | undefined {
+function findReversal(c: Candle[], signals: VsaSignal[], a: number): VsaReversal | undefined {
   const n = c.length, sp = (x: Candle) => x.h - x.l;
   const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / Math.max(1, arr.length);
-  // quiet bar: low volume when a volume feed exists, otherwise a narrow-to-normal spread
+  // quiet bar: real volume clearly below the recent average
   const quiet = (j: number) => {
     const win = c.slice(Math.max(0, j - 20), j);
     if (win.length < 5) return false;
-    if (hasVolume) { const aV = avg(win.map((y) => y.v ?? 0)); return aV > 0 && (c[j].v ?? 0) < 0.85 * aV; }
-    return sp(c[j]) <= 1.1 * avg(win.map(sp));
+    const aV = baseVol(win.map((y) => y.v ?? 0));
+    return aV > 0 && (c[j].v ?? 0) > 0 && (c[j].v ?? 0) < 0.85 * aV;
   };
   const stageNo = { pattern: 1, breakout: 2, retest: 3, confirmed: 4 } as const;
   let best: VsaReversal | undefined;
@@ -180,7 +191,9 @@ function findReversal(c: Candle[], signals: VsaSignal[], a: number, hasVolume: b
       if (cI === undefined && j > rI) {
         const bull = c[j].c > c[j].o, bear = c[j].c < c[j].o;
         const ok = buy ? bull && c[j].c > level && c[j].c > c[j - 1].h : bear && c[j].c < level && c[j].c < c[j - 1].l;
-        if (ok) cI = j;
+        // the move away from the retest must come on MORE volume than the retest itself (the side we trade is stepping in)
+        const rising = (c[j].v ?? 0) > (c[rI].v ?? 0);
+        if (ok && rising) cI = j;
       }
     }
     if (invalid) continue;
@@ -199,7 +212,7 @@ function findReversal(c: Candle[], signals: VsaSignal[], a: number, hasVolume: b
       { text: `${name} found ${n - 1 - p} candle${n - 1 - p === 1 ? '' : 's'} ago`, ok: true },
       { text: bI !== undefined ? `Low-volume breakout closed ${dirTxt} ${level.toPrecision(7).replace(/\.?0+$/, '')}` : badBreak ? `Price broke ${dirTxt} the level on HEAVY volume: not a valid trigger` : `Waiting for a low-volume breakout ${dirTxt} ${level.toPrecision(7).replace(/\.?0+$/, '')}`, ok: bI !== undefined },
       { text: rI !== undefined ? 'Retest of the broken level held' : 'Waiting for price to retest the broken level', ok: rI !== undefined },
-      { text: cI !== undefined ? 'Confirmation candle closed: execute' : 'Waiting for the confirmation candle', ok: cI !== undefined },
+      { text: cI !== undefined ? 'Confirmation candle closed on rising volume: execute' : 'Waiting for the confirmation candle (it must close on more volume than the retest)', ok: cI !== undefined },
     ];
     const next = stage === 'pattern' ? `Wait for a ${buy ? 'close above' : 'close below'} the level on LOW volume.` : stage === 'breakout' ? 'Do not chase. Wait for price to come back and test the broken level.' : stage === 'retest' ? `Wait for a ${buy ? 'bullish' : 'bearish'} candle to close ${dirTxt} the level. Enter only on that close.` : 'All four conditions are met. Execute with the stop beyond the retest.';
     const cand: VsaReversal = { side: buy ? 'buy' : 'sell', tag: sg.tag, stage, stageNo: stageNo[stage], patternI: p, breakoutI: bI, retestI: rI, confirmI: cI, level, invalidAt, steps, next, lowVolBreakout: lowVol, badBreakout: badBreak && bI === undefined };

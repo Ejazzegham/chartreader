@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, View, Pressable, ActivityIndicator, TextInput, TextInputProps, ViewStyle, Animated } from 'react-native';
+import { ScrollView, Text, View, Pressable, ActivityIndicator, TextInput, TextInputProps, ViewStyle, TextStyle, Animated } from 'react-native';
 import { showAlert } from './dialog';
 import { useWindowDimensions, useLayout, WidthCtx } from './win';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -281,9 +281,9 @@ export const Dim = ({ children }: { children: React.ReactNode }) => {
   return <Text style={{ color: th.dim, fontSize: 13, marginBottom: 4 }}>{children}</Text>;
 };
 
-export const Body = ({ children, color, bold }: { children: React.ReactNode; color?: string; bold?: boolean }) => {
+export const Body = ({ children, color, bold, style }: { children: React.ReactNode; color?: string; bold?: boolean; style?: TextStyle }) => {
   const { th } = useApp();
-  return <Text style={{ color: color ?? th.text, fontSize: 14, lineHeight: 21, fontWeight: bold ? '600' : '400' }}>{children}</Text>;
+  return <Text style={[{ color: color ?? th.text, fontSize: 14, lineHeight: 21, fontWeight: bold ? '600' : '400' }, style]}>{children}</Text>;
 };
 
 // Shared button. Labels never wrap (they shrink a little instead), so "Break-even" and "Close all" stay on one line on small phones.
@@ -379,9 +379,9 @@ export const Segment = ({ value, options, onChange }: { value: string; options: 
 };
 
 export const Row = ({ k, v, color }: { k: string; v?: string; color?: string }) => (
-  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 }}>
-    <Body>{k}</Body>
-    <Body color={color} bold>{v || '-'}</Body>
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 3 }}>
+    <View style={{ flex: 1, minWidth: 0 }}><Body>{k}</Body></View>
+    <View style={{ flexShrink: 1, maxWidth: '62%' }}><Body color={color} bold style={{ textAlign: 'right' }}>{v || '-'}</Body></View>
   </View>
 );
 

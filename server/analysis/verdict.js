@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.levelText = exports.MIN_AGREE = exports.MIN_RR = exports.NEAR_ATR = exports.ALERT_MIN = void 0;
+exports.levelText = exports.spikeSide = exports.MIN_AGREE = exports.MIN_RR = exports.NEAR_ATR = exports.ALERT_MIN = void 0;
 exports.judge = judge;
+exports.qualify = qualify;
 const ta_1 = require("./ta");
 const session_1 = require("./session");
+const quality_1 = require("./quality");
 // =====================================================================================
 // Alert gate: the checklist a professional trader runs before taking a setup.
 // A setup can be in the list, but it only rings (notification, alarm, push) when ALL of these hold:
@@ -20,9 +22,15 @@ const session_1 = require("./session");
 // Pure maths, no imports from the app, so the server scanner uses the same rules.
 // =====================================================================================
 exports.ALERT_MIN = 70; // no alert below this score
-exports.NEAR_ATR = 1.0; // "near the entry" means the zone is within this many ATR of price
-exports.MIN_RR = 1.4; // first target risk:reward measured from the entry (the engine's own TP1 is 1.5R, snapped targets can be a little less)
+exports.NEAR_ATR = quality_1.QUALITY.nearAtr; // "near the entry" means the zone is within this many ATR of price
+exports.MIN_RR = quality_1.QUALITY.tp1R - 0.05; // first target risk:reward measured from the entry (the engine's TP1 is QUALITY.tp1R, rounding can make it a hair less)
 exports.MIN_AGREE = 3; // methods that must agree
+// Deriv spike pairs. Boom drifts DOWN between its spikes and jumps UP, so only BUY is ever alerted there. Crash drifts UP and jumps DOWN, so only SELL.
+// A trade against the spike is never an alert, whatever its score. Because the drift runs against the spike, the "higher timeframe with the trade" and
+// "ADX trending" rules cannot be used on these pairs (they would block every BUY on Boom and every SELL on Crash), so they are skipped here.
+const spikeSide = (id) => { const m = /^(BOOM|CRASH)\d+N?$/.exec(id ?? ''); return m ? (m[1] === 'BOOM' ? 'buy' : 'sell') : null; };
+exports.spikeSide = spikeSide;
+const spikeWhy = (id) => ((0, exports.spikeSide)(id) === 'buy' ? 'Boom pairs spike UP: a SELL is never alerted (BUY only).' : 'Crash pairs spike DOWN: a BUY is never alerted (SELL only).');
 const sideOf = (d) => (d === 'bullish' || d === 'buy' || d === 'bull' ? 'buy' : d === 'bearish' || d === 'sell' || d === 'bear' ? 'sell' : null);
 function judge(all, ctx) {
     const cb = all.combo;
@@ -31,7 +39,7 @@ function judge(all, ctx) {
         v.blocked.push(all.why ?? 'No combined setup.');
         return v;
     }
-    const side = cb.side, buy = side === 'buy', p = cb.plan;
+    const side = cb.side, buy = side === 'buy', p = cb.plan, spike = (0, exports.spikeSide)(ctx.id);
     const c = ctx.c, a = (0, ta_1.atr)(c), price = c[c.length - 1].c;
     // ---- who agrees and who disagrees (only real reads count: a setup, a bias, a pattern, a candle; a bare trend does not)
     const vote = (name, s) => { if (s === side)
@@ -54,7 +62,9 @@ function judge(all, ctx) {
         v.blocked.push('No confirmation from VSA, a chart pattern or a candlestick.');
     if (v.oppose.length)
         v.blocked.push(`${v.oppose.join(', ')} ${v.oppose.length > 1 ? 'point' : 'points'} the other way.`);
-    if (cb.htf === 'against')
+    if (spike && side !== spike)
+        v.blocked.push(spikeWhy(ctx.id));
+    if (cb.htf === 'against' && !spike)
         v.blocked.push('The higher timeframe trend is against this trade.');
     if (cb.rr[0] < exports.MIN_RR - 0.01)
         v.blocked.push(`First target is only 1:${cb.rr[0].toFixed(1)} (need 1:${exports.MIN_RR}).`);
@@ -69,7 +79,7 @@ function judge(all, ctx) {
     const through = buy ? price < zBot - 0.1 * a : price > zTop + 0.1 * a; // beyond the zone, on the stop side
     const touched = c.slice(-10).some((x) => (buy ? x.l <= zTop : x.h >= zBot)); // the zone was reached in the last 10 candles
     if (p.status === 'enter-now') {
-        if (p.rrNow < 1.2)
+        if (p.rrNow < 0.6 * quality_1.QUALITY.tp1R)
             v.blocked.push(`Price moved from the entry: only 1:${p.rrNow.toFixed(1)} left to TP1.`);
     }
     else if (p.status === 'wait-trigger' || p.status === 'limit') {
@@ -88,3 +98,24 @@ function judge(all, ctx) {
 }
 const levelText = (l) => (l === 'entry' ? 'Entry now' : l === 'near' ? 'Near entry' : '');
 exports.levelText = levelText;
+function qualify(all, ctx) {
+    const v = judge(all, { ...ctx, minProb: Math.max(ctx.minProb ?? 0, quality_1.QUALITY.minScore) });
+    const reasons = [...v.blocked], cb = all.combo;
+    if (cb) {
+        const buy = cb.side === 'buy', cf = all.confirm, spike = !!(0, exports.spikeSide)(ctx.id); // spike pairs: the drift is against the spike by design, so no trend rules (see spikeSide)
+        if (quality_1.QUALITY.requireHtf && cb.htf !== 'with' && !spike)
+            reasons.push(cb.htf === undefined ? 'Not enough candles to read the higher timeframe trend.' : cb.htf === 'neutral' ? 'The higher timeframe has no clear trend.' : 'The higher timeframe trend is against this trade.');
+        if (cf) {
+            if (!spike && isFinite(cf.adx) && cf.adx < quality_1.QUALITY.adxMin)
+                reasons.push(`The market is ranging (ADX ${cf.adx.toFixed(0)}, needs ${quality_1.QUALITY.adxMin}).`);
+            if (isFinite(cf.rsi) && (buy ? cf.rsi > 72 : cf.rsi < 28))
+                reasons.push(`RSI ${cf.rsi.toFixed(0)} is stretched: wait for a pullback.`);
+            if (cf.blocked !== null)
+                reasons.push('A strong level sits between the entry and the first target.');
+        }
+        if (all.smc.ok && all.smc.idm && !all.smc.idm.taken && all.smc.setup?.side === cb.side && cb.plan.status !== 'enter-now')
+            reasons.push('SMC inducement is not swept yet: a limit order here can be run first.');
+    }
+    const uniq = [...new Set(reasons)], trade = !!cb && uniq.length === 0;
+    return { trade, level: trade ? v.level : null, grade: trade && cb ? (cb.score >= 85 ? 'A+' : 'A') : null, reasons: uniq, verdict: v };
+}

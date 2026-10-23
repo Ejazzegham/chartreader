@@ -1,26 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Vibration } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import Modal from './Modal';
 import { useWindowDimensions } from './win';
 import Svg, { Line, Rect, G, Polyline, Text as SvgText } from 'react-native-svg';
 import { useApp } from './store';
-import { Card, Dim, Body, Btn, Field, Segment, Icon, Row, TimeframeBar, SectionHeader, Badge } from './ui';
+import { Card, Dim, Body, Btn, Field, Segment, Icon, SectionHeader, Badge } from './ui';
 import GlassBackdrop from './Glass';
-import { analyzeMarket, MarketAI } from './gemini';
-import TakeSkip from './TakeSkip';
-import { LANGS } from './i18n';
 import { signal } from './ta';
-import { analyzeAll, methodsContext } from './refine';
-import { useZoom, ZoomBar } from './ChartZoom';
+import { useZoom, ChartHud } from './ChartZoom';
 import { ScrollLockContext } from './scrollLock';
-import { TP_SPLIT } from './gemini';
-import { TpLadder, Checklist } from './ProUI';
 import ChartWeb from './ChartWeb';
 import TradingViewPanel from './TradingViewPanel';
 import { tvSymbol, tvHtml, matchSymbol, TV_INTERVAL, DERIV_CHARTS, TV_STUDIES } from './tv';
-import IndicatorChart from './IndicatorChart';
-import TradePlan, { PlanIn, EMPTY_PLAN, planLevels } from './TradePlan';
-import { Sym, Candle, SYMBOLS, symOf, isBad, TFS, candleLeft, fmtLeft, useFeed, watchCandles, setWatch, chg, toggleFav, addAlert, removeAlert, SESSIONS, sessionOpen, fxWeekendClosed } from './markets';
+import { manualTarget, MANUAL_TAB } from './manualTarget';
+import { Sym, Candle, SYMBOLS, symOf, isBad, TFS, candleLeft, fmtLeft, useFeed, watchCandles, setWatch, chg, toggleFav, addAlert, removeAlert, SESSIONS, sessionOpen, fxWeekendClosed, spreadOf } from './markets';
 
 export function Sessions() {
   const { th, t } = useApp();
@@ -52,9 +45,22 @@ export function Sessions() {
 
 type Level = { label: string; price: number; color: string };
 
-export function CandleChart({ data: all, width, dec, height = 270, ema20: e20all, ema50: e50all, levels = [], gran }: { data: Candle[]; width: number; dec: number; height?: number; ema20?: number[]; ema50?: number[]; levels?: Level[]; gran?: number }) {
+// One tap from a pair's chart to the Manual Trade screen (MT5 style SELL / BUY bar) with this pair already chosen. The chart window closes behind it.
+function TradeThisPair({ symId, onClose }: { symId: string; onClose: () => void }) {
+  const { th, setTab } = useApp();
+  return (
+    <Pressable onPress={() => { manualTarget.sym = symId; onClose(); setTab(MANUAL_TAB); }} accessibilityRole="button" accessibilityLabel="Trade this pair" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, borderRadius: 8, paddingHorizontal: 14, backgroundColor: th.accent + '1A', borderWidth: 1, borderColor: th.accent + '77', opacity: pressed ? 0.85 : 1 })}>
+      <Icon name="swap-vertical" size={20} color={th.accent} />
+      <Text style={{ flex: 1, color: th.text, fontWeight: '900', fontSize: 14 }}>Trade this pair · SELL / BUY</Text>
+      <Icon name="chevron-forward" size={16} color={th.dim} />
+    </Pressable>
+  );
+}
+
+export function CandleChart({ data: all, width: fullW, dec, height = 270, ema20: e20all, ema50: e50all, levels = [], gran }: { data: Candle[]; width: number; dec: number; height?: number; ema20?: number[]; ema50?: number[]; levels?: Level[]; gran?: number }) {
   const { th } = useApp();
-  const z = useZoom(all.length, width - 62);
+  const width = fullW; // no scroll bars: zoom like MT5 (pinch, drag, drag the price axis)
+  const z = useZoom(all.length, width - 62, height);
   // Candle timer: ticks every second so the time left on the running candle counts down live.
   const [tick, setTick] = useState(Date.now());
   useEffect(() => { if (!gran) return; const id = setInterval(() => setTick(Date.now()), 1000); return () => clearInterval(id); }, [gran]);
@@ -62,13 +68,15 @@ export function CandleChart({ data: all, width, dec, height = 270, ema20: e20all
   const data = all.slice(z.start, z.end), ema20 = e20all?.slice(z.start, z.end), ema50 = e50all?.slice(z.start, z.end);
   const padR = 62, W = width - padR;
   const lv = levels.filter((l) => isFinite(l.price));
-  const hi = Math.max(...data.map((c) => c.h), ...lv.map((l) => l.price)), lo = Math.min(...data.map((c) => c.l), ...lv.map((l) => l.price)), rng = hi - lo || 1;
+  const { hi, lo } = z.fitY(Math.max(...data.map((c) => c.h), ...lv.map((l) => l.price)), Math.min(...data.map((c) => c.l), ...lv.map((l) => l.price))), rng = hi - lo || 1;
   const y = (v: number) => 8 + (1 - (v - lo) / rng) * (height - 16);
   const step = W / z.slots, bw = Math.max(1, step * 0.66);
   const last = all[all.length - 1], lc = last.c >= last.o ? th.buy : th.sell;
   const line = (v?: number[]) => (v ?? []).map((n, i) => (isFinite(n) ? `${i * step + step / 2},${y(n)}` : '')).filter(Boolean).join(' ');
   return (
-    <View {...z.handlers} style={{ direction: 'ltr' }}>
+    <View style={{ direction: 'ltr' }}>
+     <View style={{ flexDirection: 'row' }}>
+      <View {...z.handlers} style={{ width }}>
       <Svg width={width} height={height} style={{ overflow: 'hidden' }}>
         {[0, 0.25, 0.5, 0.75, 1].map((f, i) => {
           const v = lo + f * rng;
@@ -109,7 +117,9 @@ export function CandleChart({ data: all, width, dec, height = 270, ema20: e20all
           );
         })()}
       </Svg>
-      <ZoomBar z={z} />
+      <ChartHud z={z} top={height - 46} right={padR + 8} />
+      </View>
+     </View>
     </View>
   );
 }
@@ -213,7 +223,7 @@ function PairPicker({ current, onPick, onClose }: { current: string; onPick: (s:
 }
 
 export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose: () => void }) {
-  const { th, t, rtl, settings, apiKey, addItem } = useApp();
+  const { th, t, rtl } = useApp();
   const { width, height } = useWindowDimensions();
   // `picked` is the market that was tapped in the list. `ov` is the pair the user switched to afterwards (picker, or the chart's own
   // symbol box). The header, price, star, candles and alerts all use `sym`, the pair that is active right now.
@@ -232,13 +242,9 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
   const [src, setSrc] = useState('');
   const [nonce, setNonce] = useState(0);
   const [lvl, setLvl] = useState('');
-  const [studies, setStudies] = useState<string[]>([]);
+  const [studies, setStudies] = useState<string[]>(['vol']); // TradingView volume study on by default
   const [cstyle, setCstyle] = useState('1'); // TradingView chart style (candles, hollow, Heikin Ashi, bars, line, area)
   const [lock, setLock] = useState(false); // a finger is on a web chart: the page must not scroll, so pinch zoom and drag go to the chart
-  const [ai, setAi] = useState<MarketAI | null>(null);
-  const [aiBusy, setAiBusy] = useState(false);
-  const [aiErr, setAiErr] = useState('');
-  const [plan, setPlan] = useState<PlanIn>(EMPTY_PLAN);
 
   useEffect(() => {
     if (!sym) return;
@@ -246,19 +252,15 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
     return () => setWatch('sheet', []);
   }, [sym?.id]);
   useEffect(() => { setFull(false); }, [picked?.id]);
-  useEffect(() => { setPlan(EMPTY_PLAN); }, [sym?.id]); // a plan belongs to one pair
 
   useEffect(() => {
     if (!sym) return;
-    setData([]); setErr(''); setSrc(''); setAi(null); setAiErr('');
+    setData([]); setErr(''); setSrc('');
     return watchCandles(sym.id, Number(tf), (c) => { setErr(''); setData(c); }, setErr, setSrc);
   }, [sym?.id, tf, nonce]);
 
   // Hooks must run on EVERY render. This call used to sit below the early returns, so opening a pair (null -> pair) or
   // toggling full screen changed the hook count and React crashed: that was the black screen.
-  const GR: Record<string, number> = { 'A+': 90, A: 80, B: 65, C: 50 };
-  const decNow = quotes[sym?.id ?? '']?.dec ?? 4;
-  // the pair's analysis result has its own Take / Skip buttons (it is not auto-logged any more)
 
   if (!sym || !picked) return null;
   const switchTo = (s: Sym) => { if (s.id === sym.id) return; setOv({ from: picked.id, sym: s }); setNote(''); };
@@ -267,14 +269,14 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
     const m = matchSymbol(raw) ?? (mode === 'deriv' && /^[A-Za-z0-9_]{3,24}$/.test(raw) ? symOf(raw) : null);
     if (m) switchTo(m); else setNote(raw);
   };
-  const canPick = mode === 'tv' || mode === 'quick';
+  const canPick = mode === 'tv';
   // TV pages are rebuilt for each pair, so they re-key on it. Page charts (Deriv, My chart) must NOT reload when the header follows them.
   const wkey = mode === 'tv' ? sym.id + studies.join('') + cstyle + tf : picked.id;
   const tv = tvSymbol(sym);
   const web = mode === 'tv' ? (tv ? { html: tvHtml(tv, TV_INTERVAL[tf] ?? '15', th.dark, th.bg, TV_STUDIES.filter((x) => studies.includes(x.k)).map((x) => x.id), cstyle) } : null) : mode === 'deriv' ? { uri: DERIV_CHARTS } : null;
-  // Deriv's own chart site can fail to load on some networks (net::ERR_NAME_NOT_RESOLVED). Then show the same market on TradingView, and offer Analysis View.
+  // Deriv's own chart site can fail to load on some networks (net::ERR_NAME_NOT_RESOLVED). Then show the same market on TradingView,.
   const fbHtml = mode === 'deriv' && tv ? tvHtml(tv, TV_INTERVAL[tf] ?? '15', th.dark, th.bg, []) : undefined;
-  const webExtra = mode === 'deriv' ? { fallbackHtml: fbHtml, onAnalysis: () => { setFull(false); setMode('quick'); } } : {};
+  const webExtra = mode === 'deriv' ? { fallbackHtml: fbHtml } : {};
   if (full && web) {
     return (
       <Modal visible animationType="fade" onRequestClose={() => setFull(false)}>
@@ -297,35 +299,15 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
   const closes = data.map((x) => x.c);
   const sig = data.length > 20 ? signal(data) : null;
   const sc = sig ? (sig.dir === 'buy' ? th.buy : sig.dir === 'sell' ? th.sell : th.gold) : th.dim;
-  const levels: Level[] = ai ? [
-    { label: t('entry'), price: ai.entry, color: th.accent }, { label: t('sl'), price: ai.stopLoss, color: th.sell },
-    ...ai.takeProfits.map((p, i) => ({ label: `TP${i + 1}`, price: p, color: th.buy })),
-  ] : [];
-  const shown: Level[] = [...levels, ...planLevels(plan, th, t)];
   const setAlert = (dir: 'above' | 'below') => {
     const v = parseFloat(lvl.replace(',', '.'));
     if (!isFinite(v)) return;
     addAlert(sym.id, v, dir); setLvl('');
   };
-  const runAi = async () => {
-    if (!apiKey.trim()) { setAiErr(t('needPay')); return; }
-    setAiBusy(true); setAiErr('');
-    try {
-      const lang = LANGS.find((l) => l.code === settings.lang)?.ai ?? 'English';
-      const all = analyzeAll(data), ic = all.ict, ff = (n: number) => n.toFixed(dec);
-      const ctx = ic.ok ? [`trend ${ic.trend}`, ic.lastBreak && `last break ${ic.lastBreak.kind} ${ic.lastBreak.dir}`, ic.zone && `price in ${ic.zone}`, ic.sweep && `${ic.sweep.side} swept at ${ff(ic.sweep.price)}`,
-        ic.orderBlocks.length && `order blocks ${ic.orderBlocks.map((z) => `${z.side} ${ff(z.bottom)}-${ff(z.top)}`).join('; ')}`, ic.fvgs.length && `FVGs ${ic.fvgs.map((z) => `${z.side} ${ff(z.bottom)}-${ff(z.top)}`).join('; ')}`,
-        ic.setup && `proposed ${ic.setup.side} entry ${ff(ic.setup.entry)} SL ${ff(ic.setup.sl)}`, methodsContext(all, ff)].filter(Boolean).join(', ') : '';
-      const tfLabel = TFS.find((x) => x.k === tf)?.label ?? tf, res = await analyzeMarket(apiKey.trim(), settings.model.trim(), lang, `${sym.name} (${sym.id})`, tfLabel, data, dec, ctx);
-      setAi(res); addItem(res, sym.name, tfLabel); // saved in History
-    } catch (e: any) { setAiErr(e.message ?? 'Error'); } finally { setAiBusy(false); }
-  };
-  const bc = ai ? (ai.bias === 'buy' ? th.buy : ai.bias === 'sell' ? th.sell : th.gold) : th.dim;
-  const f = (n: number) => (isFinite(n) ? n.toFixed(dec) : '-');
 
   const up = c >= 0, last = closes.length ? closes[closes.length - 1] : undefined;
   const shownPrice = q ? q.price.toFixed(dec) : last !== undefined ? last.toFixed(dec) : '—';
-  const live = !!q;
+  const live = !!q, spr = spreadOf(sym.id);
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr' }}>
@@ -359,6 +341,7 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
             <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
               <View style={{ flex: 1, gap: 8 }}>
                 <Text style={{ color: th.text, fontSize: 36, fontWeight: '900', letterSpacing: -1, fontVariant: ['tabular-nums'] }} numberOfLines={1} adjustsFontSizeToFit>{shownPrice}</Text>
+                {!!spr && <Text style={{ color: th.dim, fontSize: 12, fontWeight: '700', fontVariant: ['tabular-nums'] }} numberOfLines={1}>Bid {q!.bid!.toFixed(dec)} · Ask {q!.ask!.toFixed(dec)} · Spread {spr.text}</Text>}
                 <View style={{ flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 4, backgroundColor: col + '24', borderColor: col + '55', borderWidth: 1, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 4 }}>
                   <Icon name={up ? 'trending-up' : 'trending-down'} size={15} color={col} />
                   <Text style={{ color: col, fontWeight: '900', fontSize: 13 }}>{up ? '+' : ''}{c.toFixed(2)}%</Text>
@@ -372,42 +355,26 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
           {!!flash && <Card style={{ padding: 10 }}><Text style={{ color: th.text, fontSize: 12.5 }}>🔔 {flash}</Text></Card>}
 
           {/* chart */}
-          <Segment value={mode} options={[{ k: 'tv', label: 'TradingView' }, { k: 'deriv', label: 'Deriv' }, { k: 'quick', label: t('quick2') }]} onChange={setMode} />
-          {mode !== 'quick' ? (
-            <View style={{ gap: 10 }}>
-              {web ? (
-                mode === 'tv' && tv ? (
-                  <TradingViewPanel symbol={tv} symId={sym.id} tf={tf} onTf={setTf} studies={studies} onStudies={setStudies} cstyle={cstyle} onStyle={setCstyle}
-                    height={Math.round(height * 0.66)} onFull={() => setFull(true)} onSymbol={follow} onTouching={setLock} />
-                ) : (
-                  <>
-                    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', backgroundColor: th.panel }}>
-                      <ChartWeb key={`${wkey}-${mode}-${th.bg}`} {...web} {...webExtra} onSymbol={follow} onTouching={setLock} height={Math.round(height * 0.62)} />
-                    </View>
-                    <Btn ghost icon="expand-outline" label={t('fullScreen')} onPress={() => setFull(true)} />
-                    <Text style={{ color: th.dim, fontSize: 11.5 }}>{t('derivHint')}</Text>
-                  </>
-                )
+          <Segment value={mode} options={[{ k: 'tv', label: 'TradingView' }, { k: 'deriv', label: 'Deriv' }]} onChange={setMode} />
+          <TradeThisPair symId={sym.id} onClose={onClose} />
+          <View style={{ gap: 10 }}>
+            {web ? (
+              mode === 'tv' && tv ? (
+                <TradingViewPanel symbol={tv} symId={sym.id} tf={tf} onTf={setTf} studies={studies} onStudies={setStudies} cstyle={cstyle} onStyle={setCstyle}
+                  height={Math.round(height * 0.66)} onFull={() => setFull(true)} onSymbol={follow} onTouching={setLock} />
               ) : (
-                <Card><Body color={th.gold}>{t('noTv')}</Body></Card>
-              )}
-            </View>
-          ) : (
-            <>
-              <TimeframeBar value={tf} options={TFS} onChange={setTf} />
-              <Card style={{ padding: 8, direction: 'ltr', overflow: 'hidden' }}>
-                {err ? (
-                  <View style={{ gap: 12, padding: 8 }}>
-                    <Body color={th.sell}>{err}</Body>
-                    <Btn ghost label={t('retry')} onPress={() => setNonce((n) => n + 1)} />
+                <>
+                  <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', backgroundColor: th.panel }}>
+                    <ChartWeb key={`${wkey}-${mode}-${th.bg}`} {...web} {...webExtra} onSymbol={follow} onTouching={setLock} height={Math.round(height * 0.62)} />
                   </View>
-                ) : (
-                  <IndicatorChart data={data} width={width - 48} dec={dec} levels={shown} gran={Number(tf)} onAlert={(p) => { const last = data[data.length - 1]?.c ?? p; addAlert(sym.id, p, p >= last ? 'above' : 'below'); Vibration.vibrate(40); setFlash(`Price alert set at ${p.toFixed(dec)} (${p >= last ? 'above' : 'below'}). It rings while the app is open.`); }} />
-                )}
-              </Card>
-              {!!src && <Text style={{ color: th.dim, fontSize: 11, textAlign: 'right' }}>{src === 'deriv' ? t('srcDeriv') : src === 'binance' ? 'Binance data' : t('srcBackup')}</Text>}
-            </>
-          )}
+                  <Btn ghost icon="expand-outline" label={t('fullScreen')} onPress={() => setFull(true)} />
+                  <Text style={{ color: th.dim, fontSize: 11.5 }}>{t('derivHint')}</Text>
+                </>
+              )
+            ) : (
+              <Card><Body color={th.gold}>{t('noTv')}</Body></Card>
+            )}
+          </View>
 
           {/* stats */}
           <SectionHeader title={t('signal')} icon="pulse" />
@@ -419,41 +386,6 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
             <Stat icon="arrow-up" label={t('rangeHi')} value={hi?.toFixed(dec) ?? '—'} color={th.buy} />
             <Stat icon="arrow-down" label={t('rangeLo')} value={lo?.toFixed(dec) ?? '—'} color={th.sell} />
           </View>
-
-          {/* AI analysis */}
-          <SectionHeader title={t('aiAnalyze')} icon="sparkles" />
-          <Btn icon="sparkles" label={aiBusy ? t('analyzing') : t('aiAnalyze')} onPress={runAi} busy={aiBusy} disabled={data.length < 20} />
-          {!!aiErr && <Card style={{ padding: 12 }}><Text style={{ color: th.sell, lineHeight: 20 }}>{aiErr}</Text></Card>}
-          {ai && (
-            <Card glow style={{ gap: 4 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <Text style={{ color: th.dim, fontSize: 11, fontWeight: '900', letterSpacing: 1 }}>{t('setup').toUpperCase()}</Text>
-                <Badge label={t(ai.bias).toUpperCase()} color={bc} />
-              </View>
-              <Text style={{ color: bc, fontSize: 22, fontWeight: '900', marginBottom: 4 }}>{t(ai.bias)} · {t(ai.trend.direction)}</Text>
-              <Body>{ai.trend.summary}</Body>
-              <View style={{ height: 8 }} />
-              {!!ai.ict?.model && <Row k="ICT" v={`${ai.ict.model}${ai.ict.grade ? ' · ' + ai.ict.grade : ''}`} color={th.accent} />}
-              <Row k={t('ictRefined')} v={f(ai.entry)} />
-              <Row k={t('sl')} v={f(ai.stopLoss)} color={th.sell} />
-              <View style={{ height: 6 }} />
-              <TpLadder rows={ai.takeProfits.map((p, i) => ({ label: `TP${i + 1}`, price: f(p), split: TP_SPLIT[i] }))} />
-              <View style={{ height: 6 }} />
-              {!!ai.ict?.poiTop && !!ai.ict?.poiBottom && <Row k={ai.ict.poiKind === 'FVG' ? 'FVG' : 'Order block'} v={`${f(ai.ict.poiBottom)} - ${f(ai.ict.poiTop)}`} color={th.gold} />}
-              {!!ai.support.length && <Row k={t('support')} v={ai.support.map(f).join(' · ')} color={th.buy} />}
-              {!!ai.resistance.length && <Row k={t('resistance')} v={ai.resistance.map(f).join(' · ')} color={th.sell} />}
-              {!!ai.riskReward && <Row k={t('rr')} v={ai.riskReward} />}
-              {!!ai.ict?.confluence?.length && <View style={{ marginTop: 6 }}><Checklist items={ai.ict.confluence.map((text) => ({ text, ok: true }))} /></View>}
-              <View style={{ height: 8 }} />
-              <Body>{ai.reasoning}</Body>
-              {ai.warnings.map((w, i) => <Body key={i} color={th.gold}>• {w}</Body>)}
-              <View style={{ height: 8 }} />
-              <Dim>{t('disclaimer')}</Dim>
-            </Card>
-          )}
-          {ai && ai.bias !== 'wait' && isFinite(ai.entry) && isFinite(ai.stopLoss) && !!ai.takeProfits?.length && (
-            <TakeSkip symId={sym.id} name={sym.name} tf={tf} dec={decNow} setup={{ side: ai.bias, entry: ai.entry, sl: ai.stopLoss, tps: ai.takeProfits.slice(0, 3), score: GR[ai.ict?.grade ?? 'B'] ?? 65, grade: ai.ict?.grade ?? 'B', source: 'Chart analysis' }} />
-          )}
 
           {/* price alerts */}
           <SectionHeader title={t('alerts')} icon="notifications-outline" />
@@ -475,7 +407,6 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
             <View style={{ height: 6 }} />
             <Text style={{ color: th.dim, fontSize: 11.5 }}>{t('alertNote')}</Text>
           </Card>
-          <TradePlan symbol={`${sym.name} (${sym.id})`} data={data} dec={dec} tf={tf} setTf={setTf} plan={plan} setPlan={setPlan} />
         </ScrollView>
         </ScrollLockContext.Provider>
         {pick && <PairPicker current={sym.id} onPick={(s) => { switchTo(s); setPick(false); }} onClose={() => setPick(false)} />}

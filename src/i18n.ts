@@ -217,7 +217,7 @@ const MARKETS_EN: Record<string, string> = {
   noConn: "Cannot reach the live feed. Check your internet or VPN. The app keeps retrying.",
   equity: "Equity curve", maxDd: "Max drawdown",
   catIndices: "Indices", quick2: "Analysis View", fullScreen: "Full screen", openBrowser: "Open in browser", chartFail: "The chart could not be loaded.",
-  noTv: "This market is not on TradingView. Use the Deriv chart or Analysis View.",
+  noTv: "This market is not on TradingView. Use the Deriv chart, or open CR (Chart Reader) Analysis on the Analysis page.",
   derivHint: "Deriv's own TradingView chart. Pick the market inside the chart with its search box; the name, price and star above follow it.",
   tvHint: "Tap the pair name at the top to change pair. The chart, price and star follow it.", chartShows: "Chart shows",
   derivDown: "Deriv indices need Deriv's live feed, which this network is not reaching yet. Tap Connection check, try Wi-Fi or mobile data, or open the chart in the TradingView / Deriv tabs.",
@@ -234,7 +234,8 @@ const MARKETS_EN: Record<string, string> = {
 
 // v2.0 Pro features. Other languages fall back to English until translated (Urdu has the navigation labels).
 const PRO_EN: Record<string, string> = {
-  th_glassNight: "Glass Night", th_glassFrost: "Glass Frost", th_glassAurora: "Glass Aurora", th_glassRose: "Glass Rose",
+  th_glassNight: "Glass Night", th_glassFrost: "Glass Frost", th_glassAurora: "Glass Aurora", th_glassRose: "Glass Rose", th_glassObsidian: "Glass Obsidian", th_glassPearl: "Glass Pearl",
+  tabManual: "Demo Trade", navDescManual: "Practice trading on live prices with virtual money, like MetaTrader 5: SELL / BUY, then stop loss, take profit and partial closes from the chart",
   tabIct: "ICT Lab", tabKillzones: "Killzones", tabPerf: "Performance", tabTopDown: "Top-Down", navDescTopDown: "Pick any 3 timeframes: direction, zone and entry", tabTools: "Risk & TP Planner", calcTitle: "Risk & TP planner", th_royal: "Royal Gold", th_graphite: "Graphite", th_cloud: "Cloud",
   navPages: "PAGES", navProTools: "PRO TOOLS",
   errWeak: "The new password must be at least 6 characters.", errCurrentPw: "Your current password is not correct.", errRecent: "For safety, please log out, log in again and retry.",
@@ -262,9 +263,9 @@ const PRO_EN: Record<string, string> = {
   smcNoSetup: "No SMC point of interest right now", smcNoSetupText: "No unmitigated decisional order block, supply / demand base or breaker lines up with the trend. Wait for a pullback into a zone, or try another timeframe.",
   smcEntryNote: "Entry at the near edge of the zone, stop beyond the far side. It works best after the inducement has been swept.", smcZones: "Supply, demand, order blocks and breakers",
   vsaBias: "VSA bias", vsaFeed: "Volume feed", vsaReal: "Real volume", vsaSpread: "Spread only",
-  vsaNoVol: "No real volume is available for this market right now (Deriv synthetic indices have none; for crypto, forex and metals the volume source did not answer). VSA is read from spread, close position and follow-through, which is less reliable than real volume.",
+  vsaNoVol: "This market has no volume feed. VSA is read from spread, close position and follow-through, which is less reliable than real volume.",
   vsaNone: "No clear VSA signal in the last 40 candles.", vsaSignals: "VSA signals", barsAgo: "bars ago",
-  patNone: "No clear chart pattern", patNoneText: "No double top / bottom, head and shoulders, triangle, wedge or rectangle is complete enough right now.",
+  patNone: "No clear chart pattern", patNoneText: "No head and shoulders, double / triple top or bottom, triangle, flag, pennant, wedge, rectangle, cup and handle or rounding pattern is complete enough right now.",
   patName: "Pattern", patStatus: "Status", pat_forming: "Forming", pat_breakout: "Breakout", pat_confirmed: "Confirmed", patFound: "Patterns found", patTarget: "target",
   sendRisk: "Send to Risk & TP planner",
   tpLadder: "Take profit ladder", closePct: "Close", price: "price", levels: "Levels", allTps: "If all 3 TPs hit", beAfterTp1: "TP1 then stopped at break-even", worstCase: "Worst case (stop loss)", unitsShort: "units",

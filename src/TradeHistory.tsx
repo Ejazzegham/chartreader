@@ -4,9 +4,9 @@ import { shareText } from './dialog';
 import Modal from './Modal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp, Trade } from './store';
-import { Icon, confirmAction } from './ui';
-import { fmtR, money } from './trades';
-import { fmtLots } from './lots';
+import { Icon } from './ui';
+import { fmtR, money, sourceName } from './trades';
+import TradeDetail from './TradeDetail';
 
 // Trade history: every closed trade in one place, with totals, filters, search, a per-day total and a CSV export.
 // Trades come from the Journal (closed by the tracker or added by hand), so nothing is stored twice.
@@ -16,16 +16,15 @@ type Side = 'all' | 'buy' | 'sell';
 
 const DAY = 864e5;
 const startOfDay = (d: number) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); };
-const held = (a?: number, b?: number) => { if (!a || !b || b <= a) return ''; const m = Math.max(1, Math.round((b - a) / 60000)); return m < 60 ? `${m}m` : m < 1440 ? `${(m / 60).toFixed(1)}h` : `${(m / 1440).toFixed(1)}d`; };
 
 export default function TradeHistory() {
-  const { th, t, rtl, histOpen, setHistOpen, journal, removeTrade, setTab, settings } = useApp();
+  const { th, t, rtl, histOpen, setHistOpen, journal, setTab, settings } = useApp();
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<Period>('all');
   const [result, setResult] = useState<Result>('all');
   const [side, setSide] = useState<Side>('all');
   const [q, setQ] = useState('');
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(null); // id of the trade whose full view (method + chart) is open
 
   const rows = useMemo(() => {
     const now = Date.now(), term = q.trim().toLowerCase();
@@ -57,7 +56,7 @@ export default function TradeHistory() {
 
   const exportCsv = () => {
     const head = 'date,symbol,side,method,grade,entry,exit,lots,R,pnl,result,tag,note';
-    const body = [...rows].sort((a, b) => a.date - b.date).map((j) => [new Date(j.date).toISOString(), j.symbol, j.side, j.source ?? 'Manual', j.grade ?? '', j.entry, j.exit, j.lots ?? '', j.r?.toFixed(2) ?? '', j.pnl.toFixed(2), j.why ?? '', j.tag ?? '', `"${(j.note ?? '').replace(/"/g, "'")}"`].join(','));
+    const body = [...rows].sort((a, b) => a.date - b.date).map((j) => [new Date(j.date).toISOString(), j.symbol, j.side, sourceName(j.source), j.grade ?? '', j.entry, j.exit, j.lots ?? '', j.r?.toFixed(2) ?? '', j.pnl.toFixed(2), j.why ?? '', j.tag ?? '', `"${(j.note ?? '').replace(/"/g, "'")}"`].join(','));
     shareText([head, ...body].join('\n'), t('tabTradeHistory'));
   };
 
@@ -79,8 +78,10 @@ export default function TradeHistory() {
   );
 
   const close = () => setHistOpen(false);
+  const openTrade = open ? journal.find((x) => x.id === open) : undefined;
 
   return (
+    <>
     <Modal animationType="slide" onRequestClose={close} statusBarTranslucent>
       <View style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr' }}>
         {/* header */}
@@ -156,10 +157,10 @@ export default function TradeHistory() {
                     <Text style={{ color: col(g.total), fontSize: 12.5, fontWeight: '900' }}>{money(g.total)}</Text>
                   </View>
                   {g.items.map((j) => {
-                    const c = col(j.pnl), d = j.dec ?? (j.entry >= 100 ? 2 : 5), isOpen = open === j.id, hd = held(j.openedAt, j.date);
+                    const c = col(j.pnl);
                     return (
                       <View key={j.id} style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, overflow: 'hidden' }}>
-                        <Pressable onPress={() => setOpen(isOpen ? null : j.id)} accessibilityRole="button" accessibilityState={{ expanded: isOpen }} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 }}>
+                        <Pressable onPress={() => setOpen(j.id)} accessibilityRole="button" accessibilityLabel={`${j.symbol} ${t(j.side)} ${money(j.pnl)}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 }}>
                           <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: c }} />
                           <View style={{ flex: 1 }}>
                             <Text style={{ color: th.text, fontWeight: '900', fontSize: 14.5 }} numberOfLines={1}>{j.symbol} · <Text style={{ color: j.side === 'buy' ? th.buy : th.sell }}>{t(j.side).toUpperCase()}</Text></Text>
@@ -169,32 +170,8 @@ export default function TradeHistory() {
                             <Text style={{ color: c, fontWeight: '900', fontSize: 15.5 }}>{money(j.pnl)}</Text>
                             {j.r !== undefined && <Text style={{ color: c, fontSize: 11.5, fontWeight: '800' }}>{fmtR(j.r)}</Text>}
                           </View>
-                          <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size={16} color={th.dim} />
+                          <Icon name={rtl ? 'chevron-back' : 'chevron-forward'} size={16} color={th.dim} />
                         </Pressable>
-                        {isOpen && (
-                          <View style={{ borderTopWidth: 1, borderTopColor: th.line, padding: 12, gap: 6 }}>
-                            {([
-                              [t('entry'), j.entry.toFixed(d)],
-                              [t('exitP'), j.exit.toFixed(d)],
-                              ...(j.lots ? [[t('sizeL'), `${fmtLots(j.lots)} lots`]] : []),
-                              ...(j.grade ? [[t('thGrade'), j.grade]] : []),
-                              ...(j.tf ? [[t('thTimeframe'), j.tf]] : []),
-                              ...(hd ? [[t('thHeld'), hd]] : []),
-                              ...(j.hits ? [[t('thTpHit'), String(j.hits)]] : []),
-                              ...(j.tag ? [[t('thReview'), j.tag]] : []),
-                            ] as string[][]).map(([k, v]) => (
-                              <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <Text style={{ color: th.dim, fontSize: 13 }}>{k}</Text>
-                                <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }}>{v}</Text>
-                              </View>
-                            ))}
-                            {!!j.note && <Text style={{ color: th.text, fontSize: 13, lineHeight: 19, marginTop: 4 }}>{t('note')}: {j.note}</Text>}
-                            <Pressable onPress={() => confirmAction(t('thDeleteQ'), t('thDeleteText'), () => removeTrade(j.id), t('delete'), t('cancel'))} hitSlop={8} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 6 }}>
-                              <Icon name="trash-outline" size={14} color={th.sell} />
-                              <Text style={{ color: th.sell, fontSize: 12.5, fontWeight: '800' }}>{t('thDelete')}</Text>
-                            </Pressable>
-                          </View>
-                        )}
                       </View>
                     );
                   })}
@@ -205,5 +182,7 @@ export default function TradeHistory() {
         </ScrollView>
       </View>
     </Modal>
+    {openTrade && <TradeDetail key={openTrade.id} j={openTrade} onClose={() => setOpen(null)} />}
+    </>
   );
 }

@@ -1,12 +1,15 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
+import { shareText } from '../dialog';
+
 import Modal from '../Modal';
 import { useApp } from '../store';
 import { Screen, Card, Field, Dim, Btn, Segment, Icon, Group, confirmAction, Cols } from '../ui';
 import { THEMES, themeId } from '../theme';
 import { LANGS } from '../i18n';
-import { PAY, PLANS, submitPayment, getServer, setServer, pushTest } from '../license';
+import { PAY, PLANS, getServer, setServer, pushTest, APP_DOWNLOAD_URL } from '../license';
+import PayBox from '../PayBox';
 import AdminAccess from '../AdminAccess';
 import { PoweredBy, Avatar } from '../Brand';
 import { pickAvatar } from '../avatar';
@@ -36,7 +39,7 @@ const Pill = ({ text, color }: { text: string; color: string }) => (
 );
 
 export default function Settings() {
-  const { th, t, rtl, settings, setSettings, lic, licErr, setLic, refreshLic, account, setPin, logout, avatar, setAvatar, changePassword, emailVerified, sendVerify, lockNow, pushState, startPush } = useApp();
+  const { th, t, rtl, settings, setSettings, lic, licErr, setLic, refreshLic, account, setPin, logout, avatar, setAvatar, changePassword, googleOnly, emailVerified, sendVerify, lockNow, pushState, startPush, setHelpOpen, supportUnread } = useApp();
   const [testMsg, setTestMsg] = useState('');
   const [vMsg, setVMsg] = useState('');
   const [vBusy, setVBusy] = useState(false);
@@ -80,11 +83,6 @@ export default function Settings() {
     setSrvMsg(ok ? 'Connected.' : 'Saved, but the server did not answer. Check the address and that the server and tunnel are running.');
   };
   const fmt = (ms: number) => new Date(ms).toLocaleDateString();
-  const verify = async () => {
-    setBusy(true); setMsg('');
-    try { setLic(await submitPayment(lic.token, net, tx)); setTx(''); setMsg(t('paidOk')); } catch (e: any) { setMsg(e.message ?? 'Error'); }
-    setBusy(false);
-  };
   const [pwOpen, setPwOpen] = useState(false);
   const [bioHw, setBioHw] = useState<boolean | null>(null);
   const [bioMsg, setBioMsg] = useState('');
@@ -102,7 +100,7 @@ export default function Settings() {
     }
   };
   const lockOn = !!account?.pinHash || settings.bio;
-  const statusText = lic.status === 'admin' ? t('adminOnly') : lic.status === 'paid' ? `${t('paidActive')} ${fmt(lic.paidUntil)}` : lic.status === 'trial' ? `${t('trialLeft')}: ${Math.max(1, Math.ceil((lic.trialEnd - Date.now()) / 864e5))}d` : t('expired');
+  const statusText = lic.status === 'admin' ? t('adminOnly') : lic.status === 'paid' ? `${t('paidActive')} ${fmt(lic.paidUntil)}` : lic.status === 'trial' ? `${t('trialLeft')}: ${Math.max(1, Math.ceil((lic.trialEnd - Date.now()) / 864e5))}d${lic.provisional ? ' (offline)' : ''}` : t('expired');
   const statusCol = lic.status === 'expired' ? th.sell : lic.status === 'trial' ? th.gold : th.buy;
 
   const sw = (v: boolean, f: (b: boolean) => void) => <Switch value={v} onValueChange={f} trackColor={{ true: th.accent, false: th.line }} thumbColor="#FFFFFF" />;
@@ -197,12 +195,19 @@ export default function Settings() {
                   <Text selectable style={{ color: th.text, fontWeight: '700', fontSize: 13, lineHeight: 20, textAlign: 'center' }}>{PAY[net]}</Text>
                 </View>
                 <Dim>{t('addrTap')}</Dim>
-                <Field label={t('txId')} value={tx} onChangeText={setTx} placeholder="0x… / 64-character hash" autoCapitalize="none" autoCorrect={false} />
-                <Btn label={t('verifyPay')} onPress={verify} busy={busy} disabled={tx.trim().length < 32} />
+                <PayBox plan={plan} net={net} />
               </View>
             )}
             {!!msg && <View style={{ marginTop: 8 }}><Dim>{msg}</Dim></View>}
           </Card>
+        </Group>
+
+        <Group title={t('helpTitle')}>
+          <Panel>
+            <SetRow icon="people-outline" title="Invite friends" sub="Send the app download link to a friend." onPress={() => { shareText(`I use Chart Reader to read charts and plan trades. Get the app here: ${APP_DOWNLOAD_URL}`); }} />
+            <SetRow icon="chatbubbles-outline" title={t('helpTitle')} sub={t('helpSub')} onPress={() => setHelpOpen(true)} last
+              right={supportUnread > 0 ? <View style={{ minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>{supportUnread}</Text></View> : undefined} />
+          </Panel>
         </Group>
 
         <Group title="Appearance">
@@ -262,7 +267,7 @@ export default function Settings() {
               right={account?.pinHash ? <Pill text="ON" color={th.buy} /> : undefined}
               onPress={() => (account?.pinHash ? confirmAction('Remove PIN lock?', 'The app will open without asking for your PIN.', () => setPin(null), 'Remove') : setPinModal(true))} />
             <SetRow icon="lock-closed-outline" tint={th.gold} title="Lock app now" sub={lockOn ? 'Ask for the fingerprint or PIN right away.' : 'Turn on the fingerprint or a PIN first.'} onPress={lockOn ? lockNow : undefined} right={lockOn ? undefined : <View />} />
-            <SetRow icon="key-outline" tint={th.accent2} title="Change password" sub="Use a new password the next time you log in." onPress={() => setPwOpen(!pwOpen)} last right={<Icon name={pwOpen ? 'chevron-up' : 'chevron-down'} size={18} color={th.dim} />} />
+            {!googleOnly && <SetRow icon="key-outline" tint={th.accent2} title="Change password" sub="Use a new password the next time you log in." onPress={() => setPwOpen(!pwOpen)} last right={<Icon name={pwOpen ? 'chevron-up' : 'chevron-down'} size={18} color={th.dim} />} />}
           </Panel>
           {!!bioMsg && <Text style={{ color: th.sell, lineHeight: 20, marginHorizontal: 4 }}>{bioMsg}</Text>}
           {pwOpen && (

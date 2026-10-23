@@ -1,49 +1,49 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.autoHtf = autoHtf;
 exports.analyzeAll = analyzeAll;
 exports.methodsContext = methodsContext;
 const ta_1 = require("./ta");
 const entry_1 = require("./entry");
+const quality_1 = require("./quality");
 const ict_1 = require("./ict");
 const smc_1 = require("./smc");
 const vsa_1 = require("./vsa");
 const patterns_1 = require("./patterns");
 const scalp_1 = require("./scalp");
-const I = __importStar(require("./indicators"));
+const I = require("./indicators");
 const candles_1 = require("./candles");
+const volume_1 = require("./volume");
+// Higher timeframe built from the candles we already have (15m -> 1h, 1h -> 4h ...). The screens used to call analyzeAll WITHOUT a higher timeframe,
+// so the strongest filter (trade with the bigger trend) was never applied. Only COMPLETE higher candles are returned.
+function autoHtf(c) {
+    const g = (0, volume_1.granOf)(c), hg = entry_1.HTF_OF[g];
+    if (!g || !hg || hg % g !== 0 || hg / g < 2)
+        return undefined;
+    const k = hg / g, out = [];
+    let cur = null, bucket = -1, cnt = 0;
+    const flush = () => { if (cur && cnt === k)
+        out.push(cur); cur = null; cnt = 0; };
+    for (const x of c) {
+        const b = Math.floor(x.t / hg);
+        if (b !== bucket) {
+            flush();
+            bucket = b;
+            cur = { t: b * hg, o: x.o, h: x.h, l: x.l, c: x.c, v: x.v };
+            cnt = 1;
+        }
+        else if (cur) {
+            cur.h = Math.max(cur.h, x.h);
+            cur.l = Math.min(cur.l, x.l);
+            cur.c = x.c;
+            if (x.v !== undefined)
+                cur.v = (cur.v ?? 0) + x.v;
+            cnt++;
+        }
+    }
+    flush();
+    return out.length >= 40 ? out : undefined;
+}
 // Indicator confirmation for a proposed trade: trend strength, momentum, overextension, divergence, golden pocket, blocking levels.
 function confirm(c, side, entry, tp1, a) {
     const buy = side === 'buy', cl = c.map((x) => x.c), n = c.length;
@@ -98,7 +98,11 @@ function confirm(c, side, entry, tp1, a) {
 // opts.htf = candles of a higher timeframe (for example 1h when analysing 15m). A setup against that trend is capped at grade B.
 // The same candles give the ICT method its higher-timeframe bias. opts.ict = ICT rule parameters, opts.news = text when major news is near.
 function analyzeAll(c, now = new Date(), opts = {}) {
-    const ict = (0, ict_1.ictAnalyze)(c, now, { htf: opts.htf, params: opts.ict, news: opts.news }), smc = (0, smc_1.smcAnalyze)(c, { htf: opts.htf }), vsa = (0, vsa_1.vsaAnalyze)(c), pat = (0, patterns_1.patternsAnalyze)(c), cdl = (0, candles_1.candlesAnalyze)(c), scalp = (0, scalp_1.scalpAnalyze)(c, now, opts);
+    // Every method reads CLOSED candles only. The forming candle has a partial volume and a close that can still change, so a signal read
+    // from it appears and disappears inside the candle (repainting). Zones, structure, patterns and VSA come from closed candles; the entry
+    // planner below still uses the live price, because that is where the trade would really be taken.
+    const nowMs = now.getTime(), cc = (0, volume_1.closedCandles)(c, nowMs), htf = opts.htf ? (0, volume_1.closedCandles)(opts.htf, nowMs) : autoHtf(cc);
+    const ict = (0, ict_1.ictAnalyze)(cc, now, { htf, params: opts.ict, news: opts.news }), smc = (0, smc_1.smcAnalyze)(cc, { htf }), vsa = (0, vsa_1.vsaAnalyze)(cc), pat = (0, patterns_1.patternsAnalyze)(cc), cdl = (0, candles_1.candlesAnalyze)(cc), scalp = (0, scalp_1.scalpAnalyze)(cc, now, opts);
     const votes = [];
     const sideOf = (d) => (d === 'bullish' || d === 'buy' || d === 'bull' ? 'buy' : d === 'bearish' || d === 'sell' || d === 'bear' ? 'sell' : null);
     const iSide = ict.setup?.side ?? sideOf(ict.trend);
@@ -107,7 +111,7 @@ function analyzeAll(c, now = new Date(), opts = {}) {
     votes.push({ method: 'SMC', side: smc.ok ? sSide : null, text: !smc.ok ? (smc.reason ?? 'No data') : smc.setup ? `${smc.setup.model}, grade ${smc.setup.grade}` : `Swing structure ${smc.trend}, no POI yet` });
     const vSide = vsa.ok ? sideOf(vsa.bias) : null;
     const lastSig = vsa.signals[vsa.signals.length - 1];
-    votes.push({ method: 'VSA', side: vSide, text: !vsa.ok ? (vsa.reason ?? 'No data') : `${lastSig ? vsa_1.VSA_NAMES[lastSig.tag] : 'No clear signal'}${vsa.hasVolume ? '' : ' (no volume feed, spread only)'}, score ${vsa.score > 0 ? '+' : ''}${vsa.score}` });
+    votes.push({ method: 'VSA', side: vSide, text: !vsa.ok ? (vsa.reason ?? 'No data') : !vsa.hasVolume ? 'No real volume for this market: VSA gives no signal' : `${lastSig ? vsa_1.VSA_NAMES[lastSig.tag] : 'No clear signal'}, score ${vsa.score > 0 ? '+' : ''}${vsa.score}` });
     const p = pat.best;
     votes.push({ method: 'PAT', side: p ? sideOf(p.dir) : null, text: p ? `${p.name} (${p.status})` : pat.ok ? 'No clear pattern' : (pat.reason ?? 'No data') });
     const cb = cdl.best;
@@ -128,15 +132,16 @@ function analyzeAll(c, now = new Date(), opts = {}) {
         return out;
     }
     const side = buyW > sellW ? 'buy' : 'sell', buy = side === 'buy';
-    const a = (0, ta_1.atr)(c), price = c[c.length - 1].c;
+    const a = (0, ta_1.atr)(cc), price = c[c.length - 1].c; // price = live
     // ---- location: ICT and SMC zones (overlap = best), else the strongest single source
     const zi = ict.setup && ict.setup.side === side ? ict.setup : undefined, zs = smc.setup && smc.setup.side === side ? smc.setup : undefined;
-    let entry, sl, zTop, zBot, basis, base = 30;
-    let overlap = false;
+    let entry, sl, zTop, zBot, basis, base = 30, zoneI;
+    let overlap = false, snapped = false;
     if (zi && zs) {
         const top = Math.min(zi.zoneTop, zs.zone.top), bot = Math.max(zi.zoneBottom, zs.zone.bottom);
         if (top - bot > 0) {
             overlap = true;
+            zoneI = Math.max(zi.zoneI, zs.zone.i);
             entry = (top + bot) / 2;
             zTop = top;
             zBot = bot;
@@ -145,6 +150,7 @@ function analyzeAll(c, now = new Date(), opts = {}) {
             base = 0.4 * zi.score + 0.4 * zs.score + 12;
         }
         else if (zi.score >= zs.score) {
+            zoneI = zi.zoneI;
             entry = zi.entry;
             sl = zi.sl;
             zTop = zi.zoneTop;
@@ -153,6 +159,7 @@ function analyzeAll(c, now = new Date(), opts = {}) {
             base = 0.7 * zi.score;
         }
         else {
+            zoneI = zs.zone.i;
             entry = zs.entry;
             sl = zs.sl;
             zTop = zs.zone.top;
@@ -162,6 +169,7 @@ function analyzeAll(c, now = new Date(), opts = {}) {
         }
     }
     else if (zi) {
+        zoneI = zi.zoneI;
         entry = zi.entry;
         sl = zi.sl;
         zTop = zi.zoneTop;
@@ -170,6 +178,7 @@ function analyzeAll(c, now = new Date(), opts = {}) {
         base = 0.7 * zi.score;
     }
     else if (zs) {
+        zoneI = zs.zone.i;
         entry = zs.entry;
         sl = zs.sl;
         zTop = zs.zone.top;
@@ -212,8 +221,16 @@ function analyzeAll(c, now = new Date(), opts = {}) {
             .filter((x) => !!x && x.v >= zBot && x.v <= zTop).sort((x, y) => Math.abs(x.v - price) - Math.abs(y.v - price))[0];
         if (near) {
             entry = near.v;
+            snapped = true;
             notes.push(`Entry snapped to the ${near.n} inside the zone.`);
         }
+    }
+    // ---- fillable entry: a limit order in the MIDDLE of a zone is only filled when price runs deep into it, and most setups run away before that.
+    // The order sits just inside the NEAR edge (first touch), the stop stays beyond the far edge.
+    if ((zi || zs) && !snapped && zTop - zBot > 0) {
+        const depth = Math.min(quality_1.QUALITY.fillDepth * (zTop - zBot), quality_1.QUALITY.fillCapAtr * a);
+        entry = buy ? zTop - depth : zBot + depth;
+        notes.push('Entry is at the near edge of the zone so price only has to touch it to fill the order.');
     }
     if (Math.abs(entry - sl) < 0.4 * a)
         sl = buy ? entry - 0.4 * a : entry + 0.4 * a;
@@ -231,13 +248,20 @@ function analyzeAll(c, now = new Date(), opts = {}) {
                 tps[i] = tps[i - 1] + dirS * 0.5 * risk;
         notes.push('A target uses the chart pattern measured move.');
     }
+    // first target close to the entry (QUALITY.tp1R): the stop goes to break-even after it, so reaching it is what decides win or loss
+    if ((tps[0] - entry) * dirS > quality_1.QUALITY.tp1R * risk) {
+        tps[0] = entry + dirS * quality_1.QUALITY.tp1R * risk;
+        for (let i = 1; i < 3; i++)
+            if ((tps[i] - tps[i - 1]) * dirS < 0.3 * risk)
+                tps[i] = tps[i - 1] + dirS * 0.5 * risk;
+    }
     const t3 = [tps[0], tps[1], tps[2]];
     const rr = t3.map((v) => Math.abs(v - entry) / risk);
     // ---- confirmation from VSA and the pattern
     let score = base;
     const vsaSame = vSide === side, vsaOpp = vSide !== null && vSide !== side;
     if (vsaSame)
-        score += vsa.hasVolume ? 12 : 8;
+        score += 12;
     else if (vsaOpp)
         score -= 15;
     const patSame = p && sideOf(p.dir) === side, patOpp = p && sideOf(p.dir) !== side;
@@ -252,14 +276,14 @@ function analyzeAll(c, now = new Date(), opts = {}) {
         score -= cb.status === 'confirmed' ? 9 : 5;
     if (ict.killzone && ict.killzone.key !== 'asia')
         score += 4;
-    const cf = c.length >= 60 ? confirm(c, side, entry, tps[0], a) : null;
+    const cf = cc.length >= 60 ? confirm(cc, side, entry, tps[0], a) : null;
     if (cf) {
         score += cf.delta;
         out.confirm = cf.info;
     }
     // ---- higher timeframe: the strongest single filter. With the bigger trend adds, against it is penalised and capped.
     let htfState, htfCheck = null;
-    const hx = opts.htf && opts.htf.length >= 40 ? (0, ta_1.context)(opts.htf) : null;
+    const hx = htf && htf.length >= 40 ? (0, ta_1.context)(htf) : null;
     if (hx) {
         const al = hx.score * (buy ? 1 : -1);
         htfState = al >= 0.3 ? 'with' : al <= -0.3 ? 'against' : 'neutral';
@@ -279,19 +303,19 @@ function analyzeAll(c, now = new Date(), opts = {}) {
         score -= 8;
         notes.push(`The stop is ${(risk / a).toFixed(1)} ATR wide. Use a smaller lot size.`);
     }
-    if (rr[0] < 1.2) {
+    if (rr[0] < 0.9) {
         score -= 10;
-        notes.push('TP1 is close to the entry (risk:reward under 1:1.2). Consider skipping or closing at TP2.');
+        notes.push('TP1 is very close to the entry (risk:reward under 1:0.9). Consider skipping this trade.');
     }
     // ---- entry plan: is price in the zone, did it react, is the trade already gone
     const fmt = (v) => v.toFixed(Math.abs(price) >= 100 ? 2 : Math.abs(price) >= 10 ? 3 : 5);
-    const plan = (0, entry_1.planEntry)(c, side, entry, sl, zTop, zBot, tps[0], a, fmt);
+    const plan = (0, entry_1.planEntry)(cc, side, entry, sl, zTop, zBot, tps[0], a, fmt, price, zoneI);
     if (plan.status === 'invalid' || plan.status === 'late') {
         out.why = plan.label + '. ' + plan.trigger;
         return out;
     }
-    if (plan.distAtr > 8) {
-        out.why = `The nearest zone is ${plan.distAtr.toFixed(0)} ATR away, too far to plan an entry now.`;
+    if (plan.distAtr > quality_1.QUALITY.maxDistAtr) {
+        out.why = `The nearest zone is ${plan.distAtr.toFixed(1)} ATR away. Orders that far away are rarely filled, so no entry is planned. Wait for price to come closer.`;
         return out;
     }
     if (plan.status === 'enter-now')
@@ -308,7 +332,7 @@ function analyzeAll(c, now = new Date(), opts = {}) {
         { text: vsaSame ? `VSA agrees: ${lastSig ? vsa_1.VSA_NAMES[lastSig.tag] : 'bias ' + vsa.bias}` : vsaOpp ? 'VSA disagrees with this direction' : 'VSA has no clear read', ok: vsaSame },
         { text: patSame ? `Pattern agrees: ${p.name} (${p.status})` : patOpp ? `Pattern disagrees: ${p.name}` : 'No chart pattern confirming', ok: !!patSame },
         { text: cdlSame ? `Candle agrees: ${cb.name} (${cb.status === 'confirmed' ? 'confirmed' : 'not confirmed yet'})` : cdlOpp ? `Candle disagrees: ${cb.name}` : 'No candlestick signal', ok: !!cdlSame },
-        { text: `TP1 risk:reward 1:${rr[0].toFixed(1)}`, ok: rr[0] >= 1.4 },
+        { text: `TP1 risk:reward 1:${rr[0].toFixed(1)}`, ok: rr[0] >= 0.95 },
     ];
     if (htfCheck)
         checks.push(htfCheck);
@@ -323,8 +347,8 @@ function analyzeAll(c, now = new Date(), opts = {}) {
         notes.push('VSA reads the other way. Consider waiting for a test or a smaller size.');
     if (smc.idm && !smc.idm.taken && zs)
         notes.push('SMC inducement is not swept yet: a limit order here can get run first.');
-    if (!vsa.hasVolume)
-        notes.push('No volume feed for this market: VSA used spread and close position only.');
+    if (vsa.ok && !vsa.hasVolume)
+        notes.push('VSA is off for this market: no real volume exists for it, so it gives no signal.');
     notes.unshift(plan.label + '. ' + plan.trigger);
     out.combo = { side, entry, sl, tps: t3, rr, score, grade, zoneTop: zTop, zoneBottom: zBot, basis, checks, notes, plan, htf: htfState };
     return out;
@@ -335,7 +359,7 @@ function methodsContext(all, f) {
     if (smc.ok)
         out.push(`SMC: swing ${smc.trend}${smc.swing ? ` last ${smc.swing.kind} ${smc.swing.dir}` : ''}${smc.idm ? `, inducement at ${f(smc.idm.price)} ${smc.idm.taken ? 'taken' : 'pending'}` : ''}${smc.setup ? `, POI ${f(smc.setup.zone.bottom)}-${f(smc.setup.zone.top)} (score ${smc.setup.poiScore}/8, ${smc.setup.ready ? 'all rules pass' : 'rules missing'}) entry ${f(smc.setup.entry)} SL ${f(smc.setup.sl)}` : ''}${smc.bias ? `, bias ${smc.bias.dir}` : ''}`);
     if (vsa.ok)
-        out.push(`VSA: ${vsa.hasVolume ? 'with volume' : 'spread only, no volume'}, bias ${vsa.bias}, ${vsa.signals.slice(-3).map((s) => `${vsa_1.VSA_NAMES[s.tag]} ${s.dir}`).join('; ') || 'no signals'}`);
+        out.push(vsa.hasVolume ? `VSA: real volume, bias ${vsa.bias}, ${vsa.signals.slice(-3).map((s) => `${vsa_1.VSA_NAMES[s.tag]} ${s.dir}`).join('; ') || 'no signals'}` : 'VSA: no real volume for this market, not used');
     if (pat.best)
         out.push(`Pattern: ${pat.best.name} ${pat.best.status}, entry ${f(pat.best.entry)} SL ${f(pat.best.sl)} target ${f(pat.best.target)}`);
     if (cdl.best)

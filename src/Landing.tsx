@@ -8,12 +8,14 @@ import LiveCandles from './LiveCandles';
 import { PLANS } from './license';
 
 const FEATURES: { icon: string; title: string; text: string }[] = [
-  { icon: 'git-network', title: 'ICT and SMC analysis', text: 'Liquidity sweeps, order blocks, fair value gaps, BOS and CHoCH, marked on the chart.' },
-  { icon: 'stats-chart', title: 'VSA and price action', text: 'Volume spread analysis and candlestick patterns, read for you.' },
-  { icon: 'radio', title: 'Live scanner', text: 'Looks through forex, gold, crypto and synthetic indices for setups.' },
-  { icon: 'layers', title: 'Top-down and scalping', text: 'From the higher-timeframe bias down to the one-minute entry.' },
-  { icon: 'calculator', title: 'Risk and TP planner', text: 'Lot size from your stop. Every setup has an entry, a stop loss and three take profits.' },
-  { icon: 'book', title: 'Trade journal', text: 'Log trades, track win rate and watch your equity curve.' },
+  { icon: 'checkmark-circle', title: 'TRADE or WAIT, clearly', text: 'One answer per chart. A trade is shown only when the methods and the higher timeframe agree; otherwise you see why to wait.' },
+  { icon: 'git-network', title: 'ICT, SMC and CR Analysis', text: 'Liquidity sweeps, order blocks, fair value gaps, BOS and CHoCH, plus CR Analysis with an AI-checked entry, stop loss and three take profits.' },
+  { icon: 'stats-chart', title: 'VSA, patterns and candles', text: 'Real-volume VSA, classic chart patterns and 20+ candlestick patterns confirmed by the next candle.' },
+  { icon: 'layers', title: 'Top-down and scalping', text: 'Three timeframes from bias to entry, plus EMA-pullback, breakout and range scalp models.' },
+  { icon: 'radio', title: 'Scanner and alerts', text: 'Scans forex, gold, crypto and synthetic indices. Every A / A+ setup goes to your Journal and rings your phone, even when the app is closed.' },
+  { icon: 'briefcase', title: 'Automatic trade desk', text: 'Setups are logged for you, tracked live, closed at 50/30/20% targets, with stop to break-even and a trade replay.' },
+  { icon: 'swap-vertical', title: 'Demo Trade', text: 'Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close.' },
+  { icon: 'calculator', title: 'Risk, journal and discipline', text: 'Lot size from your stop, daily loss limit, cooldown after losses, journal insights and an equity curve.' },
 ];
 
 // The website's front page (shown next to the login form on wide screens): what the product does, a live chart, the price.
@@ -36,7 +38,7 @@ export default function Landing() {
         </View>
         <View style={{ gap: 12 }}>
           <Text style={{ color: tx, fontSize: 44, fontWeight: '900', letterSpacing: -1.4, lineHeight: 48 }}>Read the market.{'\n'}Trade with precision.</Text>
-          <Text style={{ color: soft, fontSize: 16, lineHeight: 24, maxWidth: 560 }}>Smart-money analysis for forex, gold, crypto and synthetic indices, with a clear entry, stop loss and take profits for every setup.</Text>
+          <Text style={{ color: soft, fontSize: 16, lineHeight: 24, maxWidth: 560 }}>Smart-money analysis for forex, gold, crypto and synthetic indices. A clear TRADE with entry, stop loss and three take profits, or a clear WAIT.</Text>
         </View>
         {pw > 0 && (
           <View style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: 8, maxWidth: 640, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 30, shadowOffset: { width: 0, height: 14 } }}>

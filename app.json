@@ -2,7 +2,7 @@
   "expo": {
     "name": "Chart Reader",
     "slug": "chart-reader",
-    "version": "2.10.0",
+    "version": "2.15.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#080B12",
@@ -24,6 +24,7 @@
       "bundleIdentifier": "com.chartreader.app"
     },
     "plugins": [
+      "@react-native-google-signin/google-signin",
       [
         "expo-image-picker",
         {
@@ -76,11 +77,10 @@
       }
     },
     "owner": "faahtech",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "2.10.0",
     "updates": {
       "url": "https://u.expo.dev/5d430318-ff8b-49ff-ab33-9e72a9d188c8"
-    }
+    },
+    "scheme": "chartreader"
   }
 }

@@ -5,13 +5,14 @@ import Svg, { Rect, Line, Circle } from 'react-native-svg';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Every analysis method: name, one-line help, its colour pair and its glyph. The icon is a glossy gradient tile with a white glyph.
-export type MKey = 'all' | 'ict' | 'smc' | 'topdown' | 'scanner' | 'vsa' | 'candle' | 'pat' | 'scalp' | 'liquidity' | 'entry' | 'momentum' | 'planner' | 'settings';
-export type Host = 'ict' | 'scalp' | 'topdown' | 'scanner' | 'insight' | 'tab';
+export type MKey = 'all' | 'cr' | 'ict' | 'smc' | 'topdown' | 'scanner' | 'vsa' | 'candle' | 'pat' | 'scalp' | 'liquidity' | 'entry' | 'momentum' | 'planner' | 'settings';
+export type Host = 'ict' | 'cr' | 'scalp' | 'topdown' | 'scanner' | 'insight' | 'tab';
 type Glyph = { t: 'ion' | 'mci'; n: string } | { t: 'candles' } | { t: 'candles2' } | { t: 'bars' };
 export type MDef = { k: MKey; label: string; desc: string; colors: [string, string]; glyph: Glyph; host: Host; tab?: number; score?: boolean };
 
 export const MDEFS: MDef[] = [
   { k: 'all', label: 'Combined Analysis', desc: 'All-in-one analysis using trend, liquidity, order blocks, FVG, sessions and more.', colors: ['#8B5CF6', '#5B2EFF'], glyph: { t: 'candles' }, host: 'ict', score: true },
+  { k: 'cr', label: 'CR (Chart Reader) Analysis', desc: 'Chart Reader reads the live candles with every method and gives entry, stop loss and 3 take profits, drawn on the chart.', colors: ['#22D3EE', '#0E7490'], glyph: { t: 'mci', n: 'chart-areaspline' }, host: 'cr' },
   { k: 'ict', label: 'ICT Analysis', desc: 'Smart money concepts, liquidity sweeps, FVG, order blocks, killzones, OTE & more.', colors: ['#4C8DFF', '#2457E6'], glyph: { t: 'ion', n: 'locate' }, host: 'ict', score: true },
   { k: 'smc', label: 'SMC Analysis', desc: 'Market structure, BOS/CHoCH, demand/supply zones, liquidity pools.', colors: ['#34D399', '#0F9D63'], glyph: { t: 'mci', n: 'sitemap' }, host: 'ict', score: true },
   { k: 'topdown', label: 'Top-Down Analysis', desc: 'Multi-timeframe approach with trend, key levels and confluence.', colors: ['#FFB62E', '#FF7A18'], glyph: { t: 'ion', n: 'layers' }, host: 'topdown', score: true },
@@ -19,7 +20,7 @@ export const MDEFS: MDef[] = [
   { k: 'vsa', label: 'VSA Analysis', desc: 'Volume spread analysis for stronger confirmation and valid setups.', colors: ['#2DD4BF', '#0E9F8E'], glyph: { t: 'bars' }, host: 'ict', score: true },
   { k: 'candle', label: 'Candlestick Patterns', desc: 'Identify classic and advanced candlestick patterns with confirmation.', colors: ['#FF6B7A', '#E0314B'], glyph: { t: 'candles2' }, host: 'ict', score: true },
   { k: 'pat', label: 'Chart Patterns', desc: 'Triangles, flags, channels, head & shoulders and more with target projection.', colors: ['#8B6BFF', '#5B3FE0'], glyph: { t: 'mci', n: 'triangle-outline' }, host: 'ict', score: true },
-  { k: 'scalp', label: 'Scalping', desc: 'EMA trend, RSI, volatility, session quality and quick trade setups.', colors: ['#4C8DFF', '#1D4ED8'], glyph: { t: 'mci', n: 'speedometer' }, host: 'scalp', score: true },
+  { k: 'scalp', label: 'Scalping', desc: 'Supply / demand zone, then a reversal candle, then a confirmation candle. M1 to H1. Entry, stop and exit rule.', colors: ['#4C8DFF', '#1D4ED8'], glyph: { t: 'mci', n: 'speedometer' }, host: 'scalp', score: true },
   { k: 'liquidity', label: 'Liquidity Map', desc: 'Find liquidity zones, sweeps, equal highs/lows and institutional levels.', colors: ['#19D3C0', '#0A9D8A'], glyph: { t: 'ion', n: 'water' }, host: 'insight' },
   { k: 'entry', label: 'Entry Finder', desc: 'Precision entries using order blocks, FVG, retracements and confluence.', colors: ['#FFC83D', '#FF9500'], glyph: { t: 'mci', n: 'crosshairs-gps' }, host: 'insight', score: true },
   { k: 'momentum', label: 'Momentum & Volume', desc: 'Trend strength, volume, volatility and momentum indicators.', colors: ['#FF5C7A', '#E11D48'], glyph: { t: 'mci', n: 'chart-line-variant' }, host: 'insight', score: true },

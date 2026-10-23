@@ -41,6 +41,17 @@ let pairs: BnPair[] = [], loading: Promise<BnPair[]> | null = null, loadedAt = 0
 export const bnPairs = () => pairs;
 export const bnLoaded = () => pairs.length > 0;
 
+// Deriv's own crypto ids (cryBTCUSD ...) are priced from Binance too (BTCUSD -> BTCUSDT), so every crypto price in the app is the Binance price.
+// If the Binance list is loaded and does not contain that pair, undefined is returned and the id is left alone.
+export const cryBn = (id: string): string | undefined => {
+  const m = id.match(/^cry([A-Z0-9]+?)USD$/);
+  if (!m) return undefined;
+  const b = BN_PREFIX + m[1] + 'USDT';
+  return pairs.length && !pairs.some((x) => x.id === b) ? undefined : b;
+};
+// The Binance id behind any crypto id (a Binance id is itself).
+export const bnId = (id: string): string | undefined => (isBn(id) ? id : cryBn(id));
+
 const mk = (x: any): BnPair | null => {
   const raw = String(x.symbol ?? '');
   const quote = QUOTES.find((q) => raw.endsWith(q) && raw.length > q.length);
@@ -67,7 +78,7 @@ export function loadBnPairs(force = false): Promise<BnPair[]> {
 }
 
 // ---------- live prices for the pairs a screen is showing ----------
-export type BnTick = { price: number; open: number };
+export type BnTick = { price: number; open: number; bid?: number; ask?: number }; // bid / ask: the real order-book spread from Binance bookTicker
 export async function bnTickers(raws: string[]): Promise<Record<string, BnTick>> {
   const out: Record<string, BnTick> = {};
   const put = (x: any) => { const p = Number(x.lastPrice), o = Number(x.openPrice); if (isFinite(p) && p > 0) out[String(x.symbol)] = { price: p, open: isFinite(o) && o > 0 ? o : p }; };
@@ -78,8 +89,16 @@ export async function bnTickers(raws: string[]): Promise<Record<string, BnTick>>
     (Array.isArray(j) ? j : []).forEach((x: any) => { if (want.has(String(x.symbol))) put(x); });
     return out;
   }
-  const j = await bnGet(`/api/v3/ticker/24hr?type=MINI&symbols=${encodeURIComponent(JSON.stringify(raws))}`);
+  const sy = encodeURIComponent(JSON.stringify(raws));
+  const [j, bk] = await Promise.all([
+    bnGet(`/api/v3/ticker/24hr?type=MINI&symbols=${sy}`),
+    bnGet(`/api/v3/ticker/bookTicker?symbols=${sy}`, 6000).catch(() => null), // the spread is a bonus: the price must still arrive if this one fails
+  ]);
   (Array.isArray(j) ? j : [j]).forEach(put);
+  (Array.isArray(bk) ? bk : bk ? [bk] : []).forEach((x: any) => {
+    const t = out[String(x.symbol)], bid = Number(x.bidPrice), ask = Number(x.askPrice);
+    if (t && bid > 0 && ask >= bid) { t.bid = bid; t.ask = ask; }
+  });
   return out;
 }
 

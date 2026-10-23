@@ -187,15 +187,15 @@ export function crtAnalyze(c: Candle[], gran: number, now = new Date(), opts: { 
   return out;
 }
 
-// ---------- merge CRT with the classic scalp models into ONE final setup ----------
-export type Final = ScalpSetup & { source: 'CRT' | 'CRT + EMA' | 'Classic'; state?: 'armed' | 'triggered'; trigger?: number; warn?: string };
+// ---------- merge CRT with the supply/demand reversal scalp into ONE final setup ----------
+export type Final = Omit<ScalpSetup, 'patternI' | 'pattern' | 'level'> & Partial<Pick<ScalpSetup, 'patternI' | 'pattern' | 'level'>> & { source: 'CRT' | 'CRT + S/D' | 'S/D Reversal'; state?: 'armed' | 'triggered'; trigger?: number; warn?: string };
 
 export function refineScalp(scalp: Scalp, crt?: CRT): Final | null {
   const cs = crt?.setup, ss = scalp.setup;
   if (cs) {
     const f: Final = { ...cs, source: 'CRT', state: cs.state, trigger: cs.trigger };
     if (ss && ss.side === cs.side) {
-      f.source = 'CRT + EMA'; f.model = `CRT + ${ss.model}`;
+      f.source = 'CRT + S/D'; f.model = `CRT + ${ss.model}`;
       f.score = Math.min(100, cs.score + (cs.state === 'triggered' ? 8 : 4));
       f.confluence = [...cs.confluence, { text: `${ss.model} fires the same way`, ok: true }];
       f.grade = cs.state === 'armed' && f.score >= 70 ? 'B' : f.score >= 85 ? 'A+' : f.score >= 70 ? 'A' : f.score >= 50 ? 'B' : 'C';
@@ -203,9 +203,9 @@ export function refineScalp(scalp: Scalp, crt?: CRT): Final | null {
       f.score = Math.max(0, cs.score - 12);
       f.grade = f.score >= 85 ? 'A+' : f.score >= 70 ? 'A' : f.score >= 50 ? 'B' : 'C';
       f.confluence = [...cs.confluence, { text: `${ss.model} points the other way`, ok: false }];
-      f.warn = 'The classic scalp models point the other way. CRT is a reversal idea, so use a smaller size or wait.';
+      f.warn = 'The supply/demand reversal setup points the other way. CRT is a reversal idea, so use a smaller size or wait.';
     }
     return f;
   }
-  return ss ? { ...ss, source: 'Classic' } : null;
+  return ss ? { ...ss, source: 'S/D Reversal' } : null;
 }

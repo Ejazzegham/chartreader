@@ -1,21 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, Switch, BackHandler } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Pressable, ScrollView, TextInput, Switch, BackHandler, Animated, Easing, AccessibilityInfo } from 'react-native';
 import { useWindowDimensions } from '../win';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Defs, LinearGradient as SvgGradient, Stop, Text as SvgText, Rect, Line, Path } from 'react-native-svg';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../store';
-import { Screen, Card, Dim, Body, Icon, AppHeader } from '../ui';
-import { SYMBOLS, TFS, Candle, symOf, isBad, useFeed, watchCandles, quotes } from '../markets';
-import { analyzeAll } from '../refine';
-import { MDEFS, MDef, MKey, Host, mdef, MethodIcon, MiniRing } from '../MethodArt';
+import { Screen, Card, Dim, Body, Icon, LiveDot, MenuButton, BellButton, AppHeader } from '../ui';
+import { SYMBOLS, symOf, isBad, useFeed } from '../markets';
+import { MDEFS, MDef, Host, mdef, MethodIcon } from '../MethodArt';
 import { BodyProps } from '../embed';
 import Scalping from './Scalping';
 import ICTLab from './ICTLab';
 import TopDown from './TopDown';
 import Scanner from './Scanner';
 import Insight from './Insight';
-import { momentum } from '../momentum';
+import CRAnalysis from './CRAnalysis';
 
 export const ANALYSIS_TAB = 1;
 
@@ -25,44 +24,57 @@ const MARKETS: { k: string; label: string; icon: string }[] = [
   { k: 'forex', label: 'Forex', icon: 'swap-horizontal' },
   { k: 'deriv', label: 'Deriv', icon: 'pulse' },
 ];
-const LIVE: { id: string; label: string; bg: string; fg: string; txt: string }[] = [
-  { id: 'cryBTCUSD', label: 'BTCUSD', bg: '#F7931A', fg: '#FFFFFF', txt: '₿' },
-  { id: 'cryETHUSD', label: 'ETHUSD', bg: '#627EEA', fg: '#FFFFFF', txt: 'Ξ' },
-  { id: 'frxXAUUSD', label: 'XAUUSD', bg: '#E0A82E', fg: '#FFFFFF', txt: 'Au' },
-  { id: 'frxEURUSD', label: 'EURUSD', bg: '#2457E6', fg: '#FFFFFF', txt: '€' },
-  { id: 'frxGBPUSD', label: 'GBPUSD', bg: '#C8102E', fg: '#FFFFFF', txt: '£' },
-  { id: 'frxUSDJPY', label: 'USDJPY', bg: '#EDEFF5', fg: '#BC002D', txt: '¥' },
-];
-const FX_FIRST = ['frxDXY', 'frxXAUUSD', 'frxXAGUSD', 'frxEURUSD', 'frxGBPUSD', 'frxUSDJPY', 'frxAUDUSD', 'frxUSDCAD', 'frxUSDCHF', 'frxNZDUSD', 'frxEURJPY', 'frxGBPJPY'];
+const FX_FIRST = ['frxDXY', 'frxXAUUSD', 'frxXAGUSD', 'frxWTI', 'frxBRENT', 'frxEURUSD', 'frxGBPUSD', 'frxUSDJPY', 'frxAUDUSD', 'frxUSDCAD', 'frxUSDCHF', 'frxNZDUSD', 'frxEURJPY', 'frxGBPJPY'];
 const PROBS = [70, 75, 80, 85]; // alerts never go under 70%
-type ScanCfg = { auto: boolean; alarm: boolean; minProb: number };
+type ScanCfg = { auto: boolean; alarm: boolean; minProb: number; watch?: boolean; digest?: boolean; dayBreaks?: boolean; news?: boolean };
 const CFG0: ScanCfg = { auto: true, alarm: true, minProb: 75 };
 const groupOf = (cat: string) => (cat === 'indices' ? 'forex' : cat);
 
-// which method a saved setup came from (the text the analysis screens write into `source`)
-const methodOfSource = (s?: string): MKey => {
-  const x = (s ?? '').toLowerCase();
-  if (x.startsWith('ict')) return 'ict';
-  if (x.startsWith('smc')) return 'smc';
-  if (x.startsWith('vsa')) return 'vsa';
-  if (x.startsWith('candle')) return 'candle';
-  if (x.startsWith('pattern')) return 'pat';
-  if (x.startsWith('scalp')) return 'scalp';
-  if (x.startsWith('top')) return 'topdown';
-  if (x.startsWith('scanner')) return 'scanner';
-  if (x.startsWith('entry')) return 'entry';
-  return 'all';
-};
-const money = (v: number, d: number) => v.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
-
-// small candlestick picture for the banner
-const BANNER_CANDLES: [number, number, number, number, number, 's' | 'b' | 'p'][] = [
-  [8, 52, 72, 56, 68, 's'], [20, 46, 70, 50, 62, 'p'], [32, 40, 62, 44, 56, 'b'], [44, 34, 58, 40, 52, 's'], [56, 28, 52, 32, 46, 'b'],
-  [68, 22, 44, 26, 38, 'p'], [80, 18, 40, 22, 34, 'b'], [92, 10, 34, 14, 28, 'b'], [104, 14, 38, 20, 32, 's'],
-];
+// Running news-style warning at the top of the Analysis page. One message, scrolling right to left, nonstop while the page is open.
+// (Reduce-motion users get the same message standing still.)
+const TICKER_TEXT = "DON'T ANTI TRADE ON BOOM & CRASH";
+function RunningAlert({ active }: { active: boolean }) {
+  const { th } = useApp();
+  const x = useRef(new Animated.Value(0)).current;
+  const [seg, setSeg] = useState(0);   // width of one repeated message
+  const [box, setBox] = useState(0);   // width of the visible strip
+  const [still, setStill] = useState(false);
+  useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setStill).catch(() => {}); }, []);
+  useEffect(() => {
+    if (!active || still || !seg) return;
+    x.setValue(0);
+    const loop = Animated.loop(Animated.timing(x, { toValue: -seg, duration: Math.max(4000, seg * 24), easing: Easing.linear, useNativeDriver: true }));
+    loop.start();
+    return () => loop.stop();
+  }, [active, still, seg]);
+  const copies = seg ? Math.ceil(box / seg) + 2 : 1;
+  const msg = (k: number) => (
+    <View key={k} onLayout={k === 0 ? (e) => setSeg(e.nativeEvent.layout.width) : undefined} style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0, paddingRight: 34 }}>
+      <Text numberOfLines={1} style={{ color: th.text, fontSize: 12, fontWeight: '900', letterSpacing: 0.9 }}>{TICKER_TEXT}</Text>
+      <Text style={{ color: th.sell, fontSize: 10, marginLeft: 34 }}>◆</Text>
+    </View>
+  );
+  return (
+    <View accessible accessibilityRole="alert" accessibilityLabel="Do not anti trade on Boom and Crash" style={{ flexDirection: 'row', alignItems: 'center', height: 32, borderRadius: 8, borderWidth: 1, borderColor: th.sell + '88', backgroundColor: th.sell + (th.dark ? '22' : '14'), overflow: 'hidden', direction: 'ltr' }}>
+      <View style={{ height: '100%', paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: th.sell }}>
+        <Icon name="warning" size={13} color="#FFFFFF" />
+        <Text style={{ color: '#FFFFFF', fontSize: 10.5, fontWeight: '900', letterSpacing: 1 }}>ALERT</Text>
+      </View>
+      <View onLayout={(e) => setBox(e.nativeEvent.layout.width)} style={{ flex: 1, height: '100%', overflow: 'hidden' }}>
+        {still ? (
+          <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 10 }}><Text numberOfLines={1} style={{ color: th.text, fontSize: 12, fontWeight: '900', letterSpacing: 0.6 }}>{TICKER_TEXT}</Text></View>
+        ) : (
+          <Animated.View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', transform: [{ translateX: x }] }}>
+            {Array.from({ length: copies }, (_, k) => msg(k))}
+          </Animated.View>
+        )}
+      </View>
+    </View>
+  );
+}
 
 export default function Analysis() {
-  const { th, tab, amethod, setAmethod, asym, setAsym, setTab, signals, alarms } = useApp();
+  const { th, tab, amethod, setAmethod, asym, setAsym, setTab } = useApp();
   const { width } = useWindowDimensions();
   const active = tab === ANALYSIS_TAB;
   const { db } = useFeed(active);
@@ -75,7 +87,7 @@ export default function Analysis() {
   const m = cur && cur.host !== 'tab' ? cur : undefined; // an open method (Planner and Settings are pages of their own)
 
   // scanner settings are remembered
-  useEffect(() => { AsyncStorage.getItem('scan_cfg').then((v) => { if (v) { const c = JSON.parse(v); setCfg({ auto: c.auto !== false, alarm: c.alarm !== false, minProb: PROBS.includes(c.minProb) ? c.minProb : 75 }); } }).catch(() => {}); }, []);
+  useEffect(() => { AsyncStorage.getItem('scan_cfg').then((v) => { if (v) { const c = JSON.parse(v); setCfg({ auto: c.auto !== false, alarm: c.alarm !== false, minProb: PROBS.includes(c.minProb) ? c.minProb : 75, watch: c.watch !== false, digest: !!c.digest, dayBreaks: c.dayBreaks !== false, news: c.news !== false }); } }).catch(() => {}); }, []);
   const setC = (p: Partial<ScanCfg>) => setCfg((o) => { const n = { ...o, ...p }; AsyncStorage.setItem('scan_cfg', JSON.stringify(n)).catch(() => {}); return n; });
 
   // another page asked for a pair (store.asym): open it here
@@ -93,36 +105,7 @@ export default function Analysis() {
     return () => sub.remove();
   }, [active, !!m]);
 
-  // ---------------------------------------------------------------- live scores for the landing cards (one candle stream for the chosen pair)
   const sym = symOf(symId);
-  const [landData, setLandData] = useState<Candle[]>([]);
-  useEffect(() => {
-    if (!active || m) return;
-    setLandData([]);
-    return watchCandles(symId, 900, (c) => setLandData(c), () => {});
-  }, [active, !!m, symId]);
-  const sessions = ['forex', 'indices'].includes(sym.cat);
-  const land = useMemo(() => (landData.length > 40 ? analyzeAll(landData, new Date(), { sessions }) : null), [landData, sessions]);
-  const mom = useMemo(() => (landData.length ? momentum(landData) : null), [landData]);
-  const scores = useMemo(() => {
-    const s: Partial<Record<MKey, number | null>> = {};
-    const lastOf = (src: string, pairOnly: boolean) => signals.filter((x) => methodOfSource(x.source) === src && (!pairOnly || x.symId === symId)).sort((a, b) => b.date - a.date)[0]?.score ?? null;
-    if (land) {
-      s.all = land.combo?.score ?? null;
-      s.ict = land.ict.setup?.score ?? null;
-      s.smc = land.smc.setup?.score ?? null;
-      s.vsa = land.vsa.setup ? Math.min(100, Math.abs(land.vsa.score) + 20) : null;
-      s.candle = land.cdl.setup?.score ?? null;
-      s.pat = land.pat.setup ? Math.min(100, land.pat.setup.pattern.quality) : null;
-      s.scalp = land.scalp.setup?.score ?? null;
-      s.entry = (land.combo ?? land.ict.setup)?.score ?? null;
-    }
-    s.momentum = mom && mom.ok ? mom.score : null;
-    s.topdown = lastOf('topdown', true);
-    s.scanner = lastOf('scanner', false);
-    return s;
-  }, [land, mom, signals, symId]);
-  const poolN = land && land.ict.ok ? land.ict.liquidity.filter((l) => !l.swept).length : null;
 
   // ---------------------------------------------------------------- pairs
   const pairsFor = (k: string) => {
@@ -148,47 +131,13 @@ export default function Analysis() {
   const mTerm = mq.trim().toLowerCase();
   const methods = MDEFS.filter((d) => !mTerm || (d.label + ' ' + d.desc).toLowerCase().includes(mTerm));
   const cols = W >= 560 ? 2 : 1;
-  const tfName = (tf?: string) => TFS.find((x) => x.k === tf)?.label ?? (tf && tf.includes('/') ? tf.split('/').map((x) => TFS.find((y) => y.k === x)?.label ?? x).join('/') : tf ?? '');
-  const recent = [...signals].sort((a, b) => b.date - a.date).slice(0, 8);
 
   // ---------------------------------------------------------------- pieces
   const header = <AppHeader />; // same row as every page (on the website the sidebar already has the menu and the name)
 
-  const fs = Math.max(17, Math.min(24, Math.round(W * 0.058)));
-  const banner = (
-    <LinearGradient colors={[th.accent + (th.dark ? '2E' : '16'), accent2 + (th.dark ? '38' : '26')]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-      style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', minHeight: 132, justifyContent: 'center', direction: 'ltr' }}>
-      <View style={{ paddingVertical: 14, paddingLeft: 14, width: W >= 520 ? '52%' : '64%' }}>
-        <Text style={{ color: th.text, fontSize: fs, fontWeight: '900', letterSpacing: -0.4 }}>Smarter Analysis</Text>
-        <Svg width={W * 0.6} height={fs * 1.3}>
-          <Defs>
-            <SvgGradient id="bt" x1="0" y1="0" x2="1" y2="0"><Stop offset="0" stopColor={th.accent} /><Stop offset="1" stopColor={accent2} /></SvgGradient>
-          </Defs>
-          <SvgText x="0" y={fs * 1.02} fontSize={fs} fontWeight="900" letterSpacing={-0.4} fill="url(#bt)">Better Trading</SvgText>
-        </Svg>
-        <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16, marginTop: 2 }}>Choose your analysis method to study the chart, find high-probability setups and trade with confidence.</Text>
-      </View>
-      <View pointerEvents="none" style={{ position: 'absolute', right: W >= 520 ? '24%' : 6, top: 14, bottom: 14, width: W >= 520 ? '24%' : '32%', justifyContent: 'center' }}>
-        <Svg width="100%" height="100%" viewBox="0 0 120 80" preserveAspectRatio="xMidYMid meet">
-          <Path d="M4 68 C 30 66, 44 50, 62 40 S 94 22, 112 12" stroke={accent2} strokeWidth="2" strokeOpacity="0.35" fill="none" strokeLinecap="round" />
-          {BANNER_CANDLES.map(([x, wt, wb, bt, bb, c], i) => {
-            const col = c === 'b' ? th.buy : c === 's' ? th.sell : accent2;
-            return (<React.Fragment key={i}><Line x1={x} y1={wt} x2={x} y2={wb} stroke={col} strokeWidth="1.6" strokeLinecap="round" /><Rect x={x - 3.4} y={bt} width="6.8" height={bb - bt} rx="1.6" fill={col} /></React.Fragment>);
-          })}
-        </Svg>
-      </View>
-      {W >= 520 && (
-        <View style={{ position: 'absolute', right: 14, top: 0, bottom: 0, width: '22%', justifyContent: 'center', transform: [{ rotate: '-8deg' }] }}>
-          <Text style={{ color: th.dim, fontStyle: 'italic', fontSize: 14, lineHeight: 20 }}>“Better Analysis</Text>
-          <Text style={{ color: th.dim, fontStyle: 'italic', fontSize: 14, lineHeight: 20 }}>Better Decisions”</Text>
-          <View style={{ height: 2, width: '70%', borderRadius: 1, backgroundColor: accent2, marginTop: 4 }} />
-        </View>
-      )}
-    </LinearGradient>
-  );
 
   const methodCard = (d: MDef) => {
-    const rec = d.k === 'all', sc = d.score ? scores[d.k] ?? null : null;
+    const rec = d.k === 'all';
     return (
       <Pressable key={d.k} onPress={() => openMethod(d)} accessibilityRole="button" accessibilityLabel={`${d.label}. ${d.desc}`} style={({ pressed }) => ({ width: cols === 2 ? '48.9%' : '100%', opacity: pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.99 : 1 }] })}>
         <LinearGradient colors={[d.colors[0] + (th.dark ? '1C' : '14'), th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
@@ -199,17 +148,6 @@ export default function Analysis() {
               <Text style={{ color: th.text, fontSize: 14.5, fontWeight: '800', flexShrink: 1 }} numberOfLines={1}>{d.label}</Text>
             </View>
             <Text style={{ color: th.dim, fontSize: 11, lineHeight: 15 }} numberOfLines={3}>{d.desc}</Text>
-            {d.score ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
-                <Text style={{ color: th.dim, fontSize: 10.5 }}>Trade Score</Text>
-                <MiniRing score={sc} color={th.accent} track={th.dim} text="" />
-              </View>
-            ) : d.k === 'liquidity' ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                <Text style={{ color: th.dim, fontSize: 10.5 }}>Resting pools</Text>
-                <Text style={{ color: th.accent, fontWeight: '900', fontSize: 12 }}>{poolN == null ? '--' : poolN}</Text>
-              </View>
-            ) : null}
           </View>
           <Icon name="chevron-forward" size={16} color={th.dim} />
         </LinearGradient>
@@ -225,8 +163,8 @@ export default function Analysis() {
           <Icon name="compass-outline" size={24} color={th.accent} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: th.text, fontSize: 17, fontWeight: '800' }}>Choose Your Analysis Method</Text>
-          <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>Select a method to start analyzing the chart with advanced tools, smart indicators and professional insights.</Text>
+          <Text style={{ color: th.text, fontSize: 17, fontWeight: '800' }}>Analysis Methods</Text>
+          <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>Pick a method to analyze the chart. You choose the market and pair inside it.</Text>
         </View>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
@@ -234,7 +172,6 @@ export default function Analysis() {
         <TextInput value={mq} onChangeText={setMq} placeholder="Search method..." placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, padding: 11 }} />
         {!!mq && <Pressable onPress={() => setMq('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
       </View>
-      <Text style={{ color: th.dim, fontSize: 11 }}>Trade Score shown for <Text style={{ color: th.text, fontWeight: '800' }}>{sym.name}</Text> · M15. Pick a market below to change the pair.</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between', paddingTop: 4 }}>
         {methods.map(methodCard)}
         {methods.length === 0 && <Dim>No method matches “{mq}”.</Dim>}
@@ -242,74 +179,53 @@ export default function Analysis() {
     </View>
   );
 
-  const liveStrip = (
-    <View style={{ gap: 8 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: th.buy }} />
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: th.text, fontWeight: '800', fontSize: 14 }}>Live Markets</Text>
-          <Text style={{ color: th.dim, fontSize: 10 }}>Real-time prices · tap one to score it</Text>
-        </View>
-        <Pressable onPress={() => setTab(2)} hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-          <Text style={{ color: th.accent, fontWeight: '800', fontSize: 11.5 }}>View All</Text><Icon name="arrow-forward" size={13} color={th.accent} />
-        </Pressable>
+  const bgOn = cfg.auto && cfg.alarm;
+  // Background scanner card: the server scans while the app is closed and pushes a notification. One master switch, four optional alert types.
+  const optRow = (icon: string, tint: string, title: string, sub: string, value: boolean, onChange: (b: boolean) => void, last?: boolean) => (
+    <View key={title} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderBottomWidth: last ? 0 : 1, borderBottomColor: th.hair }}>
+      <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tint + '22', borderWidth: 1, borderColor: tint + '55', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} size={17} color={tint} />
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} style={{ direction: 'ltr' }}>
-        {LIVE.map((x) => {
-          const qt = quotes[x.id], chg = qt && qt.open ? ((qt.price - qt.open) / qt.open) * 100 : null, up = (chg ?? 0) >= 0, on = x.id === symId;
-          return (
-            <Pressable key={x.id} onPress={() => { setSymId(x.id); setMarket(groupOf(symOf(x.id).cat)); }} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ width: 138, flexDirection: 'row', alignItems: 'center', gap: 8, padding: 9, borderRadius: 8, borderWidth: on ? 1.6 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel }}>
-              <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: x.bg, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: x.fg, fontWeight: '900', fontSize: x.txt.length > 1 ? 11 : 15 }}>{x.txt}</Text></View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '700' }}>{x.label}</Text>
-                <Text style={{ color: th.text, fontSize: 12.5, fontWeight: '800' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{qt ? money(qt.price, qt.dec) : '--'}</Text>
-                <Text style={{ color: chg == null ? th.dim : up ? th.buy : th.sell, fontSize: 10, fontWeight: '700' }}>{chg == null ? '' : `${up ? '+' : ''}${chg.toFixed(2)}% ${up ? '↗' : '↘'}`}</Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }} numberOfLines={1}>{title}</Text>
+        <Text style={{ color: th.dim, fontSize: 11, lineHeight: 15, marginTop: 1 }} numberOfLines={3}>{sub}</Text>
+      </View>
+      <Switch value={value} onValueChange={onChange} trackColor={{ true: th.accent, false: th.line }} thumbColor="#FFFFFF" />
     </View>
   );
-
-  const recentStrip = (
-    <View style={{ gap: 8 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Icon name="time-outline" size={18} color={th.accent} />
-        <Text style={{ flex: 1, color: th.text, fontWeight: '800', fontSize: 14 }}>Recent Analysis</Text>
-        <Pressable onPress={() => setTab(3)} hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-          <Text style={{ color: th.accent, fontWeight: '800', fontSize: 11.5 }}>View All</Text><Icon name="arrow-forward" size={13} color={th.accent} />
-        </Pressable>
-      </View>
-      {recent.length === 0 ? (
-        <Card><Dim>Nothing yet. Open a method above: the setups you analyze are listed here.</Dim></Card>
-      ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} style={{ direction: 'ltr' }}>
-          {recent.map((x) => {
-            const d = mdef(methodOfSource(x.source))!, buy = x.side === 'buy';
-            return (
-              <Pressable key={x.id} onPress={() => { setSymId(x.symId); setMarket(groupOf(symOf(x.symId).cat)); openMethod(d.host === 'tab' ? mdef('all')! : d); }} style={{ width: 188, padding: 10, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, gap: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <MethodIcon def={d} size={30} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: th.text, fontSize: 11.5, fontWeight: '800' }} numberOfLines={1}>{d.label}</Text>
-                    <Text style={{ color: th.dim, fontSize: 10 }} numberOfLines={1}>{x.name} · {tfName(x.tf)}</Text>
-                  </View>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text style={{ color: th.dim, fontSize: 10.5 }}>Score <Text style={{ color: th.text, fontWeight: '900' }}>{Math.round(x.score)}%</Text></Text>
-                  <View style={{ borderRadius: 8, paddingHorizontal: 9, paddingVertical: 3, backgroundColor: (buy ? th.buy : th.sell) + '22', borderWidth: 1, borderColor: (buy ? th.buy : th.sell) + '88' }}>
-                    <Text style={{ color: buy ? th.buy : th.sell, fontSize: 10, fontWeight: '900' }}>{buy ? 'BUY' : 'SELL'}</Text>
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+  const bgCard = (
+    <View style={{ borderRadius: 14, borderWidth: 1, borderColor: bgOn ? th.accent + '99' : th.line, backgroundColor: th.panel, overflow: 'hidden', shadowColor: th.accent, shadowOpacity: bgOn ? (th.dark ? 0.32 : 0.14) : 0, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: bgOn ? 4 : 1 }}>
+      <LinearGradient colors={[th.accent + (bgOn ? '30' : '12'), th.accent2 + (bgOn ? '10' : '06'), th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 14, gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <LinearGradient colors={bgOn ? [th.accent, th.accent2] : [th.line, th.line]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 46, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name={bgOn ? 'radio' : 'notifications-off-outline'} size={23} color={bgOn ? '#FFFFFF' : th.dim} />
+          </LinearGradient>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: th.text, fontSize: 15.5, fontWeight: '900', letterSpacing: -0.2 }} numberOfLines={1}>Smart Alert Scanner</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, height: 20, borderRadius: 10, backgroundColor: (bgOn ? th.buy : th.dim) + '22', borderWidth: 1, borderColor: (bgOn ? th.buy : th.dim) + '66' }}>
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: bgOn ? th.buy : th.dim }} />
+                <Text style={{ color: bgOn ? th.buy : th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 1 }}>{bgOn ? 'ACTIVE' : 'OFF'}</Text>
+              </View>
+              {bgOn && <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '700' }}>every 90 s · min {cfg.minProb}%</Text>}
+            </View>
+          </View>
+          <Switch value={bgOn} onValueChange={(b) => setC({ auto: b, alarm: b })} trackColor={{ true: th.accent, false: th.line }} thumbColor="#FFFFFF" />
+        </View>
+        <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 17 }}>
+          {bgOn ? 'Your server scans your watch list, forex, crypto and Deriv around the clock. Every A or A+ setup is added to your Journal (Take or Skip) and sent as a notification when it reaches its POI, even with the app closed. Tap the notification to open that setup.' : 'Switch on to get a notification the moment a setup forms. Without it, you only see setups while the app is open.'}
+        </Text>
+      </LinearGradient>
+      {bgOn && (
+        <View style={{ paddingHorizontal: 14, paddingBottom: 4, borderTopWidth: 1, borderTopColor: th.hair }}>
+          {optRow('eye-outline', th.gold, 'Early heads-up', 'Setup forming at the POI but not A-grade yet. More alerts, lower accuracy.', (cfg as any).watch !== false, (b) => setC({ watch: b } as any))}
+          {optRow('pulse-outline', th.accent, 'Analysis digest', 'A silent notification every 90 s with the best setups, even when there is no alert.', !!(cfg as any).digest, (b) => setC({ digest: b } as any))}
+          {optRow('swap-vertical-outline', th.buy, 'Daily high / low breaks', 'When any pair breaks the previous day’s high or low. Checked every minute.', cfg.dayBreaks !== false, (b) => setC({ dayBreaks: b }))}
+          {optRow('newspaper-outline', th.sell, 'High-impact news', 'An alert 15 minutes before every high-impact economic release.', cfg.news !== false, (b) => setC({ news: b }), true)}
+        </View>
       )}
     </View>
   );
-
   // ---------------------------------------------------------------- scanner setup (inside the Scanner workspace)
   const setRow = (icon: string, title: string, sub: string, right: React.ReactNode) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: th.hair }}>
@@ -448,18 +364,18 @@ export default function Analysis() {
     <Screen title="Analysis" bare scrollKey={amethod}>
       <View style={{ gap: 14 }}>
         {header}
+        <RunningAlert active={active} />
         {!m && (
           <>
-            {banner}
+            {bgCard}
             {choose}
-            {liveStrip}
-            {recentStrip}
-            <Dim>Educational tool, not financial advice. Trade Score is the setup's confluence score for the chosen pair, not a guaranteed win rate.</Dim>
+            <Dim>Educational tool, not financial advice.</Dim>
           </>
         )}
         {backRow}
         {/* Each method keeps its own state while hidden; only the open one loads candles. */}
         <View style={show('ict')}><ICTLab {...common} on={live('ict')} method={m && m.host === 'ict' ? m.k : 'all'} /></View>
+        <View style={show('cr')}><CRAnalysis {...common} on={live('cr')} /></View>
         <View style={show('topdown')}><TopDown {...common} on={live('topdown')} /></View>
         <View style={show('scanner')}><Scanner embedded on={live('scanner')} group={market} cfg={cfg} onOpen={(id) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); }} /></View>
         <View style={show('scalp')}><Scalping {...common} on={live('scalp')} /></View>

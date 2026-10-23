@@ -27,6 +27,9 @@ export default function GlassBackdrop() {
         <Circle cx={width * 0.02} cy={height * 0.5} r={r} fill="url(#orb1)" />
         <Circle cx={width * 0.85} cy={height * 0.95} r={r} fill="url(#orb2)" />
       </Svg>
+      {th.sheen > 0 && ( // premium themes: a faint light falling from the top corner, like light on polished glass
+        <LinearGradient colors={[`rgba(255,255,255,${th.sheen})`, 'rgba(255,255,255,0)', 'rgba(255,255,255,0)']} locations={[0, 0.75, 1]} start={{ x: 0.1, y: 0 }} end={{ x: 0.5, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: height * 0.6 }} />
+      )}
     </View>
   );
 }

@@ -10,7 +10,7 @@ export default function History() {
   const [open, setOpen] = useState<string | null>(null);
   const dec = (n: number) => (Math.abs(n) >= 100 ? 2 : Math.abs(n) >= 1 ? 4 : 5);
   const f = (n: number) => (isFinite(n) ? n.toFixed(dec(n)) : '-');
-  const row = (k: string, v: string, c?: string) => <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 }}><Text style={{ color: th.dim, fontSize: 13 }}>{k}</Text><Text style={{ color: c ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{v}</Text></View>;
+  const row = (k: string, v: string, c?: string) => <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 3 }}><Text style={{ flex: 1, minWidth: 0, color: th.dim, fontSize: 13 }}>{k}</Text><Text style={{ flexShrink: 1, maxWidth: '62%', textAlign: 'right', color: c ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{v}</Text></View>;
 
   return (
     <Screen icon="time" title={t('tabHistory')} subtitle={history.length ? `${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : undefined}>

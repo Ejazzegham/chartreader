@@ -76,3 +76,10 @@ VSA reads real traded volume, not spread. Crypto: Binance spot volume. Forex, go
 - Browser test (needs `pip install playwright && playwright install chromium`):
   `npm run build:web`, serve `dist` on port 8099, then `python3 tests/web/smoke.py`. It logs in with a faked Firebase and server, and checks the column, saved login,
   pop-up, confirm box, proxy, chart and mouse-wheel zoom.
+
+
+## Keeping the website in step with the app (v2.11)
+
+The website and the phone app are ONE codebase. Web-only files end in `.web.tsx` / `.web.ts` or are named in WEB.md above (Desktop, DesktopHome, Frame, Landing, LiveCandles, dash, dialog, net, win, secureStore, Modal). Everything else is the app's own code.
+When the app changes, copy the new `src/` over and re-apply only these web hooks: App.tsx (Frame + DesktopShell), screens/Home.tsx (DesktopHome wrapper), ChartZoom.tsx (wheel + hover), markets.ts (dialog + IS_WEB), fallback.ts (xfetch), and the imports `Modal`, `showAlert`, `shareText`, `useWindowDimensions`, `secureStore` instead of the react-native / expo ones. Then run: `npx tsc --noEmit`, the tests, `npx expo export --platform web`, and `python3 tests/web/smoke.py` (serve `dist` on port 8099 first).
+Server: `server/server.js` needs the CORS headers and `await proxy(req, res)` line (see CHANGES.md).

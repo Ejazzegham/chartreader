@@ -1,7 +1,10 @@
 // Trade desk logic (no React). A "signal" is an analysis result the app logged by itself.
 // Lifecycle: signal -> (user takes it) -> pending (limit order waiting) or open (running) -> closed (moves to the journal).
 // Money is paper money: every trade risks `risk` (account balance x risk %), so P&L = R multiple x risk.
-// Take profits never close anything by themselves. Reaching one rings an alarm and the trader decides: close all, close part, move the stop, or hold.
+// Take profits never close anything by themselves unless the trader switched it on when taking the trade:
+//  - plan + auto: each planned share (for example 50 / 30 / 20 %) is closed by itself at its take profit,
+//  - auto stop (autoBe): TP1 moves the stop to the entry, TP2 moves it to TP1, and TP3 closes the whole trade.
+// Otherwise reaching a take profit rings an alarm and the trader decides: close all, close part, move the stop, or hold.
 // The stop loss still closes the trade by itself. The trader chooses the size (lots) when taking the trade.
 
 export const SPLIT = [0.5, 0.3, 0.2];
@@ -45,7 +48,7 @@ export type Signal = {
   // Take-profit plan chosen when the trade was taken: share of the ORIGINAL position to close at TP1, TP2, TP3 (adds up to 1).
   plan?: number[];
   auto?: boolean;    // true: each planned share is closed by itself the moment its take profit is reached. false: the plan is only a suggestion in the alarm.
-  autoBe?: boolean;  // true: the stop moves to the fill price (break-even) by itself when TP1 is reached
+  autoBe?: boolean;  // true (the "auto stop" switch): TP1 -> stop to the fill price, TP2 -> stop to TP1, last TP -> the whole trade closes
 };
 
 export type CloseSetup = { plan: number[]; auto: boolean; autoBe: boolean };
@@ -65,6 +68,11 @@ export type Ev = { id: string; kind: 'fill' | 'tp' | 'sl' | 'be' | 'tp3' | 'near
 export const dirOf = (s: { side: 'buy' | 'sell' }) => (s.side === 'buy' ? 1 : -1);
 export const riskDist = (s: Signal) => Math.abs((s.fill ?? s.entry) - s.sl);
 const fr = (s: Signal) => 1 - s.done;
+// The stop sits on the entry or already past it in the profit direction (break-even or better). The manual break-even button must never pull a stop back from TP1 to the entry.
+export const stopAtBE = (s: Signal) => s.status === 'open' && s.fill !== undefined && dirOf(s) * (s.stop - s.fill) >= -1e-9;
+// Money view of a running trade (no R): what the closed shares already earned, and what the part still open floats at.
+export const bookedMoney = (s: Signal) => s.banked * s.risk;
+export const openMoney = (s: Signal, price: number) => fr(s) * floatR(s, price) * s.risk;
 
 // floating result in R of what is still open
 export function floatR(s: Signal, price: number) {
@@ -132,34 +140,40 @@ export function step(s0: Signal, price: number, now: number): Step {
   if (hitSL(price, s.stop)) {
     const c = finish(s, s.stop, 'sl');
     c.reason = c.r > 0.05 ? 'tp' : s.stop === s.fill ? 'be' : 'sl';
-    ev.push({ id: tag + 'sl', kind: c.r >= -0.05 ? 'be' : 'sl', text: c.r >= -0.05 ? `${s.name}: stopped out near break-even. ${fmtR(c.r)}` : `${s.name}: stop loss hit. ${fmtR(c.r)}` });
+    const at = s.tps.findIndex((p) => p === s.stop), moved = k * (s.stop - (s.fill as number)) > 1e-9; // the stop had been moved into profit (TP1 level or by hand)
+    ev.push({ id: tag + 'sl', kind: c.r >= -0.05 ? 'be' : 'sl', text: c.r < -0.05 ? `${s.name}: stop loss hit. ${money(c.pnl)}` : moved ? `${s.name}: stop ${at >= 0 ? `at TP${at + 1} ` : ''}hit, profit kept. Trade result ${money(c.pnl)}.` : `${s.name}: stopped out at break-even. Trade result ${money(c.pnl)}.` });
     return { sig: s, ev, closed: c };
   }
-  // A take profit was reached. Three ways it can go:
+  // A take profit was reached. Ways it can go:
+  //  - auto stop (autoBe): TP1 moves the stop to the entry, TP2 moves it to TP1, and the LAST take profit closes everything that is still open,
   //  - auto plan: the planned share is closed at the TP price right away (the last share closes the whole trade),
-  //  - alarm only: nothing closes, the trader decides (close all, close part, move the stop, hold),
-  //  - in both cases the stop can move to break-even by itself after TP1 when that option was chosen.
+  //  - alarm only: nothing closes, the trader decides (close all, close part, move the stop, hold).
+  // The stop only ever moves in the trader's favour, so a manual stop that is already better is left alone.
   while (s.hits < s.tps.length && hitUp(price, s.tps[s.hits])) {
-    const i = s.hits, tp = s.tps[i];
+    const i = s.hits, tp = s.tps[i], last = i === s.tps.length - 1;
     s.hits = i + 1;
-    if (s.autoBe && i === 0 && s.stop !== s.fill) {
-      s.stop = s.fill as number;
-      ev.push({ id: `${tag}bemove`, kind: 'bemove', text: `${s.name}: TP1 reached, stop moved to break-even.` });
+    if (s.autoBe && !last) {
+      const to = i === 0 ? (s.fill as number) : s.tps[i - 1];
+      if (k * (to - s.stop) > 1e-12) {
+        s.stop = to;
+        ev.push({ id: `${tag}bemove${i + 1}`, kind: 'bemove', text: `${s.name}: TP${i + 1} reached, stop moved to ${i === 0 ? 'your entry (break-even)' : `TP${i}`}.` });
+      }
     }
-    const left = 1 - s.done, share = s.auto && s.plan ? Math.min(s.plan[i] ?? 0, left) : 0;
+    const left = 1 - s.done, share = s.autoBe && last ? left : s.auto && s.plan ? Math.min(s.plan[i] ?? 0, left) : 0;
     if (share > 1e-9) {
+      const got = share * r(tp) * s.risk; // money these shares earned at the TP price
       s.banked += share * r(tp); s.done += share;
       if (share >= left - 1e-6) { // that was the last open share: the trade is finished
         s.done = 1;
         const c = finish(s, tp, 'tp');
-        ev.push({ id: `${tag}tp${i + 1}`, kind: 'auto', text: `${s.name}: TP${i + 1} reached, last ${Math.round(share * 100)}% closed. Trade finished ${fmtR(c.r)}.` });
+        ev.push({ id: `${tag}tp${i + 1}`, kind: 'auto', text: `${s.name}: TP${i + 1} reached, ${Math.round(share * 100)}% closed (${money(got)}). Trade finished, result ${money(c.pnl)}.` });
         return { sig: s, ev, closed: c };
       }
-      ev.push({ id: `${tag}tp${i + 1}`, kind: 'auto', text: `${s.name}: TP${i + 1} reached, ${Math.round(share * 100)}% closed at ${tp.toFixed(s.dec)}.` });
+      ev.push({ id: `${tag}tp${i + 1}`, kind: 'auto', text: `${s.name}: TP${i + 1} reached, ${Math.round(share * 100)}% closed at ${tp.toFixed(s.dec)}. ${money(got)} booked.` });
     } else {
       s.tpAlert = s.hits;
       const hint = s.plan && s.plan[i] ? ` Your plan: close ${Math.round(s.plan[i] * 100)}% now.` : '';
-      ev.push({ id: `${tag}tp${i + 1}`, kind: i === s.tps.length - 1 ? 'tp3' : 'tp', text: `${s.name}: TP${i + 1} reached at ${price.toFixed(s.dec)}.${hint} Close all, close part, move the stop or hold?` });
+      ev.push({ id: `${tag}tp${i + 1}`, kind: last ? 'tp3' : 'tp', text: `${s.name}: TP${i + 1} reached at ${price.toFixed(s.dec)}.${hint} Close all, close part, move the stop or hold?` });
     }
   }
   return { sig: s, ev };
@@ -251,3 +265,6 @@ export function guard(closed: { date: number; pnl: number }[], desk: Desk, runni
   if (lossesToday >= 3) return { level: 'warn', title: `${lossesToday} losses today`, text: 'Reduce size or stop. Three losses in a day is a signal to slow down.' };
   return { level: 'ok', title: '', text: '' };
 }
+
+// The name of a trade's source. Trades taken on the Demo Trade screen used to be saved as "Manual"; both are shown (and grouped) as "Demo".
+export const sourceName = (s?: string): string => (!s || s === 'Manual' || s === 'Demo' ? 'Demo' : s);

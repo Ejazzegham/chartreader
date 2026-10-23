@@ -1,3 +1,4 @@
+import { APP_VERSION } from './version';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, Animated, ScrollView, Easing } from 'react-native';
 import { useWindowDimensions } from './win';
@@ -114,7 +115,7 @@ export default function RightSidebar() {
             <Text style={{ color: th.sell, fontWeight: '800', fontSize: 14 }}>{t('logout')}</Text>
           </Pressable>
           <PoweredBy compact />
-          <Text style={{ color: th.dim, fontSize: 10, textAlign: 'center' }}>v2.10</Text>
+          <Text style={{ color: th.dim, fontSize: 10, textAlign: 'center' }}>v{APP_VERSION}</Text>
         </View>
       </Animated.View>
     </View>

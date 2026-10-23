@@ -8,7 +8,7 @@ import { Card, Dim, Btn, Icon, IconTile } from './ui';
 //  - admin email, not yet confirmed -> a short card: send the email, tap the link, come back (the app re-checks by itself)
 //  - everybody else -> nothing
 export default function AdminAccess() {
-  const { th, lic, emailVerified, sendVerify, refreshLic, setAdminOpen, t } = useApp();
+  const { th, lic, emailVerified, sendVerify, refreshLic, setAdminOpen, t, adminBadge } = useApp();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -19,7 +19,8 @@ export default function AdminAccess() {
           <IconTile icon="shield-checkmark" size={46} colors={[th.accent, th.accent2]} />
           <View style={{ flex: 1 }}>
             <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>Admin panel</Text>
-            <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18, marginTop: 2 }}>Users, payments, grant access and the Gemini key.</Text>
+            <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18, marginTop: 2 }}>Users, payments, chats, grant access and the Gemini key.</Text>
+            {(adminBadge.chats > 0 || adminBadge.pays > 0) && <Text style={{ color: th.gold, fontSize: 12.5, fontWeight: '800', marginTop: 4 }}>{[adminBadge.chats > 0 ? `${adminBadge.chats} new message${adminBadge.chats > 1 ? 's' : ''}` : '', adminBadge.pays > 0 ? `${adminBadge.pays} payment${adminBadge.pays > 1 ? 's' : ''} to review` : ''].filter(Boolean).join(' · ')}</Text>}
           </View>
           <Icon name="chevron-forward" size={20} color={th.dim} />
         </Card>

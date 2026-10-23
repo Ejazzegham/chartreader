@@ -30,7 +30,7 @@ ok(btc.step === 0.001 && eth.step === 0.01 && xrp.step === 100, 'crypto: smalles
 ok(lotsError(0.0005, btc) !== '' && lotsError(0.002, btc) === '', 'crypto validation');
 ok(near(perPoint(0.5, 'cryBTCUSD', 100000) * 1000, 500), 'crypto: 0.5 coin, $1000 move = $500');
 ok(suggestLots(100, 0.002, 'frxEURUSD', 1.08) === 0.5 && suggestLots(100, 500, 'cryBTCUSD', 100000) === 0.2, 'suggest: forex 0.50 lots, BTC 0.2 coin');
-ok(suggestLots(10, 5, 'R_50') === 0 && suggestLots(100, 5, 'R_50') === 20 && suggestLots(12, 5, 'stpRNG') === 2.4, 'suggest: 0 when even the minimum lot is too big, else rounded down to the step');
+ok(suggestLots(10, 5, 'R_50', 450) === 0 && suggestLots(100, 5, 'R_50', 450) === 20 && suggestLots(12, 5, 'stpRNG', 450) === 2.4, 'suggest: 0 when even the minimum lot is too big, else rounded down to the step');
 ok(/pip/.test(lotInfo('frxEURUSD', 1.08)) && /oz/.test(lotInfo('frxXAUUSD', 2400)) && /index/.test(lotInfo('frxDXY', 104)) && /1 BTC/.test(lotInfo('cryBTCUSD', 100000)) && /Deriv/.test(lotInfo('R_75', 450000)), 'plain-words contract line');
 ok(fmtLots(0.001) === '0.001' && fmtLots(0.35) === '0.35' && fmtLots(4) === '4', 'lot formatting keeps small lots');
 console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

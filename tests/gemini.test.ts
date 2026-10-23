@@ -53,6 +53,19 @@ const chart = (m = 'm') => analyzeMarket('k', m, 'English', 'EURUSD', 'M15', can
   const rv = await reviewPlan('k', 'm', 'English', 'EURUSD', 'M15', candles, 5, { entry: 1, sl: 0.9, tps: [1.1] }, 'engine');
   ok(rv.verdict === 'okay' && rv.betterEntry === undefined, 'plan review repairs unknown verdict');
 
+  // REAL volume reaches the AI: a volume column and real-volume VSA wording when the candles carry it, the old spread-only wording when not
+  const bodyOf = async (cs: any[]) => { let body = ''; (globalThis as any).fetch = async (_u: string, init: any) => { body = String(init?.body ?? ''); return { ok: true, status: 200, json: async () => gem(good) }; }; await analyzeMarket('k', 'm', 'English', 'XAUUSD', 'M15', cs, 2); return JSON.parse(body).contents[0].parts[0].text as string; };
+  const many = Array.from({ length: 60 }, (_, i) => ({ o: 2000 + i, h: 2002 + i, l: 1999 + i, c: 2001 + i }));
+  const withV = await bodyOf(many.map((x, i) => ({ ...x, v: 1000 + i })));
+  ok(withV.includes('"open high low close volume"') && withV.includes('2059.00 2061.00 2058.00 2060.00 1059') && withV.includes('real traded volume') && !withV.includes('no volume is supplied'), 'candles with volume: volume column + real-volume VSA wording');
+  const noV = await bodyOf(many);
+  ok(noV.includes('"open high low close"') && noV.includes('no volume is supplied') && !noV.includes('real traded volume'), 'candles without volume: spread-only wording kept');
+  { let body = ''; (globalThis as any).fetch = async (_u: string, init: any) => { body = String(init?.body ?? ''); return { ok: true, status: 200, json: async () => gem(good) }; };
+    await analyzeMarket('k', 'm', 'English', 'EURJPY', 'M5', many.map((x, i) => ({ ...x, v: 10 + i })), 2, '', 'Deriv tick volume (price updates per candle)');
+    ok(JSON.parse(body).contents[0].parts[0].text.includes('volume (Deriv tick volume (price updates per candle))'), 'the AI is told when the volume is tick volume'); }
+  const patchy = await bodyOf(many.map((x, i) => ({ ...x, v: i % 2 ? 50 : undefined })));
+  ok(patchy.includes('no volume is supplied'), 'volume on only half the candles is not sent as real volume');
+
   await setServer('');
   ok(getServer().startsWith('https://'), 'server address can be reset');
   console.log(fails ? 'SOME FAILED' : 'ALL PASSED'); process.exit(fails ? 1 : 0);

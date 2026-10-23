@@ -12,14 +12,14 @@ import { riskFor, fmtIn } from '../news';
 import { TradeSheet } from '../TradeSheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { perPoint, suggestLots, parseLots, lotsError, fmtLots, lotSpec, lotInfo, lotMarket } from '../lots';
-import { Signal, Desk, CloseSetup, PLAN_PRESETS, defaultPlanPct, planFromPct, guard, totalR, fmtR, money, riskMoney, todayPnl, dirOf, deskReady } from '../trades';
+import { Signal, Desk, CloseSetup, PLAN_PRESETS, defaultPlanPct, planFromPct, guard, totalR, floatR, stopAtBE, fmtR, money, riskMoney, todayPnl, dirOf, deskReady, sourceName } from '../trades';
 
 const num = (s: string) => parseFloat(s.replace(',', '.'));
 const ago = (t: number) => { const m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? 'just now' : m < 60 ? `${m}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`; };
 const dur = (a?: number, b?: number) => { if (!a || !b) return ''; const m = Math.max(1, Math.round((b - a) / 60000)); return m < 60 ? `${m}m` : m < 1440 ? `${(m / 60).toFixed(1)}h` : `${(m / 1440).toFixed(1)}d`; };
 const tfName = (k: string) => { const n = Number(k); return !isFinite(n) || k.includes('/') ? k : n >= 86400 ? 'D1' : n >= 3600 ? `H${n / 3600}` : `M${n / 60}`; };
 const TAGS = ['Followed plan', 'Early exit', 'Late entry', 'FOMO', 'Moved stop'];
-const methodOf = (j: Trade) => (j.source ? j.source.split(' · ')[0] : 'Manual');
+const methodOf = (j: Trade) => sourceName(j.source ? j.source.split(' · ')[0] : undefined);
 const gradeCol = (th: any, g: string) => (g === 'A+' || g === 'A' ? th.buy : g === 'B' ? th.gold : th.dim);
 
 type TabKey = 'signals' | 'open' | 'closed' | 'insights';
@@ -90,7 +90,7 @@ function Head({ s, right }: { s: Signal; right?: React.ReactNode }) {
 let lastClose = { auto: true, autoBe: false }; // the automatic-close and break-even choices are offered again next time
 const lastLots: Record<string, string> = {}; // the size used last time is offered again, kept per market (a forex size means nothing on Deriv or crypto)
 
-export function TakeSheet({ s, price, desk, equity, running, today, journalRows, onClose, onConfirm }: { s: Signal; price?: number; desk: Desk; equity: number; running: number; today: number; journalRows: { date: number; pnl: number }[]; onClose: () => void; onConfirm: (mode: 'market' | 'limit', lots: number, perPt: number, setup: CloseSetup) => void }) {
+export function TakeSheet({ s, price, desk, equity, running, today, journalRows, initialMode, onClose, onConfirm }: { initialMode?: 'market' | 'limit'; s: Signal; price?: number; desk: Desk; equity: number; running: number; today: number; journalRows: { date: number; pnl: number }[]; onClose: () => void; onConfirm: (mode: 'market' | 'limit', lots: number, perPt: number, setup: CloseSetup) => void }) {
   const { th, rtl, t } = useApp();
   const insets = useSafeAreaInsets();
   const nTp = s.tps.length;
@@ -99,7 +99,7 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
   const pctNum = pct.map((x) => (x.trim() === '' ? 0 : Number(x.replace(',', '.'))));
   const planSum = pctNum.reduce((a, b) => a + (isFinite(b) ? b : 0), 0), plan = planFromPct(pctNum);
   const setPctAt = (i: number, v: string) => setPct((l) => l.map((x, k) => (k === i ? v.replace(/[^0-9.,]/g, '').slice(0, 5) : x)));
-  const [mode, setMode] = useState<'market' | 'limit'>('limit');
+  const [mode, setMode] = useState<'market' | 'limit'>(initialMode ?? 'limit');
   const mk = lotMarket(s.symId), px0 = price ?? s.entry, spec = lotSpec(s.symId, px0);
   const [lotsTxt, setLotsTxt] = useState(lastLots[mk] && lotsError(parseLots(lastLots[mk]), spec) === '' ? lastLots[mk] : '');
   const f = (n: number) => n.toFixed(s.dec);
@@ -123,7 +123,7 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
   if (nr.level !== 'clear') warns.push({ t: `${nr.level === 'danger' ? 'High-impact news' : 'News soon'}: ${nr.event?.title ?? ''} ${nr.mins >= 0 ? 'in ' + fmtIn(nr.mins) : 'just released'}.`, c: nr.level === 'danger' ? th.sell : th.gold });
   if (s.armed) warns.push({ t: 'This setup is still waiting for its confirmation candle. A limit order at the entry is safer than market.', c: th.gold });
   if (s.grade === 'C') warns.push({ t: 'Grade C setup. Consider skipping or using a smaller size.', c: th.gold });
-  const row = (a: string, b: string, c?: string, key?: string) => <View key={key ?? a} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}><Text style={{ color: th.dim, fontSize: 13 }}>{a}</Text><Text style={{ color: c ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{b}</Text></View>;
+  const row = (a: string, b: string, c?: string, key?: string) => <View key={key ?? a} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 4 }}><Text style={{ flex: 1, minWidth: 0, color: th.dim, fontSize: 13 }}>{a}</Text><Text style={{ flexShrink: 1, maxWidth: '62%', textAlign: 'right', color: c ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{b}</Text></View>;
   const chips = [...(sugg > 0 ? [sugg] : []), ...spec.chips].filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
   return (
     <Modal transparent animationType="slide" onRequestClose={onClose}>
@@ -247,7 +247,7 @@ function SignalCard({ s, price, onTake, onCancel, onRisk }: { s: Signal; price?:
       </View>
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <Pressable onPress={onCancel} style={({ pressed }) => ({ flex: 1, height: 48, borderRadius: 8, borderWidth: 1, borderColor: th.sell + '88', backgroundColor: th.sell + '14', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, opacity: pressed ? 0.8 : 1 })}>
-          <Icon name="close" size={18} color={th.sell} /><Text style={{ color: th.sell, fontWeight: '900' }}>Cancel</Text>
+          <Icon name="close" size={18} color={th.sell} /><Text style={{ color: th.sell, fontWeight: '900' }}>Skip</Text>
         </Pressable>
         <Pressable onPress={onTake} style={({ pressed }) => ({ flex: 1.5, opacity: pressed ? 0.88 : 1 })}>
           <LinearGradient colors={[th.buy, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}>
@@ -271,7 +271,7 @@ function Ladder({ s, price }: { s: Signal; price?: number }) {
       <View style={{ height: 10, borderRadius: 5, backgroundColor: th.line, overflow: 'hidden' }}>
         <View style={{ position: 'absolute', left: pos(Math.min(fill, s.sl)), width: `${Math.abs(fill - s.sl) / rng * 100}%` as any, top: 0, bottom: 0, backgroundColor: th.sell + '55' }} />
         <View style={{ position: 'absolute', left: pos(Math.min(fill, last)), width: `${Math.abs(last - fill) / rng * 100}%` as any, top: 0, bottom: 0, backgroundColor: th.buy + '55' }} />
-        {s.status === 'open' && s.stop === fill && <View style={{ position: 'absolute', left: pos(fill), width: 3, marginLeft: -1, top: 0, bottom: 0, backgroundColor: th.gold }} />}
+        {s.status === 'open' && stopAtBE(s) && <View style={{ position: 'absolute', left: pos(s.stop), width: 3, marginLeft: -1, top: 0, bottom: 0, backgroundColor: th.gold }} />}
       </View>
       {mark(s.sl, th.sell, 'sl')}
       {mark(fill, th.text, 'en')}
@@ -284,7 +284,9 @@ function Ladder({ s, price }: { s: Signal; price?: number }) {
 function OpenCard({ s, price, onManage, onClose, onBE, onCancel }: { s: Signal; price?: number; onManage: () => void; onClose: () => void; onBE: () => void; onCancel: () => void }) {
   const { th, t } = useApp();
   const f = (n: number) => n.toFixed(s.dec), running = s.status === 'open';
-  const r = running && price ? totalR(s, price) : s.banked, pnl = r * s.risk, c = r >= 0 ? th.buy : th.sell;
+  // Money only (no R): the big number is the part that is still open, the right side is what the closed shares already booked.
+  const leftPct = Math.round((1 - s.done) * 100), donePct = Math.round(s.done * 100), booked = s.banked * s.risk;
+  const openPnl = running && price ? (1 - s.done) * floatR(s, price) * s.risk : 0, c = openPnl >= 0 ? th.buy : th.sell, bc = booked >= 0 ? th.buy : th.sell;
   return (
     <Card glow={running} style={{ gap: 12 }}>
       <Head s={s} right={<Badge label={running ? (s.tpAlert ? `TP${s.tpAlert} · DECIDE` : 'RUNNING') : 'PENDING'} color={running ? (s.tpAlert ? th.gold : th.buy) : th.gold} />} />
@@ -297,12 +299,17 @@ function OpenCard({ s, price, onManage, onClose, onBE, onCancel }: { s: Signal; 
       {running ? (
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <View>
-            <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 0.8 }}>FLOATING RESULT</Text>
-            <Text style={{ color: c, fontSize: 30, fontWeight: '900', letterSpacing: -0.5 }}>{money(pnl)}</Text>
+            <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 0.8 }}>{s.done > 0 ? `REMAINING ${leftPct}% · FLOATING` : 'FLOATING RESULT'}</Text>
+            <Text style={{ color: price ? c : th.dim, fontSize: 30, fontWeight: '900', letterSpacing: -0.5 }}>{price ? money(openPnl) : '…'}</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={{ color: c, fontSize: 20, fontWeight: '900' }}>{fmtR(r)}</Text>
-            <Text style={{ color: th.dim, fontSize: 11.5 }}>{s.banked ? `${fmtR(s.banked)} banked` : 'nothing banked yet'}</Text>
+            {s.done > 0 ? (
+              <>
+                <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 0.8 }}>BOOKED</Text>
+                <Text style={{ color: bc, fontSize: 20, fontWeight: '900' }}>{money(booked)}</Text>
+                <Text style={{ color: th.dim, fontSize: 11.5 }}>{donePct}% closed</Text>
+              </>
+            ) : <Text style={{ color: th.dim, fontSize: 11.5 }}>nothing booked yet</Text>}
           </View>
         </View>
       ) : (
@@ -311,7 +318,7 @@ function OpenCard({ s, price, onManage, onClose, onBE, onCancel }: { s: Signal; 
       <Ladder s={s} price={price} />
       <View style={{ flexDirection: 'row', gap: 6 }}>
         <Level label={running ? 'FILLED' : 'ENTRY'} value={f(s.fill ?? s.entry)} color={th.accent} />
-        <Level label={running && s.stop === s.fill ? 'STOP · BE' : 'STOP'} value={f(running ? s.stop : s.sl)} color={running && s.stop === s.fill ? th.gold : th.sell} />
+        <Level label={running && s.stop === s.fill ? 'STOP · BE' : running && stopAtBE(s) ? 'STOP · LOCKED' : 'STOP'} value={f(running ? s.stop : s.sl)} color={running && stopAtBE(s) ? th.gold : th.sell} />
         {s.tps.map((p, i) => (
           <Level key={i} label={`TP${i + 1}${s.hits > i ? ' ✓' : ''}`} value={f(p)} color={s.hits > i ? th.buy : th.dim} />
         ))}
@@ -321,14 +328,14 @@ function OpenCard({ s, price, onManage, onClose, onBE, onCancel }: { s: Signal; 
           <Text style={{ color: th.dim, fontSize: 11.5, fontWeight: '800' }}>{t('cpPlanLine')}:</Text>
           {s.plan.map((p, i) => <Text key={i} style={{ color: s.hits > i ? th.buy : th.text, fontSize: 11.5, fontWeight: '800' }}>TP{i + 1} {Math.round(p * 100)}%{s.hits > i ? ' ✓' : ''}</Text>)}
           {!!s.auto && <Badge label={t('cpAutoBadge')} color={th.accent} />}
-          {!!s.autoBe && s.stop !== s.fill && <Badge label={t('cpBeBadge')} color={th.gold} />}
+          {!!s.autoBe && running && s.hits < s.tps.length && <Badge label={t('cpBeBadge')} color={th.gold} />}
         </View>
       )}
       <Text style={{ color: th.dim, fontSize: 11.5 }}>{s.lots ? `${fmtLots(s.lots)} lots · ` : ''}Risk ${s.risk.toFixed(2)} · {running ? `opened ${ago(s.filledAt ?? s.date)}` : `placed ${ago(s.takenAt ?? s.date)}`}{running && s.done > 0 ? ` · ${Math.round(s.done * 100)}% closed` : ''}</Text>
       {running ? (
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <ActionBtn label="Manage" icon="stats-chart" onPress={onManage} />
-          <ActionBtn label={s.stop === s.fill ? t('cpBeDone') : t('cpBeBtn')} icon={s.stop === s.fill ? 'shield-checkmark' : 'shield-half-outline'} tone={s.stop === s.fill ? 'done' : 'warn'} disabled={s.stop === s.fill || !price} onPress={onBE} />
+          <ActionBtn label={s.stop === s.fill ? t('cpBeDone') : stopAtBE(s) ? t('cpLocked') : t('cpBeBtn')} icon={stopAtBE(s) ? 'shield-checkmark' : 'shield-half-outline'} tone={stopAtBE(s) ? 'done' : 'warn'} disabled={stopAtBE(s) || !price} onPress={onBE} />
           <ActionBtn label={price ? 'Close all' : 'Waiting'} icon="close-circle-outline" tone="danger" disabled={!price} onPress={onClose} />
         </View>
       ) : <Btn ghost label="Cancel order" icon="close" onPress={onCancel} />}
@@ -390,7 +397,7 @@ function Empty({ icon, title, text, children }: { icon: string; title: string; t
 
 // ---------------------------------------------------------------- screen
 export default function Journal() {
-  const { th, t, tab, journal, signals, desk, setDesk, takeSignal, cancelSignal, closeSignal, breakEven, clearSignals, updateTrade, removeTrade, addTrade, toast, setPrefill, setTab, setHistOpen } = useApp();
+  const { th, t, tab, journal, signals, desk, setDesk, takeSignal, cancelSignal, skipSetup, closeSignal, breakEven, clearSignals, updateTrade, removeTrade, addTrade, toast, setPrefill, setTab, setHistOpen } = useApp();
   const active = tab === 3;
   useFeed(active);
   const [view, setView] = useState<TabKey>('signals');
@@ -398,7 +405,7 @@ export default function Journal() {
   const [taking, setTaking] = useState<string | null>(null);
   const [managing, setManaging] = useState<string | null>(null);
   const [showSet, setShowSet] = useState(false);
-  const [manual, setManual] = useState(false);
+  const [takeMode, setTakeMode] = useState<'market' | 'limit'>('limit'); // how the Take sheet opens (limit at the entry, or market now)
   const ids = useMemo(() => [...new Set(signals.map((x) => x.symId))].slice(0, 20), [signals]);
   useEffect(() => { setWatch('journal', active ? ids : []); return () => setWatch('journal', []); }, [active, ids.join(',')]);
 
@@ -545,21 +552,14 @@ export default function Journal() {
   };
 
   // ----- closed list + manual form + export
-  const [sym, setSym] = useState(''), [side, setSide] = useState<'buy' | 'sell'>('buy'), [entry, setEntry] = useState(''), [exit, setExit] = useState(''), [size, setSize] = useState(''), [note, setNote] = useState(''), [err, setErr] = useState('');
-  const addManual = () => {
-    const e = num(entry), x = num(exit), s = num(size);
-    if (!sym.trim() || ![e, x, s].every(isFinite)) { setErr(t('fillAll')); return; }
-    setErr(''); addTrade({ symbol: sym.trim().toUpperCase(), side, entry: e, exit: x, size: s, pnl: (x - e) * s * (side === 'buy' ? 1 : -1), note: note.trim() });
-    setEntry(''); setExit(''); setNote(''); setManual(false);
-  };
   const exportCsv = () => {
     const head = 'date,symbol,side,method,grade,entry,exit,R,pnl,result,tag,note';
-    const rows = [...journal].sort((a, b) => a.date - b.date).map((j) => [new Date(j.date).toISOString(), j.symbol, j.side, j.source ?? 'Manual', j.grade ?? '', j.entry, j.exit, j.r?.toFixed(2) ?? '', j.pnl.toFixed(2), j.why ?? '', j.tag ?? '', `"${(j.note ?? '').replace(/"/g, "'")}"`].join(','));
+    const rows = [...journal].sort((a, b) => a.date - b.date).map((j) => [new Date(j.date).toISOString(), j.symbol, j.side, sourceName(j.source), j.grade ?? '', j.entry, j.exit, j.r?.toFixed(2) ?? '', j.pnl.toFixed(2), j.why ?? '', j.tag ?? '', `"${(j.note ?? '').replace(/"/g, "'")}"`].join(','));
     shareText([head, ...rows].join('\n'), 'Trading journal');
   };
 
   return (
-    <Screen icon="book" title={t('tabJournal')} subtitle="Setups from your analysis land here. Take or cancel them, the app tracks the rest.">
+    <Screen icon="book" title={t('tabJournal')} subtitle="Every A and A+ setup from the scanner lands here. Take it or skip it, the app tracks the rest.">
       <View style={{ gap: 12 }}>
         {hero}
         <GuardBanner />
@@ -592,7 +592,7 @@ export default function Journal() {
               </Empty>
             )}
             {shownSigs.map((x) => (
-              <SignalCard key={x.id} s={x} price={px(x.symId)} onTake={() => setTaking(x.id)} onCancel={() => cancelSignal(x.id)}
+              <SignalCard key={x.id} s={x} price={px(x.symId)} onTake={() => { setTakeMode('limit'); setTaking(x.id); }} onCancel={() => skipSetup(x)}
                 onRisk={() => { setPrefill({ entry: x.entry, sl: x.sl, tps: [...x.tps], symbol: x.name }); setTab(4); }} />
             ))}
           </>
@@ -601,7 +601,7 @@ export default function Journal() {
         {view === 'open' && (
           <>
             {live.length === 0 && <Empty icon="pulse-outline" title="No live trades" text="When you take a signal it shows here with the live result, take-profit progress and a break-even stop." />}
-            {live.map((x) => <OpenCard key={x.id} s={x} price={px(x.symId)} onManage={() => setManaging(x.id)} onClose={() => closeSignal(x.id, px(x.symId)!)} onBE={() => { const e = breakEven(x.id, px(x.symId)); if (e) toast(e, 'bad'); }} onCancel={() => cancelSignal(x.id)} />)}
+            {live.map((x) => <OpenCard key={x.id} s={x} price={px(x.symId)} onManage={() => setManaging(x.id)} onClose={() => closeSignal(x.id, px(x.symId)!)} onBE={() => { const e = breakEven(x.id, px(x.symId)); if (e) toast(e, 'bad'); }} onCancel={() => skipSetup(x)} />)}
           </>
         )}
 
@@ -615,24 +615,8 @@ export default function Journal() {
               </View>
               <Icon name="chevron-forward" size={18} color={th.accent} />
             </Pressable>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <View style={{ flex: 1 }}><Btn ghost label="Add manual trade" icon="create-outline" onPress={() => setManual(!manual)} /></View>
-              {n > 0 && <View style={{ flex: 1 }}><Btn ghost label="Export CSV" icon="share-outline" onPress={exportCsv} /></View>}
-            </View>
-            {manual && (
-              <Card>
-                <Text style={{ color: th.text, fontSize: 16, fontWeight: '800', marginBottom: 10 }}>{t('addTrade')}</Text>
-                <Field label={t('symbol')} value={sym} onChangeText={setSym} autoCapitalize="characters" />
-                <View style={{ marginBottom: 12 }}><Segment value={side} onChange={(k) => setSide(k as any)} options={[{ k: 'buy', label: t('buy') }, { k: 'sell', label: t('sell') }]} /></View>
-                <Field label={t('entryP')} value={entry} onChangeText={setEntry} keyboardType="decimal-pad" />
-                <Field label={t('exitP')} value={exit} onChangeText={setExit} keyboardType="decimal-pad" />
-                <Field label={t('sizeL')} value={size} onChangeText={setSize} keyboardType="decimal-pad" />
-                <Field label={t('note')} value={note} onChangeText={setNote} />
-                {!!err && <Text style={{ color: th.sell, marginBottom: 8 }}>{err}</Text>}
-                <Btn label={t('add')} onPress={addManual} />
-              </Card>
-            )}
-            {n === 0 && !manual && <Empty icon="checkmark-done-outline" title="No closed trades yet" text="Finished trades are written here automatically with their result in R and money." />}
+            {n > 0 && <Btn ghost label="Export CSV" icon="share-outline" onPress={exportCsv} />}
+            {n === 0 && <Empty icon="checkmark-done-outline" title="No closed trades yet" text="Finished trades are written here automatically with their result in R and money." />}
             {journal.map((j) => <ClosedCard key={j.id} j={j} onTag={(tg) => updateTrade(j.id, { tag: tg })} onDelete={() => confirmAction('Delete this trade?', 'It is removed from your journal and your performance numbers. This cannot be undone.', () => removeTrade(j.id))} />)}
           </>
         )}
@@ -642,7 +626,7 @@ export default function Journal() {
       </View>
 
       {takingSig && (
-        <TakeSheet s={takingSig} price={px(takingSig.symId)} desk={desk} equity={desk.balance + closedPnl} running={live.length} today={today} journalRows={journal}
+        <TakeSheet s={takingSig} price={px(takingSig.symId)} desk={desk} equity={desk.balance + closedPnl} running={live.length} today={today} journalRows={journal} initialMode={takeMode}
           onClose={() => setTaking(null)}
           onConfirm={(mode, lots, perPt, setup) => {
             const e = takeSignal(takingSig.id, mode, px(takingSig.symId), lots, perPt, setup);

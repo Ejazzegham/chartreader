@@ -1,57 +1,308 @@
-# Latest: VSA reads REAL volume for crypto and forex (app, website and server alerts)
+# Website synced to the app v2.16b (second update)
 
-- **Why:** Deriv candles carry price only, so VSA fell back to "spread" (wide / narrow candles) as a stand-in for volume. Now the volume of the real market is merged into the Deriv candles (same time bucket) before any analysis sees them.
-- **Crypto** (Deriv BTC, ETH, LTC, BNB, XRP): Binance spot volume of the same coin. Binance pairs already had their own volume.
-- **Forex, gold, silver, US Dollar Index:** volume of the matching futures contract from Yahoo Finance: CME Euro FX (6E), British Pound (6B), Yen (6J), Australian Dollar (6A), Canadian Dollar (6C), Swiss Franc (6S), New Zealand Dollar (6N), COMEX Gold (GC) and Silver (SI), ICE Dollar Index (DX). Spot forex has no central exchange, so the futures contract is the real traded volume traders use for it. EUR/JPY and GBP/JPY have no futures of their own and use the EUR / GBP futures volume (marked as a proxy).
-- **Not changed:** Deriv synthetic indices (Volatility, Boom / Crash, Step) are made by Deriv and have no market volume, so VSA keeps reading spread there and says so.
-- **New `src/realvol.ts`:** the volume sources, `volumeMap`, `mergeVolume` (no fake volume when the time buckets do not line up), `RealVolume` (live wrapper used by `watchCandles` in `src/markets.ts`, so every screen, the scanner and the website get it; it holds the first update back until the volume has arrived, at most 5 s), `addRealVolume` (one-shot, cached for a minute, used by the server). At most 4 volume downloads at the same time.
-- **`src/vsa.ts`:** a bar whose volume is not known yet is not judged, and the newest, still-forming bar has its volume projected to a full bar (never more than 4x) before it is compared with the average (`projectForming`); without this every new bar would look like low volume / no demand. Closed bars are never changed.
-- **VSA screen (`src/screens/ICTLab.tsx`):** shows "Volume source: ..." under the tiles. The no-volume message (`vsaNoVol`, English) now says why.
-- **Server:** `server/alerts.js` merges the same volume into the candles it scores (live alerts only; the 5000-candle backtest downloads are unchanged), so alerts match the app. `server/build-analysis.js` now also builds `realvol.js`, and skips the phone-only `net` and `license` modules (a stand-in `server/analysis/net.js` is written): without this, re-running it after the earlier website work would have broken the server. Regenerated: `server/analysis/fallback.js`, `vsa.js`, new `realvol.js`, `net.js`. Copy these, `server/alerts.js` and `server/proxy.js` to your server and restart it.
-- `server/proxy.js`: limit raised to 240 requests per visitor per minute (the scanner now also asks for volume).
-- Tests: `tests/realvol.test.ts` (32 checks: volume sources, daily bars stamped 04:00 UTC, merge, no fake volume, live wrapper, VSA with and without volume, forming bar, the generated server file) and `tests/alertsfeed.test.ts` (7 checks: the real `server/alerts.js` feed with a fake Deriv socket). `tests/web/smoke.py` now also checks that the VSA page asks for the Euro FX futures volume, names the source and reads "Real volume" (29 browser checks). All pass, plus the 19 unit test files, the type-check and the Android bundle build.
-- Not tested here: the real Yahoo Finance, Binance and Deriv services (the test machine had no internet; they were faked with the same data shapes). Yahoo is an unofficial public source and can rate-limit; if the volume does not arrive the screen says so and VSA falls back to spread.
+Merged on top of the website synced earlier (see the entry below), with the website layer kept.
 
-# Earlier: the other website pages in the same style as the dashboard
+- **New in the website from the app**: CR (Chart Reader) Analysis page (live candles, every method, then Gemini entry / stop / 3 targets drawn on the chart, Trade plan under the chart), the simpler Analysis page (running "Don't anti trade on Boom and Crash" alert, Smart Alert Scanner card, method list), A and A+ setups copied from the server inbox into the Journal (`src/inboxSetups.ts`), the 60 second inbox check while the app is open, the analysis digest, daily high / low breaks, high-impact news alert, offline trial, chat outbox, and the new server (`alerts.js`, `server.js`, `verdict.js`).
+- **Website parts kept**: sidebar and dashboard, shared header on the Analysis page, mouse-wheel zoom and hover crosshair, Continue with Google pop-up, browser dialogs and Modal, server CORS and `/proxy`, landing page.
+- The server `ecosystem.config.js` now reads `GEMINI_API_KEY` from the environment (as in the app); no key is stored in the file.
+- Landing: "Scanner and alerts" and "ICT, SMC and CR Analysis" text updated.
+- Tested: type-check, all logic tests (including the new spike, spikescan, ajournal, digest, offlinetrial, daylevels, register tests), 31 browser checks. NOT tested: real Google sign-in, real prices, payments, push alerts.
 
-- **Shared components restyled for the website only** (`src/ui.tsx`, the phone look is unchanged): `PageHero` becomes the dashboard header (small title line, big title, subtitle, chart picture), `Card` radius 14, `IconTile` / `Chip` rounder, `SectionHeader` and `SectionTitle` with an icon circle and bolder text. Every page that uses them (all of them) follows.
-- **`Cols` (new, `src/ui.tsx`)**: puts a page's cards in two balanced columns on a wide website page (a plain stack on the phone and on narrow pages). It places cards left / right in turn, measures them, then fills the shorter column first, and keeps that placement so cards do not jump. Inside a column every part uses the column width (`WidthCtx` in `src/win.web.ts`, `src/win.ts`). Used on Settings, Killzones, Performance, Trade Checklist, Risk planner, How to use and About.
-- **Markets**: the market rows are two columns (headings span both). **Risk planner**: a "Your plan" card on the right until you press Calculate.
-- Tests: `tests/web/smoke.py` now also checks that Markets and Settings are two columns and that pages share the header (26 browser checks pass), plus the 17 unit test files, the type-check and the Android bundle build. The phone layout was re-checked at 390 px (unchanged).
+# Website synced to the app (v2.11)
 
-# Earlier: trading dashboard for the desktop website (Forex, Crypto, Deriv)
+The website is now built from the latest app code, with the web layer on top, instead of a separate older copy.
 
-- **Home on the website is now a dashboard** (`src/DesktopHome.web.tsx`; the phone keeps its Home screen, `src/screens/Home.tsx` picks which one): hero "Analyze / Plan / Execute" with real counts (analysis methods, live markets, 24/7 Crypto & Deriv, 3 take profits), **Choose Analysis Method** tiles, **Select Market** with Watchlist / Forex / Crypto / Deriv tabs, symbol search and symbol cards with live price and change, a chart panel (1m 5m 15m 1h 4h 1D; Pro chart = TradingView, Quick = the app's own candle chart, used for Deriv too), then Today's Analysis (bullish / bearish / neutral from the app's signal), Quick Tools (Scanner, Planner, Killzones, News) and Risk Management. "Open ICT analysis" opens the Analysis page with that pair and method.
-- **Shell (`src/Desktop.web.tsx`)**: new sidebar (Analysis expands into its methods, Pro card, account), a **top bar** with market search (Ctrl+K), live status, notifications, PRO badge and account, and a right **Market Watch** panel (Forex / Crypto / Deriv table with stars, Forex Sessions in local time, news warning, daily reminder). Page headers no longer repeat the status chips on desktop (`src/ui.tsx`).
-- **`src/dash.ts`**: shared state for what the dashboard shows (pair, method, timeframe, market tab) and the market lists; the search bar, the right panel and the dashboard all use it.
-- Page width on big monitors is now up to 1120 px (`src/win.web.ts`).
-- Tests: `tests/layout.test.ts` updated; `tests/web/smoke.py` now also checks the dashboard (market tabs, method tile, Ctrl+K search, sidebar Analysis menu, market watch + sessions). All pass, plus the 17 unit test files, the type-check and the Android bundle build.
-- Not tested here: live prices and the real TradingView chart (the test machine had no internet; prices show a dash and the Pro chart area stays empty there). The new dashboard text is English only.
+- **Every app feature is on the website**: TRADE / WAIT quality gate (`quality.ts`, `verdict.ts`), smooth MT5-style charts, the new Analysis page, Demo Trade, auto trade desk, trade history replay, paywall and USDT payments, support chat with photos and videos, bell list and notification taps, new themes and 6 languages.
+- **Landing page** (login side) now describes the current app (TRADE or WAIT, ICT / SMC / CRT, real-volume VSA, scanner and alerts, trade desk, Demo Trade, risk and discipline).
+- **Dashboard (wide screen)**: Today's Analysis uses the same TRADE / WAIT verdict as the phone (with the reason when it says WAIT); new Trade desk card (setups, running, today) and Demo Trade card.
+- **Continue with Google on the website**: `src/google.web.ts` opens Google's pop-up on a second, throw-away Firebase instance and hands the ID token to the normal login. Add your site's domain in Firebase > Authentication > Settings > Authorized domains. Pop-ups must be allowed.
+- **Charts**: the app's new smooth zoom now also has the mouse wheel (zoom around the pointer) and the hover crosshair.
+- **Server**: the app's server plus the website parts: CORS headers (including ngrok-skip-browser-warning) and the read-only `/proxy` route (`server/proxy.js`). `server/build-analysis.js` now writes a plain-fetch stand-in for `src/net.ts`.
+- **Volume**: the website now uses the app's own real-volume code (`volume.ts`, `volumeFeed.ts`). The old web-only `realvol.ts` and its tests were removed.
+- **Pinned**: react and react-dom 19.2.3 (a mismatch breaks the page), typescript ~5.9 (needed by `build-analysis.js`).
+- **Security**: the Gemini key that was written in `server/ecosystem.config.js` is removed. Revoke that key and set a new one in Admin > Setup. The live database files are not in this package.
+- Tested: type-check, all logic tests, and 31 browser checks (login, dashboard, sidebar, pages, pop-ups, wheel zoom, search, phone layout) with a faked server. NOT tested: real Google sign-in, real prices from the internet, payments, push alerts.
 
-# Earlier: a real desktop website layout (not just the phone app in a column)
+# v2.11: fewer, better trades; entries that fill; simpler Analysis page; dead files removed
 
-- **Desktop (browser 900 px or wider):** left sidebar menu (`src/Desktop.web.tsx`), the page in the middle (wider, up to 980 px), and from 1240 px a **Market watch** panel on the right (live prices, news banner, forex sessions). The bottom bar and the slide-out menu are not used there.
-- **Landing page + login (`src/Landing.tsx`, `src/LiveCandles.tsx`, `src/AuthFlow.tsx`):** on a wide screen the welcome / login / sign-up screens show the brand, the headline, a live candle chart, six feature cards, "3-day free trial, Weekly $8, Monthly $20", with the form on the right.
-- **Layout rules (`src/win.web.ts`):** under 900 px = phone layout (bottom bar, full width, centred and at most 640 px); 900 px and up = desktop. `useWindowDimensions()` now returns the width of the PAGE area, so every screen and chart sizes itself to it. `useLayout()` gives `mode`, `sidebar`, `rail`, `content`. On the phone app `src/win.ts` keeps the normal window size, so nothing changes there.
-- `src/ui.tsx`: on desktop the page header shows only the status chips (the sidebar has the menu and the name), the page container is centred up to the page width, and the top glow band is skipped. The Analysis page now uses the shared `AppHeader` (it had its own copy with a menu button).
-- `src/Modal.web.tsx`: on desktop pop-ups are centred dialogs over a dim backdrop. `src/Splash.tsx` and `src/Glass.tsx` use the real window size (the splash keeps a centred phone-sized column).
-- Tests: `tests/layout.test.ts` (layout rules at 14 widths) and an updated `tests/web/smoke.py` (desktop: landing, login, sidebar, market watch, centred dialog, confirm box, proxy, chart, wheel zoom; phone browser: phone layout). All pass, plus the 17 unit test files, the type-check and an Android bundle build.
-- Not tested here: the live Deriv feed and the real TradingView chart (no internet on the test machine), real Firebase and your real server (faked).
+- **Higher timeframe was never used in the app (bug).** The Analysis, Scalping, Insight, ICT Lab and chart screens called the engine without a higher timeframe, so the strongest filter (trade with the bigger trend) was silently off. The engine now builds it itself from the candles (`autoHtf` in `src/refine.ts`: 15m to 1h, 1h to 4h ...).
+- **Entries that never fill (fix).** Limit orders sat in the middle of a zone, and zones up to 8 ATR away were offered. Now: the order sits just inside the NEAR edge of the zone, a zone farther than 3 ATR is not offered ("wait for price to come closer"), and "far" starts at 2.5 ATR.
+- **TRADE or WAIT.** New `qualify()` in `src/verdict.ts`: a setup is shown as a trade only if score is 75%+, 3 methods agree, none against, higher timeframe WITH the trade, ADX 20+, RSI not stretched, no strong level before TP1, no unswept inducement for a limit order, entry fillable. Otherwise the page says WAIT and lists the reasons. The scanner and the server push alerts use the same rule.
+- **First target at 1R** (stop to break-even after it) so reaching it, which decides win or loss, happens more often. TP2 and TP3 unchanged.
+- All the knobs are in ONE file: `src/quality.ts`.
+- **Analysis page**: pair picker, then one card (TRADE with entry / stop / 3 targets, or WAIT with reasons). ICT, SMC, VSA, patterns and the scanner are under "Advanced methods" (closed by default). Marketing banner and duplicate live strip removed.
+- **Removed**: `src/ManualOrder.tsx`, `src/manualOrderMath.ts`, `src/zoomMath.ts` (+ their tests), `APPLY.txt`, `.firebase/`, and the live server database that was inside the zip (`server/db.json*`: user emails, sessions, keys).
+- **Bell list taps (fix)**: lines made inside the app (scanner alarms, trade closed, stop to break-even) were saved without their pair, so tapping them did nothing. They now carry the pair, and older lines are matched by the pair name in their text, so every line that names a pair opens it in Analysis.
+- **No setup notifications (explained and fixed)**: the scanner worked, but only A-grade setups (all rules passed) ring, and those are rare. The server now logs one line per scan (`scan: N analysed, M with a setup, K A-grade at the POI, W heads-up. Main blockers: ...`) so you can see why nothing rang, and there is an optional "heads-up" alert for setups forming at the POI that are not A-grade (switch on the Analysis page, on by default).
+- **"Manual Trade" is now "Demo Trade"** (Home card, menu title, journal and trade history). New trades are saved with the source Demo; older saved ones that say Manual are shown and grouped as Demo.
+- **Updates (important)**: `runtimeVersion` is fixed to 2.10.0 in app.json (it used to follow the app version, so raising the version to 2.11 would have cut the installed 2.10 build off from over-the-air updates). The menu version comes from `src/version.ts`. Publish with: `npx eas-cli update --channel production --message "v2.11"` (use the channel of the build you installed).
+- **Background scanner**: scans a fixed list (watch list, forex, crypto, Deriv; up to 80 pairs) instead of only the open tab; the push shows entry, stop and TP1; new on/off switch with a test button on the Analysis page. See `server/DEPLOY.md` (the server must stay running and keep a fixed address).
+- **Measure it on your data** (needs internet, Node 22): `node server/backtest.js frxEURUSD,frxXAUUSD,cryBTCUSD 900 3 0 gate` (`all` instead of `gate` shows every setup). Read the `fill` and `win` columns. If win is under 80% raise `minScore` or lower `tp1R` in `src/quality.ts`; if you get too few trades, relax `requireHtf` or `adxMin`.
+- Not checked: running on a phone. New test: `tests/quality.test.ts`.
 
-# Earlier: the app also runs as a website (see WEB.md)
+# Manual Trade (MT5 style) + chart scroll bars removed
 
-- Same code, built with `npm run build:web` (Expo web). Phone app unchanged. Hosting files added: `vercel.json`, `netlify.toml`. Full guide: `WEB.md`.
-- **Secure storage**: `expo-secure-store` has nothing on the web, so login, licence and PIN counters use `src/secureStore.ts` (phone: the real secure store) and `src/secureStore.web.ts` (browser: localStorage).
-- **Desktop layout**: `src/Frame.web.tsx` keeps the phone layout in a centred 520 px column; `src/win.web.ts` caps the width every screen sees.
-- **Pop-ups**: `src/Modal.web.tsx` draws pop-ups inside the column (fade/slide, Escape closes). Phone uses the normal Modal (`src/Modal.tsx`).
-- **Alerts / share / notifications**: new `src/dialog.ts` (`showAlert`, `shareText`, `notify`). react-native-web ignores `Alert` and `Share`, so confirm questions (delete account, new account, close trade) would have done nothing.
-- **TradingView / Deriv chart**: `src/ChartWeb.web.tsx` shows it in an iframe instead of the phone-only WebView.
-- **Blocked sites (CORS)**: new `src/net.ts` (`xfetch`) sends Yahoo backup prices, the economic calendar and headlines through the server's new `/proxy` (`server/proxy.js`: allow-list of sites, https only, 20 s cache, 240 requests per minute per visitor). Server CORS now allows the `ngrok-skip-browser-warning` header and GET.
-- **Mouse**: wheel zoom, hover crosshair on the candle charts (`src/ChartZoom.tsx`); alarm sound plays from `public/alarm.wav` in a browser; the connection tester treats a reply from a site as reachable.
-- Push to a phone is skipped on the web (`src/push.ts`).
-- `package.json`: added `react-dom`, `react-native-web`, `@expo/metro-runtime`, `@types/react-dom` and the scripts `web`, `build:web`, `serve:web`. `package-lock.json` updated (3 Expo patch versions moved up: expo-constants 57.0.21, @expo/image-utils 0.11.6, @expo/require-utils 57.0.6). `app.json` got a `web` section.
-- Tests: `tests/proxy.test.ts` (12 checks on the proxy), `tests/web/smoke.py` (real browser: login, column, saved login, pop-up, confirm box, proxy, chart, wheel zoom). All pass. The unit tests, type-check and a phone (Android) JS bundle build still pass.
-- Not tested: the live Deriv feed and the real TradingView chart inside the browser (the test machine had no internet), and the real Firebase / your real server (they were faked).
+- NEW page **Manual Trade** (Home, first card; also "Trade this pair" in a pair's chart window in Markets). MetaTrader 5 phone layout: top bar, then **SELL price | lot size | BUY price**, then the chart, then a Trade list.
+  One tap on SELL or BUY opens the position at the live price. No ticket, no stop loss / take profit questions. Type the lot size or use the arrows (step and limits follow the pair).
+- Tap the **profit / loss tag** of a running trade (on the chart, or the P/L button in the list): stop loss, take profit (price or % distance), **break-even**, **cut the trade by %** (10/25/50/75 or any %), close all.
+  Stops / targets close the trade by themselves, partial closes book their money, closed trades go to Journal > Closed and History (source Manual).
+- Removed from the Journal: the "New order" ticket and "Add manual trade". Old src/ManualOrder.tsx and manualOrderMath.ts are deleted.
+- All 5 chart layouts (Markets, Analysis, trade detail, method chart, trade chart): vertical scroll bar and the zoom/minimap bar are gone. Pinch, drag, drag the price axis, double tap the axis still work.
+  A small round arrow appears only when you are away from the newest candle.
+- New: src/positions.ts (+ tests/positions.test.ts), TerminalChart.tsx, PositionSheet.tsx, screens/ManualTrade.tsx, manualTarget.ts. Store: positions, openPos, closePos, setPosLevels, posBreakEven (saved and cloud backed up).
+
+# Latest: notification taps, second pass (banners open, sturdier cold start)
+
+- **Banners at the top of the app** (order filled, TP hit, stop hit, break-even, scanner setups, support messages) now open something when tapped. Before, a tap only closed them. Trade banners open the bell list (the same line is there, marked NEW), a scanner banner with one pair opens that pair in Analysis, a support banner opens the Help chat, an admin banner (new support message, payment waiting) opens the admin panel. Banners that are only a message (for example "No live price yet") still just close. An arrow on the right shows which banners open something.
+- **Tap on the phone's notification, closed app:** the app now asks for the tap with the newer `getLastNotificationResponse` (the old Async call is only a fallback), tells taps apart by id AND time (a remote push can come without an id), and clears a handled tap so it is never replayed.
+- **Access not confirmed yet** (for example the first check after start is slow): a tap waits up to 3 s, then, if the app is still behind the payment page, opens the Help chat as before. Before, it could wait forever and look like nothing happened.
+- Tests: `tests/notiftarget.test.ts` (admin target added). `tsc --noEmit` is clean.
+- NOT checked: on a phone. After `eas update`, close the app completely and open it TWICE: the update downloads on the first start and is used from the second.
+
+# Latest: two premium glass themes (Glass Obsidian, Glass Pearl)
+
+- **Glass Obsidian** (dark): warm black glass with champagne-gold light and a hint of sapphire. Gold accent, dark text on the gold buttons.
+- **Glass Pearl** (light): ivory and pearl glass with champagne and blush light. Sapphire navy accent, bronze-gold as the second colour.
+- Both appear in **Settings > Appearance** next to the four existing glass themes (no other change needed: the picker lists every theme in `src/theme.ts`). Names are in `src/i18n.ts` (other languages fall back to the English names).
+- New optional theme value `sheen` (`src/theme.ts`, drawn in `src/Glass.tsx`): a faint light falling from the top corner of the backdrop, like light on polished glass. Only the two new themes use it, the existing four look exactly as before.
+- Colours were checked for contrast (body text 7.8 to 15.9 against the panel, white / dark button text 9+ on the accent). buy / sell / gold / poi stay the trading colours.
+- `tsc --noEmit` is clean. NOT checked: how it looks on a phone (there is a mock-up image of both themes, drawn from the colour values, not a screenshot).
+
+# Latest: tapping a notification opens that notification
+
+- **Tap on the phone's notification** (app closed, in the background, or open): a **price alert** or a **scanner setup** opens that pair in the Analysis tab, a **support / payment** message opens the Help chat. Anything else (for example the test alarm) opens the bell list as before. The app now reads the data the server puts into each push (`src/push.ts` passes it on, `src/notifTarget.ts` decides the place).
+- **PIN lock / not ready yet:** a tap that arrives while the app is on the PIN screen or still loading waits (up to 2 minutes) and is carried out as soon as the app is unlocked and ready.
+- **Bell list:** lines from price alerts, setups and support messages are tappable (arrow on the right) and open the same place. The X still removes a line. Lines that were already in the bell before this update have no pair saved, so they are not tappable.
+- **Bell opened by a tap while the inbox is still downloading:** a line that arrives while the list is open is now marked NEW too (before it could be missing or unmarked).
+- **Server** (`server/alerts.js`): the inbox line of a scanner setup now keeps its pair (`sym`), so the bell line can open it. Restart the server. The tap on the phone's notification itself works without a server change (the push already carried the pair).
+- Tests: `npx tsx tests/notiftarget.test.ts` (new), `npx tsx --tsconfig tests/tsconfig.json tests/alerts.test.ts` (extended). `tsc --noEmit` is clean.
+- NOT checked: running on a phone (cold start from a notification, PIN screen, Android back button after the jump).
+
+# Latest: manual orders on any pair (New order ticket + SELL / BUY bar on the chart)
+
+- **New order** button at the top of the Journal opens the ticket (`src/ManualOrder.tsx`): search ANY pair (forex, metals, crypto, synthetic, indices; starred pairs first), press **SELL** or **BUY** (bid / ask where the feed has them), choose **Market (now)** or **Limit / pending** (type your price), set the **stop loss** (price, or a quick 0.1 / 0.25 / 0.5 / 1 % distance) and up to **3 take profits** (automatic at 1R-2R-3R, 1R-1.5R-2R or 1.5R-3R-4.5R, or type your own), and the chart timeframe. The ticket refuses a stop or target on the wrong side and a pair that already has an opposite trade.
+- Then the normal **Take sheet** opens (Market is preselected) for the size in lots, the take-profit plan, your risk rules, daily loss limit and news warnings. If you back out, the unused manual order is removed.
+- **SELL | BUY bar above the live chart** (Markets > any pair): tap a side, the ticket opens for that pair with that side selected, and after the ticket you land in the Journal on the Take sheet.
+- The order is a normal trade from then on: Journal > Live (floating result, TP progress, break-even, close all), tracked with live prices, written to Closed and Trade history with its chart (source shows "Manual"). It is a PAPER trade on live prices: nothing is sent to a broker.
+- Pure ticket maths in `src/manualOrderMath.ts`, test: `npx tsx tests/manualorder.test.ts` (checks the ticket rules, then runs a manual order through the real tracker: TP1, stop to break-even, close).
+- NOT checked: running on a phone.
+
+# Latest: MT5-style charts: smooth zoom, round quick wheel, MT5 position labels
+
+- **Smooth zoom** (`src/smoothZoom.ts`, `useZoom` in `src/ChartZoom.tsx`): zoom and scroll are no longer rounded to whole candles, so a pinch changes the candle width continuously and the candle under your fingers stays put. Two fingers zoom and move the chart together. At most one redraw per screen frame. A flick glides with real inertia, dragging past the newest / oldest candle resists like a rubber band and bounces back. Buttons, presets and Latest animate instead of snapping. The price auto-fit eases instead of jumping.
+- **Price scale like MT5**: drag the price axis to scale, double tap the axis to fit again, and with a manual price scale a one finger drag also moves the chart up and down. Price labels use even 1 / 2 / 5 steps, time labels stay on fixed candles while you scroll. Candles are clipped at the price axis.
+- **Round quick wheel** (`src/Mt5Wheel.tsx`): tap the chart (Analysis chart and Trade history chart) or the timeframe chip. Timeframes M1 to D1 on the ring, tools on the lower left: chart type, crosshair, indicators, Fibonacci + support / resistance (Analysis) or trade levels (Trade history), fit chart. Tap the middle or outside to close.
+- **Crosshair mode**: the crosshair button (top bar, wheel, and the bar under every chart): the finger is the crosshair, it stays until switched off. Hold for 0.4 s still works.
+- **Trade history chart** (`TradeDetail.tsx`): switch the timeframe of the replay with the wheel, MT5 position label on the entry line (`BUY 0.25, +12.40 USD`), price scale, nice time labels.
+- **Open / pending trade chart** (`TradeChart.tsx`, Journal): now pinch / drag / flick / crosshair / price scroll like the others, with a live P/L label on the entry line.
+- Tests: `npx tsx tests/smoothzoom.test.ts` (new). `zoom.test.ts` and `vzoom.test.ts` still pass.
+- NOT checked: running on a phone (no node_modules / device here). The math, inertia and bounce are tested; the touch handling and the look are not.
+
+# Latest: account emails on Netlify, signup notification, Google setup guide
+
+- **Emails (confirm, reset password, change email)** are sent by a Netlify Function in your own templates (site: https://genuine-pika-2ac700.netlify.app). Firebase sends no email. `AUTH_MAIL_URL` and `AUTH_MAIL_FIREBASE_FALLBACK = false` in `src/license.ts`; the three call sites in `src/store.tsx` show an error instead of Firebase's plain email. Your server is not involved, so these work when it is off.
+- **Server:** the first time a Firebase account reaches `/register` (email or Google signup, not a normal login) the admin phone gets a "New signup" push. It never blocks the signup. Restart the server.
+- **Google sign-in:** the code was already complete. It fails until the build's SHA-1 is in Firebase and google-services.json has an Android client: see `GOOGLE_SETUP.md`. Needs a NEW build.
+- NOT checked: a real build, a real Google login, a real email from the app, or any screen on a phone. `node --check server/server.js` passes; the TypeScript tests were not run (no node_modules here).
+
+# Latest: Trade history opens the full trade (method + chart)
+
+- Tap any trade in **Trade history** to open its full view (`src/TradeDetail.tsx`): the **trade method** (name, description, grade, score, timeframe, the reasons it was taken, entry zone), the **trade plan** (entry, stop, each take profit with its R, which were hit, final stop, exit), result / R / MFE / MAE / size / time held, and a **full candle chart** with the entry marker, stop loss, TP1-TP3, the risk and reward areas, the exit marker and the path between them. Pinch zoom, pan, price zoom and long-press crosshair work as on the analysis charts.
+- Closed trades now save their stop, targets, zone, key level, reasons, score and market id (`Trade` in `src/store.tsx`, `toJournal`). **Trades closed before this update do not have these fields**: they show the entry and exit and, if the market is known, the chart without stop / targets.
+- Hand-added Journal trades have no method or levels: they show the entry / exit on the chart when the market name matches a listed market.
+- NOT checked: running on a phone, or live candles (no network / node_modules where this was made). Candles are fetched once per opened trade; very old trades may be outside what the data source returns, and the screen says so.
+
+# Latest: email pages on Firebase Hosting (no Netlify needed)
+
+- The page folder is now `auth-page/` (was `netlify-auth/`). New `firebase.json` + `.firebaserc` publish it with **`firebase deploy --only hosting`** to `https://chart-reader-45c13.web.app` (free, same project). Same security headers as before. `auth-page/netlify.toml` stays for anyone who prefers Netlify.
+- Set the Firebase email templates' **Customize action URL** and the server's `AUTH_PAGE_URL` to the web.app address. `firebase-templates/*.html` already use it for the logo.
+- NOT checked: a real deploy (needs your Firebase login). Where older notes below say `netlify-auth`, read `auth-page`.
+
+# Latest: Chart Reader emails in your FitLife-style design
+
+- **Six branded email templates** in `server/emails/` (confirm-signup, reset-password, change-email, invite, magic-link, reauthentication): same layout and `{{ .ConfirmationURL }}` placeholders as the FitLife Pro files, in the Chart Reader colours.
+- **Why a server:** Firebase only lets you edit the TEXT of its emails, not the HTML. So the server (`server/mail.js`, `server/authmail.js`, routes `/auth/reset`, `/auth/verify`, `/auth/change-email`) asks Firebase for a one-time link (service account), sends the email through Brevo or Resend, and the link opens the Netlify page. Setup: `server/BRANDED_EMAILS.md`.
+- **App:** Forgot password, the confirmation email (after sign up and "Send again") and Change email use the server first and fall back to Firebase's plain email if the server is not set up or does not answer in 8 s. Nothing breaks without the setup.
+- **Invite friends** row in Settings: opens the phone's share sheet with the download link (`APP_DOWNLOAD_URL` in `src/license.ts`, change it to your store page).
+- Not wired (templates only): invite by email, magic link, reauthentication code. The app has no screen or login method for them.
+- Safety: reset answers the same for every address; limits per mailbox / account / IP; change email needs a login from the last 5 minutes; all values in the templates are HTML-escaped.
+- Tests: new `tests/authmail.test.js` (19 checks, with fake Google and email services). All existing tests pass.
+- NOT checked: a real email through Brevo / Resend, a real Firebase one-time link, how the email looks in Gmail / Outlook, or the screens on a phone. The Firebase request (`accounts:sendOobCode` with `returnOobLink`) follows how Google's own Admin SDK does it; if it answers with an error, the server log line starting "auth mail" shows why.
+
+# Latest: Continue with Google, account email pages on Netlify
+
+- **Continue with Google** (sign up and log in are the same button) on the welcome, login and sign-up screens. New file `src/google.ts`; `googleLogin()` in `src/store.tsx`. The Google account becomes a normal Firebase login, so the license, the backup, the alerts and the admin check work as for email + password (Google emails are already verified). A new Google user goes on to set the PIN, an existing one goes straight in. Another person's Google account on the same phone wipes the old account's data, as a normal login does.
+- **Google-only accounts have no password**, so: Change password is hidden (Settings), Email is shown as read-only (Edit profile), and Delete account asks for the Google account instead of a password.
+- **Needs a NEW BUILD** (new native package `@react-native-google-signin/google-signin`, `scheme: chartreader` and the plugin in `app.json`). `eas update` alone is not enough. Phones that still have the old build do not crash when they get this update: the Google button says the app needs the newest version (`errGoogleBuild`).
+- **Firebase / Google setup (cannot be done in code):** Authentication > Sign-in method > enable **Google**. Add the **SHA-1** of the build to Firebase (Project settings > Your apps > Android > Add fingerprint): `eas credentials` shows the upload-key SHA-1, and Play Console > App integrity > App signing shows the SHA-1 Google uses for the store build - add BOTH. Download the new `google-services.json` over the old one (the present one has no Android OAuth client). Without the right SHA-1 the button shows "error 10".
+- **Netlify pages (`netlify-auth/`):** reset password, verify email, change email and restore email open on your own page instead of Firebase's plain one. Static, no build. Steps are in `netlify-auth/README.md`. English + Urdu.
+- Tests: new `tests/google.test.ts` (8 checks). The Netlify page was run against a fake Firebase (9 checks: reset form, short / mismatched password, expired link, no HTML injection from the email text, Urdu right-to-left). All existing tests still pass.
+- NOT checked: a real Google login, a real reset email, the new build, or any screen on a phone. Google sign-in in particular only works once the SHA-1 and the new `google-services.json` are in place. iOS is not set up (no iOS Firebase file in the project).
+
+# Latest: one price source per market (Deriv / Binance), bid-ask spread, oil + DXY on TradingView
+
+- **Crypto = Binance everywhere.** `cryBTCUSD / cryETHUSD / cryLTCUSD / cryBNBUSD / cryXRPUSD` were priced by Deriv (USD, a different level from Binance USDT; the chart showed Binance, the header showed Deriv). They are now priced, charted, alerted and analysed from Binance (`cryBTCUSD` = `BTCUSDT`). New `cryBn()` / `bnId()` in `src/crypto.ts`; used by the price poller, `watchCandles` and the server alerts. If Binance does not list a pair it stays on Deriv. Crypto no longer falls back to Yahoo (a third price level): if Binance cannot be reached the price shows offline.
+- **Spread.** `Q` now has `bid` / `ask`. Deriv: read from every tick (forex, gold, silver). Binance: real order-book bid/ask from `bookTicker`. Shown under the price in the market sheet (`Bid · Ask · Spread`, in price and %). Nothing is shown when the source gives one price only (DXY, oil, Deriv synthetic indices) - a spread is never made up.
+- **Oil WTI / Brent and DXY** had no TradingView symbol (`tvSymbol` returned null). Now `TVC:USOIL`, `TVC:UKOIL`, `TVC:DXY`.
+- **No price jump when the source switches.** The gold / silver futures-to-spot gap is now measured for forex pairs too (Deriv price vs the backup, kept 30 min, limit 0.5%), and taken off the backup price and candles. A forex backup is never blocked while the gap is unknown (only gold and silver are).
+- Binance prices for a short list refresh every 2 s (was 4 s).
+- **Needs:** `eas update`, and restart the server (`server/alerts.js`, `server/analysis/crypto.js`, `server/analysis/fallback.js`). No new package.
+- Tests: new `tests/pricesource.test.ts` (16 checks). All existing tests still pass.
+- NOT checked: live prices (no access to Deriv / Binance / Yahoo / TradingView from where this was made) and the phone screen. Open BTC, EUR/USD, gold, WTI and DXY next to TradingView / Binance and compare. The Deriv `bid` / `ask` fields in the tick message are taken from Deriv's API documentation; if a pair shows no spread line, Deriv did not send them for it.
+- Known limits: TradingView has no price API, so forex / gold / oil prices are Deriv / Yahoo prices next to TradingView's own chart; they can differ by a pip or a few cents. Crypto prices are polled (2 s), not streamed.
+
+# Latest: premium support chat, photo / video attachments, clear message when translation has no key
+
+- **Why translation said "Translation is not available right now":** the server has no Gemini key saved. `/translate` uses the same key as the analysis (`db.geminiKey`). Fix with no code: Admin panel > Setup > paste the Gemini key > Save key (or start the server with `GEMINI_API_KEY=...`). Check: open `<server address>/health`, it must show `"geminiKey":true`. The admin now gets this exact instruction instead of the vague message (users still see the plain one).
+- **Chat look (user Help screen and admin Chats):** new `src/ChatUI.tsx`. Gradient bubbles for your own messages, soft bubbles for the other side with a small tail, day dividers (Today / Yesterday / date), round avatar and name in the admin chat header, avatar + last message + time in the admin thread list.
+- **Message box:** no longer sits under the phone's navigation bar (it keeps the bottom safe area; with the keyboard open it moves above the keyboard). Round gradient send button, attach button on the left, pill-shaped input, spinner while sending.
+- **Photo and video attachments** (both directions): attach button > Photo or video from the gallery, or Take a photo. A preview with a remove button shows before sending; text is optional when a file is attached. Photos open full screen on tap; videos open in the phone's player on tap. Limits: photo 8 MB, video 25 MB (`CHAT_MAX_IMAGE_MB`, `CHAT_MAX_VIDEO_MB`), 12 files / 120 MB per hour per person (admin x5).
+- **Server:** new `server/media.js`. The file is sent as raw bytes to `POST /support/upload` and shown by a random 128-bit link `GET /media/<id>` (with Range, so videos start fast and can seek). The type is decided by the file's first bytes (JPEG, PNG, GIF, WebP, MP4, MOV, WebM): HTML / SVG / scripts are refused whatever the phone claims. Only the sender can attach their own fresh upload, once. Files never sent are deleted after a day; files of messages that fall out of the 300-message thread are deleted too. Stored in `<DB_FILE>.media/` (not in git, not in the app upload).
+- **Needs:** restart the server (new file `server/media.js`), publish an update (`eas update`). No new package and no app.json change, so no new build is needed. A message with only a photo shows as "Photo" / "Video" in the list and in the push notification.
+- Tests: `node tests/server.test.js` has 5 new checks (upload, sent and shown, Range, disguised files refused, size limits, ownership, admin hint for the missing key). All pass.
+- NOT checked on a phone: the screens were syntax-checked only. Please test: send a photo and a video from the user side and from the admin side, open both, and open the chat with the keyboard up.
+- Known limits: a video plays in the phone's own player (opened by its link), not inside the bubble (that needs `expo-video`, which means a new build). Video from the camera is not offered (it needs the microphone permission, also a new build): choose it from the gallery. If your server address is an ngrok free link, its warning page can block the video link; Cloudflare tunnels and your own domain are fine.
+
+---
+
+# Latest: auto stop (TP1 -> entry, TP2 -> TP1, TP3 closes the trade) and booked / remaining profit in money
+
+- **The switch in the Take sheet is now "Auto stop and final close"** (it was "Break-even after TP1"; same switch, same place, still off by default and remembered for the next trade). When it is ON:
+  - **TP1** reached: the stop moves to your entry (break-even).
+  - **TP2** reached: the stop moves to TP1.
+  - **TP3** (the last take profit) reached: the WHOLE trade closes at the TP3 price. It closes everything that is still open, also when you closed part by hand before, not only the planned share.
+  - The stop only moves in your favour: a stop you already moved higher is never pulled back. One price jump through several targets does all the steps in order.
+  - TP1 and TP2 still ring the alarm and a planned share is still closed only when "Close automatically" is on. When the switch is OFF nothing changed: the stop stays and TP3 only rings the alarm.
+  - Trades that are already running with the old switch on now follow the new rule as well (TP2 -> TP1, TP3 closes).
+- **Booked and remaining profit, no R** (Journal open-trade card, Manage sheet, messages): after a take profit closes a share (for example 50%) the card shows `REMAINING 50% · FLOATING +$75.00` as the big number and `BOOKED +$50.00 · 50% closed` on the right. The Manage sheet shows "Remaining 50% · floating" and "Booked · 50% closed", and the big button says "Close the remaining 50% now +$75.00". Alarm texts, toasts and the bell say for example `TP1 reached, 50% closed at 101.00. +$50.00 booked.` and `Trade finished, result +$170.00.` The R multiples stay only in the closed journal rows, Performance and the averages.
+- **Stop states:** the manual "Break-even" button is disabled once the stop is at the entry or better and then reads "Profit locked" when the stop sits at TP1; before, it would have pulled a stop at TP1 back to the entry. The stop level shows `STOP · BE` or `STOP · LOCKED`, and the gold mark on the ladder sits on the real stop. The "stopped out" text says "stop at TP1 hit, profit kept" or "stopped out at break-even", with the trade result in money.
+- Files changed: `src/trades.ts` (`step`, new `stopAtBE`, `bookedMoney`, `openMoney`), `src/store.tsx` (toasts, manual break-even guard), `src/screens/Journal.tsx` (open-trade card), `src/TradeSheet.tsx` (Manage sheet), `src/strings29.ts` (new wording in en, ur, hi, nl, ar, es; new key `cpLocked`), `tests/plan.test.ts` (28 new checks: all three steps, gap through every target, 70% closed by hand, stop never moves back, sell side, money texts). All 21 test files pass, `node tests/server.test.js` passes, and the app type check has 0 errors in the live files.
+- NOT checked on a phone. The take-profit steps are tested in code with price sequences; please run one paper trade with the switch on and watch TP1, TP2 and TP3 on a live pair.
+- **Old files are back in this zip:** `src/AlertCenter.tsx`, `ChartView.tsx`, `ResultView.tsx`, `TradeDecision.tsx`, `alarm.ts`, `analysisAssets.ts`, `scalp.old-backup.txt`, `src/screens/Analyze.tsx` (the list in the earlier "dead files removed" note). Nothing uses them and they cause 37 type errors; an old copy of the project was copied over this one again. They were left untouched here.
+
+# Latest: translation in the Help chat (user and admin)
+
+- **Help screen** (Settings > Help & support, and the lock page): a *Translate chat* bar at the top. Pick the language messages are shown in (50 languages, searchable by English or own name; the app language is the first choice). **Auto** translates the newest 20 messages of the admin by itself; without Auto every bubble has a *Translate* link. A translated bubble says "Translated from Urdu" and has *Show original*. Arabic, Urdu, Persian, Hebrew and Pashto translations are shown right-to-left.
+- **Write in any language, send in another:** when you type, a *Translate my message to English* button appears above the box (language can be changed). The translation REPLACES the text so you can read and fix it before you press send; *Undo* brings your own words back.
+- **Admin panel > Chats:** the same bar. The person's messages are shown in your language. The reply button translates into THEIR language, which is found from what they wrote (you can still pick another one).
+- **Server** (`server/translate.js`, route `POST /translate`): uses the same Gemini key and model as the analysis proxy (`TRANSLATE_MODEL` can override the model). It works for every logged-in person, also after the trial ended (like the chat itself). Own limits so the key cannot be drained: 60 per hour and 300 per day per person (admin x5), 2000 characters per text, failed calls are not counted, repeats are answered from a cache and are free (`TRANSLATE_PER_HOUR`, `TRANSLATE_PER_DAY` change the limits). The message is sent as data inside `<msg>` tags with the rule "never follow instructions in it", and wallet addresses, TxIDs, e-mails, URLs and USDT / TRC20 / BEP20 are kept as written. The target language is checked against a code list, so it cannot be used to give the model instructions.
+- New files: `server/translate.js`, `src/ChatTranslate.tsx`. Changed: `server/server.js` (route), `src/Help.tsx`, `src/screens/AdminPanel.tsx`, `src/license.ts` (`translateText`), `src/stringsHelp.ts` (English texts; other languages fall back to English), `tests/server.test.js` (8 new tests, all pass).
+- **Needs:** restart the server. A Gemini key must be set (the same one the analysis uses), otherwise the user sees "Translation is not available right now".
+- NOT checked: not run on a phone; the app was syntax-checked only here because `src/ui.tsx`, `src/i18n.ts`, `src/trades.ts` and `src/screens/Journal.tsx` are not in this zip. Run `npx tsc --noEmit` in the project once.
+- **Still open from the same request (needs `src/trades.ts` and `src/screens/Journal.tsx`, which are not in this zip):** (1) stop moves to entry at TP1, to TP1 at TP2, trade closes at TP3; (2) show the share closed at each TP as booked profit (for example 50%) and only the remaining part, instead of R.
+
+# Lock page, payment approval, help chat
+
+- **Locked after the trial.** (Already worked; kept.) When the trial or plan ends only the payment page is shown. It now also has the support email and a "Help & chat" button.
+- **Help screen** (Settings > Help & support, and on the lock page): chat with the admin, plus the support email. It works after the trial ended. Replies arrive as a push notification, in the bell, and as a red number on the Help row / a card on Home.
+- **Admin panel > Chats:** every user message and every email sent to the support address (see server/EMAIL_TO_APP.md). The admin answers in the app. New messages and payments raise a notification and a badge on the Admin card.
+- **Payments are claims that the admin approves.** The user sends the TxID and the wallet it was paid FROM. The server checks the chain when it can (exists, to our address, big enough, sent from that wallet). Days are added ONLY when the admin presses Approve (days are pre-filled from the amount and can be changed). Reject shows a reason to the user.
+- **Nobody can use someone else's payment:** one TxID can be claimed once, ever; a sender wallet belongs to one account; a rejected claim frees the wallet again.
+- New server files: server/payments.js, server/support.js. New app files: src/Help.tsx, src/PayBox.tsx, src/stringsHelp.ts. Tests: node tests/server.test.js
+
+# Latest: lock screen after the trial, notification numbers and missed notifications, dead files removed
+
+- **Lock screen** (`src/Paywall.tsx`, `App.tsx`). When the free trial or the paid plan has ended, the WHOLE app is replaced by one page: a clear message, the weekly / monthly plans, network (TRC20 / BEP20), amount, wallet address (press and hold to copy, or Share), a warning to send USDT only on the chosen network, three steps and the TxID box. Verifying a payment (or "Already paid? Check my status") opens the app by itself. Different wording for a first trial that ended and for a renewal. Your journal, history and settings are not touched while access is paused.
+  - If the server cannot be reached and access has never been confirmed, the same page shows "We could not verify your subscription" with Try again, Send confirmation email (when the email is not confirmed) and a Server address field. Settings is locked too, so this is the only place to fix a dead tunnel address. Decision to review: a person with no saved access who is offline is blocked.
+  - Access is re-checked every 30 s and when the app comes back to the front, so a trial that ends while the app is open locks it.
+  - **Clock cheating:** the server now returns its time (`now` in `lic()`), the app uses it, and time never runs backwards on the phone (`trustedNow`, `syncClock` in `src/license.ts`). Setting the phone date back no longer extends a trial. The server clock wins whenever it answers, so a wrongly future phone clock cannot lock someone out for good.
+  - New texts are English only (`pw*` keys in `src/strings29.ts`); other languages fall back to English.
+- **Numbers on the app icon and missed notifications.** Found in `server/alerts.js`: (1) an alert was removed and marked fired BEFORE the push was confirmed, so one failed send lost it; (2) a rejected send (HTTP error) was counted as sent; (3) messages expired after 15 minutes, so a phone that was off or without signal missed them; (4) the app had no code to receive pushes, so anything that came while it was closed never reached the bell; (5) delivery errors that only show in the push receipts (wrong Firebase key, dead phone) were never read.
+  - Server: every notification is written to a per-person **inbox** first, then sent. A failed send is retried 6 times, 30 s apart, without a second inbox line. Expiry is now 24 h for price alerts, 2 h for setups, 5 min for tests. Each push carries `badge` = unread count. Receipts are read every 5 min: dead phones are removed, other errors are written to the log as `push NOT delivered (...)`. New endpoints `/inbox/pull`, `/inbox/ack`.
+  - App (`src/store.tsx`, `src/push.ts`, `src/license.ts`): the inbox is copied into the bell when the app opens, comes to the front, and when a push arrives or is tapped (a tap opens the bell). The icon number always equals the unread lines of the bell and goes back to 0 when the bell is read. The Android channel has `showBadge` on.
+  - **Limit you cannot change from the app:** iPhone shows the exact number. On Android the PHONE decides: Samsung, Xiaomi, Oppo and Huawei launchers show a count; a Pixel / stock launcher shows only a dot.
+- **Removed (not used by the app):** `src/AlertCenter.tsx`, `src/ChartView.tsx`, `src/ResultView.tsx`, `src/TradeDecision.tsx`, `src/alarm.ts`, `src/analysisAssets.ts`, `src/screens/Analyze.tsx`, `assets/analysis/` (29 images, 1.9 MB), `src/scalp.old-backup.txt`, `src/Splash.flat-backup.txt`, `README.txt`. These had come back into the zip after an earlier clean-up; if they reappear, an old copy of the project is being copied over this one.
+- `tsconfig.json` now skips `tests/` and `server/` (they have their own setup). Type check of the app: 0 errors (was 43, all from the removed files). `tests/lots.test.ts` called `suggestLots` without its price argument: fixed.
+- Tests: new `tests/alerts.test.ts` (inbox, badge number, retry, dead phone, receipts) and `tests/license.test.ts` (clock). All 20 test files pass. The Android bundle builds (`expo export`).
+- NOT done / not checked: not run on a phone. The lock page, the icon number and the push path need one real check (see APPLY.txt). Still open: (1) the server accepts any public TxID sent to your wallet that nobody has claimed yet, so a stranger could claim someone else's payment first; fixing it needs a design change (for example a unique amount per user); (2) the in-app take-profit alarm still has no screen or sound (`startAlarm` in `src/native.ts` is not called, `expo-audio` is not installed); (3) `expo-build-properties` is in `package.json` but unused; (4) `app.json` says 2.10.0, `package.json` 2.12.0; (5) `server/db.json*` holds real user emails.
+
+---
+
+# Latest: volume bars on every method and timeframe, oil with volume, real volume for every crypto / forex pair / metal / DXY
+
+- **Volume pane on every chart method** (`src/MethodChart.tsx`). Until now volume bars were drawn only in the VSA view. Now ICT, SMC, VSA, patterns, candles, scalping, divergence and the combined view all get a TradingView-style pane under the price: bars coloured by candle direction, a 20-bar average line, the last value (follows the crosshair), the scale on the right, and the candle's volume in the crosshair card. A **Vol** chip in the bar under the chart hides / shows it (remembered while the app is open). While the feed is still loading the pane says "Loading volume..." and for a market with no volume it says why (synthetic index, feed not answering, too thin). The four screens that use the chart now pass `symId` (ICT Lab, Insight, Scalping, Top-Down).
+- **Markets tab chart** (`src/IndicatorChart.tsx`): the Volume pane is ON by default (saved settings from before get it added once) and shows as soon as the newest 40 candles have volume (before, it waited for more than half of the whole history). TradingView panel: the Volume study is on by default (`src/MarketWidgets.tsx`).
+- **Oil added**: **Oil WTI** (`frxWTI`, NYMEX CL=F) and **Oil Brent** (`frxBRENT`, ICE BZ=F) are in the market list (forex group, after silver). Deriv has no stable oil symbol, so like DXY they are read from Yahoo, and because the futures contract IS the chart, its volume comes in the same answer (no merge). Lots: 1.00 lot = 1,000 barrels (`src/lots.ts`).
+- **Every forex pair now has volume on every timeframe.** Spot forex has no central volume, so the app uses the standard proxies, in this order: (1) CME / COMEX / ICE futures volume (majors, gold, silver, DXY, oil), (2) **crosses (EUR/JPY, GBP/JPY, EUR/GBP, AUD/NZD ... any cross of EUR, GBP, JPY, AUD, CAD, CHF, NZD)** use the volume of their TWO currency futures added together (e.g. EUR + JPY), labelled "cross proxy" everywhere (`crossLegs()` in `src/volume.ts`, `yahooVolumeMulti()` in `src/fallback.ts`; a bar is kept only where both legs traded), (3) Deriv tick volume as the fallback (the volume MT5 / TradingView show for forex). Crypto is unchanged: real Binance volume on every timeframe.
+- **Why gold said "Too little volume" (29 of 40 candles)**: the tick-volume loader stopped after 7 pages (35 000 ticks), which on a busy pair covers only the newest ~29 candles. Now it reads up to 45 pages within 60 s (`TICK_PAGES`, `TICK_BUDGET_MS` in `src/markets.ts`), newest first, and shows the candles it has already counted every 3 pages while the older history loads (`onPart` in `src/volumeFeed.ts`). Tick volume now works on **M1 to H1** (was M1 to M15; `TICK_MAX_GRAN`).
+- **VSA volume rule relaxed on purpose** (`VSA_MIN_COVER = 0.7` in `src/volume.ts`, `hasRealVolume` in `src/vsa.ts`): VSA runs when at least 70% of the last 40 candles have volume (was 85%) AND 2 of the newest 3 do (so the read is about now). A futures market has a daily break and quiet minutes where spot keeps trading, so a few candles legitimately have no volume. Those candles get no signal and are now left out of every volume average (`baseVol`), so a gap can never fake a high-volume bar. The Scanner and the AI analysis use the same rule. To go back to the old strictness set `VSA_MIN_COVER` to 0.85.
+- Server: `server/alerts.js` merges the two-leg cross volume too; `node server/build-analysis.js` already run (`volume.js`, `vsa.js`, `fallback.js` regenerated). The server scanner still uses futures volume only, no tick volume.
+- Tests: `tests/volume.test.ts` and `tests/volumefeed.test.ts` updated and extended (crosses, oil, the 29-of-40 case, gaps, pane helpers, two-leg sum, progressive loading). All 19 test files pass. TypeScript check of the whole app: no new errors.
+- NOT done / not checked: **not run on a phone and not tested against the live Yahoo, Deriv or Binance feeds (no network when this was built)**: open one chart per kind first (XAU/USD M5, EUR/JPY M15, WTI M15, DXY H1, BTC M5) and look at the Volume pane. Cross volume is a proxy (the two currency futures), tick volume counts price updates and not traded lots: both are labelled. Still no volume at all: Deriv synthetic indices (no market behind them), and a pair with no futures contract on H2 / H4 / D1. English texts only for the new labels.
+
+---
+
+# Latest: scalping = supply / demand zone, then a reversal candle, then a confirmation candle (M1 to H1)
+
+- **New rules** (`src/scalp.ts`, new `sdReversalEngine`). **Step 1** find a valid supply / demand zone (swing high / low that price left by 2 ATR and never closed through). **Step 2** a reversal candle forms ON that zone: doji, gravestone, dragonfly, hammer, inverted hammer, shooting star, hanging man, bullish / bearish engulfing, tweezer bottom / top, morning star, evening star. **Step 3** the NEXT candle must close beyond the reversal candle (red below its low = sell, green above its high = buy). Only then is it a SIGNAL.
+- The zone decides the side, not a trend guess: supply zone = sell patterns, demand zone = buy patterns. The same hammer shape is a Hammer on a demand zone and a Hanging man on a supply zone; the inverted shape is an Inverted hammer on demand and a Shooting star on supply. A dragonfly on a supply zone (or a gravestone on a demand zone) gives nothing. A candle that touches both a supply and a demand zone gives nothing.
+- Entry = close of the confirmation candle. Stop = high (sell) / low (buy) of the WHOLE pattern (all 2 or 3 candles). Exit rule and the 1R / 2R / 3R reference levels are unchanged. If several patterns end on the same candle the fuller one wins (stars, then engulfing, then tweezer, then single candles, plain doji last).
+- Pattern size limits in ATR: single candle 0.5 to 2.5, two / three candle patterns up to 3.5 (`maxMultiAtr`). Morning / evening star: first body at least 0.6 ATR (`starBodyAtr`). Tweezer: highs / lows within 0.1 ATR. Hammer-type body at most 35% of the range. All in `SCALP_DEFAULTS`.
+- Fixed: the confirmation candle opens the trade, so it can no longer start a second setup on the same candle (before, a candle that confirmed a doji could also look like an evening star and replace the signal with a WATCH).
+- **Timeframes:** the Scalping screen now offers exactly M1, M5, M15, M30 and H1 (always visible, no "More" menu). M3 and everything above H1 are gone from that screen.
+- Scalping screen: step card is now "Supply / demand reversal candle" (Step 1 zone, Step 2 reversal candle, Step 3 confirmation), the reversal candle(s) are shaded on the chart with the pattern name, the confirmation candle is marked BUY / SELL, new rules text. Setup source label is "S/D Reversal" (was "S/D Doji"). English How-to-use guide, method card and trade sheet text updated; other languages not.
+- Trendlines are no longer a level source (zones only, as asked). Set `trendlines: true` in `SCALP_DEFAULTS` to bring them back.
+- The first version (zone / trendline + rejection doji, port of `sd_doji_scalper.py`) is kept as `sdDojiEngine()` so the Python parity test still passes. The app itself no longer matches the Python script, because the rules are different now.
+- Server: `node server/build-analysis.js` already run (`server/analysis/scalp.js` regenerated).
+- Tests: `tests/scalp.test.ts` now walks all 11 reversal candles on both a supply and a demand zone (WATCH, then SIGNAL, then a failed confirmation expires), plus the wrong-side, no-zone and not-a-reversal cases, the one-trade-at-a-time rule, the five timeframes and 600 random markets. All test files pass.
+- NOT done: not run on a phone, not run on live candles (no network when this was built), not backtested. The 0-100 score is still the app's own ranking, not from backtests.
+
+---
+
+# Latest: real volume for the AI chart analysis, oil volume, and clear volume-feed status
+
+- **VSA now gives its own signal without the AI button, on every forex / gold / silver / oil pair, even when the futures volume cannot be loaded.** New second volume source: **Deriv tick volume** (the number of price updates inside each candle, the same volume MetaTrader shows for forex). It comes from the same Deriv feed as the candles, so it needs no Yahoo and it also covers the crosses (EUR/JPY, GBP/JPY, every other cross). `src/markets.ts` counts the ticks (`derivTickBars`, 5000 per request, one pair at a time), `src/volumeFeed.ts` chooses the source, `src/volume.ts` has the helpers.
+  - Order: exchange / futures volume first. Tick volume takes over when the futures volume fails, or fewer than 85% of the last 40 candles have it (it goes back to futures only at 95%, so the source does not flip on every poll). One source is used for all candles of a chart, never a mix.
+  - Limits: tick volume works on **M1 to M15 only** (above that there are too many ticks to count; H1+ still uses futures volume). Synthetic indices get none: they tick at a fixed rate, so a tick count says nothing.
+  - It is tick volume, not traded lots. The VSA tab shows "Tick volume" in the Volume feed tile and names the source; the AI prompt is told which volume it is reading.
+  - The server scanner (`server/alerts.js`) still uses futures volume only, no tick volume yet.
+  - Tests: `tests/volumefeed.test.ts` (Yahoo blocked -> ticks take over, cross pairs get volume, synthetics get none), more in `tests/volume.test.ts`.
+
+- **The AI "Analysis of this chart" no longer says "no volume, judge spread only".** `analyzeMarket` (`src/gemini.ts`) now sends a `volume` column (real futures volume for forex / gold / silver / oil, Binance volume for crypto) together with open high low close, and tells the model to read VSA as effort against result. The forming candle's volume is partial and the prompt says so. If the candles carry no real volume (synthetic indices, a feed that did not load, volume on less than 85% of the last 40 candles) the old spread-only wording is kept and nothing is invented.
+- **Oil:** WTI (`CL=F`, NYMEX) and Brent (`BZ=F`, ICE) futures volume is now merged in. Matched by name pattern (`frxBRO*`, `frxXBR*`, `frxWTI*`, `frxXTI*`, `frxUSOIL`, `frxOIL*`) because brokers name oil differently.
+- **VSA tab says WHY there is no volume:** "Loading real volume", "feed did not answer" (retries every 8 s, was 20 s), "only N of the last 40 candles have traded volume", or "no source" (synthetic indices, EUR/JPY and GBP/JPY crosses). The Volume feed tile shows Loading / Feed error instead of "Spread only" for markets that should have volume.
+- Yahoo requests now try `query2.finance.yahoo.com` when `query1` fails (8 s limit each).
+- Still no real volume, on purpose: Deriv synthetic indices and forex crosses that have no futures contract (EUR/JPY, GBP/JPY and the other crosses). VSA gives no signal there.
+- Server: run `node server/build-analysis.js` (already run for this build: `volume.js`, `fallback.js` regenerated).
+- Tests added: `tests/volume.test.ts` (oil, status messages), `tests/gemini.test.ts` (volume column in the prompt). All pass. NOT checked against the live Yahoo feed (no network when this was built): open one XAU/USD and one oil chart on M15 first.
+
+---
+
+# Latest: scalping replaced by the Supply/Demand + Trendline Rejection-Doji method
+
+- The old scalping models (EMA pullback, micro breakout, range fade) are removed. `src/scalp.ts` is now a port of your `sd_doji_scalper.py`. The old file is kept as `src/scalp.old-backup.txt`.
+- **Step 1** a valid supply / demand zone (swing high / low that price left by 2 ATR and never closed through) or a trendline under the candle. **Step 2** the candle is a rejection doji (gravestone = sell, dragonfly = buy). **Step 3** the NEXT candle closes beyond the doji. Entry = close of that candle, stop = doji high / low, exit = price breaks the previous candle low / high (gaps fill at the open, stop never beyond the doji extreme).
+- Checked against the Python script: on 8 test series (19 setups) every status, candle position, entry and stop is identical (`tests/scalp.test.ts`, fixture made by `tests/fixtures/gen_scalp_ref.py`). Uses closed candles only, so it cannot repaint. While a trade from an earlier signal would still be open there is no new signal (same as the script).
+- The script has no fixed target: TP1-3 in the app are only reference levels at 1R / 2R / 3R. The score (0-100) is the app's own ranking of the setup (steps, zone strength, clean doji, tight stop, session, volatility, room); it is not from the script and not backtested. A doji still waiting for its confirmation candle shows as WATCH (score at most 55, no entry, no alert).
+- Scalping screen: new "Supply / demand rejection doji" card with the 3 steps as pass / fail, zones and trendlines on the chart, "Zones" tile instead of the EMA tile, new rules text. The "use M1 to M5" warning is gone (the method works on any timeframe).
+- CRT stays as before; when it agrees with the doji setup it shows as "CRT + S/D".
+- Only the English How to use guide has the new method so far.
+- Not run on a phone yet.
+
+---
+
+# Latest: VSA on real volume, vertical chart zoom, combined analysis and entry accuracy
+
+**1. VSA uses real market volume**
+- Deriv candles carry no volume, so real volume is merged in (`src/volume.ts`, `src/volumeFeed.ts`): Binance spot volume for crypto; CME / COMEX / ICE futures volume for EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CAD, USD/CHF, NZD/USD, gold, silver and DXY (futures volume is the standard proxy for spot forex). EUR/JPY, GBP/JPY and the Deriv synthetic indices have no real volume.
+- No real volume = VSA gives no signal, no entry and casts no vote (it no longer guesses from spread).
+- A VSA entry needs the confirmation candle to close on more volume than the retest. Shakeout / upthrust need above-average volume. The volume average is not distorted by one climax bar.
+- The Scanner waits up to 4 s for the volume; the server scanner merges it too (`server/alerts.js`, run `node server/build-analysis.js`).
+- Not checked against the live Binance / Yahoo feeds (no access when this was built): look at one EUR/USD and one BTC chart first.
+
+**2. Vertical scroll bar and price zoom** (all three charts)
+- Bar on the right of the chart: drag the thumb to move the price window, tap the track to jump, + / - to zoom the price scale, double tap to fit. "Fit price" chip appears under the chart when zoomed.
+- Drag on the price axis (down = stretch, up = squeeze). Two-finger pinch with the fingers above each other zooms the price; fingers side by side still zooms time.
+- Maths in `src/vzoomMath.ts`, test `tests/vzoom.test.ts`. Not run on a phone yet.
+
+**3 + 4. Combined analysis and entry accuracy**
+- Found: 76% of test markets ended "Too late". SMC / ICT chose old zones whose move had already reached TP1, and "too late" counted the rally that built the zone as a return. Fixed: spent zones are skipped (`zoneSpent` in `ta.ts`), SMC prefers zones within 6 ATR, "too late" only when price came back to the zone AFTER it formed.
+- A buy / sell limit is no longer shown on the wrong side of price; if price is through the zone the plan says wait for a reclaim.
+- No repainting: all methods read CLOSED candles only; the entry planner uses the live price. Test `tests/volume.test.ts` proves a changing forming candle does not change ICT / SMC / VSA / patterns / candles.
+- On 1500 synthetic markets: combined entries 50 -> 1167, no stop or target on the wrong side. Synthetic data has no real edge, so this proves the logic works, not the win rate. Use `node server/backtest.js` on real candles for that.
+- 16 test files pass.
+
+---
 
 # Latest: new start screen (live candle chart, logo, slogan, flowing lines)
 
@@ -524,3 +775,43 @@ and running the logic tests. The server fixes were tested against the original w
 
 ## Tests
 - New `tests/ict.test.ts` (killzones, a textbook long through all 8 questions, not-ready cases, 300 fuzz runs). All test files pass. Not tapped through on a phone: please open Analysis > ICT once after `eas update`.
+
+---
+
+# Chart patterns: full pattern sheet added (21 patterns)
+
+- **New patterns in the Chart patterns method (src/patterns.ts):** triple top / triple bottom, bull flag / bearish flag, bullish / bearish pennant, cup and handle / inverse cup and handle, rounding bottom / rounding top. Already there and kept: head and shoulders (and inverse), double top / bottom, ascending / descending / symmetrical triangle, wedges, rectangle.
+- **Names now match the sheet:** "Bearish wedge" (rising) / "Bullish wedge" (falling), "Bullish rectangle" / "Bearish rectangle" (replaces "Rectangle range").
+- Flags and pennants: sharp pole (3+ ATR), retrace under 50%, entry on the break of the flag / pennant line, target = the pole height. Cup and handle / rounding: two rims at the same level with a rounded base between them, entry on the rim break, target = the depth of the base.
+- Pattern guide card (all 21, how each is traded) added under the setup on the Chart patterns tab; Help text and the "no pattern" message updated.
+- Chart patterns also feed Combined / scanner through the same `patternsAnalyze`, so they now count there too. `server/analysis/patterns.js` rebuilt (`node server/build-analysis.js`).
+- New `tests/patterns.test.ts` (each pattern on a built example and its mirror, a V is not a cup, 300 random walks).
+
+---
+
+# Chat: photos did not show, admin reply box too low
+
+- **Photos:** a photo in a bubble is now fetched with the app's own fetch() (the same call that already works for login, chat and uploads, and always sends the tunnel header) and shown from memory, with a small cache. Before, the phone's image loader was asked to download it with custom headers; when it ignores them the tunnel answers with its warning page and the bubble stays empty. While loading there is a spinner; if it fails the bubble says why (for example "HTTP 404") and a tap retries. The full-screen viewer uses the same picture.
+- **Admin reply box:** the Admin panel window now has the same setup as the Help chat window (status-bar translucent), so the keyboard push-up is measured from the same top edge. An open conversation also uses the whole screen (the "Admin panel" title and tabs are hidden while a chat is open), so the box sits right above the keyboard and the messages get more room.
+
+---
+
+# Chat: double tick and last seen
+
+- **Ticks on your own messages** (the user's messages in Help, the admin's replies in the admin chat): one faded tick = sent (the server has it), two faded ticks = delivered (the other app fetched it), two bright ticks = read (the other side opened the chat). The bright colour is picked to show on the bubble colour of every theme. Messages that came by email get no ticks.
+- **Last seen:** the user sees "Online" (green dot) or "Last seen today at 14:05" for the admin under "Support"; the admin sees the same for the user under the name. "Online" = the app made a request in the last 90 seconds, judged on the server's clock so a wrong phone clock cannot change it.
+- Server: `ud` / `ur` / `ad` / `ar` receipt numbers on each thread (support.js), `touch()` in server.js records the last request of every person (kept in memory, db.json is rewritten for it at most every 5 minutes). Update the server files and restart; old apps keep working (they ignore the new fields), the new app simply shows no ticks until the server is updated.
+- Tests: two new cases in `tests/server.test.js` (ticks both directions, last seen).
+
+---
+
+# Login not remembered + gold trade hit targets that the market never reached
+
+- **Password asked on every start:** the project is locked to Firebase 9.14, which has no `auth.authStateReady()`. The start-up code called it, got "is not a function", the error was swallowed and the app behaved as if nobody was logged in. New `src/authReady.ts` waits for the saved login the Firebase 9 way (first `onAuthStateChanged`, 5 s limit) and still uses `authStateReady()` on Firebase 10+. The "Remember me" switch works as before.
+- **Gold / silver prices (the trade at 4160.03 with TP 4169.17 while TradingView showed about 4150):** when the main feed (Deriv, spot) is slow or down, the app falls back to Yahoo, and for gold and silver that is the COMEX FUTURES contract, which trades about $10 above spot. Setups built on those candles, and quotes from them, did not match spot, so an order could "fill" and all three targets could "hit" in one step on a price spot never reached. Now:
+  - the gap between spot and futures is measured whenever both are seen (`noteSpot`, refreshed every 10 minutes) and taken off every backup quote and candle (`src/fallback.ts`, same code on the server);
+  - while the gap is not known yet, backup gold / silver prices are not used for logged setups, the Take button, price alerts, the Tracker or the server scanner;
+  - `src/priceGuard.ts`: a reading more than 0.15% away from the last accepted one is held back until a second, different reading agrees, so one bad tick cannot fill an order or hit a target.
+- **Trade history:** Timeframe now shows M5 / H1 / D1 instead of the raw seconds (300).
+- Tests: `tests/authgold.test.ts`. `server/analysis/fallback.js` rebuilt; restart the server.
+- Old trades in the journal that were closed by this problem stay as they are: delete them with "Delete this trade".

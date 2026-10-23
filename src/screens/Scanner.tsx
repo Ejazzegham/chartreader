@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, Text, Pressable, Switch } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../store';
 import { Screen, Card, Dim, Body, Btn, Badge, Icon, TimeframeBar, Row } from '../ui';
 import { analyzeAll } from '../refine';
+import { hasVolumePath, feedHasVolume } from '../volume';
+import { hasRealVolume } from '../vsa';
 import { priceDec, Candle, SYMBOLS, TFS, symOf, isBad, isClosed, useFeed, watchCandles } from '../markets';
 import { useNews, riskFor, currenciesOf, fmtIn, localTime } from '../news';
 import NewsBanner from '../NewsBanner';
@@ -12,12 +15,25 @@ import { BodyProps } from '../embed';
 import { remote } from '../remote';
 import { HTF_OF } from '../entry';
 import { scheduleState, marketState } from '../session';
-import { judge, levelText, AlertLevel } from '../verdict';
-import { methodSetups, MethodSetup, SETUP_MIN } from '../methodSetups';
+import { qualify, levelText, AlertLevel } from '../verdict';
+import { methodSetups, topDownSetup, MethodSetup, SETUP_MIN } from '../methodSetups';
+import { topDownAnalyze } from '../topdown';
 import { liveSame, muteKeys } from '../trades';
 
 const TAB = 12;
 const GROUPS = [{ k: 'favs', label: 'Watchlist' }, { k: 'forex', label: 'Forex' }, { k: 'crypto', label: 'Crypto' }, { k: 'deriv', label: 'Synthetic' }];
+// The methods the person can tick. `name` is the MethodSetup.method it produces.
+// Top-Down has its own engine and always reads 4H, 1H and 15m, whatever timeframe is chosen above.
+const METHODS = [
+  { k: 'ict', label: 'ICT', name: 'ICT' }, { k: 'smc', label: 'SMC', name: 'SMC' }, { k: 'pat', label: 'Chart pattern', name: 'Pattern' },
+  { k: 'topdown', label: 'Top-Down', name: 'TopDown' }, { k: 'vsa', label: 'VSA', name: 'VSA' }, { k: 'candle', label: 'Candlestick', name: 'Candle' },
+] as const;
+type MKey = typeof METHODS[number]['k'];
+const ALL_M: MKey[] = METHODS.map((m) => m.k);
+const COMBO_M: MKey[] = ['ict', 'smc', 'vsa', 'pat', 'candle']; // the combined entry and its alert gate merge these five, so they only exist when all five are ticked
+const TD_TFS = [14400, 3600, 900], TD_COUNT = 320;              // Top-Down: 4H, 1H, 15m, 320 candles for a real EMA 200
+const BG_MAX = 100; // pairs the server scans while the app is closed (the server accepts 100)
+const isSpike = (id: string) => /^(BOOM|CRASH)\d+N?$/.test(id); // Deriv spike pairs (Boom / Crash): ALWAYS in the background list, they must never be cut off by the cap
 const CRYPTO_MAX = 60, BATCH = 6, TIMEOUT = 10000, AUTO_MS = 90000; // the whole market is scanned; crypto has hundreds of pairs, so the 60 most traded
 
 type Hit = {
@@ -26,14 +42,14 @@ type Hit = {
   scalp: 'buy' | 'sell' | null; rsi: number | null; why?: string; ok: boolean; plan?: { label: string; trigger: string; cancelIf: string }; htf?: string; zone?: [number, number]; checks?: string[];
   setups?: MethodSetup[];                             // every method's own setup scoring 70+ (ICT, SMC, VSA, pattern, candle, scalp, combined), best first
   closed?: boolean;                                   // the market is shut or the feed is not live: nothing is analysed, nothing rings
-  alert?: AlertLevel; agree?: string[]; blocked?: string[]; // result of the entry gate (src/verdict.ts)
+  alert?: AlertLevel; qgrade?: 'A+' | 'A' | null; agree?: string[]; blocked?: string[]; // result of the entry gate (src/verdict.ts): qgrade is A+ (score 85+) or A for every setup that passed it
 };
 
 const closedHit = (id: string, name: string, why: string, reopens?: string, price = NaN): Hit =>
   ({ id, name, price, dec: 5, trend: 'range', side: null, score: 0, grade: '-', scalp: null, rsi: null, ok: false, closed: true, why: `Market closed. ${why}${reopens ? ` Reopens ${reopens}.` : ''}` });
 
 // Grab the first batch of candles for a symbol, then stop the subscription. Never rejects.
-function candlesOnce(id: string, gran: number): Promise<Candle[]> {
+function candlesOnce(id: string, gran: number, count = 150, wantVol = true): Promise<Candle[]> {
   return new Promise((resolve) => {
     let finished = false, un: (() => void) | null = null, timer: any;
     const fin = (c: Candle[]) => {
@@ -41,14 +57,22 @@ function candlesOnce(id: string, gran: number): Promise<Candle[]> {
       if (un) { try { un(); } catch {} }
       resolve(c);
     };
-    timer = setTimeout(() => fin([]), TIMEOUT);
-    un = watchCandles(id, gran, (c) => fin(c), () => fin([]), undefined, 150);
+    let latest: Candle[] = [], grace: any = null;
+    timer = setTimeout(() => fin(latest), TIMEOUT);
+    // Deriv candles arrive first and the real volume (Binance / futures) a moment later: wait for it, but never longer than 4 s
+    const needVol = wantVol && hasVolumePath(id, gran) && !feedHasVolume(id);
+    const withVol = (c: Candle[]) => hasRealVolume(c); // same rule as the VSA engine
+    un = watchCandles(id, gran, (c) => {
+      latest = c;
+      if (!needVol || withVol(c)) { clearTimeout(grace); fin(c); return; }
+      if (!grace) grace = setTimeout(() => fin(latest), 4000);
+    }, () => fin([]), undefined, count);
     if (finished) { try { un(); } catch {} }
   });
 }
 
 export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }: BodyProps = {}) {
-  const { th, t, tab, setPrefill, setTab, logSignal, toast, raiseAlarm, signals, setupHandled } = useApp();
+  const { th, t, tab, setPrefill, setTab, logSetup, toast, raiseAlarm, signals, setupHandled } = useApp();
   const active = embedded ? !!on : tab === TAB;
   const { db } = useFeed(active);
   const { events } = useNews(active);
@@ -66,6 +90,11 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
   const alerted = useRef('');
   const [open, setOpen] = useState('');
   const [at, setAt] = useState(0);
+  // the methods to scan: ticked in the card below, remembered, and applied after a short pause so several taps start only one scan
+  const [picked, setPicked] = useState<MKey[]>(ALL_M);
+  const [sel, setSel] = useState<MKey[]>(ALL_M);
+  const [mReady, setMReady] = useState(false);
+  const selKey = sel.join(), full = COMBO_M.every((k) => sel.includes(k));
   const runId = useRef(0), busyRef = useRef(false);
   busyRef.current = busy;
 
@@ -78,6 +107,10 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
 
   const scan = async () => {
     const my = ++runId.current, list = ids(group), gran = Number(tf);
+    if (!sel.length) { setHits([]); setDone(0); setTotal(0); setAt(0); setBusy(false); return; } // nothing ticked: nothing to scan
+    // only the ticked methods are read; the combined entry needs all five of the methods it merges
+    const only = [...METHODS.filter((m) => sel.includes(m.k)).map((m) => m.name), ...(full ? ['Combined'] : [])] as MethodSetup['method'][];
+    const engine = sel.some((k) => k !== 'topdown'); // ICT, SMC, VSA, pattern or candle ticked: run the shared engine
     setBusy(true); setDone(0); setTotal(list.length); setOpen('');
     const out: Hit[] = [];
     for (let i = 0; i < list.length; i += BATCH) {
@@ -87,22 +120,34 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
         // 1. The weekly schedule first: a closed market needs no download and no analysis.
         const sched = scheduleState(id, s.cat, now);
         if (!sched.open) return closedHit(id, s.name, sched.reason, sched.reopens);
-        const hg = HTF_OF[gran];
+        const hg = engine ? HTF_OF[gran] : undefined;
         const [c, h] = await Promise.all([candlesOnce(id, gran), hg ? candlesOnce(id, hg) : Promise.resolve([] as Candle[])]);
         const dec = !c.length ? 5 : s.quote ? priceDec(c[c.length - 1].c) : c[c.length - 1].c >= 100 ? 2 : 5;
         if (c.length < 45) return { id, name: s.name, price: c.length ? c[c.length - 1].c : NaN, dec, trend: 'range', side: null, score: 0, grade: '-', scalp: null, rsi: null, why: c.length ? 'Not enough candles' : 'No data', ok: false } as Hit;
         // 2. Fresh data: the newest candle must be recent. Friday's candles on a Saturday are not a market.
         const ms = marketState(c, gran, id, s.cat, now, isClosed(id));
         if (!ms.open) return closedHit(id, s.name, ms.reason, ms.reopens, c[c.length - 1].c);
-        const a = analyzeAll(c, now, { sessions: ['forex', 'indices'].includes(s.cat), htf: h.length >= 40 ? h : undefined });
-        const cb = a.combo, floor = Math.max(SETUP_MIN, minProb);
-        // 3. The entry gate: score, ICT/SMC location, 3+ methods agreeing, nothing against, timing, risk, news.
-        const v = cb ? judge(a, { id, cat: s.cat, now, c, minProb, newsDanger: riskFor(id).level === 'danger' }) : null;
+        const floor = Math.max(SETUP_MIN, minProb);
+        const a = engine ? analyzeAll(c, now, { sessions: ['forex', 'indices'].includes(s.cat), htf: h.length >= 40 ? h : undefined }) : null;
+        const cb = full ? a?.combo : undefined;
+        // 3. The entry gate: score, ICT/SMC location, 3+ methods agreeing, nothing against, timing, risk, news. It judges the combined setup, so it only runs when all five methods are ticked.
+        const v = a && cb ? (() => { const q = qualify(a, { id, cat: s.cat, now, c, minProb, newsDanger: riskFor(id).level === 'danger' }); return { ...q.verdict, level: q.level, grade: q.grade, blocked: q.reasons }; })() : null;
+        // Top-Down reads its own three timeframes (4H, 1H, 15m)
+        let extra: MethodSetup[] = [], tdTrend: Hit['trend'] | undefined;
+        if (sel.includes('topdown')) {
+          const [c4, c1, c15] = await Promise.all(TD_TFS.map((g) => candlesOnce(id, g, TD_COUNT, false)));
+          const td = topDownAnalyze(c4, c1, c15, now), x = topDownSetup(td, c15, floor);
+          if (x) extra = [x];
+          if (td.ok) tdTrend = td.h4.trend;
+        }
         return {
-          id, name: s.name, price: c[c.length - 1].c, dec, trend: a.ict.trend, side: cb?.side ?? null, score: cb?.score ?? 0, grade: cb?.grade ?? '-',
-          entry: cb?.entry, sl: cb?.sl, tps: cb ? [...cb.tps] : undefined, basis: cb?.basis, plan: cb ? { label: cb.plan.label, trigger: cb.plan.trigger, cancelIf: cb.plan.cancelIf } : undefined, htf: cb?.htf, zone: cb ? [cb.zoneBottom, cb.zoneTop] : undefined, checks: cb ? cb.checks.filter((x) => x.ok).slice(0, 5).map((x) => x.text) : undefined, scalp: a.scalp.setup?.side ?? null,
-          rsi: isFinite(a.scalp.rsi7) ? a.scalp.rsi7 : null, why: a.why ?? (cb && cb.score < floor ? `Best setup (${cb.basis}) scores ${cb.score}%, under ${floor}%.` : undefined), ok: true, alert: v?.level ?? null, agree: v?.agree, blocked: v?.blocked,
-          setups: methodSetups(a, c, floor),
+          id, name: s.name, price: c[c.length - 1].c, dec, trend: a?.ict.trend ?? tdTrend ?? 'range', side: cb?.side ?? null, score: cb?.score ?? 0, grade: cb?.grade ?? '-',
+          entry: cb?.entry, sl: cb?.sl, tps: cb ? [...cb.tps] : undefined, basis: cb?.basis, plan: cb ? { label: cb.plan.label, trigger: cb.plan.trigger, cancelIf: cb.plan.cancelIf } : undefined, htf: cb?.htf, zone: cb ? [cb.zoneBottom, cb.zoneTop] : undefined, checks: cb ? cb.checks.filter((x) => x.ok).slice(0, 5).map((x) => x.text) : undefined,
+          scalp: null, // Scalping is not one of the scanner methods
+          rsi: a && isFinite(a.scalp.rsi7) ? a.scalp.rsi7 : null,
+          why: full ? (a?.why ?? (cb && cb.score < floor ? `Best setup (${cb.basis}) scores ${cb.score}%, under ${floor}%.` : undefined)) : 'No setup from the ticked methods on this pair right now.',
+          ok: true, alert: v?.level ?? null, qgrade: v?.grade ?? null, agree: v?.agree, blocked: v?.blocked,
+          setups: a ? methodSetups(a, c, floor, only, extra) : extra,
         } as Hit;
       }));
       if (my !== runId.current) return; // a newer scan started, drop this one
@@ -125,20 +170,40 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
   // The server runs the same scan every 90 s and sends a push when a setup reaches the chosen probability, even if the app is closed.
   useEffect(() => {
     if (!cfg) return;
-    remote.setScan({ on: cfg.auto && cfg.alarm, minProb: cfg.minProb, tf: Number(tf), mute, items: ids(group).map((id) => ({ id, name: symOf(id).name, sess: ['forex', 'indices'].includes(symOf(id).cat) })) });
-  }, [cfg?.auto, cfg?.alarm, cfg?.minProb, group, tf, db.favs.join(','), mute.join(',')]);
-  // opening the page or changing market / timeframe starts a fresh scan (an older one is dropped by runId)
-  useEffect(() => { if (!active) return; setHits([]); setAt(0); scan(); }, [active, group, tf]);
+    // The server watches a FIXED list, not just the market tab that is open: your watch list first, then forex, crypto and Deriv. (It used to follow the open tab, so switching tabs changed what was scanned while the app was closed.)
+    const seen = new Set<string>(), list: string[] = [];
+    // Spike pairs go first: forex + 60 crypto pairs used to fill the list, so Boom / Crash fell past the cap and were never scanned while the app was closed.
+    const spikes = SYMBOLS.filter((s) => s.cat === 'deriv' && isSpike(s.id)).map((s) => s.id);
+    // The server gets the FULL list and scans every pair. The Boom / Crash switch is gone from the Analysis page; the server still never alerts AGAINST the spike (Boom = BUY, Crash = SELL).
+    for (const id of [...spikes, ...ids('favs'), ...ids('forex'), ...ids('crypto'), ...ids('deriv')]) if (!seen.has(id)) { seen.add(id); list.push(id); }
+    remote.setScan({ on: cfg.auto && cfg.alarm && full, watch: (cfg as any).watch !== false, digest: !!(cfg as any).digest, dayBreaks: cfg.auto && cfg.alarm && (cfg as any).dayBreaks !== false, news: cfg.auto && cfg.alarm && (cfg as any).news !== false, minProb: cfg.minProb, tf: Number(tf), mute, items: list.slice(0, BG_MAX).map((id) => ({ id, name: symOf(id).name, sess: ['forex', 'indices'].includes(symOf(id).cat) })) });
+  }, [cfg?.auto, cfg?.alarm, (cfg as any)?.watch, (cfg as any)?.digest, (cfg as any)?.dayBreaks, (cfg as any)?.news, cfg?.minProb, full, tf, db.favs.join(','), mute.join(',')]);
+  // the ticked methods are remembered
+  useEffect(() => {
+    AsyncStorage.getItem('scan_methods').then((v) => {
+      if (v) { const l = (JSON.parse(v) as string[]).filter((k): k is MKey => (ALL_M as string[]).includes(k)); setPicked(l); setSel(l); }
+    }).catch(() => {}).finally(() => setMReady(true));
+  }, []);
+  const toggle = (k: MKey) => setPicked((o) => {
+    const n = ALL_M.filter((x) => (x === k ? !o.includes(x) : o.includes(x)));
+    AsyncStorage.setItem('scan_methods', JSON.stringify(n)).catch(() => {});
+    return n;
+  });
+  useEffect(() => { if (picked.join() === selKey) return; const i = setTimeout(() => setSel(picked), 600); return () => clearTimeout(i); }, [picked.join()]);
+  // opening the page or changing market / timeframe / ticked methods starts a fresh scan (an older one is dropped by runId)
+  useEffect(() => { if (!active || !mReady) return; setHits([]); setAt(0); scan(); }, [active, mReady, group, tf, selKey]);
   useEffect(() => {
     if (!active || !auto) return;
     const i = setInterval(() => { if (!busyRef.current) scan(); }, AUTO_MS);
     return () => clearInterval(i);
-  }, [active, auto, group, tf]);
+  }, [active, auto, group, tf, selKey]);
 
-  // when a scan finishes, the setups that passed the entry gate are saved in the Journal (the store drops weak and duplicate ones)
+  // When a scan finishes, EVERY A and A+ setup (all that passed the entry gate) goes to the Journal for Take / Skip. No limit on how many, and it does not
+  // depend on the Journal's auto-log switch. A setup you skipped or already took is not added again (the store checks).
   useEffect(() => {
     if (!active || busy || !at) return;
-    hits.filter((h) => h.alert && h.side && h.entry !== undefined && h.sl !== undefined && h.tps?.length && !gone(h)).slice(0, 5).forEach((h) => logSignal({ symId: h.id, name: h.name, tf, dec: h.dec, side: h.side!, entry: h.entry!, sl: h.sl!, tps: [...h.tps!], score: h.score, grade: h.grade, source: srcOf(h), why: whyOf(h), zone: h.zone }));
+    hits.filter((h) => h.alert && h.qgrade && h.side && h.entry !== undefined && h.sl !== undefined && h.tps?.length && !gone(h))
+      .forEach((h) => logSetup({ symId: h.id, name: h.name, tf, dec: h.dec, side: h.side!, entry: h.entry!, sl: h.sl!, tps: [...h.tps!], score: h.score, grade: h.qgrade!, source: srcOf(h), why: whyOf(h), zone: h.zone }));
   }, [at, busy, active]);
   // Probability filter (Analysis page): setups scoring under the chosen level are hidden. Rows with no setup stay unless "Only show setups" is on.
   const liveHits = hits.filter((h) => !h.closed), closedHits = hits.filter((h) => h.closed);
@@ -152,9 +217,9 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
     const key = strong.map((h) => `${h.id}:${h.side}:${h.alert}`).sort().join(',');
     if (!key || key === alerted.current) return;
     alerted.current = key;
-    const now = strong.filter((h) => h.alert === 'entry').length, lead = now ? `${now} entry now` : `${strong.length} near entry`;
-    toast(`Scanner: ${lead}: ${strong.slice(0, 3).map((h) => `${h.name} ${h.side!.toUpperCase()} ${h.score}%`).join(', ')}${strong.length > 3 ? '…' : ''}`, 'good');
-    raiseAlarm({ id: `scan:${at}`, kind: 'setup', title: now ? `${now} setup${now > 1 ? 's' : ''}: enter now` : `${strong.length} setup${strong.length > 1 ? 's' : ''} near entry`, text: strong.slice(0, 4).map((h) => `${h.name} ${h.side!.toUpperCase()} ${h.score}% (${levelText(h.alert!).toLowerCase()})`).join(', '), items: strong.slice(0, 6).map((h) => ({ symId: h.id, name: h.name, side: h.side!, score: h.score, grade: h.grade, entry: h.entry!, dec: h.dec })) });
+    const now = strong.filter((h) => h.alert === 'entry').length, lead = now ? `${now} entry now` : `${strong.length} near entry`, gl = [...new Set(strong.map((h) => h.qgrade || 'A'))].sort().join('/'); // "A", "A+" or "A/A+"
+    toast(`Scanner ${gl}: ${lead}: ${strong.slice(0, 3).map((h) => `${h.name} ${h.side!.toUpperCase()} ${h.qgrade || 'A'} ${h.score}%`).join(', ')}${strong.length > 3 ? '…' : ''}`, 'good', strong.length === 1 ? { type: 'setup', sym: strong[0].id } : true); // tap: the one pair, or the bell when there are several
+    raiseAlarm({ id: `scan:${at}`, kind: 'setup', title: now ? `${now} ${gl} setup${now > 1 ? 's' : ''}: enter now` : `${strong.length} ${gl} setup${strong.length > 1 ? 's' : ''} near entry`, text: strong.slice(0, 4).map((h) => `${h.name} ${h.side!.toUpperCase()} ${h.qgrade || 'A'} ${h.score}% (${levelText(h.alert!).toLowerCase()})`).join(', '), items: strong.slice(0, 6).map((h) => ({ symId: h.id, name: h.name, side: h.side!, score: h.score, grade: h.grade, entry: h.entry!, dec: h.dec })) });
   }, [at, busy, active]);
   const nBuy = liveHits.filter((h) => vis(h)[0]?.side === 'buy').length, nSell = liveHits.filter((h) => vis(h)[0]?.side === 'sell').length;
   const tfLabel = TFS.find((x) => x.k === tf)?.label ?? tf;
@@ -173,6 +238,30 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
           <TimeframeBar value={tf} options={TFS} onChange={setTf} />
         </Card>
 
+        <Card>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '800', letterSpacing: 1 }}>METHODS TO SCAN · {picked.length}/{METHODS.length}</Text>
+            <View style={{ flexDirection: 'row', gap: 14 }}>
+              <Pressable onPress={() => { setPicked(ALL_M); AsyncStorage.setItem('scan_methods', JSON.stringify(ALL_M)).catch(() => {}); }} accessibilityRole="button" hitSlop={8}><Text style={{ color: th.accent, fontSize: 11.5, fontWeight: '800' }}>All</Text></Pressable>
+              <Pressable onPress={() => { setPicked([]); AsyncStorage.setItem('scan_methods', '[]').catch(() => {}); }} accessibilityRole="button" hitSlop={8}><Text style={{ color: th.accent, fontSize: 11.5, fontWeight: '800' }}>None</Text></Pressable>
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {METHODS.map((m) => {
+              const on = picked.includes(m.k);
+              return (
+                <Pressable key={m.k} onPress={() => toggle(m.k)} accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={m.label}
+                  style={{ width: '48%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 8, borderWidth: on ? 1.5 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '18' : th.bg }}>
+                  <Icon name={on ? 'checkbox' : 'square-outline'} size={20} color={on ? th.accent : th.dim} />
+                  <Text style={{ color: th.text, fontSize: 13, fontWeight: on ? '800' : '600', flexShrink: 1 }} numberOfLines={1}>{m.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {picked.includes('topdown') && <Dim>Top-Down always reads 4H, 1H and 15m, whatever timeframe is chosen above.</Dim>}
+          {!full && picked.length > 0 && <Dim>The combined entry and its alarm need ICT, SMC, VSA, chart pattern and candlestick all ticked. With fewer, you get each ticked method's own setups and no alarm or push.</Dim>}
+        </Card>
+
         <LinearGradient colors={[th.accent + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, borderWidth: 1, borderColor: th.accent + '55', padding: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={{ color: th.dim, fontWeight: '800', fontSize: 11, letterSpacing: 1.2 }}>{GROUPS.find((g) => g.k === group)?.label.toUpperCase()} · {tfLabel}</Text>
@@ -189,7 +278,7 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
           {busy && <View style={{ height: 4, borderRadius: 2, backgroundColor: th.line, marginTop: 12, overflow: 'hidden' }}><View style={{ width: `${pct}%`, height: 4, backgroundColor: th.accent }} /></View>}
         </LinearGradient>
 
-        <Btn label={busy ? `Scanning ${done}/${total}…` : 'Scan now'} icon="radio" onPress={scan} busy={busy} />
+        <Btn label={busy ? `Scanning ${done}/${total}…` : picked.length ? 'Scan now' : 'Tick at least one method'} icon="radio" onPress={scan} busy={busy} disabled={!picked.length} />
 
         <Card style={{ paddingVertical: 8 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 }}>
@@ -277,7 +366,7 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
                           );
                         })}
                       </>
-                    ) : <Body color={th.dim}>{h.why ?? (h.scalp ? 'Only a scalp trigger on this timeframe. Open Scalping for the full plan.' : 'No setup right now.')}</Body>}
+                    ) : <Body color={th.dim}>{h.why ?? (h.scalp ? 'Only a supply/demand reversal-candle scalp signal on this timeframe. Open Scalping for the full plan.' : 'No setup right now.')}</Body>}
                   </View>
                 )}
               </Card>
@@ -285,8 +374,9 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
           );
         })}
         {!busy && at > 0 && weak > 0 && <Dim>{`${weak} weaker setup${weak > 1 ? 's' : ''} hidden: under ${floorP}%.`}</Dim>}
+        {!sel.length && <Card><Body color={th.dim}>No method is ticked. Tick one or more methods above and the scan starts.</Body></Card>}
         {!busy && at > 0 && shown.length === 0 && closedHits.length < hits.length && <Card><Body color={th.dim}>{only ? 'No setups on this list right now. Turn off "Only show setups" to see every market, or try another timeframe.' : 'Nothing to show.'}</Body></Card>}
-        <Dim>The scanner checks every pair of the selected market (crypto: the 60 most traded). It skips closed markets and stale data, then runs ICT, SMC, VSA, candlestick, chart pattern and scalping on each pair. Any method that finds a setup scoring 70+ is listed with its entry, stop and targets, and the same trade found by several methods is merged. A notification only rings for the combined setup when 3+ methods agree, none is against, and price is in the entry zone or within 1 ATR of it. Educational tool, not financial advice.</Dim>
+        <Dim>The scanner checks every pair of the selected market (crypto: the 60 most traded). It skips closed markets and stale data, then runs only the methods you ticked above (ICT, SMC, chart pattern, Top-Down, VSA, candlestick) on each pair. Any ticked method that finds a setup scoring 70+ is listed with its entry, stop and targets, and the same trade found by several methods is merged. A notification only rings for the combined setup (all five engine methods ticked) when 3+ methods agree, none is against, and price is in the entry zone or within 1 ATR of it. Educational tool, not financial advice.</Dim>
       </View>
   );
   return embedded ? body : <Screen icon="radio" title={t('tabScanner')} subtitle={t('navDescScanner')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;

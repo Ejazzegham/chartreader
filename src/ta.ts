@@ -137,6 +137,20 @@ export function ladder(entry: number, sl: number, liq: number[] = [], extreme?: 
   return [out[0], out[1], out[2]];
 }
 
+// A zone is SPENT when price already came back to it and then travelled at least `r` risks away from the entry: the trade
+// happened without us (the first target would already be hit). A zone price never returned to (`fresh`) is never spent.
+// Without this the engines kept choosing the best-scoring OLD zone in a trend and the entry planner then said "too late".
+export function zoneSpent(c: Candle[], buy: boolean, zTop: number, zBot: number, fromI: number, fresh: boolean, entry: number, sl: number, r = TP_R[0]): boolean {
+  const risk = Math.abs(entry - sl);
+  if (fresh || !(risk > 0)) return false;
+  let touch = -1;
+  for (let k = c.length - 1; k > fromI + 1; k--) { if (buy ? c[k].l <= zTop : c[k].h >= zBot) { touch = k; break; } }
+  if (touch < 0) return false;
+  let peak = buy ? -Infinity : Infinity;
+  for (let k = touch; k < c.length; k++) peak = buy ? Math.max(peak, c[k].h) : Math.min(peak, c[k].l);
+  return buy ? peak >= entry + r * risk : peak <= entry - r * risk;
+}
+
 export type Plan = { side: 'buy' | 'sell'; higher: number; lower: number; entry: number; sl: number; tps: [number, number, number] };
 
 // Suggested levels: trade with the context, stop beyond the nearest swing (1 to 2.5 ATR), target at the next opposing level or 2R.
