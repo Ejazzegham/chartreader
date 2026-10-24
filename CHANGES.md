@@ -1,3 +1,16 @@
+# Website home page redesign (v2.16d)
+
+The website home (`src/DesktopHome.web.tsx`) now follows the new dashboard design. Everything on it is live data from the same code as the phone app.
+
+- **Hero**: Scalp • Analyze • Execute, with the four stat chips and the handwritten "Better Analysis, Bigger Opportunities".
+- **Chart card**: pair, live price and change, timeframe tabs (1m to 1D), OHLC line, Analysis / Pro chart switch, and the analysis chart with the entry, stop loss and three take profits drawn on it.
+- **Answer row**: TRADE or WAIT (quality gate) with confidence and score ring, Add to Journal and Open Chart; Analysis Summary (trend, structure, momentum, volatility); Trade Plan with entry, stop, TP1 to TP3 and pips.
+- **Analysis Methods**: ICT, SMC, VSA, Patterns, Candles and Top-Down, each showing its own Buy / Sell / Neutral vote.
+- **Trade Desk** (Setups, Live, Closed, Insights), **AI Analysis (Gemini)** (your newest saved analysis), **Latest News** (All, Forex, Crypto, Economy calendar), **Quick Tools**, **Market Overview** (how many markets are green), upgrade / PRO card, footer.
+- **Right column**: Watchlist (tabs, star, tap to change the chart), Market Sentiment gauge, Key Levels with risk / reward, Position Size from your Journal risk setting. The market-watch panel stays on all other pages.
+- Browser tests updated (36 checks). NOT done on purpose: the social icons in the design footer (no links known) and the Plan Review / Refine / Translate buttons (those live inside the Analysis pages).
+- Known test note: `tests/daylevels.test.js` fails on Saturdays and Sundays (forex is closed, so the server correctly does not ring EUR/USD). It also fails in your original app zip. It passes on weekdays.
+
 # Website fixes (v2.16c)
 
 - **No lock screen on the website**: no PIN screen, no fingerprint, no "set a PIN" step after sign-up, and no lock rows in Settings (an account that had a PIN opens straight in). The phone app keeps all of them.

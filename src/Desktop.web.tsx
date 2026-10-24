@@ -248,6 +248,7 @@ function Rail({ width }: { width: number }) {
 
 export function DesktopShell({ children }: { children: React.ReactNode }) {
   const L = useLayout();
+  const { tab } = useApp(); // Home has its own right column (watchlist, sentiment, key levels), so the market-watch panel is for the other pages
   return (
     <View style={{ flex: 1, flexDirection: 'row' }}>
       <Sidebar width={L.sidebar} />
@@ -255,7 +256,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
         <TopBar />
         <View style={{ flex: 1, flexDirection: 'row' }}>
           <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
-          {L.rail > 0 && <Rail width={L.rail} />}
+          {L.rail > 0 && tab !== 0 && <Rail width={L.rail} />}
         </View>
       </View>
     </View>
