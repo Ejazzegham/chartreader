@@ -93,8 +93,13 @@ export function useZoom(total: number, width: number, height = 300, opts: ZoomOp
       r.crossXY = { x: Math.max(0, Math.min(r.width, e.clientX - rc.left)), y: Math.max(0, e.clientY - rc.top) }; r.cdirty = true; kick();
     };
     const leave = () => { if (!r.crossOn) { r.crossXY = null; r.cdirty = false; setCrossS(null); } };
+    const hand = (grab: boolean) => { el.style.cursor = grab ? 'grabbing' : 'grab'; };
+    const down = (e: MouseEvent) => { if (e.button === 0) hand(true); }, up = () => hand(false);
+    const dbl = () => { setVz(VZ0); r.ey = null; }; // double click: the price scale fits the candles again
+    el.style.cursor = 'grab'; el.style.userSelect = 'none';
     el.addEventListener('wheel', wheel, { passive: false }); el.addEventListener('mousemove', move); el.addEventListener('mouseleave', leave);
-    webOff.current = () => { el.removeEventListener('wheel', wheel); el.removeEventListener('mousemove', move); el.removeEventListener('mouseleave', leave); };
+    el.addEventListener('mousedown', down); window.addEventListener('mouseup', up); el.addEventListener('dblclick', dbl);
+    webOff.current = () => { el.removeEventListener('wheel', wheel); el.removeEventListener('mousemove', move); el.removeEventListener('mouseleave', leave); el.removeEventListener('mousedown', down); window.removeEventListener('mouseup', up); el.removeEventListener('dblclick', dbl); };
   });
   useEffect(() => () => { webOff.current?.(); }, []);
 
@@ -128,7 +133,7 @@ export function useZoom(total: number, width: number, height = 300, opts: ZoomOp
     r.raf = requestAnimationFrame(tick);
   };
 
-  const canPan = () => !isFit(r.vcur);
+  const canPan = () => Platform.OS === 'web' || !isFit(r.vcur); // website: grab the chart and move it in any direction
   const pr = useRef(PanResponder.create({
     onStartShouldSetPanResponder: () => false,
     onMoveShouldSetPanResponder: (e, g) => r.crossOn || e.nativeEvent.touches.length >= 2 || (r.axis && Math.abs(g.dy) > 6) || (canPan() && (Math.abs(g.dx) > 8 || Math.abs(g.dy) > 8)) || (Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5),
@@ -182,7 +187,7 @@ export function useZoom(total: number, width: number, height = 300, opts: ZoomOp
       if (t.length !== 1 || r.axis) return;
       r.sx = t[0].pageX; r.sy = t[0].pageY; r.tapT = nowMs();
       if (r.crossMode) { r.crossOn = true; place(r.sx, r.sy); return; } // crosshair mode: the finger IS the crosshair
-      r.timer = setTimeout(() => { r.crossOn = true; place(r.sx, r.sy); }, 400);
+      if (Platform.OS !== 'web') r.timer = setTimeout(() => { r.crossOn = true; place(r.sx, r.sy); }, 400);
     },
     onTouchMove: (e: any) => {
       const t = e.nativeEvent.touches;

@@ -40,7 +40,8 @@ type Account = { name: string; email: string; phone?: string; uid?: string; salt
 const errKey = (code?: string) => code === 'auth/email-already-in-use' ? 'errInUse' : code === 'auth/network-request-failed' ? 'errNetwork' : code === 'auth/too-many-requests' ? 'errMany' : code === 'auth/requires-recent-login' ? 'errRecent' : code === 'auth/weak-password' || code === 'auth/invalid-email' ? 'errFields' : 'errLogin';
 type Settings = { theme: string; lang: Lang; model: string; nav: 'bottom' | 'side'; bio: boolean };
 // A fresh install opens in Glass Frost (the bright glass theme). People who already picked a theme keep it (it is saved in their settings).
-const DEFAULTS: Settings = { theme: 'glassFrost', lang: 'en', model: 'gemini-3.8-flash', nav: 'bottom', bio: false };
+const DEFAULTS: Settings = { theme: Platform.OS === 'web' ? 'glassPearl' : 'glassFrost', // the website starts in the calm ivory and sapphire theme; the choice in Settings is kept
+  lang: 'en', model: 'gemini-3.8-flash', nav: 'bottom', bio: false };
 
 // Read one saved value. A damaged entry gives the fallback instead of stopping everything that loads after it
 // (before, one bad value could leave the journal empty, and the next save would then overwrite the real journal).

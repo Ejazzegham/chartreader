@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView, Image, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from './store';
+import MarketsPanel from './MarketsPanel';
 import { Icon, LiveDot, BellButton, Card } from './ui';
 import { LogoMark } from './Brand';
 import { NAV } from './nav';
@@ -164,52 +165,19 @@ const S_COL = ['#0EA5E9', '#EF4444', '#8B5CF6', '#F59E0B'], S_ABBR = ['SY', 'TK'
 
 function Rail({ width }: { width: number }) {
   const { th, setTab } = useApp();
+  const winH = useRealWindow().height;
   const { quotes, db } = useFeed(true);
   const d = useDash();
   const [tab, setRailTab] = useState<MarketTab>('forex');
   const [now, setNow] = useState(new Date());
   useEffect(() => { const i = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(i); }, []);
-  const rows = listFor(tab, db.favs).slice(0, 9);
-  useEffect(() => { setWatch('rail', rows.map((s) => s.id)); return () => setWatch('rail', []); }, [rows.map((s) => s.id).join(',')]);
   const closed = fxWeekendClosed(now), h = now.getUTCHours(), tzo = -now.getTimezoneOffset() / 60;
   const hh = (x: number) => String(((x + tzo) % 24 + 24) % 24).padStart(2, '0') + ':00';
   const quote = QUOTES[Math.floor(now.getTime() / 86400000) % QUOTES.length];
   return (
     <View style={{ width, backgroundColor: th.panel, borderLeftWidth: 1, borderLeftColor: th.line }}>
       <ScrollView contentContainerStyle={{ padding: 14, gap: 14 }} showsVerticalScrollIndicator={false}>
-        <Card style={{ padding: 12, gap: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>Market Watch</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: th.buy }} /><Text style={{ color: th.buy, fontSize: 12, fontWeight: '800' }}>Live</Text></View>
-          </View>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
-            {([['forex', 'Forex'], ['crypto', 'Crypto'], ['deriv', 'Deriv']] as [MarketTab, string][]).map(([k, l]) => (
-              <Pressable key={k} onPress={() => setRailTab(k)} style={{ paddingHorizontal: 13, height: 30, borderRadius: 8, justifyContent: 'center', cursor: 'pointer', backgroundColor: tab === k ? th.accent : th.panel2, borderWidth: 1, borderColor: tab === k ? th.accent : th.line } as any}>
-                <Text style={{ color: tab === k ? th.onAccent : th.dim, fontSize: 12, fontWeight: '800' }}>{l}</Text>
-              </Pressable>
-            ))}
-          </View>
-          <View style={{ flexDirection: 'row', paddingHorizontal: 6 }}>
-            <Text style={{ flex: 1, color: th.dim, fontSize: 11, fontWeight: '700' }}>Symbol</Text>
-            <Text style={{ width: 66, textAlign: 'right', color: th.dim, fontSize: 11, fontWeight: '700' }}>Price</Text>
-            <Text style={{ width: 58, textAlign: 'right', color: th.dim, fontSize: 11, fontWeight: '700' }}>24H</Text>
-            <View style={{ width: 24 }} />
-          </View>
-          {rows.map((s, i) => {
-            const x = quotes[s.id], c = chg(s.id), on = d.sym === s.id, fav = db.favs.includes(s.id);
-            return (
-              <Pressable key={s.id} onPress={() => { setDash({ sym: s.id, market: groupOf(s.cat) }); setTab(0); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', paddingVertical: 7, paddingHorizontal: 6, borderRadius: 8, cursor: 'pointer', backgroundColor: on ? th.accent + '16' : st.hovered ? th.accent + '0C' : 'transparent' })) as any}>
-                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                  <Coin s={s} size={24} />
-                  <Text style={{ flex: 1, color: th.text, fontSize: 12, fontWeight: '800' }} numberOfLines={1}>{s.name}</Text>
-                </View>
-                <Text style={{ width: 66, textAlign: 'right', color: th.text, fontSize: 12, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{x ? x.price.toFixed(x.dec) : '—'}</Text>
-                <Text style={{ width: 58, textAlign: 'right', color: c >= 0 ? th.buy : th.sell, fontSize: 11.5, fontWeight: '800' }}>{x ? `${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%` : ''}</Text>
-                <Pressable onPress={() => toggleFav(s.id)} hitSlop={6} style={{ width: 24, alignItems: 'flex-end', cursor: 'pointer' } as any}><Icon name={fav ? 'star' : 'star-outline'} size={15} color={fav ? th.gold : th.dim} /></Pressable>
-              </Pressable>
-            );
-          })}
-        </Card>
+        <MarketsPanel height={Math.max(460, Math.min(640, winH - 150))} goHome />
 
         <Card style={{ padding: 14, gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>

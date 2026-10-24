@@ -1,3 +1,11 @@
+# Website: calm home, all pairs, hand-drag chart (v2.16e)
+
+- **Home page redesigned to be calm and classic** (`src/DesktopHome.web.tsx`): a welcome line, one large chart, one "Today's setup" card with the trade plan beside it, a single quiet row of analysis methods, a short trade desk and news, and a footer note. The busy hero, chips, gauge, promo, quick-tools and overview cards are gone. Lighter type, white cards with fine lines and soft shadows, one accent colour.
+- **The website now starts in the Glass Pearl theme** (ivory and sapphire) instead of Glass Frost. Anyone who already chose a theme keeps it (Settings > Appearance).
+- **All pairs in the side panel** (`src/MarketsPanel.web.tsx`): all 45 markets, search box, tabs All / Forex / Metals / Crypto / Deriv / favourites, price and daily change, star. It stays in view while the home page scrolls. The same panel is the right-hand panel on every other page (the forex sessions card stays under it).
+- **Chart: grab it with the hand** (`src/ChartZoom.tsx`, website only): the cursor is an open hand over the chart and a closed hand while you press and drag; the chart moves up, down, left and right with the mouse. Scroll still zooms; double-click fits the price scale again. The touch-and-hold crosshair is off on the website (the crosshair follows the mouse). The phone is unchanged.
+- Browser tests updated: 39 checks, including the hand cursor, the drag, the all-pairs panel and the pairs search.
+
 # Website home page redesign (v2.16d)
 
 The website home (`src/DesktopHome.web.tsx`) now follows the new dashboard design. Everything on it is live data from the same code as the phone app.
