@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Switch } from 'react-native';
+import { View, Text, Pressable, Switch, Platform } from 'react-native';
 import { shareText } from '../dialog';
 
 import Modal from '../Modal';
@@ -260,13 +260,15 @@ export default function Settings() {
           </Card>
         </Group>
 
-        <Group title="Security">
+        {!(Platform.OS === 'web' && googleOnly) && <Group title="Security">
           <Panel>
+            {Platform.OS !== 'web' && (<>
             <SetRow icon="finger-print" tint={th.buy} title="Fingerprint lock" sub={bioHw === false ? 'Needs a fingerprint saved on this phone.' : 'Unlock the app with your fingerprint instead of typing.'} right={sw(settings.bio, toggleBio)} />
             <SetRow icon="keypad-outline" title={t('pinLock')} sub={account?.pinHash ? 'A 4-digit PIN is asked when you open the app.' : 'Protect the app with a 4-digit PIN.'}
               right={account?.pinHash ? <Pill text="ON" color={th.buy} /> : undefined}
               onPress={() => (account?.pinHash ? confirmAction('Remove PIN lock?', 'The app will open without asking for your PIN.', () => setPin(null), 'Remove') : setPinModal(true))} />
             <SetRow icon="lock-closed-outline" tint={th.gold} title="Lock app now" sub={lockOn ? 'Ask for the fingerprint or PIN right away.' : 'Turn on the fingerprint or a PIN first.'} onPress={lockOn ? lockNow : undefined} right={lockOn ? undefined : <View />} />
+            </>)}
             {!googleOnly && <SetRow icon="key-outline" tint={th.accent2} title="Change password" sub="Use a new password the next time you log in." onPress={() => setPwOpen(!pwOpen)} last right={<Icon name={pwOpen ? 'chevron-up' : 'chevron-down'} size={18} color={th.dim} />} />}
           </Panel>
           {!!bioMsg && <Text style={{ color: th.sell, lineHeight: 20, marginHorizontal: 4 }}>{bioMsg}</Text>}
@@ -280,7 +282,7 @@ export default function Settings() {
               <Btn label="Update password" icon="key-outline" onPress={doChangePw} busy={pwBusy} disabled={!pw.cur || pw.nw.length < 6 || !pw.again} />
             </Card>
           )}
-        </Group>
+        </Group>}
 
         {(lic.admin || lic.adminEmail || !!licErr) && (
           <Group title="Server & admin">

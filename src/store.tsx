@@ -16,7 +16,7 @@ import { initPush, registerPush, unregisterPush, setBadge, onPushEvent, PushStat
 import { notifTarget, NotifData } from './notifTarget';
 import { Signal, Desk, DESK0, Ev, CloseSetup, step, closeNow, partialClose as partialClosePos, isDuplicate, isOldDemoDesk, liveOpposite, dropOpposite, reconcile, Skipped, isSkipped, pruneSkipped, liveSame, wasTaken, TAKEN_HOURS, money, stopAtBE } from './trades';
 import { Position, Closed, openPosition as newPosition, closeLots, setLevels as setPosLevels, toBreakEven as posBreakEven, stepPosition } from './positions';
-import { Vibration, AppState } from 'react-native';
+import { Vibration, AppState, Platform } from 'react-native';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword, verifyBeforeUpdateEmail, deleteUser, sendEmailVerification, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo } from 'firebase/auth';
 import { googleIdToken } from './google';
 import type { User } from 'firebase/auth';
@@ -175,7 +175,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
         const a = await load<Account | null>('account', null, true); if (a && typeof a === 'object') _acc(a);
         const pf = await load<{ n: number; until: number }>(PIN_FAILS_KEY, { n: 0, until: 0 }, true); if (pf && isFinite(pf.n) && isFinite(pf.until)) pinFails.current = pf;
         await waitAuth(auth as any); // Firebase restores the saved login from the phone
-        if (a && auth.currentUser && (await SecureStore.getItemAsync('remember')) === '1') { setLoggedIn(true); setLocked(!!a.pinHash || !!setRef.current.bio); accRef.current = a; syncEmailRef.current().finally(() => refreshLic()); }
+        if (a && auth.currentUser && (await SecureStore.getItemAsync('remember')) === '1') { setLoggedIn(true); setLocked(Platform.OS !== 'web' && (!!a.pinHash || !!setRef.current.bio)); accRef.current = a; syncEmailRef.current().finally(() => refreshLic()); }
       } catch {}
       setReady(true);
     })();
@@ -184,7 +184,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
   tokRef.current = lic.token; accRef.current = account;
   watchRef.current = { in: loggedIn, verified: emailVerified, adminEmail: !!lic.adminEmail, admin: lic.admin };
   // Ask for the PIN again when the app comes back after a while in the background.
-  lockInfo.current = { pin: !!account?.pinHash || settings.bio, in: loggedIn }; // a PIN or the fingerprint lock
+  lockInfo.current = { pin: Platform.OS !== 'web' && (!!account?.pinHash || settings.bio), in: loggedIn }; // a PIN or the fingerprint lock
   useEffect(() => {
     const sub = AppState.addEventListener('change', (st) => {
       if (st === 'background') { if (!bgAt.current) bgAt.current = Date.now(); pushRef.current(true); return; }

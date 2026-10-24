@@ -16,10 +16,10 @@ import { useDash, setDash, listFor, groupOf, MarketTab } from './dash';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const MAIN = [0, 1, 2, 3, 4, 5, 8, 9, 11, 13], MORE = [6, 14, 15];
+const MAIN = [0, 1, 2, 16, 3, 4, 5, 8, 9, 11, 13], MORE = [6, 14, 15];
 
 function Sidebar({ width }: { width: number }) {
-  const { th, t, tab, setTab, amethod, setAmethod, account, avatar, lic } = useApp();
+  const { th, t, tab, setTab, amethod, setAmethod, account, avatar, lic, setAdminOpen, setHelpOpen, supportUnread, adminBadge } = useApp();
   const { height } = useRealWindow();
   const [openA, setOpenA] = useState(false);
   const paid = lic.admin || lic.status === 'paid';
@@ -64,6 +64,14 @@ function Sidebar({ width }: { width: number }) {
         ) : null))}
         <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '800', letterSpacing: 1.4, paddingHorizontal: 12, marginTop: 14, marginBottom: 6 }}>MORE</Text>
         {MORE.map((i) => item(i))}
+        {/* these two open as windows (not pages), so they were missing from the website's menu */}
+        {([['Help chat', 'chatbubbles-outline', () => setHelpOpen(true), supportUnread, true], ['Admin panel', 'shield-checkmark-outline', () => setAdminOpen(true), adminBadge.chats + adminBadge.pays, !!lic.admin]] as [string, string, () => void, number, boolean][]).filter((r) => r[4]).map(([label, icon, go, n]) => (
+          <Pressable key={label} accessibilityRole="button" onPress={go} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, height: 42, paddingHorizontal: 12, borderRadius: 10, marginBottom: 2, cursor: 'pointer', backgroundColor: st.hovered ? th.accent + '10' : 'transparent' })) as any}>
+            <Icon name={icon} size={19} color={th.dim} />
+            <Text style={{ flex: 1, color: th.text, fontSize: 14.5, fontWeight: '600' }} numberOfLines={1}>{label}</Text>
+            {n > 0 && <View style={{ minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>{n > 99 ? '99+' : n}</Text></View>}
+          </Pressable>
+        ))}
       </ScrollView>
       {height >= 860 && (
         <View style={{ marginHorizontal: 14, marginBottom: 12, borderRadius: 16, overflow: 'hidden', padding: 16, gap: 8 }}>
@@ -92,7 +100,7 @@ function Sidebar({ width }: { width: number }) {
 }
 
 function TopBar() {
-  const { th, setTab, account, avatar, lic } = useApp();
+  const { th, setTab, account, avatar, lic, setAdminOpen, adminBadge } = useApp();
   const [q, setQ] = useState(''), [open, setOpen] = useState(false);
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid';
@@ -124,6 +132,12 @@ function TopBar() {
       </View>
       <View style={{ flex: 1 }} />
       <LiveDot />
+      {lic.admin && (
+        <Pressable accessibilityRole="button" onPress={() => setAdminOpen(true)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: st.hovered ? th.accent + '26' : th.accent + '14', cursor: 'pointer' })) as any}>
+          <Icon name="shield-checkmark" size={15} color={th.accent} /><Text style={{ color: th.accent, fontSize: 12.5, fontWeight: '800' }}>Admin</Text>
+          {adminBadge.chats + adminBadge.pays > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '900' }}>{adminBadge.chats + adminBadge.pays}</Text></View>}
+        </Pressable>
+      )}
       <BellButton />
       {paid ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 14, borderRadius: 17, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '1F' }}><Icon name="ribbon" size={15} color={th.gold} /><Text style={{ color: th.gold, fontSize: 12.5, fontWeight: '900' }}>PRO</Text></View>

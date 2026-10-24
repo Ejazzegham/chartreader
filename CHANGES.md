@@ -1,3 +1,10 @@
+# Website fixes (v2.16c)
+
+- **No lock screen on the website**: no PIN screen, no fingerprint, no "set a PIN" step after sign-up, and no lock rows in Settings (an account that had a PIN opens straight in). The phone app keeps all of them.
+- **Admin on the website**: the admin panel could not be opened because the website's sidebar had no entry for it (the phone has it in its own menu). Now: an **Admin** button in the top bar and **Admin panel** in the sidebar, both with the waiting chats / payments count. The sidebar also has **Help chat** (with unread count) and **Demo Trade**, which were missing too. The panel itself works (stats, users, payments, chats, grant, setup). It still only shows for an account that the SERVER says is admin: the email must be in ADMIN_EMAILS on the server and confirmed in Firebase.
+- **New start screen for wide browser windows** (`src/Splash.web.tsx`): full-screen brand gradient, logo, name, live candle chart, progress bar with what it is doing, soft fade out. A narrow window (phone) keeps the phone start screen (`src/SplashPhone.tsx`).
+- Browser tests added for all three (now 35 checks). NOT tested: real Google sign-in, real server admin list, real prices.
+
 # Website synced to the app v2.16b (second update)
 
 Merged on top of the website synced earlier (see the entry below), with the website layer kept.

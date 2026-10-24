@@ -2,9 +2,11 @@ from playwright.sync_api import sync_playwright
 import json, time, base64, math, urllib.parse, sys
 def b64(o): return base64.urlsafe_b64encode(json.dumps(o).encode()).decode().rstrip('=')
 now=int(time.time())
+import os
+ADMIN=os.environ.get('CR_ADMIN')=='1'
 JWT=b64({'alg':'none','typ':'JWT'})+'.'+b64({'sub':'uid1','user_id':'uid1','email':'t@example.com','email_verified':True,'iat':now,'exp':now+3600,'aud':'chart-reader-45c13','iss':'https://securetoken.google.com/chart-reader-45c13','auth_time':now,'firebase':{'sign_in_provider':'password','identities':{}}})+'.x'
 CORS={'access-control-allow-origin':'*','access-control-allow-headers':'authorization, content-type, ngrok-skip-browser-warning, x-firebase-gmpid, x-client-version','access-control-allow-methods':'GET, POST, OPTIONS'}
-LIC={'token':'tok','admin':False,'status':'paid','entitled':True,'trialEnd':(now+86400*30)*1000,'paidUntil':(now+86400*30)*1000}
+LIC={'token':'tok','admin':ADMIN,'status':'paid','entitled':True,'trialEnd':(now+86400*30)*1000,'paidUntil':(now+86400*30)*1000}
 def yahoo(vol=True):
     t0=(now-3600*24)//900*900; ts=[t0+i*900 for i in range(300)]; c=[1.08+0.004*math.sin(i/12)+0.0006*math.sin(i*1.7) for i in range(300)]
     v=[(1000+i if i!=290 else 9000) for i in range(300)] if vol else [0]*300     # spot forex bars carry no volume, futures bars do
@@ -35,6 +37,7 @@ def handler(route):
         if path=='/inbox/pull': return js({'items':[],'seq':0,'ack':0,'unread':0})
         if path=='/alerts/sync': return js({'ok':True,'fired':[],'scanner':False})
         if path=='/admin/badge': return js({'chats':0,'pays':0})
+        if path=='/admin/stats': return js({'users':12,'paid':4,'trial':5,'expired':3,'new24h':2,'payments':6,'pending':0,'chats':0,'revenue':120,'keySet':True,'model':'gemini-2.5-flash','list':[],'pays':[]})
         if path=='/sync/get': return js({'data':None,'updatedAt':0,'profile':{'name':'Test','phone':''}})
         return js({'ok':True})
     return route.abort()
@@ -55,7 +58,9 @@ if __name__=='__main__':
         # ---------------- desktop ----------------
         ctx=b.new_context(viewport={'width':1440,'height':900}); pg=ctx.new_page(); errs=[]
         pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.on('dialog', lambda d: (seen['dialogs'].append(d.type), d.dismiss()))
-        pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800)
+        pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(1800)
+        ok(pg.get_by_text('ANALYZE • LEARN • TRADE').locator('visible=true').count()>=1 and pg.get_by_text('Educational tool, not financial advice.').locator('visible=true').count()>=1 and pg.evaluate("innerWidth")>=760, 'desktop: full-screen start screen (brand gradient, logo, live chart, progress)')
+        pg.screenshot(path='/tmp/splash_desktop.png'); pg.wait_for_timeout(3000)
         ok(pg.get_by_text('Read the market.').count()>=1 and pg.get_by_text('Create account').count()==1, 'desktop: landing page (front page + login) is shown before login')
         login(pg)
         ok(pg.get_by_text('Choose Analysis Method').count()==1, 'login works (Firebase sign-in, licence, sync) and the dashboard opens')
@@ -85,8 +90,14 @@ if __name__=='__main__':
         pg.mouse.move(700,500); pg.mouse.wheel(0,2500); pg.get_by_text('Delete account', exact=True).click(); pg.wait_for_timeout(400); pg.mouse.wheel(0,2500)
         pg.get_by_placeholder('Your password').last.fill('secret12'); pg.get_by_text('Delete my account', exact=True).click(); pg.wait_for_timeout(500)
         ok('confirm' in seen['dialogs'], 'confirm question shows as a browser confirm box')
+        acc=json.loads(pg.evaluate("localStorage.getItem('sec_account')")); acc['pinSalt']='x'; acc['pinHash']='x'   # an old account that had a PIN
+        pg.evaluate("v=>localStorage.setItem('sec_account', v)", json.dumps(acc)); pg.reload(); pg.wait_for_timeout(6500)
+        ok(pg.get_by_text('Choose Analysis Method').count()==1 and pg.get_by_text('Enter your PIN').count()==0, 'website: no PIN / lock screen, even for an account that had a PIN')
         pg.keyboard.press('Escape'); pg.wait_for_timeout(400)
         ok(not pg.evaluate("[...document.querySelectorAll('*')].some(e=>getComputedStyle(e).zIndex==='1000')"), 'Escape closes the pop-up')
+        pg.get_by_text('Settings', exact=True).first.click(); pg.wait_for_timeout(900)
+        ok(pg.get_by_text('Fingerprint lock').locator('visible=true').count()==0 and pg.get_by_text('Lock app now').locator('visible=true').count()==0 and pg.get_by_text('Change password').locator('visible=true').count()==1, 'website: Settings has no fingerprint / PIN / lock rows')
+        ok(pg.get_by_text('Admin panel', exact=True).count()==0 and pg.get_by_text('Help chat', exact=True).locator('visible=true').count()==1, 'website: normal user sees Help chat but no Admin entry')
         pg.get_by_text('Analysis', exact=True).first.click(); pg.wait_for_timeout(900)
         ok(pg.get_by_text('SMC Analysis', exact=True).count()>=1, 'desktop: Analysis in the sidebar opens its method list')
         ok(pg.get_by_text('Chart Reader', exact=True).locator('visible=true').count()==1, 'desktop: Analysis page has no second brand header (sidebar has it)')
@@ -102,6 +113,15 @@ if __name__=='__main__':
         pg.wait_for_timeout(400); n1=pg.evaluate("document.querySelectorAll('svg rect').length")
         ok(n1<n0, f'mouse wheel zooms the chart ({n0} -> {n1} shapes)')
         ok(not errs, f'no page errors {errs[:2]}'); ctx.close()
+        # ---------------- admin on the website ----------------
+        LIC['admin']=True
+        ctx=b.new_context(viewport={'width':1440,'height':900}); pg=ctx.new_page(); errs=[]
+        pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800); login(pg); pg.wait_for_timeout(1500)
+        ok(pg.get_by_text('Admin', exact=True).locator('visible=true').count()>=1 and pg.get_by_text('Admin panel', exact=True).locator('visible=true').count()==1, 'admin: Admin button in the top bar and Admin panel in the sidebar')
+        pg.get_by_text('Admin panel', exact=True).locator('visible=true').first.click(); pg.wait_for_timeout(2500)
+        ok(pg.get_by_text('Revenue (USDT)').count()>=1 and pg.get_by_text('$120').count()>=1, 'admin: the panel opens and loads the stats from the server')
+        pg.screenshot(path='/tmp/admin_desktop.png')
+        ok(not errs, f'admin: no page errors {errs[:2]}'); ctx.close(); LIC['admin']=False
         # ---------------- phone browser ----------------
         ctx=b.new_context(viewport={'width':390,'height':844}, is_mobile=True, has_touch=True); pg=ctx.new_page(); errs=[]
         pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800); login(pg)

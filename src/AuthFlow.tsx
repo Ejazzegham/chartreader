@@ -70,7 +70,7 @@ export default function AuthFlow() {
     setBusy(true); setErr(''); setInfo('');
     const r = await googleLogin();
     setBusy(false);
-    if (r.err) setErr(t(r.err)); else if (r.isNew) setStep('pin'); // an existing account is already logged in; a new one sets its PIN first
+    if (r.err) setErr(t(r.err)); else if (r.isNew) { if (Platform.OS === 'web') enter(); else setStep('pin'); } // an existing account is already logged in; a new one sets its PIN first
   };
 
   const doReset = async () => {
@@ -87,7 +87,7 @@ export default function AuthFlow() {
     const k = await signup(name, email, pw);
     setBusy(false);
     if (k) { setErr(t(k)); return; }
-    setStep('pin');
+    if (Platform.OS === 'web') enter(); else setStep('pin'); // the website has no PIN
   };
 
   const google = (
