@@ -6,6 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useApp, Trade } from '../store';
 import { Screen, Card, Field, Btn, ActionBtn, Segment, Dim, Body, Icon, Badge, SectionTitle, confirmAction } from '../ui';
 import EquityCurve from '../Equity';
+import JournalHome from '../JournalHome';
+import { useLayout } from '../win';
 import GuardBanner from '../Guard';
 import { useFeed, setWatch, quotes } from '../markets';
 import { riskFor, fmtIn } from '../news';
@@ -399,6 +401,7 @@ function Empty({ icon, title, text, children }: { icon: string; title: string; t
 export default function Journal() {
   const { th, t, tab, journal, signals, desk, setDesk, takeSignal, cancelSignal, skipSetup, closeSignal, breakEven, clearSignals, updateTrade, removeTrade, addTrade, toast, setPrefill, setTab, setHistOpen } = useApp();
   const active = tab === 3;
+  const wide = useLayout().mode === 'desktop'; // website: the Trading Journal page (src/JournalHome.web.tsx)
   useFeed(active);
   const [view, setView] = useState<TabKey>('signals');
   const [filter, setFilter] = useState<'all' | 'buy' | 'sell'>('all');
@@ -558,6 +561,30 @@ export default function Journal() {
     shareText([head, ...rows].join('\n'), 'Trading journal');
   };
 
+  const sheets = (
+    <>
+      {takingSig && (
+        <TakeSheet s={takingSig} price={px(takingSig.symId)} desk={desk} equity={desk.balance + closedPnl} running={live.length} today={today} journalRows={journal} initialMode={takeMode}
+          onClose={() => setTaking(null)}
+          onConfirm={(mode, lots, perPt, setup) => {
+            const e = takeSignal(takingSig.id, mode, px(takingSig.symId), lots, perPt, setup);
+            if (e) { toast(e, 'bad'); return; }
+            setTaking(null); setView('open');
+            toast(mode === 'market' ? `${takingSig.name} ${takingSig.side.toUpperCase()} opened at the live price.` : `${takingSig.name}: limit order placed at ${takingSig.entry.toFixed(takingSig.dec)}.`, 'good');
+          }} />
+      )}
+      {signals.find((x) => x.id === managing && x.status === 'open') && <TradeSheet s={signals.find((x) => x.id === managing)!} price={px(signals.find((x) => x.id === managing)!.symId)} onClose={() => setManaging(null)} />}
+    </>
+  );
+  if (wide) {
+    return (
+      <>
+        <JournalHome active={active} px={px} onTake={(id: string) => { setTakeMode('limit'); setTaking(id); }} onManage={(id: string) => setManaging(id)} settings={settings} showSet={showSet} toggleSet={() => setShowSet(!showSet)} exportCsv={exportCsv} equity={equity} floating={floating} />
+        {sheets}
+      </>
+    );
+  }
+
   return (
     <Screen icon="book" title={t('tabJournal')} subtitle="Every A and A+ setup from the scanner lands here. Take it or skip it, the app tracks the rest.">
       <View style={{ gap: 12 }}>
@@ -625,17 +652,7 @@ export default function Journal() {
         <Dim>Paper trading on live prices. Results are a study tool, not financial advice.</Dim>
       </View>
 
-      {takingSig && (
-        <TakeSheet s={takingSig} price={px(takingSig.symId)} desk={desk} equity={desk.balance + closedPnl} running={live.length} today={today} journalRows={journal} initialMode={takeMode}
-          onClose={() => setTaking(null)}
-          onConfirm={(mode, lots, perPt, setup) => {
-            const e = takeSignal(takingSig.id, mode, px(takingSig.symId), lots, perPt, setup);
-            if (e) { toast(e, 'bad'); return; }
-            setTaking(null); setView('open');
-            toast(mode === 'market' ? `${takingSig.name} ${takingSig.side.toUpperCase()} opened at the live price.` : `${takingSig.name}: limit order placed at ${takingSig.entry.toFixed(takingSig.dec)}.`, 'good');
-          }} />
-      )}
-      {signals.find((x) => x.id === managing && x.status === 'open') && <TradeSheet s={signals.find((x) => x.id === managing)!} price={px(signals.find((x) => x.id === managing)!.symId)} onClose={() => setManaging(null)} />}
+      {sheets}
     </Screen>
   );
 }

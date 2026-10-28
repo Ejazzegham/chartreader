@@ -219,7 +219,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
       <TopNav />
       <View style={{ flex: 1, flexDirection: 'row' }}>
         <View style={{ flex: 1, minWidth: 0 }}><Notices />{children}</View>
-        {L.rail > 0 && tab !== 0 && !(tab === 1 && !!amethod && amethod !== 'planner') && <Rail width={L.rail} />}
+        {L.rail > 0 && tab !== 0 && tab !== 2 && tab !== 3 && !(tab === 1 && !!amethod && amethod !== 'planner') && <Rail width={L.rail} />}
       </View>
     </View>
   );

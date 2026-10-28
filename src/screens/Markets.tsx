@@ -8,6 +8,7 @@ import { useLayout } from '../win';
 import { SYMBOLS, Sym, useFeed, chg, isBad, isClosed, toggleFav, flags, catalog, setWatch, runDiagnostics, symOf, Diag, bnState, loadCrypto } from '../markets';
 import { QUOTES } from '../crypto';
 import { SymbolSheet, Coin } from '../MarketWidgets';
+import MarketsHome from '../MarketsHome';
 
 const CATS: [string, string][] = [['fav', 'watchlist'], ['forex', 'catForex'], ['deriv', 'catDeriv'], ['crypto', 'catCrypto'], ['indices', 'catIndices']];
 const PAGE = 60;
@@ -73,6 +74,9 @@ export default function Markets() {
   const count = (c: string) => (c === 'fav' ? db.favs.length : SYMBOLS.filter((s) => s.cat === c && !isBad(s.id)).length);
   const desk = useLayout().mode === 'desktop';
   const nCrypto = SYMBOLS.filter((s) => s.cat === 'crypto').length;
+
+  // website: the Global Markets page (src/MarketsHome.web.tsx); the phone keeps the list below
+  if (desk) return <><MarketsHome active={tab === 2} onSelect={setSel} /><SymbolSheet sym={sel} onClose={() => setSel(null)} /></>;
 
   return (
     <Screen icon="pulse" title={t('tabMarkets')} subtitle={`${catalog.loaded ? catalog.count : 0} Deriv · ${bnState.loaded ? bnState.count : 0} crypto pairs`}>
