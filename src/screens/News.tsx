@@ -8,6 +8,8 @@ import { movers, bnPairs } from '../crypto';
 import { loadCrypto, bnState } from '../markets';
 import { Linking } from 'react-native';
 import { useNews, newsRisk, fmtIn, localTime, Impact } from '../news';
+import { useLayout } from '../win';
+import NewsHome from '../NewsHome';
 
 const TAB = 13;
 const IMPACT = [{ k: 'high', label: 'High only' }, { k: 'med', label: 'Medium +' }, { k: 'all', label: 'All' }];
@@ -194,6 +196,9 @@ export default function News() {
   const { th } = useApp();
   const active = tab === TAB;
   const [sub, setSub] = useState('cal');
+  const desk = useLayout().mode === 'desktop';
+  // website: the Market News & Updates page (src/NewsHome.web.tsx); the phone keeps the layout below
+  if (desk) return <NewsHome active={active} />;
   return (
     <Screen icon="newspaper" title="News" subtitle="Calendar, forex, crypto and Deriv headlines" right={<Badge label="PRO" color={th.gold} />}>
       <View style={{ gap: 14 }}>

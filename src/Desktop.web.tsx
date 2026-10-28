@@ -188,7 +188,7 @@ function Rail({ width }: { width: number }) {
 }
 
 // A slim strip under the top bar for the two things that need the person: the server cannot be reached, or the email is not confirmed yet.
-function Notices() {
+export function Notices({ flush }: { flush?: boolean }) {
   const { th, t, lic, licErr, refreshLic, emailVerified, sendVerify, googleOnly, account, toast } = useApp();
   const [busy, setBusy] = useState(''), [sent, setSent] = useState(false);
   const run = async (k: string, f: () => Promise<any>) => { setBusy(k); try { await f(); } finally { setBusy(''); } };
@@ -197,7 +197,7 @@ function Notices() {
   if (!emailVerified && !googleOnly) rows.push({ key: 'mail', tone: th.gold, icon: 'mail-unread-outline', text: sent ? `We sent a confirmation link to ${account?.email ?? 'your email'}. Tap it, then come back here: this page notices by itself.` : `Please confirm your email address${account?.email ? ` (${account.email})` : ''}. It keeps your account safe and unlocks all features.`, btns: [[busy === 'mail' ? 'Sending…' : sent ? 'Send again' : 'Send confirmation email', () => run('mail', async () => { const e = await sendVerify(); if (e) toast(t(String(e)), 'bad'); else { setSent(true); toast('Confirmation email sent. Check your inbox and spam.', 'good'); } })], [busy === 'chk' ? 'Checking…' : 'I confirmed it', () => run('chk', async () => { await refreshLic(); toast('Checked.', 'info'); })]] });
   if (!rows.length) return null;
   return (
-    <View style={{ gap: 8, paddingHorizontal: 20, paddingTop: 10 }}>
+    <View style={{ gap: 8, paddingHorizontal: flush ? 0 : 20, paddingTop: flush ? 0 : 10 }}>
       {rows.map((r) => (
         <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: r.tone + '55', backgroundColor: r.tone + '14' }}>
           <Icon name={r.icon} size={19} color={r.tone} />
@@ -218,8 +218,8 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
     <View style={{ flex: 1 }}>
       <TopNav />
       <View style={{ flex: 1, flexDirection: 'row' }}>
-        <View style={{ flex: 1, minWidth: 0 }}><Notices />{children}</View>
-        {L.rail > 0 && tab !== 0 && tab !== 2 && tab !== 3 && !(tab === 1 && !!amethod && amethod !== 'planner') && <Rail width={L.rail} />}
+        <View style={{ flex: 1, minWidth: 0 }}>{tab !== 13 && <Notices />}{children}</View>
+        {L.rail > 0 && tab !== 0 && tab !== 2 && tab !== 3 && tab !== 13 && !(tab === 1 && !!amethod && amethod !== 'planner') && <Rail width={L.rail} />}
       </View>
     </View>
   );
