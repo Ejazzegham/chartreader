@@ -10,6 +10,7 @@ import { useApp } from './store';
 import { ScrollLockContext } from './scrollLock';
 import { flags, subscribeFeed } from './markets';
 import { TfBar, isTfList } from './Timeframe';
+import { PageFooter } from './SiteFooter';
 
 // Ask before anything that deletes the user's data. Runs `onYes` only when the person confirms.
 export const confirmAction = (title: string, message: string, onYes: () => void, yes = 'Delete', no = 'Cancel') =>
@@ -195,12 +196,16 @@ export const Screen = ({ title, subtitle, right, children, bare, scrollKey, icon
       {/* soft accent glow behind the header: gives every page the same premium depth */}
       {L.mode !== 'desktop' && <LinearGradient pointerEvents="none" colors={[th.accent + (th.dark ? '2E' : '1C'), th.accent2 + (th.dark ? '0E' : '08'), th.bg + '00']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280 }} />}
       <ScrollLockContext.Provider value={setLock}>
-      <ScrollView ref={scroller} scrollEnabled={!lock} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36, ...(L.mode === 'desktop' ? { width: '100%', maxWidth: L.content, alignSelf: 'center' } : null) }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        {!bare && <View style={{ gap: 14, marginBottom: 16 }}>
-          <AppHeader />
-          <PageHero title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />
-        </View>}
-        {children}
+      <ScrollView ref={scroller} scrollEnabled={!lock} style={{ flex: 1 }} contentContainerStyle={L.mode === 'desktop' ? { flexGrow: 1 } : { padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        {/* website: the page body is centred and limited in width; the shared footer below it spans the full width (same as every other page) */}
+        <View style={L.mode === 'desktop' ? { flexGrow: 1, padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36, width: '100%', maxWidth: L.content, alignSelf: 'center' } : undefined}>
+          {!bare && <View style={{ gap: 14, marginBottom: 16 }}>
+            <AppHeader />
+            <PageHero title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />
+          </View>}
+          {children}
+        </View>
+        {L.mode === 'desktop' && <PageFooter />}
       </ScrollView>
       </ScrollLockContext.Provider>
     </View>

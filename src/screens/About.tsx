@@ -6,6 +6,7 @@ import { useApp } from '../store';
 import { Icon, Card, AppHeader, HeroBanner } from '../ui';
 import { LogoMark, PoweredBy } from '../Brand';
 import { useLayout, useWindowDimensions } from '../win';
+import { PageFooter } from '../SiteFooter';
 import { CONTENT, CONTACT_EMAIL } from '../guideContent';
 import { ABOUT_EN } from '../aboutContent';
 
@@ -215,18 +216,28 @@ export default function About() {
     </View>
   );
 
+  // website: the page body is centred and limited in width, then the shared site footer (same as every other page) spans the full width.
+  // phone: this page keeps its own footer card.
+  const body = (
+    <>
+      {!desk && <AppHeader />}
+      {hero}
+      {who}
+      {why}
+      {contact}
+      {note}
+      {!desk && footer}
+      {!desk && <PoweredBy compact />}
+    </>
+  );
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingTop: desk ? 20 : 28, paddingBottom: 36, gap: wide ? 34 : 24, direction: rtl ? 'rtl' : 'ltr', ...(desk ? { width: '100%', maxWidth: L.content, alignSelf: 'center' } : null) } as any}>
-        {!desk && <AppHeader />}
-        {hero}
-        {who}
-        {why}
-        {contact}
-        {note}
-        {footer}
-        <PoweredBy compact />
+        contentContainerStyle={(desk ? { flexGrow: 1 } : { padding: 16, paddingTop: 28, paddingBottom: 36, gap: wide ? 34 : 24, direction: rtl ? 'rtl' : 'ltr' }) as any}>
+        {desk ? (
+          <View style={{ flexGrow: 1, padding: 16, paddingTop: 20, paddingBottom: 36, gap: wide ? 34 : 24, direction: rtl ? 'rtl' : 'ltr', width: '100%', maxWidth: L.content, alignSelf: 'center' } as any}>{body}</View>
+        ) : body}
+        {desk && <PageFooter />}
       </ScrollView>
     </View>
   );

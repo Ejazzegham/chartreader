@@ -1,3 +1,8 @@
+## Same footer on every website page
+- The website footer is now one shared component: `src/SiteFooter.web.tsx` (`Footer`, `PageFooter`). Change it there and every page changes.
+- Pages built with `<Screen>` (History, Settings, Trade Checklist) get it automatically on the website; About us now uses it too (its old, different footer is kept on the phone layout only).
+- The phone app and the phone-size browser layout are unchanged.
+
 # Website v2.20: Killzones page redesigned like the mockup
 
 - **Killzones page** (`src/KillzonesHome.web.tsx`, wired in `src/screens/Killzones.tsx`; phone layout unchanged): blue hero with four feature chips, intro strip, **Live Killzones Clock** (digital UTC clock, analog clock, current session, next killzone countdown), **Killzones Overview** list (UTC and your local time, LIVE tag on every window that is open now), 6-step **How to Use Killzones** with a link to the full guide, and the **Trade the Best Time** call-to-action that opens the ICT analysis.

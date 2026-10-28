@@ -6,7 +6,7 @@ import { shareText } from '../dialog';
 import Modal from '../Modal';
 import { useApp } from '../store';
 import { Screen, Card, Field, Dim, Btn, Segment, Icon, confirmAction, AppHeader, HeroBanner } from '../ui';
-import { useWindowDimensions } from '../win';
+import { useWindowDimensions, useLayout } from '../win';
 import { auth } from '../firebase';
 import { TFS } from '../markets';
 import { THEMES, themeId } from '../theme';
@@ -222,6 +222,7 @@ export default function Settings() {
   });
 
   const planName = lic.status === 'admin' ? 'Admin' : lic.status === 'paid' ? 'Pro' : lic.status === 'trial' ? 'Free trial' : 'Expired';
+  const siteMode = useLayout().mode === 'desktop'; // website on a wide screen
   const since = joined();
   const sectionGap = 16;
 
@@ -438,7 +439,7 @@ export default function Settings() {
             )}
           </Section>
         )}
-        <PoweredBy />
+        {!siteMode && <PoweredBy />}{/* website: the shared site footer already says it */}
       </View>
 
       <Modal visible={pinModal} animationType="slide" onRequestClose={() => setPinModal(false)}>
