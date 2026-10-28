@@ -1,3 +1,11 @@
+# Website v2.18: reset / confirmation email fix, no "AI" / "Gemini" words
+
+- **Reset password said "check your internet connection" and Confirm email showed "errNetwork"**: when our own email design could not be sent (the Netlify function not reachable from the website, or server mail not set up) the website gave up. Now the website falls back to Firebase's own email (`AUTH_MAIL_FIREBASE_FALLBACK = IS_WEB_APP` in `src/license.ts`), so reset, confirmation and change-email always go out. Order: our function (`/mailer`) -> the server's mail route (`/srv/auth/...`) -> Firebase's email. The phone is unchanged. The raw key "errNetwork" is now translated.
+- The email function path is now `/mailer` (was `/api/auth-mail`; `/api` is reserved for functions on some hosts). Changed in `vercel.json`, `netlify.toml`, `src/license.ts`.
+- **Connection check** (Markets) now also tests the Chart Reader server (`/srv/health`) and the email service (`/mailer`) on the website, and says what is wrong (404 = the rewrite is missing; 5xx = the other side is down).
+- **The words "AI" and "Gemini" are gone from everything people read** (home, landing, sidebar card, phone-width home, settings texts in 6 languages, admin panel labels: "Analysis key"). The home card is now **Chart Analysis**. Only code names and the model id in the admin setup (`gemini-...`) remain.
+- Browser tests: 53 checks (new: Firebase email fallback for confirmation and reset, branded email when the function works, the two words absent from the home page).
+
 # Website v2.17: home like the design, server + email fixes, one phone + one computer
 
 **Home page** (`src/DesktopHome.web.tsx`) follows the design block by block: hero, chart (hand-drag, wheel zoom) with entry / stop / targets drawn on it, TRADE or WAIT card with score ring, Analysis Summary, Trade Plan, Analysis Methods, Trade Desk, AI Analysis, Latest News, Quick Tools, Market Overview, upgrade card, footer; on the right ALL pairs (search + tabs, scrollable), Market Sentiment, Key Levels and Position Size. New flat theme **Clean Light** (white cards, blue accent) is the website default; anyone who chose a theme keeps it. The sidebar now ends with the Go Pro card and the version / disclaimer block, as in the design.

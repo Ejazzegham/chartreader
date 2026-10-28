@@ -77,7 +77,7 @@ function Sidebar({ width }: { width: number }) {
       </ScrollView>
       <View style={{ marginHorizontal: 14, marginBottom: 12, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: th.gold + '55', backgroundColor: th.gold + '10', gap: 6 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><Icon name="ribbon" size={17} color={th.gold} /><Text style={{ color: th.text, fontSize: 14.5, fontWeight: '800' }}>{paid ? 'PRO is active' : 'Go Pro'}</Text></View>
-        <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>{paid ? 'Thank you for supporting Chart Reader.' : 'Unlock full features, AI analysis, and more.'}</Text>
+        <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>{paid ? 'Thank you for supporting Chart Reader.' : 'Unlock full features, smart analysis, and more.'}</Text>
         {!paid && (
           <Pressable onPress={() => setTab(6)} style={((s: any) => ({ marginTop: 4, height: 36, borderRadius: 9, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: th.accent, opacity: s.hovered ? 0.9 : 1 })) as any}>
             <Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '800' }}>Upgrade Now</Text>
@@ -213,12 +213,12 @@ function Rail({ width }: { width: number }) {
 
 // A slim strip under the top bar for the two things that need the person: the server cannot be reached, or the email is not confirmed yet.
 function Notices() {
-  const { th, lic, licErr, refreshLic, emailVerified, sendVerify, googleOnly, account, toast } = useApp();
+  const { th, t, lic, licErr, refreshLic, emailVerified, sendVerify, googleOnly, account, toast } = useApp();
   const [busy, setBusy] = useState(''), [sent, setSent] = useState(false);
   const run = async (k: string, f: () => Promise<any>) => { setBusy(k); try { await f(); } finally { setBusy(''); } };
   const rows: { key: string; tone: string; icon: string; text: string; btns: [string, () => void][] }[] = [];
   if (licErr && /reach|server|internet|connect|too long|not running/i.test(licErr) && !/Firebase/i.test(licErr)) rows.push({ key: 'srv', tone: th.sell, icon: 'cloud-offline-outline', text: 'Cannot reach the Chart Reader server right now, so alerts, backup and chat are paused. Charts and analysis still work.', btns: [[busy === 'srv' ? 'Trying…' : 'Try again', () => run('srv', async () => { const ok = await refreshLic(); toast(ok ? 'Connected to the server.' : 'Still cannot reach the server.', ok ? 'good' : 'info'); })]] });
-  if (!emailVerified && !googleOnly) rows.push({ key: 'mail', tone: th.gold, icon: 'mail-unread-outline', text: sent ? `We sent a confirmation link to ${account?.email ?? 'your email'}. Tap it, then come back here: this page notices by itself.` : `Please confirm your email address${account?.email ? ` (${account.email})` : ''}. It keeps your account safe and unlocks all features.`, btns: [[busy === 'mail' ? 'Sending…' : sent ? 'Send again' : 'Send confirmation email', () => run('mail', async () => { const e = await sendVerify(); if (e) toast(String(e), 'bad'); else { setSent(true); toast('Confirmation email sent. Check your inbox and spam.', 'good'); } })], [busy === 'chk' ? 'Checking…' : 'I confirmed it', () => run('chk', async () => { await refreshLic(); toast('Checked.', 'info'); })]] });
+  if (!emailVerified && !googleOnly) rows.push({ key: 'mail', tone: th.gold, icon: 'mail-unread-outline', text: sent ? `We sent a confirmation link to ${account?.email ?? 'your email'}. Tap it, then come back here: this page notices by itself.` : `Please confirm your email address${account?.email ? ` (${account.email})` : ''}. It keeps your account safe and unlocks all features.`, btns: [[busy === 'mail' ? 'Sending…' : sent ? 'Send again' : 'Send confirmation email', () => run('mail', async () => { const e = await sendVerify(); if (e) toast(t(String(e)), 'bad'); else { setSent(true); toast('Confirmation email sent. Check your inbox and spam.', 'good'); } })], [busy === 'chk' ? 'Checking…' : 'I confirmed it', () => run('chk', async () => { await refreshLic(); toast('Checked.', 'info'); })]] });
   if (!rows.length) return null;
   return (
     <View style={{ gap: 8, paddingHorizontal: 20, paddingTop: 10 }}>

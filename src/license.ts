@@ -95,13 +95,15 @@ async function post(path: string, body: any, token = '', ms = 25000) {
 // NOT by the license server, so they work even when your server is switched off.
 export const AUTH_MAIL_URL = 'https://genuine-pika-2ac700.netlify.app/.netlify/functions/auth-mail';
 // false = never use Firebase's own plain email. If Netlify cannot send, the person sees an error and can try again.
-export const AUTH_MAIL_FIREBASE_FALLBACK = false;
+// Website: if our own email design cannot be sent (function not reachable from the browser, server mail not set up), Firebase sends its built-in email instead,
+// so "Reset password" and "Confirm email" always work. The phone keeps showing an error (it never needed the fallback).
+export const AUTH_MAIL_FIREBASE_FALLBACK = IS_WEB_APP;
 // 'fallback' = Netlify is not set up / not reachable; the caller decides what to do (see AUTH_MAIL_FIREBASE_FALLBACK).
 export const authMail = async (kind: 'reset' | 'verify' | 'change-email', body: any): Promise<'sent' | 'limited' | 'fallback'> => {
   if (AUTH_MAIL_URL.includes('YOUR-SITE')) return 'fallback';
-  // The website calls /api/auth-mail on its own address (Vercel / Netlify pass it on to the Netlify function), because a browser may not call
+  // The website calls /mailer on its own address (Vercel / Netlify pass it on to the Netlify function), because a browser may not call
   // another site's function unless that function allows it. The phone calls the function directly.
-  const url = IS_WEB_APP ? '/api/auth-mail' : AUTH_MAIL_URL;
+  const url = IS_WEB_APP ? '/mailer' : AUTH_MAIL_URL;
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
     const r = await fetch(url, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ...body }) });

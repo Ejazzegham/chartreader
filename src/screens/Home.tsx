@@ -317,7 +317,7 @@ function PhoneHome() {
             <IconTile icon="pulse" size={54} colors={[th.accent, th.accent2]} />
             <View style={{ flex: 1 }}>
               <Text style={{ color: th.text, fontSize: 17, fontWeight: '900' }}>Analysis of this chart</Text>
-              <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18, marginTop: 3 }} numberOfLines={3}>Open any pair in Markets and tap the analysis button. Gemini reads its live candles and draws entry, stop loss and 3 take profits.</Text>
+              <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18, marginTop: 3 }} numberOfLines={3}>Open any pair in Markets and tap the analysis button. Chart Reader reads its live candles and draws entry, stop loss and 3 take profits.</Text>
             </View>
             <Icon name="chevron-forward" size={20} color={th.dim} />
           </Card>

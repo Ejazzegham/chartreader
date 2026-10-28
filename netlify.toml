@@ -11,7 +11,7 @@
   force = true
 
 [[redirects]]
-  from = "/api/auth-mail"
+  from = "/mailer"
   to = "https://genuine-pika-2ac700.netlify.app/.netlify/functions/auth-mail"
   status = 200
   force = true

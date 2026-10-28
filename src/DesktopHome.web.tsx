@@ -21,7 +21,7 @@ import { useHeadlines } from './headlines';
 import { useNews, localTime } from './news';
 
 // The website's home, laid out like the design: hero, chart with the entry / stop / targets drawn on it, the TRADE or WAIT answer with its summary and
-// plan, the analysis methods, trade desk + AI analysis + news, quick tools + market overview + upgrade card, and on the right every pair (scrollable),
+// plan, the analysis methods, trade desk + chart analysis + news, quick tools + market overview + upgrade card, and on the right every pair (scrollable),
 // the market sentiment and the key levels. The chart can be grabbed with the hand and moved (see ChartZoom.tsx). Live data, same code as the phone app.
 const TFB: [string, string][] = [['60', '1m'], ['300', '5m'], ['900', '15m'], ['1800', '30m'], ['3600', '1h'], ['14400', '4h'], ['86400', '1D']];
 const METHOD_CARDS: { k: string; label: string; vote: string | null; text: string }[] = [
@@ -210,7 +210,7 @@ export default function DesktopHome() {
                 <Icon name="shield-checkmark" size={13} color={th.accent} /><Text style={{ color: th.accent, fontSize: 10.5, fontWeight: '700', letterSpacing: 1.2 }}>SMART TRADING ANALYSIS</Text>
               </View>
               <Text style={{ color: th.text, fontSize: 36, fontWeight: '800', letterSpacing: -1 }}>Scalp <Text style={{ color: th.accent }}>•</Text> Analyze <Text style={{ color: th.accent }}>•</Text> Execute</Text>
-              <Text style={{ color: th.dim, fontSize: 14, lineHeight: 21, maxWidth: 470 }}>Professional trading tools and analysis methods for Forex, Crypto and Deriv, with real-time charts, multi-timeframe analysis and AI insights.</Text>
+              <Text style={{ color: th.dim, fontSize: 14, lineHeight: 21, maxWidth: 470 }}>Professional trading tools and analysis methods for Forex, Crypto and Deriv, with real-time charts, multi-timeframe analysis and smart insights.</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 8 }}>
                 {stat('flash', '#3B82F6', String(nMethods), 'Analysis Methods')}{stat('pulse', '#10B981', String(SYMBOLS.length), 'Live Markets')}{stat('time', '#F59E0B', '24/7', 'Crypto & Deriv')}{stat('flag', '#8B5CF6', '3 TPs', 'On every setup')}
               </View>
@@ -334,7 +334,7 @@ export default function DesktopHome() {
             </View>
           </Panel>
 
-          {/* trade desk, AI analysis, news */}
+          {/* trade desk, chart analysis, news */}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
             <Panel style={{ flex: 1.5, minWidth: 330, padding: 18, gap: 12 }}>
               <Title icon="briefcase-outline" text="Trade Desk" right="Open Journal ›" onRight={() => setTab(3)} />
@@ -382,13 +382,13 @@ export default function DesktopHome() {
             </Panel>
 
             <Panel style={{ flex: 1.2, minWidth: 290, padding: 18, gap: 10 }}>
-              <Title icon="sparkles-outline" text="AI Analysis (Gemini)" right="View all →" onRight={() => setTab(5)} />
+              <Title icon="sparkles-outline" text="Chart Analysis" right="View all →" onRight={() => setTab(5)} />
               {aiItem ? (
                 <>
                   <Text style={{ color: th.dim, fontSize: 11 }}>{aiItem.symbol ?? 'Chart'}{aiItem.tf ? ` · ${aiItem.tf}` : ''} · {new Date(aiItem.date).toLocaleDateString()}</Text>
                   <Text style={{ color: th.text, fontSize: 12.5, lineHeight: 19 }} numberOfLines={7}>{aiItem.result.reasoning || aiItem.result.trend.summary}</Text>
                 </>
-              ) : <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 19 }}>No AI analysis yet. Open an analysis page and press "Analysis of this chart". The newest one is shown here.</Text>}
+              ) : <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 19 }}>No saved analysis yet. Open an analysis page and press "Analysis of this chart". The newest one is shown here.</Text>}
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 'auto' as any }}>
                 {([['Run analysis', () => open('all')], ['History', () => setTab(5)]] as [string, () => void][]).map(([l, f]) => (
                   <Pressable key={l} onPress={f} style={((st: any) => ({ flex: 1, height: 34, borderRadius: 9, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderWidth: 1, borderColor: th.line, backgroundColor: st.hovered ? th.accent + '10' : 'transparent' })) as any}><Text style={{ color: th.accent, fontSize: 12, fontWeight: '700' }}>{l}</Text></Pressable>
@@ -441,7 +441,7 @@ export default function DesktopHome() {
             <View style={{ flex: 1.1, minWidth: 260, borderRadius: 14, overflow: 'hidden', padding: 20, gap: 8, justifyContent: 'center' }}>
               <LinearGradient colors={['#0B1B3F', '#1E3FD8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
               <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '800', lineHeight: 22 }}>Trade Smarter{'\n'}with Chart Reader</Text>
-              <Text style={{ color: '#FFFFFFB3', fontSize: 11.5, lineHeight: 16 }}>Get advanced tools, AI insights and real-time alerts.</Text>
+              <Text style={{ color: '#FFFFFFB3', fontSize: 11.5, lineHeight: 16 }}>Get advanced tools, smart insights and real-time alerts.</Text>
               {paid ? <Text style={{ color: '#7CF0C4', fontSize: 12.5, fontWeight: '700' }}>✓ Your PRO plan is active</Text> : (
                 <Pressable onPress={() => setTab(6)} style={((st: any) => ({ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 34, borderRadius: 9, cursor: 'pointer', backgroundColor: '#FFFFFF', opacity: st.hovered ? 0.92 : 1 })) as any}>
                   <Text style={{ color: '#14306B', fontSize: 12.5, fontWeight: '700' }}>Upgrade Now</Text><Icon name="arrow-forward" size={13} color="#14306B" />

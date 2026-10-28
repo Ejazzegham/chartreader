@@ -9,7 +9,7 @@ import { PLANS } from './license';
 
 const FEATURES: { icon: string; title: string; text: string }[] = [
   { icon: 'checkmark-circle', title: 'TRADE or WAIT, clearly', text: 'One answer per chart. A trade is shown only when the methods and the higher timeframe agree; otherwise you see why to wait.' },
-  { icon: 'git-network', title: 'ICT, SMC and CR Analysis', text: 'Liquidity sweeps, order blocks, fair value gaps, BOS and CHoCH, plus CR Analysis with an AI-checked entry, stop loss and three take profits.' },
+  { icon: 'git-network', title: 'ICT, SMC and CR Analysis', text: 'Liquidity sweeps, order blocks, fair value gaps, BOS and CHoCH, plus CR Analysis with a double-checked entry, stop loss and three take profits.' },
   { icon: 'stats-chart', title: 'VSA, patterns and candles', text: 'Real-volume VSA, classic chart patterns and 20+ candlestick patterns confirmed by the next candle.' },
   { icon: 'layers', title: 'Top-down and scalping', text: 'Three timeframes from bias to entry, plus EMA-pullback, breakout and range scalp models.' },
   { icon: 'radio', title: 'Scanner and alerts', text: 'Scans forex, gold, crypto and synthetic indices. Every A / A+ setup goes to your Journal and rings your phone, even when the app is closed.' },

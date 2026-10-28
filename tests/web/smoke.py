@@ -11,21 +11,24 @@ def yahoo(vol=True):
     t0=(now-3600*24)//900*900; ts=[t0+i*900 for i in range(300)]; c=[1.08+0.004*math.sin(i/12)+0.0006*math.sin(i*1.7) for i in range(300)]
     v=[(1000+i if i!=290 else 9000) for i in range(300)] if vol else [0]*300     # spot forex bars carry no volume, futures bars do
     return {'chart':{'result':[{'timestamp':ts,'indicators':{'quote':[{'open':[x-0.0002 for x in c],'high':[x+0.0006 for x in c],'low':[x-0.0006 for x in c],'close':c,'volume':v}]}}]}}
-seen={'proxy':[], 'post':[], 'dialogs':[], 'mail':[]}
-STATE={'verified':True,'replaced':False,'down':False}   # what the faked Firebase / server answer; the tests flip these
+seen={'proxy':[], 'post':[], 'dialogs':[], 'mail':[], 'oob':[]}
+STATE={'verified':True,'replaced':False,'down':False,'mailDown':False}   # what the faked Firebase / server answer; the tests flip these
 def handler(route):
     req=route.request; u=req.url
     pu=urllib.parse.urlparse(u)
-    if u.startswith('http://localhost:8099') and not pu.path.startswith('/srv/') and pu.path!='/api/auth-mail': return route.continue_()
+    if u.startswith('http://localhost:8099') and not pu.path.startswith('/srv/') and pu.path!='/mailer': return route.continue_()
     if req.method=='OPTIONS': return route.fulfill(status=204, headers=CORS)
     def js(o,code=200): route.fulfill(status=code, headers={**CORS,'content-type':'application/json'}, body=json.dumps(o))
+    if 'sendOobCode' in u:
+        seen['oob'].append(req.post_data or ''); return js({'email':'t@example.com'})
     if 'identitytoolkit' in u:
         if 'signInWithPassword' in u or 'signUp' in u: return js({'idToken':JWT,'refreshToken':'r','expiresIn':'3600','localId':'uid1','email':'t@example.com'})
         if 'lookup' in u: return js({'users':[{'localId':'uid1','email':'t@example.com','emailVerified':STATE['verified'],'displayName':'Test','providerUserInfo':[{'providerId':'password'}],'createdAt':'1','lastLoginAt':'1'}]})
         return js({})
     if 'securetoken' in u: return js({'id_token':JWT,'access_token':JWT,'token_type':'Bearer','project_id':'chart-reader-45c13','refresh_token':'r','expires_in':'3600','user_id':'uid1'})
-    if pu.path=='/api/auth-mail':
-        seen['mail'].append(req.post_data or ''); return js({'ok':True})
+    if pu.path=='/mailer':
+        seen['mail'].append(req.post_data or '')
+        return js({'error':'bad gateway'},502) if STATE['mailDown'] else js({'ok':True})
     if 'ngrok' in u or pu.path.startswith('/srv/'):
         if STATE['down']: return route.abort()
         path=pu.path[4:] if pu.path.startswith('/srv/') else pu.path
@@ -39,6 +42,7 @@ def handler(route):
         if path in('/register','/status','/pay'): return js(LIC)
         if path=='/pay/mine': return js({'pays':[]})
         if path=='/support/pull': return js({'msgs':[],'unread':0,'seq':0})
+        if path.startswith('/auth/') and STATE['mailDown']: return js({'error':'Email is not set up on this server'},503)
         if path=='/inbox/pull' and STATE['replaced']: return js({'error':'This email was signed in on another phone, so this phone was signed out.','code':'replaced'},401)
         if path=='/inbox/pull': return js({'items':[],'seq':0,'ack':0,'unread':0})
         if path=='/alerts/sync': return js({'ok':True,'fired':[],'scanner':False})
@@ -74,6 +78,7 @@ if __name__=='__main__':
         ok(box['x']>244, f'desktop: page sits to the right of the sidebar (x={round(box["x"])})')
         ok(pg.get_by_text('TRADING ANALYSIS PLATFORM').count()==1 and pg.get_by_text('Risk & TP Planner').count()>=1, 'desktop: left sidebar menu')
         ok(all(pg.get_by_text(x, exact=True).locator('visible=true').count()>=1 for x in ['Analysis Summary','Trade Plan','Analysis Methods','Trade Desk','Latest News','Quick Tools','Market Overview','Market Sentiment','Key Levels']) and pg.get_by_text('Scalp', exact=False).locator('visible=true').count()>=1, 'desktop: home matches the design (hero, chart, answer, summary, plan, methods, desk, news, tools, overview, sentiment, levels)')
+        ok(pg.evaluate("/\\bGemini\\b|\\bAI\\b/.test([...document.querySelectorAll('div,span')].filter(e=>e.children.length===0&&e.getBoundingClientRect().width>0&&getComputedStyle(e).opacity!=='0').map(e=>e.textContent).join(' '))")==False, 'the words AI and Gemini do not appear on the home page')
         ok(pg.get_by_text('45 pairs').locator('visible=true').count()==1 and pg.get_by_text('Search a pair').count()+pg.locator('input[placeholder="Search a pair"]').count()>=1, 'desktop: the Markets panel lists ALL pairs (45) with a search box')
         pg.locator('input[placeholder="Search a pair"]').first.fill('btc'); pg.wait_for_timeout(500)
         ok(pg.get_by_text('Bitcoin', exact=True).locator('visible=true').count()>=1 and pg.get_by_text('1 pairs').count()+pg.get_by_text('1 pair').count()>=1 or pg.get_by_text('Bitcoin', exact=True).locator('visible=true').count()>=1, 'desktop: the pairs panel search finds Bitcoin')
@@ -143,7 +148,7 @@ if __name__=='__main__':
         ok(pg.get_by_text('Revenue (USDT)').count()>=1 and pg.get_by_text('$120').count()>=1, 'admin: the panel opens and loads the stats from the server')
         pg.screenshot(path='/tmp/admin_desktop.png')
         ok(not errs, f'admin: no page errors {errs[:2]}'); ctx.close(); LIC['admin']=False
-        # ---------------- website: the server and the account emails go through the same address (/srv, /api/auth-mail) ----------------
+        # ---------------- website: the server and the account emails go through the same address (/srv, /mailer) ----------------
         ok(len(seen['post'])>0 and all(not x.startswith('http') for x in seen['post']), 'server calls use the same-site address /srv (no cross-site call, no ngrok warning page)')
 
         # ---------------- email not confirmed: banner, the email goes out, the page notices by itself ----------------
@@ -152,11 +157,32 @@ if __name__=='__main__':
         pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800); login(pg); pg.wait_for_timeout(3000)
         ok(pg.get_by_text('Please confirm your email address', exact=False).locator('visible=true').count()==1, 'email not confirmed: a banner asks for it')
         pg.get_by_text('Send confirmation email', exact=True).locator('visible=true').first.click(); pg.wait_for_timeout(1500)
-        ok(len(seen['mail'])==1 and '"kind":"verify"' in seen['mail'][0] and 'idToken' in seen['mail'][0], 'the confirmation email request goes out through /api/auth-mail')
+        ok(len(seen['mail'])==1 and '"kind":"verify"' in seen['mail'][0] and 'idToken' in seen['mail'][0], 'the confirmation email request goes out through /mailer')
         ok(pg.get_by_text('We sent a confirmation link', exact=False).locator('visible=true').count()==1, 'the banner says the link was sent')
         STATE['verified']=True; pg.wait_for_timeout(8500)   # the person tapped the link in the email; this tab checks every few seconds
         ok(pg.get_by_text('Please confirm your email address', exact=False).locator('visible=true').count()==0 and pg.get_by_text('We sent a confirmation link', exact=False).locator('visible=true').count()==0, 'after the link is tapped the banner disappears by itself')
         ok(not errs, f'confirm email: no page errors {errs[:2]}'); ctx.close()
+
+        # ---------------- our email function is down: Firebase's own email still goes out (confirm + reset) ----------------
+        STATE['mailDown']=True; STATE['verified']=False; seen['oob'].clear(); seen['mail'].clear()
+        ctx=b.new_context(viewport={'width':1440,'height':900}); pg=ctx.new_page(); errs=[]
+        pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800); login(pg); pg.wait_for_timeout(3000)
+        pg.get_by_text('Send confirmation email', exact=True).locator('visible=true').first.click(); pg.wait_for_timeout(3500)
+        ok(any('VERIFY_EMAIL' in x for x in seen['oob']) and pg.get_by_text('We sent a confirmation link', exact=False).locator('visible=true').count()==1, 'confirmation email: when our email function is down, Firebase sends its own email (no "errNetwork")')
+        ok(pg.get_by_text('errNetwork', exact=False).count()==0 and pg.get_by_text('Check your internet', exact=False).locator('visible=true').count()==0, 'no raw "errNetwork" or false "check your internet" message')
+        ctx.close(); STATE['verified']=True
+        ctx=b.new_context(viewport={'width':1440,'height':900}); pg=ctx.new_page(); pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800)
+        pg.get_by_text('Log in', exact=True).first.click(); pg.wait_for_timeout(600); pg.get_by_text('Forgot password?', exact=True).first.click(); pg.wait_for_timeout(600)
+        pg.get_by_role('textbox').first.fill('t@example.com'); pg.get_by_text('Send reset link', exact=True).last.click(); pg.wait_for_timeout(4000)
+        ok(any('PASSWORD_RESET' in x for x in seen['oob']) and pg.get_by_text('Password reset email sent', exact=False).locator('visible=true').count()==1, 'reset password: when our email function is down, Firebase sends its own reset email')
+        ctx.close(); STATE['mailDown']=False
+        # and with the function working, the branded one is used
+        seen['oob'].clear(); seen['mail'].clear()
+        ctx=b.new_context(viewport={'width':1440,'height':900}); pg=ctx.new_page(); pg.route('**/*', handler); pg.goto('http://localhost:8099/'); pg.wait_for_timeout(4800)
+        pg.get_by_text('Log in', exact=True).first.click(); pg.wait_for_timeout(600); pg.get_by_text('Forgot password?', exact=True).first.click(); pg.wait_for_timeout(600)
+        pg.get_by_role('textbox').first.fill('t@example.com'); pg.get_by_text('Send reset link', exact=True).last.click(); pg.wait_for_timeout(3000)
+        ok(len(seen['mail'])==1 and '"kind":"reset"' in seen['mail'][0] and not seen['oob'] and pg.get_by_text('Password reset email sent', exact=False).locator('visible=true').count()==1, 'reset password: with our email function working, the branded email is used (no Firebase fallback)')
+        ctx.close()
 
         # ---------------- server not reachable: a clear notice with Try again ----------------
         ctx=b.new_context(viewport={'width':1440,'height':900}); pg=ctx.new_page()

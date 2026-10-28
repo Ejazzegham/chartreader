@@ -87,5 +87,5 @@ Server: `server/server.js` needs the CORS headers and `await proxy(req, res)` li
 
 ## Server address, rewrites and the device rule (v2.17)
 
-- The website calls `/srv/...` and `/api/auth-mail` on its own address. `vercel.json` (Vercel) and `netlify.toml` (Netlify) pass them to the server (`https://mockup-borrowing-overprice.ngrok-free.dev`, the SERVER constant in `src/license.ts`) and to the Netlify email function. Keep the three in step if the server address changes.
+- The website calls `/srv/...` and `/mailer` on its own address. `vercel.json` (Vercel) and `netlify.toml` (Netlify) pass them to the server (`https://mockup-borrowing-overprice.ngrok-free.dev`, the SERVER constant in `src/license.ts`) and to the Netlify email function. Keep the three in step if the server address changes.
 - The server decides who may be signed in: one phone + one computer per email (see CHANGES.md). Deploy the new `server/` folder for it to work.

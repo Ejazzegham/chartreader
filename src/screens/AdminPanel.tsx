@@ -267,7 +267,7 @@ export default function AdminPanel({ visible, onClose }: { visible: boolean; onC
                   <StatTile label="New messages" value={String(stats.chats)} color={stats.chats ? th.sell : undefined} icon="chatbubbles-outline" />
                 </View>
                 <Card>
-                  <Dim>{stats.keySet ? 'Gemini key: set' : 'Gemini key: NOT set (analysis is off for everyone)'}{stats.model ? ` · model ${stats.model}` : ''}</Dim>
+                  <Dim>{stats.keySet ? 'Analysis key: set' : 'Analysis key: NOT set (analysis is off for everyone)'}{stats.model ? ` · model ${stats.model}` : ''}</Dim>
                 </Card>
               </>
             ) : empty}
@@ -321,7 +321,7 @@ export default function AdminPanel({ visible, onClose }: { visible: boolean; onC
         {tab === 'setup' && (
           <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }} keyboardShouldPersistTaps="handled">
             <Card>
-              <Text style={{ color: th.text, fontWeight: '700', marginBottom: 4 }}>Gemini</Text>
+              <Text style={{ color: th.text, fontWeight: '700', marginBottom: 4 }}>Analysis key</Text>
               <Dim>{stats ? (stats.keySet ? 'A key is saved on the server.' : 'No key is saved yet: "Analysis of this chart" is off for everyone.') : 'Loading…'}</Dim>
               <View style={{ height: 8 }} />
               <Field label={t('adminKey')} value={key} onChangeText={setKey} secureTextEntry autoCapitalize="none" autoCorrect={false} />

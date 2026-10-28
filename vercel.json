@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/srv/:path*", "destination": "https://mockup-borrowing-overprice.ngrok-free.dev/:path*" },
-    { "source": "/api/auth-mail", "destination": "https://genuine-pika-2ac700.netlify.app/.netlify/functions/auth-mail" },
+    { "source": "/mailer", "destination": "https://genuine-pika-2ac700.netlify.app/.netlify/functions/auth-mail" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
