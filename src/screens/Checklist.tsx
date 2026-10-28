@@ -4,8 +4,8 @@ import Svg, { Circle, Rect, Line, Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../store';
-import { Screen, Card, Icon, AppHeader, IconTile } from '../ui';
-import { useWindowDimensions } from '../win';
+import { Screen, Card, Icon, AppHeader, IconTile, HeroBanner } from '../ui';
+import { useWindowDimensions, useLayout } from '../win';
 
 const KEY = 'pretrade.v1';
 type Item = { t: string; d?: string };
@@ -112,6 +112,7 @@ export default function Checklist() {
   const win = useWindowDimensions(); // website: already the page-content width
   const avail = win.width;
   const wide = avail >= 900, mid = avail >= 560;
+  const isDesk = useLayout().mode === 'desktop';
 
   const [items, setItems] = useState<Item[]>(DEFAULTS);
   const [checked, setChecked] = useState<boolean[]>(DEFAULTS.map(() => false));
@@ -355,7 +356,7 @@ export default function Checklist() {
     <Screen bare>
       <View style={{ gap: 14, marginBottom: 16 }}>
         <AppHeader />
-        {hero}
+        {isDesk ? <HeroBanner icon="checkbox" tag="Trading Tools" title="Trade Checklist" subtitle="Follow a step-by-step trading checklist to stay disciplined, reduce emotional trades, and increase your chances of success." /> : hero}
       </View>
       {wide ? (
         <View style={{ flexDirection: 'row', gap: 18, alignItems: 'flex-start' }}>

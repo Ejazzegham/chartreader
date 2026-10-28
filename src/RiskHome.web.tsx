@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Rect, Line, Circle, Path, Defs, LinearGradient as SG, Stop, Text as SText } from 'react-native-svg';
 import { useApp } from './store';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { SYMBOLS, useFeed } from './markets';
 import { useRealWindow } from './win';
 import { usePal, Panel, Footer, useGo } from './DesktopHome.web';
@@ -234,26 +234,16 @@ export default function RiskHome() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.bg }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      {/* hero */}
-      <LinearGradient colors={['#0A1F5C', '#0C2B86', '#0A1A4A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ overflow: 'hidden' }}>
-        <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingVertical: 34, flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-          <View style={{ flex: 1, minWidth: 0, gap: 14 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: '#2F6BFF', alignItems: 'center', justifyContent: 'center' }}><Icon name="calculator" size={16} color="#FFFFFF" /></View>
-              <Text style={{ color: '#5FA2FF', fontSize: 14, fontWeight: '800', letterSpacing: 0.4 }}>RISK & TP PLANNER</Text>
-            </View>
-            <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: w >= 700 ? 46 : 32, lineHeight: w >= 700 ? 50 : 36, fontWeight: '800', letterSpacing: -1.2 }}>Plan Your Trades{'\n'}with <Text style={{ color: '#2F8BFF' }}>Confidence</Text></Text>
-            <Text style={{ color: '#E3ECFF', fontSize: 15, lineHeight: 22, maxWidth: 520 }}>Calculate your position size, set stop loss and take profit levels, and manage your risk with precision. Trade smarter, not harder.</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 20, marginTop: 10 }}>
-              {feat('calculator', 'Position Size Calculator', 'Trade with the right size')}
-              {feat('shield-checkmark', 'Risk Management', 'Protect your capital')}
-              {feat('swap-vertical', 'TP & SL Planner', 'Plan your exit strategy')}
-              {feat('bulb', 'Better Decisions', 'Trade with confidence')}
-            </View>
-          </View>
-          {w >= 1000 && <HeroArt risk={rp} reward={reward} rr={rr} />}
-        </View>
-      </LinearGradient>
+      {/* hero: same banner as every other page */}
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 18 }}>
+        <HeroBanner icon="calculator" tag="Risk & TP Planner" title="Plan Your Trades with Confidence" subtitle="Calculate your position size, set stop loss and take profit levels, and manage your risk with precision."
+          features={[
+            { icon: 'calculator', title: 'Position Size', sub: 'Trade with the right size' },
+            { icon: 'shield-checkmark', title: 'Risk Management', sub: 'Protect your capital' },
+            { icon: 'swap-vertical', title: 'TP & SL Planner', sub: 'Plan your exit' },
+            { icon: 'bulb', title: 'Better Decisions', sub: 'Trade with confidence' },
+          ]} />
+      </View>
 
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 20, paddingBottom: 40, gap: 22 }}>
         <Notices flush />

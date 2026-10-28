@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line, Rect, Polyline, Path } from 'react-native-svg';
 import { useApp, Trade } from './store';
-import { Icon, confirmAction } from './ui';
+import { Icon, confirmAction, HeroBanner } from './ui';
 import { Coin } from './MarketWidgets';
 import GuardBanner from './Guard';
 import { MiniRing } from './MethodArt';
@@ -512,20 +512,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 22, paddingBottom: 30, gap: 22 }}>
-        <LinearGradient colors={P.dark ? [th.panel, th.panel2] : ['#DCEAFF', '#F2F7FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 14, borderWidth: 1, borderColor: P.border, padding: 28, overflow: 'hidden' }}>
-          {w >= 900 && (
-            <Svg width={360} height={150} style={{ position: 'absolute', right: 30, bottom: 0, opacity: 0.55 } as any} pointerEvents="none">
-              {[[10, 70, 28, 1], [34, 60, 36, 0], [58, 76, 30, 1], [82, 52, 42, 1], [106, 64, 34, 0], [130, 44, 46, 1], [154, 54, 30, 0], [178, 34, 44, 1], [202, 46, 36, 1], [226, 28, 48, 1], [250, 40, 34, 0], [274, 20, 50, 1], [298, 30, 38, 1]].map(([x, y, h, g], i) => (
-                <React.Fragment key={i}><Line x1={x + 6} y1={y - 8} x2={x + 6} y2={y + h + 8} stroke={g ? th.buy : th.sell} strokeWidth={1.5} /><Rect x={x} y={y} width={12} height={h} rx={2} fill={g ? th.buy : th.sell} /></React.Fragment>
-              ))}
-            </Svg>
-          )}
-          <View style={{ gap: 8, maxWidth: 560 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="book" size={13} color={P.blue} /><Text style={{ color: P.blue, fontSize: 11.5, fontWeight: '800', letterSpacing: 1 }}>JOURNAL / TRADING TOOLS</Text></View>
-            <Text style={{ color: P.head, fontSize: w >= 760 ? 38 : 30, fontWeight: '800', letterSpacing: -1 }}>Trading Journal</Text>
-            <Text style={{ color: P.body, fontSize: 14.5, lineHeight: 22 }}>Track every setup from scanner to outcome. Improve your strategy, find strengths, fix mistakes and grow consistently.</Text>
-          </View>
-        </LinearGradient>
+        <HeroBanner icon="book" tag="Journal / Trading Tools" title="Trading Journal" subtitle="Track every setup from scanner to outcome. Improve your strategy, find strengths, fix mistakes and grow consistently." />
         <GuardBanner />
         <View style={{ flexDirection: two ? 'row' : 'column', gap: 22, alignItems: 'flex-start' }}>
           <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 20 }}>{overview}{tabs}{main}</View>

@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Rect, Circle, Line, Path, G, Text as SvgText, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from './store';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { useRealWindow } from './win';
 import { usePal, Footer, useGo } from './DesktopHome.web';
 import { Notices } from './Desktop.web';
@@ -241,33 +241,11 @@ export default function GuideHome({ active }: Props) {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      {/* hero */}
-      <LinearGradient colors={['#0A2A8F', '#1747D1', '#2B63F0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ overflow: 'hidden' }}>
-        <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 34, paddingBottom: 28, gap: 26 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
-            <View style={{ flexShrink: 1, gap: 10, maxWidth: 560 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Icon name="book-outline" size={18} color="#BBD3FF" /><Text style={{ color: '#BBD3FF', fontSize: 12.5, fontWeight: '700', letterSpacing: 0.4 }}>Guide & Tutorials</Text>
-              </View>
-              <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: w >= 700 ? 48 : 34, lineHeight: w >= 700 ? 50 : 38, fontWeight: '900', letterSpacing: -1.2 }}>How to Use</Text>
-              <Text style={{ color: '#7FB0FF', fontSize: w >= 700 ? 48 : 34, lineHeight: w >= 700 ? 50 : 38, fontWeight: '900', letterSpacing: -1.2, marginTop: -8 }}>Chart Reader</Text>
-              <Text style={{ color: '#E1EBFF', fontSize: 15, lineHeight: 23 }}>Follow this step-by-step guide to learn how to use the platform, find the right tools, and make the most of your trading experience.</Text>
-            </View>
-            {w >= 960 && <HeroArt w={520} />}
-          </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 18, rowGap: 14 }}>
-            {hero.map((h, i) => (
-              <View key={h.t} style={{ flexBasis: w >= 1000 ? '22%' : w >= 600 ? '45%' : '100%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: i && w >= 1000 ? 18 : 0, borderLeftWidth: i && w >= 1000 ? 1 : 0, borderLeftColor: '#FFFFFF2E' }}>
-                <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: '#2F6BFF', borderWidth: 1, borderColor: '#FFFFFF44', alignItems: 'center', justifyContent: 'center' }}><Icon name={h.icon} size={20} color="#FFFFFF" /></View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 13.5, fontWeight: '800' }}>{h.t}</Text>
-                  <Text style={{ color: '#C9D8FF', fontSize: 12 }}>{h.s}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-      </LinearGradient>
+      {/* hero: same banner as every other page */}
+      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 22 }}>
+        <HeroBanner icon="book-outline" tag="Guide & Tutorials" title="How to Use Chart Reader" subtitle="Follow this step-by-step guide to learn how to use the platform, find the right tools, and make the most of your trading experience."
+          features={hero.map((h) => ({ icon: h.icon, title: h.t, sub: h.s }))} />
+      </View>
 
       <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 22, paddingBottom: 34, gap: 34 }}>
         <Notices flush />

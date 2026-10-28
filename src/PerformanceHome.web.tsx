@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Rect, Line, Circle, Polyline, Defs, LinearGradient as SG, Stop, Text as SText } from 'react-native-svg';
 import { useApp } from './store';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { quotes, setWatch } from './markets';
 import { useRealWindow } from './win';
 import { usePal, Panel, Footer, useGo } from './DesktopHome.web';
@@ -229,20 +229,8 @@ export default function PerformanceHome() {
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 18, gap: 20 }}>
         <Notices flush />
 
-        {/* hero */}
-        <LinearGradient colors={['#1D2FA8', '#3A3FD8', '#5B3FE6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 26, overflow: 'hidden' }}>
-          <View style={{ paddingHorizontal: w >= 700 ? 32 : 20, paddingVertical: 32, flexDirection: 'row', alignItems: 'center', gap: 20 }}>
-            <View style={{ flex: 1, minWidth: 0, gap: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: '#FFFFFF26', alignItems: 'center', justifyContent: 'center' }}><Icon name="stats-chart" size={16} color="#FFFFFF" /></View>
-                <Text style={{ color: '#CFE0FF', fontSize: 15, fontWeight: '700', letterSpacing: 0.4 }}>TRADING ANALYTICS</Text>
-              </View>
-              <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: w >= 700 ? 54 : 36, lineHeight: w >= 700 ? 58 : 40, fontWeight: '800', letterSpacing: -1.4 }}>Performance</Text>
-              <Text style={{ color: '#E3ECFF', fontSize: 16, lineHeight: 24, maxWidth: 440 }}>Track your trading progress with detailed performance metrics, win rate, and key statistics.</Text>
-            </View>
-            {w >= 1000 && <HeroArt rate={rate} pf={pfTxt} />}
-          </View>
-        </LinearGradient>
+        {/* hero: same banner as every other page */}
+        <HeroBanner icon="stats-chart" tag="Trading Analytics" title="Performance" subtitle="Track your trading progress with detailed performance metrics, win rate, and key statistics." />
 
         {/* range bar */}
         <Panel style={{ padding: 18, flexDirection: 'row', alignItems: 'center', gap: 16, flexWrap: 'wrap', zIndex: 20 }}>
