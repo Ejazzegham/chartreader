@@ -23,12 +23,12 @@ const TOOLS: [number, string][] = [[8, 'alarm'], [9, 'stats-chart'], [11, 'shiel
 
 // The website's top navigation (replaces the old left sidebar): logo, main pages, a Tools menu, search, live status, alerts and the account menu.
 function TopNav() {
-  const { th, t, tab, setTab, account, avatar, lic, setAdminOpen, setHelpOpen, supportUnread, adminBadge } = useApp();
+  const { th, t, tab, setTab, account, avatar, lic, setAdminOpen, setHelpOpen, setHistOpen, supportUnread, adminBadge } = useApp();
   const L = useLayout();
   const [menu, setMenu] = useState<'' | 'tools' | 'user'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState('');
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1120;
-  const bar = th.dark ? th.panel : '#FFFFFF', toolTabs = TOOLS.map((x) => x[0]);
+  const bar = th.dark ? th.panel : '#FFFFFF', toolTabs = [...TOOLS.map((x) => x[0]), 16];
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
@@ -69,6 +69,8 @@ function TopNav() {
             {menu === 'tools' && (
               <View style={{ ...drop, left: 0 }}>
                 {TOOLS.map(([i, icon]) => item(icon, t(NAV[i].key), () => setTab(i)))}
+                {item('receipt', 'Trade History', () => setHistOpen(true))}
+                {item('swap-vertical', 'Demo Trade', () => setTab(16))}
                 {item('chatbubbles-outline', 'Help chat', () => setHelpOpen(true), supportUnread)}
               </View>
             )}
