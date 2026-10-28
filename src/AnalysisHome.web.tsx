@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, TextInput, Switch } from 'react-nati
 import Svg, { Line, Rect, Path, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from './store';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { Coin } from './MarketWidgets';
 import { MDEFS, MDef, MethodIcon, mdef } from './MethodArt';
 import { SYMBOLS, symOf, chg, setWatch, toggleFav, useFeed, SESSIONS, sessionOpen, fxWeekendClosed, isBad } from './markets';
@@ -327,31 +327,10 @@ function HeroArt({ w }: { w: number }) {
 }
 
 function Hero({ w }: { w: number }) {
-  const two = w >= 1000;
-  const feat = (icon: string, a: string, b: string) => (
-    <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#2F6BFF', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={18} color="#FFFFFF" /></View>
-      <View><Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>{a}</Text><Text style={{ color: '#A9BCE8', fontSize: 11.5 }}>{b}</Text></View>
-    </View>
-  );
   return (
-    <View style={{ overflow: 'hidden' }}>
-      <LinearGradient colors={['#04123B', '#0A2A78', '#0B49D1']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-      <View pointerEvents="none" style={{ position: 'absolute', right: -120, top: -80, width: 560, height: 560, borderRadius: 280, backgroundColor: '#3E7BFF', opacity: 0.18 }} />
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 44, flexDirection: two ? 'row' : 'column', alignItems: two ? 'center' : 'stretch', gap: 36 }}>
-        <View style={{ flex: two ? 1 : undefined, gap: 16, minWidth: 0 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFFFFF22', alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={15} color="#FFFFFF" /></View>
-            <Text style={{ color: '#CFE0FF', fontSize: 12.5, fontWeight: '700', letterSpacing: 1.2 }}>MARKET ANALYSIS</Text>
-          </View>
-          <Text style={{ color: '#FFFFFF', fontSize: two ? 54 : 40, lineHeight: two ? 60 : 46, fontWeight: '800', letterSpacing: -1.4 }}>Trading <Text style={{ color: '#3E8BFF' }}>Analysis</Text></Text>
-          <Text style={{ color: '#E3ECFF', fontSize: 16.5, lineHeight: 25, maxWidth: 520 }}>Get in-depth market analysis, real-time insights and professional trading tools to make better decisions. Analyze, plan and trade with confidence.</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 26, marginTop: 14 }}>
-            {feat('stats-chart', 'Live Market Data', 'Real-time price & charts')}{feat('git-network', 'Technical Analysis', 'Indicators & patterns')}{feat('pulse', 'Market Sentiment', 'Bullish / Bearish')}{feat('shield-checkmark', 'Risk Management', 'Plan & protect')}
-          </View>
-        </View>
-        {w >= 760 && <HeroArt w={two ? 520 : w - 64} />}
-      </View>
+    <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24 }}>
+      <HeroBanner icon="analytics" title="Trading Analysis" subtitle="Get in-depth market analysis, real-time insights and professional trading tools to make better decisions."
+        features={[{ icon: 'stats-chart', title: 'Live Market Data', sub: 'Real-time price & charts' }, { icon: 'git-network', title: 'Technical Analysis', sub: 'Indicators & patterns' }, { icon: 'pulse', title: 'Market Sentiment', sub: 'Bullish / Bearish' }, { icon: 'shield-checkmark', title: 'Risk Management', sub: 'Plan & protect' }]} />
     </View>
   );
 }

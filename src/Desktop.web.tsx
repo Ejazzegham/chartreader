@@ -213,13 +213,12 @@ export function Notices({ flush }: { flush?: boolean }) {
 
 export function DesktopShell({ children }: { children: React.ReactNode }) {
   const L = useLayout();
-  const { tab, amethod } = useApp(); // Home has its own full-width sections, so the market-watch panel is for the other pages
+  const { tab } = useApp(); // no side panels on any page: every page uses the full width under the top bar
   return (
     <View style={{ flex: 1 }}>
       <TopNav />
       <View style={{ flex: 1, flexDirection: 'row' }}>
         <View style={{ flex: 1, minWidth: 0 }}>{tab !== 13 && <Notices />}{children}</View>
-        {L.rail > 0 && tab !== 0 && tab !== 2 && tab !== 3 && tab !== 13 && !(tab === 1 && !!amethod && amethod !== 'planner') && <Rail width={L.rail} />}
       </View>
     </View>
   );

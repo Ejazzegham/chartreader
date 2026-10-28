@@ -5,7 +5,7 @@ import { shareText } from '../dialog';
 
 import Modal from '../Modal';
 import { useApp } from '../store';
-import { Screen, Card, Field, Dim, Btn, Segment, Icon, confirmAction, AppHeader } from '../ui';
+import { Screen, Card, Field, Dim, Btn, Segment, Icon, confirmAction, AppHeader, HeroBanner } from '../ui';
 import { useWindowDimensions } from '../win';
 import { auth } from '../firebase';
 import { TFS } from '../markets';
@@ -232,27 +232,7 @@ export default function Settings() {
         <AppHeader />
 
         {/* ---------- Hero ---------- */}
-        <View style={{ borderRadius: 18, overflow: 'hidden', direction: 'ltr' }}>
-          <LinearGradient colors={BRAND_BLUE} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: wide ? 28 : 20, gap: 18 }}>
-            <View pointerEvents="none" style={{ position: 'absolute', right: -30, top: -40, width: 260, height: 260, borderRadius: 130, backgroundColor: '#FFFFFF10' }} />
-            <View pointerEvents="none" style={{ position: 'absolute', right: wide ? 70 : 10, top: wide ? 30 : 14, opacity: 0.22 }}><Icon name="settings" size={wide ? 150 : 84} color="#FFFFFF" /></View>
-            <View style={{ gap: 6, direction: rtl ? 'rtl' : 'ltr' }}>
-              <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: wide ? 34 : 26, fontWeight: '900', letterSpacing: -0.8 }}>{t('tabSettings')}</Text>
-              <Text style={{ color: '#DCE6FF', fontSize: 14.5, lineHeight: 21, maxWidth: 480 }}>Manage your account, subscription, security, appearance and preferences in one place.</Text>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-              {FEATURES.map((f) => (
-                <View key={f.title} style={{ flexBasis: wide ? '23%' : '47%', flexGrow: 1, minWidth: 150, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF1A', borderColor: '#FFFFFF2E', borderWidth: 1, borderRadius: 12, padding: 10 }}>
-                  <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: '#FFFFFF24', alignItems: 'center', justifyContent: 'center' }}><Icon name={f.icon} size={18} color="#FFFFFF" /></View>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }} numberOfLines={1}>{f.title}</Text>
-                    <Text style={{ color: '#C9D8FF', fontSize: 11.5 }} numberOfLines={1}>{f.sub}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </LinearGradient>
-        </View>
+        <HeroBanner icon="settings" title={t('tabSettings')} subtitle="Manage your account, subscription, security, appearance and preferences in one place." features={FEATURES} />
 
         {/* ---------- Account profile ---------- */}
         <Section icon="person-outline" title="Account profile" sub="Manage your personal information and account details."

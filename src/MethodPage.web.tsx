@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Line, Rect } from 'react-native-svg';
 import { useApp } from './store';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { MDEFS, MDef, MethodIcon } from './MethodArt';
 import MarketsPanel from './MarketsPanel';
 import { useRealWindow, WidthCtx } from './win';
@@ -41,17 +41,7 @@ function HeroArt({ color }: { color: string }) {
 }
 
 function Hero({ w }: { w: number }) {
-  const P = usePal();
-  return (
-    <View style={{ paddingTop: 6, gap: 10, overflow: 'visible' }}>
-      {w >= 900 && <HeroArt color={P.blue} />}
-      <View style={{ alignSelf: 'flex-start', paddingHorizontal: 12, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: P.soft }}>
-        <Text style={{ color: P.blue, fontSize: 12, fontWeight: '700' }}>Smart Analysis. Better Decisions.</Text>
-      </View>
-      <Text style={{ color: P.head, fontSize: w >= 760 ? 36 : 28, fontWeight: '800', letterSpacing: -0.8 }}>Choose Your Analysis Method</Text>
-      <Text style={{ color: P.body, fontSize: 15, lineHeight: 23, maxWidth: 560 }}>Explore {MDEFS.length} powerful analysis methods to get deeper market insights, identify high-probability setups and trade with confidence.</Text>
-    </View>
-  );
+  return <HeroBanner icon="analytics" title="Choose Your Analysis Method" subtitle={`Explore ${MDEFS.length} powerful analysis methods to get deeper market insights and identify high-probability setups.`} />;
 }
 
 function MethodGrid({ w, cur, onOpen }: { w: number; cur?: string; onOpen: (d: MDef) => void }) {

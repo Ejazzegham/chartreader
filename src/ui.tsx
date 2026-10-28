@@ -110,37 +110,50 @@ const HERO_CANDLES: [number, number, number, number, number, 's' | 'b' | 'p'][] 
   [68, 22, 44, 26, 38, 'p'], [80, 18, 40, 22, 34, 'b'], [92, 10, 34, 14, 28, 'b'], [104, 14, 38, 20, 32, 's'],
 ];
 
+// One hero for every page, the size of the Settings hero: blue card, big title, one or two lines of text and an optional row of feature chips.
+export const HERO_H = 220;
+const HERO_BLUE = ['#0A2A8F', '#1747D1', '#2B63F0'] as [string, string, string];
+export type HeroFeature = { icon: string; title: string; sub: string; onPress?: () => void };
+export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { title: string; subtitle?: string; icon?: string; features?: HeroFeature[]; right?: React.ReactNode; tag?: string }) => {
+  const { rtl } = useApp();
+  const { width } = useWindowDimensions();
+  const wide = width >= 640;
+  return (
+    <View style={{ borderRadius: 18, overflow: 'hidden', direction: 'ltr', ...(wide ? { height: HERO_H } : null) }}>
+      <LinearGradient colors={HERO_BLUE} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: wide ? 28 : 20, gap: 18, ...(wide ? { height: HERO_H, justifyContent: 'center' } : null) }}>
+        <View pointerEvents="none" style={{ position: 'absolute', right: -30, top: -40, width: 260, height: 260, borderRadius: 130, backgroundColor: '#FFFFFF10' }} />
+        {!!icon && <View pointerEvents="none" style={{ position: 'absolute', right: wide ? 70 : 10, top: wide ? 30 : 14, opacity: 0.22 }}><Icon name={icon} size={wide ? 150 : 84} color="#FFFFFF" /></View>}
+        <View style={{ gap: 6, direction: rtl ? 'rtl' : 'ltr' }}>
+          {!!tag && <Text style={{ color: '#9CC4FF', fontSize: 11.5, fontWeight: '800', letterSpacing: 1.3 }}>{tag.toUpperCase()}</Text>}
+          <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: wide ? 34 : 26, fontWeight: '900', letterSpacing: -0.8 }} numberOfLines={1}>{title}</Text>
+          {!!subtitle && <Text style={{ color: '#DCE6FF', fontSize: 14.5, lineHeight: 21, maxWidth: 560 }} numberOfLines={2}>{subtitle}</Text>}
+          {!!right && <View style={{ flexDirection: 'row', alignSelf: 'flex-start', marginTop: 4 }}>{right}</View>}
+        </View>
+        {!!features?.length && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            {features.map((f) => (
+              <Pressable key={f.title} disabled={!f.onPress} onPress={f.onPress} style={{ flexBasis: wide ? '23%' : '47%', flexGrow: 1, minWidth: 150, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF1A', borderColor: '#FFFFFF2E', borderWidth: 1, borderRadius: 12, padding: 10, cursor: f.onPress ? 'pointer' : 'default' } as any}>
+                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: '#FFFFFF24', alignItems: 'center', justifyContent: 'center' }}><Icon name={f.icon} size={18} color="#FFFFFF" /></View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }} numberOfLines={1}>{f.title}</Text>
+                  {!!f.sub && <Text style={{ color: '#C9D8FF', fontSize: 11.5 }} numberOfLines={1}>{f.sub}</Text>}
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        )}
+      </LinearGradient>
+    </View>
+  );
+};
+
 // Hero banner at the top of every page: the same look as the Analysis page banner (soft accent gradient, candles on the right).
 export const PageHero = ({ title, subtitle, icon, right, tag }: { title: string; subtitle?: string; icon?: string; right?: React.ReactNode; tag?: string }) => {
   const { th, rtl } = useApp();
   const { width } = useWindowDimensions();
   const W = width - 32, fs = Math.max(20, Math.min(26, Math.round(W * 0.064)));
   const desk = useLayout().mode === 'desktop';
-  if (desk) return ( // website: same look as the home dashboard's header (eyebrow, big title, subtitle, a chart picture)
-    <View style={{ borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, minHeight: 128, justifyContent: 'center', direction: rtl ? 'rtl' : 'ltr' }}>
-      <LinearGradient colors={[th.accent + '26', th.accent2 + '10', th.accent + '00']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-      <View style={{ padding: 24, gap: 8, paddingRight: W >= 660 ? 300 : 24 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          {!!icon && <Icon name={icon} size={15} color={th.accent} />}
-          <Text style={{ color: th.accent, fontSize: 11.5, fontWeight: '800', letterSpacing: 1.3 }}>{(tag ?? 'TRADING TOOLS').toUpperCase()}</Text>
-        </View>
-        <Text accessibilityRole="header" style={{ color: th.text, fontSize: 30, fontWeight: '900', letterSpacing: -0.9 }} numberOfLines={2}>{title}</Text>
-        {!!subtitle && <Text style={{ color: th.dim, fontSize: 14.5, lineHeight: 21, maxWidth: 520 }} numberOfLines={3}>{subtitle}</Text>}
-        {!!right && <View style={{ flexDirection: 'row', alignSelf: 'flex-start', marginTop: 4 }}>{right}</View>}
-      </View>
-      {W >= 660 && (
-        <View pointerEvents="none" style={{ position: 'absolute', right: 20, top: 16, bottom: 16, width: 262, borderRadius: 14, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}>
-          <Svg width="86%" height="86%" viewBox="0 0 120 80" preserveAspectRatio="xMidYMid meet">
-            <Path d="M4 68 C 30 66, 44 50, 62 40 S 94 22, 112 12" stroke={th.accent2} strokeWidth="2" strokeOpacity="0.45" fill="none" strokeLinecap="round" />
-            {HERO_CANDLES.map(([x, wt, wb, bt, bb, c], i) => {
-              const col = c === 'b' ? th.buy : c === 's' ? th.sell : th.accent2;
-              return (<React.Fragment key={i}><Line x1={x} y1={wt} x2={x} y2={wb} stroke={col} strokeWidth="1.6" strokeLinecap="round" /><Rect x={x - 3.4} y={bt} width="6.8" height={bb - bt} rx="1.6" fill={col} /></React.Fragment>);
-            })}
-          </Svg>
-        </View>
-      )}
-    </View>
-  );
+  if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />; // website: the same hero as Settings
   return (
     <LinearGradient colors={[th.accent + (th.dark ? '2E' : '16'), th.accent2 + (th.dark ? '38' : '26')]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
       style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', minHeight: 112, justifyContent: 'center', direction: 'ltr' }}>

@@ -9,7 +9,7 @@ export type LayoutInfo = { mode: 'phone' | 'desktop'; sidebar: number; rail: num
 
 export function layoutFor(w: number): LayoutInfo {
   if (w < DESKTOP_MIN) return { mode: 'phone', sidebar: 0, rail: 0, content: Math.min(w, PHONE_MAX), full: w };
-  const rail = w >= RAIL_MIN ? RAIL_W : 0, free = w - SIDEBAR_W - rail;
+  const rail = 0, free = w - SIDEBAR_W; // no right-hand market-watch panel any more
   return { mode: 'desktop', sidebar: SIDEBAR_W, rail, content: Math.max(560, Math.min(free, PAGE_MAX)), full: w };
 }
 export const useRealWindow = real;

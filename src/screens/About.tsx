@@ -3,7 +3,7 @@ import { View, Text, Linking, Pressable, TextInput, ScrollView, Platform } from 
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Ellipse, Path, Line, Rect, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from '../store';
-import { Icon, Card, AppHeader } from '../ui';
+import { Icon, Card, AppHeader, HeroBanner } from '../ui';
 import { LogoMark, PoweredBy } from '../Brand';
 import { useLayout, useWindowDimensions } from '../win';
 import { CONTENT, CONTACT_EMAIL } from '../guideContent';
@@ -79,27 +79,8 @@ export default function About() {
 
   // ---------- 1. hero ----------
   const hero = (
-    <View style={{ borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: th.line, backgroundColor: th.panel }}>
-      <LinearGradient colors={[th.accent + (th.dark ? '40' : '2E'), th.accent2 + (th.dark ? '22' : '14'), th.accent + '00']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: wide ? 40 : 22, gap: 12 }}>
-        <View style={{ flex: 1.1, gap: wide ? 18 : 14, minWidth: 0 }}>
-          <Eyebrow>{x.tag}</Eyebrow>
-          <Text accessibilityRole="header" style={{ color: th.text, fontSize: h1, lineHeight: h1 * 1.08, fontWeight: '900', letterSpacing: -1.2 }}>{x.title1}{'\n'}{x.title2}</Text>
-          <Text style={{ color: th.dim, fontSize: wide ? 16.5 : 14.5, lineHeight: wide ? 25 : 21, maxWidth: 430 }}>{x.lead}</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 6 }}>
-            {x.chips.map((ch, i) => (
-              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, minWidth: mid ? 150 : 140 }}>
-                <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: th.dark ? th.panel2 : '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: th.accent, shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}>
-                  <Icon name={ch.icon} size={20} color={th.accent} />
-                </View>
-                <Text style={{ color: th.text, fontSize: 12.5, fontWeight: '700', lineHeight: 16 }}>{ch.label}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-        {wide && <View pointerEvents="none" style={{ flex: 1, height: 300, minWidth: 0 }}><HeroArt buy={th.buy} sell={th.sell} accent={th.accent} /></View>}
-      </View>
-    </View>
+    <HeroBanner icon="information-circle" title={`${x.title1} ${x.title2}`.replace(/\s+/g, ' ').trim()} subtitle={x.lead}
+      features={x.chips.slice(0, 4).map((ch) => ({ icon: ch.icon, title: ch.label, sub: '' }))} />
   );
 
   // ---------- 2. about + mission / vision ----------

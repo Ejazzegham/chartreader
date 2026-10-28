@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Rect, Path, Circle, Line } from 'react-native-svg';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { useRealWindow } from './win';
 import { useHeadlines, ago, tone, safeHttpUrl, Topic, Headline } from './headlines';
 import { useNews, newsRisk, fmtIn, localTime, Impact, NewsEvent } from './news';
@@ -52,50 +52,11 @@ function Chip({ label, on, onPress, wide }: { label: string; on: boolean; onPres
 
 // ---------- hero
 function Hero({ w, setSub }: { w: number; setSub: (k: Sub) => void }) {
-  const feat = (icon: string, a: string, b: string, k: Sub) => (
-    <Pressable key={a} onPress={() => setSub(k)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, cursor: 'pointer' } as any}>
-      <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: '#2F6BFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#2F6BFF', shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } }}><Icon name={icon} size={19} color="#FFFFFF" /></View>
-      <View><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>{a}</Text><Text style={{ color: '#FFFFFFAA', fontSize: 11 }}>{b}</Text></View>
-    </Pressable>
-  );
-  const chip = (label: string, color: string, k: Sub, pos: any, rot: string) => (
-    <Pressable key={label} onPress={() => setSub(k)} style={{ position: 'absolute', paddingHorizontal: 18, height: 36, borderRadius: 10, backgroundColor: color, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FFFFFF44', cursor: 'pointer', transform: [{ rotate: rot }], shadowColor: color, shadowOpacity: 0.55, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, ...pos } as any}>
-      <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800', letterSpacing: 0.6 }}>{label}</Text>
-    </Pressable>
-  );
   return (
-    <LinearGradient colors={['#06123A', '#0A2A8C', '#0B49D6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ overflow: 'hidden' }}>
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 34, paddingBottom: 30, minHeight: 250 }}>
-        <View style={{ maxWidth: 640, gap: 12, zIndex: 2 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="newspaper-outline" size={14} color="#9CC4FF" /><Text style={{ color: '#CFE0FF', fontSize: 12, fontWeight: '800', letterSpacing: 1.2 }}>MARKET NEWS & UPDATES</Text></View>
-          <Text style={{ color: '#FFFFFF', fontSize: w >= 760 ? 46 : 34, fontWeight: '800', letterSpacing: -1 }}>Stay Informed, <Text style={{ color: '#4DA3FF' }}>Trade Smarter</Text></Text>
-          <Text style={{ color: '#E6EEFF', fontSize: 15, lineHeight: 23 }}><Text style={{ color: '#4DA3FF', fontWeight: '600' }}>Get the latest market news,</Text> economic events, and trading insights from around the world. Stay ahead with real-time updates that <Text style={{ color: '#4DA3FF', fontWeight: '600' }}>move the markets.</Text></Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 26, marginTop: 14 }}>
-            {feat('globe-outline', 'Forex News', 'Real-time updates', 'forex')}{feat('logo-bitcoin', 'Crypto News', 'Market movements', 'crypto')}{feat('newspaper-outline', 'Deriv News', 'Trading opportunities', 'deriv')}{feat('calendar-outline', 'Economic Calendar', 'Key events & data', 'cal')}
-          </View>
-        </View>
-        {w >= 1040 && (
-          <View pointerEvents="box-none" style={{ position: 'absolute', right: 40, top: 0, bottom: 0, width: 460, justifyContent: 'center' }}>
-            <View style={{ position: 'absolute', right: 70, top: 34, width: 300, height: 190, borderRadius: 16, backgroundColor: '#0B2A8Ccc', borderWidth: 1.5, borderColor: '#7DB6FF88', padding: 16, transform: [{ rotate: '-3deg' }] }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#2F6BFF', alignItems: 'center', justifyContent: 'center' }}><Icon name="globe-outline" size={16} color="#FFFFFF" /></View>
-                <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '800', letterSpacing: 0.5 }}>NEWS</Text>
-              </View>
-              <Svg width={268} height={110} viewBox="0 0 268 110" style={{ marginTop: 10 } as any}>
-                {[0, 1, 2].map((i) => <Rect key={i} x={0} y={4 + i * 14} width={150 - i * 24} height={6} rx={3} fill="#7DB6FF" opacity={0.55} />)}
-                {[22, 34, 28, 46, 38, 58, 50, 70, 62, 84].map((h, i) => <Rect key={i} x={140 + i * 12} y={104 - h} width={7} height={h} rx={2} fill={i % 3 === 0 ? '#16B97A' : '#4DA3FF'} opacity={0.9} />)}
-                <Path d="M 0 96 L 40 82 L 80 88 L 130 62 L 180 70 L 268 20" stroke="#9CC4FF" strokeWidth={1.6} fill="none" opacity={0.8} />
-                <Circle cx={268} cy={20} r={3.5} fill="#FFFFFF" />
-                <Line x1={0} y1={106} x2={268} y2={106} stroke="#FFFFFF33" strokeWidth={1} />
-              </Svg>
-            </View>
-            {chip('FOREX', '#16B97A', 'forex', { right: 0, top: 6 }, '3deg')}
-            {chip('CRYPTO', '#F59E0B', 'crypto', { right: -14, top: 92 }, '-3deg')}
-            {chip('DERIV', '#8B5CF6', 'deriv', { right: 8, top: 176 }, '3deg')}
-          </View>
-        )}
-      </View>
-    </LinearGradient>
+    <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingTop: 24 }}>
+      <HeroBanner icon="newspaper-outline" title="Market News & Updates" subtitle="Get the latest market news, economic events and trading insights from around the world."
+        features={[{ icon: 'globe-outline', title: 'Forex News', sub: 'Real-time updates', onPress: () => setSub('forex') }, { icon: 'logo-bitcoin', title: 'Crypto News', sub: 'Market movements', onPress: () => setSub('crypto') }, { icon: 'newspaper-outline', title: 'Deriv News', sub: 'Trading opportunities', onPress: () => setSub('deriv') }, { icon: 'calendar-outline', title: 'Economic Calendar', sub: 'Key events & data', onPress: () => setSub('cal') }]} />
+    </View>
   );
 }
 

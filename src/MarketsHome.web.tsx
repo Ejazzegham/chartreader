@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { Coin } from './MarketWidgets';
 import { SYMBOLS, Sym, chg, isBad, useFeed, setWatch, toggleFav, symOf } from './markets';
 import { useRealWindow } from './win';
@@ -56,48 +56,11 @@ function Head({ icon, title, sub, right, onRight }: { icon: string; title: strin
 
 // ---------- hero
 function Hero({ w, setCat, live }: { w: number; setCat: (k: CatKey) => void; live: boolean }) {
-  const feat = (icon: string, a: string, b: string) => (
-    <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF1A', borderWidth: 1, borderColor: '#FFFFFF33', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={18} color="#9CC4FF" /></View>
-      <View><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>{a}</Text><Text style={{ color: '#FFFFFFAA', fontSize: 11 }}>{b}</Text></View>
-    </View>
-  );
-  const chip = (label: string, icon: string, bg: string, k: CatKey, pos: any) => (
-    <Pressable key={label} onPress={() => setCat(k)} style={{ position: 'absolute', flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 6, paddingRight: 14, height: 38, borderRadius: 19, backgroundColor: '#0B1E5Acc', borderWidth: 1, borderColor: '#FFFFFF33', cursor: 'pointer', ...pos } as any}>
-      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={14} color="#FFFFFF" /></View>
-      <Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>{label}</Text>
-    </Pressable>
-  );
   return (
-    <LinearGradient colors={['#06123A', '#0A2A8C', '#0B49D6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ overflow: 'hidden' }}>
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 34, paddingBottom: 30, minHeight: 250 }}>
-        <View style={{ maxWidth: 620, gap: 12, zIndex: 2 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="pulse" size={14} color="#9CC4FF" /><Text style={{ color: '#CFE0FF', fontSize: 12, fontWeight: '800', letterSpacing: 1.2 }}>MARKETS</Text></View>
-          <Text style={{ color: '#FFFFFF', fontSize: w >= 760 ? 46 : 34, fontWeight: '800', letterSpacing: -1 }}>Global <Text style={{ color: '#4DA3FF' }}>Markets</Text></Text>
-          <Text style={{ color: '#E6EEFF', fontSize: 15, lineHeight: 23 }}>Explore forex, crypto, indices, commodities and more. Live prices, real-time data and powerful tools to trade smarter.</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 26, marginTop: 14 }}>
-            {feat('flash', 'Live Prices', live ? 'Real-time data' : 'Connecting…')}{feat('stats-chart', 'Market Analysis', 'Trends & insights')}{feat('star', 'Watchlists', 'Track your favorites')}{feat('construct', 'Advanced Tools', 'Make better decisions')}
-          </View>
-        </View>
-        {w >= 1040 && (
-          <View pointerEvents="box-none" style={{ position: 'absolute', right: 40, top: 0, bottom: 0, width: 460, justifyContent: 'center' }}>
-            <Svg width={420} height={250} viewBox="0 0 420 250" style={{ position: 'absolute', right: 10, top: 0 } as any}>
-              <Ellipse cx={210} cy={130} rx={200} ry={66} stroke="#FFFFFF33" strokeWidth={1.2} fill="none" transform="rotate(-18 210 130)" />
-              <Ellipse cx={210} cy={130} rx={170} ry={52} stroke="#FFFFFF22" strokeWidth={1} fill="none" transform="rotate(14 210 130)" />
-              <Circle cx={210} cy={130} r={92} fill="#1B64E8" opacity={0.55} />
-              <Circle cx={210} cy={130} r={92} stroke="#7DB6FF" strokeWidth={1.4} fill="none" opacity={0.7} />
-              <Ellipse cx={210} cy={130} rx={92} ry={34} stroke="#9CC4FF" strokeWidth={0.8} fill="none" opacity={0.5} />
-              <Ellipse cx={210} cy={130} rx={50} ry={92} stroke="#9CC4FF" strokeWidth={0.8} fill="none" opacity={0.5} />
-              <Path d="M 118 130 H 302 M 210 38 V 222" stroke="#9CC4FF" strokeWidth={0.8} opacity={0.4} />
-            </Svg>
-            {chip('Forex', 'arrow-up', '#16B97A', 'forex', { left: 30, top: 26 })}
-            {chip('Crypto', 'logo-bitcoin', '#F59E0B', 'crypto', { right: 0, top: 54 })}
-            {chip('Indices', 'stats-chart', '#8B5CF6', 'indices', { left: 0, top: 150 })}
-            {chip('Commodities', 'water', '#D99A1B', 'commodities', { right: 10, top: 168 })}
-          </View>
-        )}
-      </View>
-    </LinearGradient>
+    <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24 }}>
+      <HeroBanner icon="pulse" title="Global Markets" subtitle="Explore forex, crypto, indices, commodities and more. Live prices, real-time data and powerful tools."
+        features={[{ icon: 'flash', title: 'Live Prices', sub: live ? 'Real-time data' : 'Connecting…' }, { icon: 'stats-chart', title: 'Market Analysis', sub: 'Trends & insights' }, { icon: 'star', title: 'Watchlists', sub: 'Track your favorites' }, { icon: 'construct', title: 'Advanced Tools', sub: 'Make better decisions' }]} />
+    </View>
   );
 }
 
