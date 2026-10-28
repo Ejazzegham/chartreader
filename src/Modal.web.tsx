@@ -7,7 +7,7 @@ import { useLayout, useWindowDimensions } from './win';
 
 // Same props as React Native's Modal (the ones this app uses). It is drawn inside the app column instead of over the whole browser window,
 // fades / slides in like the phone version, and closes with the Escape key (onRequestClose).
-export default function Modal({ visible, transparent, animationType = 'none', onRequestClose, children }: { visible?: boolean; transparent?: boolean; animationType?: 'none' | 'slide' | 'fade'; onRequestClose?: () => void; children?: React.ReactNode; [k: string]: any }) {
+export default function Modal({ visible = true, transparent, animationType = 'none', onRequestClose, children }: { visible?: boolean; transparent?: boolean; animationType?: 'none' | 'slide' | 'fade'; onRequestClose?: () => void; children?: React.ReactNode; [k: string]: any }) {
   const host = useFrameHost();
   const { th, rtl } = useApp();
   const desk = useLayout().mode === 'desktop', { width } = useWindowDimensions();
