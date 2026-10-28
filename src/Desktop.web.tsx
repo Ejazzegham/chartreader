@@ -18,141 +18,117 @@ import { useDash, setDash, listFor, groupOf, MarketTab } from './dash';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const MAIN = [0, 1, 2, 16, 3, 4, 5, 8, 9, 11, 13], MORE = [6, 14, 15];
+const LINKS: [string, number][] = [['Home', 0], ['Analysis', 1], ['Markets', 2], ['Journal', 3], ['Risk & TP Planner', 4]];
+const TOOLS: [number, string][] = [[8, 'alarm'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
-function Sidebar({ width }: { width: number }) {
-  const { th, t, tab, setTab, amethod, setAmethod, account, avatar, lic, setAdminOpen, setHelpOpen, supportUnread, adminBadge } = useApp();
-  const { height } = useRealWindow();
-  const [openA, setOpenA] = useState(false);
-  const paid = lic.admin || lic.status === 'paid';
-  const item = (i: number, extra?: React.ReactNode) => {
-    const n = NAV[i], on = tab === i && !(i === 1 && openA && !!amethod);
-    return (
-      <View key={n.key}>
-        <Pressable accessibilityRole="button" onPress={() => { setTab(i); if (i === 1) { setAmethod(''); setOpenA((v) => !v || tab !== 1); } }}
-          style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, height: 42, paddingHorizontal: 12, borderRadius: 10, marginBottom: 2, cursor: 'pointer', backgroundColor: on ? th.accent + '1F' : s.hovered ? th.accent + '10' : 'transparent' })) as any}>
-          <View style={{ position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 2, backgroundColor: on ? th.accent : 'transparent' }} />
-          <Icon name={n.icon} size={19} color={on ? th.accent : th.dim} />
-          <Text style={{ flex: 1, color: on ? th.accent : th.text, fontSize: 14.5, fontWeight: on ? '800' : '600' }} numberOfLines={1}>{t(n.key)}</Text>
-          {i === 1 && <Icon name={openA ? 'chevron-up' : 'chevron-down'} size={16} color={th.dim} />}
-        </Pressable>
-        {extra}
-      </View>
-    );
-  };
-  const methods = MDEFS.filter((d) => d.host !== 'tab');
-  return (
-    <View style={{ width, backgroundColor: th.panel, borderRightWidth: 1, borderRightColor: th.line }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 18, paddingBottom: 12 }}>
-        <LogoMark size={42} radius={10} />
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: th.text, fontSize: 19, fontWeight: '900', letterSpacing: -0.4 }} numberOfLines={1}>Chart Reader</Text>
-          <Text style={{ color: th.dim, fontSize: 8, fontWeight: '700', letterSpacing: 0.5 }} numberOfLines={1}>TRADING ANALYSIS PLATFORM</Text>
-        </View>
-      </View>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 12, paddingTop: 6 }} showsVerticalScrollIndicator={false}>
-        {MAIN.map((i) => item(i, i === 1 && openA ? (
-          <View style={{ marginLeft: 22, marginBottom: 4, paddingLeft: 10, borderLeftWidth: 1, borderLeftColor: th.line }}>
-            {methods.map((m) => {
-              const on = tab === 1 && amethod === m.k;
-              return (
-                <Pressable key={m.k} onPress={() => { setAmethod(m.k); setTab(1); }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 34, paddingHorizontal: 10, borderRadius: 8, cursor: 'pointer', backgroundColor: on ? th.accent + '1F' : s.hovered ? th.accent + '10' : 'transparent' })) as any}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: m.colors[0] }} />
-                  <Text style={{ color: on ? th.accent : th.dim, fontSize: 13, fontWeight: on ? '800' : '600' }} numberOfLines={1}>{m.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null))}
-        <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '800', letterSpacing: 1.4, paddingHorizontal: 12, marginTop: 14, marginBottom: 6 }}>MORE</Text>
-        {MORE.map((i) => item(i))}
-        {/* these two open as windows (not pages), so they were missing from the website's menu */}
-        {([['Help chat', 'chatbubbles-outline', () => setHelpOpen(true), supportUnread, true], ['Admin panel', 'shield-checkmark-outline', () => setAdminOpen(true), adminBadge.chats + adminBadge.pays, !!lic.admin]] as [string, string, () => void, number, boolean][]).filter((r) => r[4]).map(([label, icon, go, n]) => (
-          <Pressable key={label} accessibilityRole="button" onPress={go} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, height: 42, paddingHorizontal: 12, borderRadius: 10, marginBottom: 2, cursor: 'pointer', backgroundColor: st.hovered ? th.accent + '10' : 'transparent' })) as any}>
-            <Icon name={icon} size={19} color={th.dim} />
-            <Text style={{ flex: 1, color: th.text, fontSize: 14.5, fontWeight: '600' }} numberOfLines={1}>{label}</Text>
-            {n > 0 && <View style={{ minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>{n > 99 ? '99+' : n}</Text></View>}
-          </Pressable>
-        ))}
-      </ScrollView>
-      <View style={{ marginHorizontal: 14, marginBottom: 12, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: th.gold + '55', backgroundColor: th.gold + '10', gap: 6 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><Icon name="ribbon" size={17} color={th.gold} /><Text style={{ color: th.text, fontSize: 14.5, fontWeight: '800' }}>{paid ? 'PRO is active' : 'Go Pro'}</Text></View>
-        <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>{paid ? 'Thank you for supporting Chart Reader.' : 'Unlock full features, smart analysis, and more.'}</Text>
-        {!paid && (
-          <Pressable onPress={() => setTab(6)} style={((s: any) => ({ marginTop: 4, height: 36, borderRadius: 9, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: th.accent, opacity: s.hovered ? 0.9 : 1 })) as any}>
-            <Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '800' }}>Upgrade Now</Text>
-          </Pressable>
-        )}
-      </View>
-      {height >= 780 && (
-        <View style={{ marginHorizontal: 16, marginBottom: 14, gap: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
-            <LogoMark size={28} radius={7} />
-            <View><Text style={{ color: th.text, fontSize: 12.5, fontWeight: '800' }}>Chart Reader</Text><Text style={{ color: th.dim, fontSize: 10 }}>v{APP_VERSION}</Text></View>
-          </View>
-          <Text style={{ color: th.dim, fontSize: 10, lineHeight: 14 }}>Smarter Analysis. Better Decisions.{'\n'}Educational tool, not financial advice. Trading involves risk.</Text>
-        </View>
-      )}
-    </View>
-  );
-}
-
-function TopBar() {
-  const { th, setTab, account, avatar, lic, setAdminOpen, adminBadge } = useApp();
-  const [q, setQ] = useState(''), [open, setOpen] = useState(false);
+// The website's top navigation (replaces the old left sidebar): logo, main pages, a Tools menu, search, live status, alerts and the account menu.
+function TopNav() {
+  const { th, t, tab, setTab, account, avatar, lic, setAdminOpen, setHelpOpen, supportUnread, adminBadge } = useApp();
+  const L = useLayout();
+  const [menu, setMenu] = useState<'' | 'tools' | 'user'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState('');
   const ref = useRef<TextInput>(null);
-  const paid = lic.admin || lic.status === 'paid';
+  const paid = lic.admin || lic.status === 'paid', slim = L.full < 1120;
+  const bar = th.dark ? th.panel : '#FFFFFF', toolTabs = TOOLS.map((x) => x[0]);
   useEffect(() => {
-    const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); ref.current?.focus(); } };
+    const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
   }, []);
   const hits = q.trim().length ? SYMBOLS.filter((s) => (s.name + ' ' + s.id).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8) : [];
-  const pick = (s: Sym) => { setDash({ sym: s.id, market: groupOf(s.cat) }); setTab(0); setQ(''); setOpen(false); ref.current?.blur(); };
+  const pick = (s: Sym) => { setDash({ sym: s.id, market: groupOf(s.cat) }); setTab(0); setQ(''); setSearchOpen(false); };
+  const link = (label: string, on: boolean, onPress: () => void, chevron?: boolean) => (
+    <Pressable key={label} accessibilityRole="button" onPress={onPress} style={((s: any) => ({ height: 64, paddingHorizontal: slim ? 10 : 15, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', cursor: 'pointer', opacity: s.hovered && !on ? 0.75 : 1 })) as any}>
+      <Text style={{ color: on ? th.accent : th.dark ? th.text : '#23325A', fontSize: 14.5, fontWeight: on ? '700' : '500' }} numberOfLines={1}>{label}</Text>
+      {chevron && <Icon name="chevron-down" size={14} color={on ? th.accent : th.dim} />}
+      <View style={{ position: 'absolute', left: slim ? 10 : 15, right: slim ? 10 : 15, bottom: 0, height: 3, borderRadius: 2, backgroundColor: on ? th.accent : 'transparent' }} />
+    </Pressable>
+  );
+  const item = (icon: string, label: string, onPress: () => void, badge = 0) => (
+    <Pressable key={label} accessibilityRole="button" onPress={() => { setMenu(''); onPress(); }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 11, height: 38, paddingHorizontal: 12, borderRadius: 9, cursor: 'pointer', backgroundColor: s.hovered ? th.accent + '12' : 'transparent' })) as any}>
+      <Icon name={icon} size={17} color={th.dim} />
+      <Text style={{ flex: 1, color: th.text, fontSize: 13.5, fontWeight: '600' }} numberOfLines={1}>{label}</Text>
+      {badge > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '900' }}>{badge > 99 ? '99+' : badge}</Text></View>}
+    </Pressable>
+  );
+  const drop = { position: 'absolute', top: 60, padding: 6, minWidth: 220, borderRadius: 12, borderWidth: 1, borderColor: th.line, backgroundColor: th.solid, shadowColor: '#0B1B3F', shadowOpacity: 0.16, shadowRadius: 26, shadowOffset: { width: 0, height: 12 }, zIndex: 40 } as any;
+  const name = account?.name ?? '';
   return (
-    <View style={{ height: 68, flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 20, backgroundColor: th.panel, borderBottomWidth: 1, borderBottomColor: th.line, zIndex: 30 }}>
-      <View style={{ flex: 1, maxWidth: 560, zIndex: 31 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 42, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: open ? th.accent : th.line, backgroundColor: th.panel2 }}>
-          <Icon name="search" size={17} color={th.dim} />
-          <TextInput ref={ref} value={q} onChangeText={(v) => { setQ(v); setOpen(true); }} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 160)} placeholder="Search for symbols, pairs, or instruments..." placeholderTextColor={th.dim} style={{ flex: 1, color: th.text, fontSize: 13.5, outlineStyle: 'none' } as any} />
-          <View style={{ paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: th.line }}><Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '700' }}>Ctrl + K</Text></View>
+    <View style={{ zIndex: 30 }}>
+      {(menu !== '' || searchOpen) && <Pressable onPress={() => { setMenu(''); setSearchOpen(false); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 29 } as any} />}
+      <View style={{ height: 64, backgroundColor: bar, borderBottomWidth: 1, borderBottomColor: th.dark ? th.line : '#E8EDF6', zIndex: 31 }}>
+        <View style={{ flex: 1, width: '100%', maxWidth: 1360, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', paddingHorizontal: slim ? 16 : 28, gap: slim ? 4 : 10 }}>
+          <Pressable onPress={() => setTab(0)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginRight: slim ? 8 : 26, cursor: 'pointer' } as any}>
+            <LogoMark size={38} radius={10} />
+            <View>
+              <Text style={{ color: th.dark ? th.text : '#0B1B3F', fontSize: 19, fontWeight: '800', letterSpacing: -0.4 }} numberOfLines={1}>Chart Reader</Text>
+              {!slim && <Text style={{ color: th.dim, fontSize: 8, fontWeight: '700', letterSpacing: 0.7 }} numberOfLines={1}>TRADING ANALYSIS PLATFORM</Text>}
+            </View>
+          </Pressable>
+          {LINKS.map(([label, i]) => link(label, tab === i, () => { setMenu(''); setTab(i); }))}
+          <View>
+            {link('Tools', menu === 'tools' || toolTabs.includes(tab), () => setMenu(menu === 'tools' ? '' : 'tools'), true)}
+            {menu === 'tools' && (
+              <View style={{ ...drop, left: 0 }}>
+                {TOOLS.map(([i, icon]) => item(icon, t(NAV[i].key), () => setTab(i)))}
+                {item('chatbubbles-outline', 'Help chat', () => setHelpOpen(true), supportUnread)}
+              </View>
+            )}
+          </View>
+          <View style={{ flex: 1 }} />
+          <Pressable accessibilityRole="button" accessibilityLabel="Search" onPress={() => { setSearchOpen((v) => !v); setMenu(''); setTimeout(() => ref.current?.focus(), 30); }} style={((s: any) => ({ width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: s.hovered || searchOpen ? th.accent + '14' : 'transparent' })) as any}>
+            <Icon name="search" size={19} color={th.dark ? th.text : '#23325A'} />
+          </Pressable>
+          <LiveDot />
+          <BellButton />
+          {lic.admin && (
+            <Pressable accessibilityRole="button" onPress={() => setAdminOpen(true)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: s.hovered ? th.accent + '26' : th.accent + '14', cursor: 'pointer' })) as any}>
+              <Icon name="shield-checkmark" size={15} color={th.accent} />{!slim && <Text style={{ color: th.accent, fontSize: 12.5, fontWeight: '800' }}>Admin</Text>}
+              {adminBadge.chats + adminBadge.pays > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '900' }}>{adminBadge.chats + adminBadge.pays}</Text></View>}
+            </Pressable>
+          )}
+          {!paid && <Pressable onPress={() => setTab(6)} style={{ height: 34, paddingHorizontal: 14, borderRadius: 17, justifyContent: 'center', backgroundColor: th.accent, cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '800' }}>Upgrade</Text></Pressable>}
+          <View>
+            <Pressable accessibilityRole="button" onPress={() => setMenu(menu === 'user' ? '' : 'user')} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, marginLeft: 6, cursor: 'pointer' } as any}>
+              {avatar ? <Image source={{ uri: avatar }} style={{ width: 36, height: 36, borderRadius: 18 }} /> : (
+                <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 15, fontWeight: '800' }}>{(name || '?').trim().charAt(0).toUpperCase()}</Text></View>
+              )}
+              {!slim && <Text style={{ color: th.dark ? th.text : '#0B1B3F', fontSize: 14, fontWeight: '700', maxWidth: 110 }} numberOfLines={1}>{name}</Text>}
+              <Icon name="chevron-down" size={15} color={th.dim} />
+            </Pressable>
+            {menu === 'user' && (
+              <View style={{ ...drop, right: 0 }}>
+                <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
+                  <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }} numberOfLines={1}>{name}</Text>
+                  <Text style={{ color: th.dim, fontSize: 11.5 }}>{lic.admin ? 'Admin' : paid ? 'Premium Trader' : lic.status === 'trial' ? 'Free trial' : 'Account'}</Text>
+                </View>
+                <View style={{ height: 1, backgroundColor: th.line, marginVertical: 4 }} />
+                {item('settings', 'Settings', () => setTab(6))}
+                {item('chatbubbles-outline', 'Help chat', () => setHelpOpen(true), supportUnread)}
+                {lic.admin && item('shield-checkmark-outline', 'Admin panel', () => setAdminOpen(true), adminBadge.chats + adminBadge.pays)}
+              </View>
+            )}
+          </View>
         </View>
-        {open && hits.length > 0 && (
-          <View style={{ position: 'absolute', top: 48, left: 0, right: 0, borderRadius: 12, borderWidth: 1, borderColor: th.line, backgroundColor: th.solid, padding: 6, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 22, shadowOffset: { width: 0, height: 10 } }}>
-            {hits.map((s) => (
-              <Pressable key={s.id} onPress={() => pick(s)} style={((x: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: x.hovered ? th.accent + '14' : 'transparent' })) as any}>
-                <Coin s={s} size={30} />
-                <Text style={{ flex: 1, color: th.text, fontSize: 13.5, fontWeight: '700' }} numberOfLines={1}>{s.name}</Text>
-                <Text style={{ color: th.dim, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>{groupOf(s.cat)}</Text>
-              </Pressable>
-            ))}
+        {searchOpen && (
+          <View style={{ position: 'absolute', top: 58, right: slim ? 16 : 28, width: 420, zIndex: 41 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: th.accent, backgroundColor: th.solid, shadowColor: '#0B1B3F', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } }}>
+              <Icon name="search" size={17} color={th.dim} />
+              <TextInput ref={ref} value={q} onChangeText={setQ} placeholder="Search for symbols, pairs, or instruments..." placeholderTextColor={th.dim} style={{ flex: 1, color: th.text, fontSize: 13.5, outlineStyle: 'none' } as any} />
+              <View style={{ paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: th.line }}><Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '700' }}>Esc</Text></View>
+            </View>
+            {hits.length > 0 && (
+              <View style={{ marginTop: 6, borderRadius: 12, borderWidth: 1, borderColor: th.line, backgroundColor: th.solid, padding: 6, shadowColor: '#0B1B3F', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } }}>
+                {hits.map((s) => (
+                  <Pressable key={s.id} onPress={() => pick(s)} style={((x: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: x.hovered ? th.accent + '14' : 'transparent' })) as any}>
+                    <Coin s={s} size={30} />
+                    <Text style={{ flex: 1, color: th.text, fontSize: 13.5, fontWeight: '700' }} numberOfLines={1}>{s.name}</Text>
+                    <Text style={{ color: th.dim, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>{groupOf(s.cat)}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
           </View>
         )}
       </View>
-      <View style={{ flex: 1 }} />
-      <LiveDot />
-      {lic.admin && (
-        <Pressable accessibilityRole="button" onPress={() => setAdminOpen(true)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: st.hovered ? th.accent + '26' : th.accent + '14', cursor: 'pointer' })) as any}>
-          <Icon name="shield-checkmark" size={15} color={th.accent} /><Text style={{ color: th.accent, fontSize: 12.5, fontWeight: '800' }}>Admin</Text>
-          {adminBadge.chats + adminBadge.pays > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '900' }}>{adminBadge.chats + adminBadge.pays}</Text></View>}
-        </Pressable>
-      )}
-      <BellButton />
-      {paid ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 14, borderRadius: 17, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '1F' }}><Icon name="ribbon" size={15} color={th.gold} /><Text style={{ color: th.gold, fontSize: 12.5, fontWeight: '900' }}>PRO</Text></View>
-      ) : (
-        <Pressable onPress={() => setTab(6)} style={{ height: 34, paddingHorizontal: 14, borderRadius: 17, justifyContent: 'center', backgroundColor: th.accent, cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '800' }}>Upgrade</Text></Pressable>
-      )}
-      <View style={{ width: 1, height: 32, backgroundColor: th.line }} />
-      <Pressable onPress={() => setTab(6)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, cursor: 'pointer' } as any}>
-        {avatar ? <Image source={{ uri: avatar }} style={{ width: 38, height: 38, borderRadius: 19 }} /> : (
-          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 16, fontWeight: '900' }}>{(account?.name ?? '?').trim().charAt(0).toUpperCase()}</Text></View>
-        )}
-        <View>
-          <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }} numberOfLines={1}>{account?.name ?? ''}</Text>
-          <Text style={{ color: th.dim, fontSize: 11 }}>{lic.admin ? 'Admin' : paid ? 'Premium Trader' : lic.status === 'trial' ? 'Free trial' : 'Account'}</Text>
-        </View>
-        <Icon name="chevron-down" size={16} color={th.dim} />
-      </Pressable>
     </View>
   );
 }
@@ -237,16 +213,13 @@ function Notices() {
 
 export function DesktopShell({ children }: { children: React.ReactNode }) {
   const L = useLayout();
-  const { tab } = useApp(); // Home has its own right column (watchlist, sentiment, key levels), so the market-watch panel is for the other pages
+  const { tab } = useApp(); // Home has its own full-width sections, so the market-watch panel is for the other pages
   return (
-    <View style={{ flex: 1, flexDirection: 'row' }}>
-      <Sidebar width={L.sidebar} />
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <TopBar />
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <View style={{ flex: 1, minWidth: 0 }}><Notices />{children}</View>
-          {L.rail > 0 && tab !== 0 && <Rail width={L.rail} />}
-        </View>
+    <View style={{ flex: 1 }}>
+      <TopNav />
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <View style={{ flex: 1, minWidth: 0 }}><Notices />{children}</View>
+        {L.rail > 0 && tab !== 0 && <Rail width={L.rail} />}
       </View>
     </View>
   );

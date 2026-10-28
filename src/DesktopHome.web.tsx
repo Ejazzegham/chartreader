@@ -1,467 +1,476 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import { View, Text, Pressable, ScrollView, Linking } from 'react-native';
+import Svg, { Path, Rect, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from './store';
 import { Icon } from './ui';
+import { BAHU_URL, LogoMark } from './Brand';
 import { Coin, CandleChart } from './MarketWidgets';
-import MethodChart from './MethodChart';
-import MarketsPanel from './MarketsPanel';
-import { MethodIcon, MDEFS, mdef } from './MethodArt';
-import ChartWeb from './ChartWeb';
-import { useFeed, chg, symOf, SYMBOLS, watchCandles, toggleFav, setWatch, Candle, Sym } from './markets';
-import { tvSymbol, tvHtml, TV_INTERVAL } from './tv';
+import { useFeed, chg, symOf, SYMBOLS, watchCandles, toggleFav, setWatch, Candle } from './markets';
 import { analyzeAll } from './refine';
 import { qualify } from './verdict';
-import { totalR, money, todayPnl } from './trades';
-import { MANUAL_TAB } from './manualTarget';
-import { useRealWindow, useLayout } from './win';
+import { useRealWindow } from './win';
 import { useDash, setDash } from './dash';
-import { useHeadlines } from './headlines';
-import { useNews, localTime } from './news';
 
-// The website's home, laid out like the design: hero, chart with the entry / stop / targets drawn on it, the TRADE or WAIT answer with its summary and
-// plan, the analysis methods, trade desk + chart analysis + news, quick tools + market overview + upgrade card, and on the right every pair (scrollable),
-// the market sentiment and the key levels. The chart can be grabbed with the hand and moved (see ChartZoom.tsx). Live data, same code as the phone app.
+// The website's home page, designed like the "Fintech Analytics Homepage" mockup: hero with a live chart, market overview,
+// multi-timeframe analysis, why-choose cards, call-to-action and footer. All numbers are live (same engine as the phone app).
 const TFB: [string, string][] = [['60', '1m'], ['300', '5m'], ['900', '15m'], ['1800', '30m'], ['3600', '1h'], ['14400', '4h'], ['86400', '1D']];
-const METHOD_CARDS: { k: string; label: string; vote: string | null; text: string }[] = [
-  { k: 'ict', label: 'ICT', vote: 'ICT', text: 'Liquidity sweep, FVG, order block, PD array' },
-  { k: 'smc', label: 'SMC', vote: 'SMC', text: 'Market structure, BOS / CHoCH, order flow' },
-  { k: 'vsa', label: 'VSA', vote: 'VSA', text: 'Volume analysis, accumulation and distribution' },
-  { k: 'pat', label: 'Patterns', vote: 'PAT', text: 'Double top / bottom, triangles, flags' },
-  { k: 'candle', label: 'Candles', vote: 'CDL', text: 'Hammer, engulfing, confirmation candle' },
-  { k: 'topdown', label: 'Top-Down', vote: null, text: 'H4 → H1 → M15 multi-timeframe' },
-];
 const METALS = ['frxXAUUSD', 'frxXAGUSD', 'frxWTI', 'frxBRENT'];
-const groupKey = (s: Sym) => (s.cat === 'crypto' ? 'crypto' : s.cat === 'deriv' ? 'deriv' : METALS.includes(s.id) ? 'metals' : 'forex');
-const CAT_LABEL: Record<string, string> = { forex: 'Forex', crypto: 'Crypto', deriv: 'Deriv synthetic index' };
-const pipOf = (id: string) => (id.startsWith('frx') && !METALS.includes(id) && id !== 'frxDXY' ? (id.endsWith('JPY') ? 0.01 : 0.0001) : 0);
-const pipsText = (id: string, from: number, to: number) => { const p = pipOf(id); if (!p) return ''; const n = Math.round(Math.abs(to - from) / p); return `(${to >= from ? '+' : '−'}${n} pips)`; };
+const groupKey = (id: string, cat: string) => (cat === 'crypto' ? 'crypto' : cat === 'deriv' ? 'deriv' : METALS.includes(id) ? 'metals' : 'forex');
+const LEAD: Record<string, string> = { forex: 'frxEURUSD', crypto: 'cryBTCUSD', metals: 'frxXAUUSD', deriv: 'R_100' };
 
-function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
+function usePal() {
   const { th } = useApp();
-  return <View style={[{ backgroundColor: th.dark ? th.panel : '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: th.line, shadowColor: '#101828', shadowOpacity: 0.045, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }, style]}>{children}</View>;
+  const d = th.dark;
+  return {
+    th, dark: d,
+    bg: d ? th.bg : '#F5F8FE', section: d ? th.bg : '#FFFFFF', alt: d ? th.panel2 : '#F5F8FE',
+    card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E5EBF5',
+    head: d ? th.text : '#0B1B3F', body: d ? th.dim : '#5A6B89',
+    blue: th.accent, soft: th.accent + (d ? '26' : '14'),
+    shadow: d ? '#000000' : '#1B3A7A',
+  };
 }
-function Ring({ pct, color, track, size = 60, label }: { pct: number; color: string; track: string; size?: number; label: string }) {
-  const r = size / 2 - 5, c = 2 * Math.PI * r, p = Math.max(0, Math.min(1, pct / 100));
+
+// ---------- live setup for one pair + timeframe (candles, analysis, sentiment, key levels)
+function useSetup(symId: string, tf: string, key: string) {
+  const { quotes } = useFeed(true);
+  const [data, setData] = useState<Candle[]>([]);
+  const [err, setErr] = useState('');
+  useEffect(() => { setWatch(key, [symId]); return () => setWatch(key, []); }, [symId]);
+  useEffect(() => { setData([]); setErr(''); return watchCandles(symId, Number(tf), (c) => { setErr(''); setData(c); }, setErr); }, [symId, tf]);
+  const sym = symOf(symId), quote = quotes[symId], dec = quote?.dec ?? 4;
+  const land = useMemo(() => (data.length > 40 ? analyzeAll(data, new Date()) : null), [data]);
+  const qual = useMemo(() => (land ? qualify(land, { id: sym.id, cat: sym.cat, now: new Date(), c: data }) : null), [land, data, symId]);
+  const cb = land?.combo;
+  const bull = cb ? (cb.side === 'buy' ? cb.score : 100 - cb.score) : (() => { const v = land?.votes ?? [], b = v.filter((x) => x.side === 'buy').length, s = v.filter((x) => x.side === 'sell').length; return b + s ? Math.round((b / (b + s)) * 100) : 50; })();
+  const structure = !land ? 'Reading the market…' : land.ict.trend === 'bullish' ? 'Higher highs / higher lows' : land.ict.trend === 'bearish' ? 'Lower highs / lower lows' : 'Range-bound';
+  return { sym, quote, dec, data, err, land, qual, cb, bull, structure, ready: !!land };
+}
+type Setup = ReturnType<typeof useSetup>;
+
+// ---------- small building blocks
+function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
+  const P = usePal();
+  return <View style={[{ backgroundColor: P.card, borderRadius: 14, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
+}
+const Pill = ({ text, tone }: { text: string; tone?: string }) => {
+  const P = usePal(), c = tone ?? P.blue;
+  return <View style={{ alignSelf: 'flex-start', paddingHorizontal: 12, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: tone ? c + '1F' : P.soft }}><Text style={{ color: c, fontSize: 12.5, fontWeight: '600' }}>{text}</Text></View>;
+};
+function Btn({ label, onPress, ghost, arrow = true }: { label: string; onPress: () => void; ghost?: boolean; arrow?: boolean }) {
+  const P = usePal();
   return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={size} height={size} style={{ position: 'absolute' }}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={track} strokeWidth={5} fill="none" />
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={5} fill="none" strokeLinecap="round" strokeDasharray={`${c * p} ${c}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-      </Svg>
-      <Text style={{ color, fontSize: size * 0.27, fontWeight: '800' }}>{label}</Text>
-    </View>
+    <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 26, borderRadius: 10, cursor: 'pointer', backgroundColor: ghost ? (s.hovered ? P.soft : P.dark ? 'transparent' : '#FFFFFF80') : P.blue, borderWidth: ghost ? 1.5 : 0, borderColor: P.blue + '55', opacity: !ghost && s.hovered ? 0.92 : 1, shadowColor: P.blue, shadowOpacity: ghost ? 0 : 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } })) as any}>
+      <Text style={{ color: ghost ? P.blue : P.th.onAccent, fontSize: 15, fontWeight: '600' }}>{label}</Text>
+      {arrow && <Icon name="arrow-forward" size={16} color={ghost ? P.blue : P.th.onAccent} />}
+    </Pressable>
   );
 }
-function Gauge({ pct, color, track }: { pct: number; color: string; track: string }) {
-  const len = Math.PI * 60, p = Math.max(0, Math.min(1, pct / 100));
+function Spark({ pts, color, w = 130, h = 34 }: { pts: number[]; color: string; w?: number; h?: number }) {
+  const a = pts.slice(-40);
+  if (a.length < 2) return <View style={{ width: w, height: h }} />;
+  const lo = Math.min(...a), hi = Math.max(...a), r = hi - lo || 1;
+  const xy = a.map((v, i) => [(i / (a.length - 1)) * w, h - 3 - ((v - lo) / r) * (h - 8)]);
+  const line = xy.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
   return (
-    <Svg width={150} height={88} viewBox="0 0 150 88">
-      <Path d="M 15 78 A 60 60 0 0 1 135 78" stroke={track} strokeWidth={13} fill="none" strokeLinecap="round" />
-      <Path d="M 15 78 A 60 60 0 0 1 135 78" stroke={color} strokeWidth={13} fill="none" strokeLinecap="round" strokeDasharray={`${len * p} ${len}`} />
+    <Svg width={w} height={h}>
+      <Defs><SvgGrad id={'sp' + color.slice(1)} x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor={color} stopOpacity="0.18" /><Stop offset="1" stopColor={color} stopOpacity="0" /></SvgGrad></Defs>
+      <Path d={`${line} L${w} ${h} L0 ${h} Z`} fill={`url(#sp${color.slice(1)})`} />
+      <Path d={line} stroke={color} strokeWidth={1.6} fill="none" strokeLinejoin="round" strokeLinecap="round" />
     </Svg>
   );
 }
-const Title = ({ icon, text, right, onRight }: { icon?: string; text: string; right?: string; onRight?: () => void }) => {
-  const { th } = useApp();
+function Gauge({ pct, color, track }: { pct: number; color: string; track: string }) {
+  const len = Math.PI * 44, p = Math.max(0, Math.min(1, pct / 100));
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
-      {!!icon && <Icon name={icon} size={17} color={th.accent} />}
-      <Text style={{ color: th.text, fontSize: 15, fontWeight: '700', flex: 1 }}>{text}</Text>
-      {!!right && <Pressable onPress={onRight} style={{ cursor: 'pointer' } as any}><Text style={{ color: th.accent, fontSize: 12, fontWeight: '600' }}>{right}</Text></Pressable>}
+    <Svg width={110} height={64} viewBox="0 0 110 64">
+      <Path d="M 11 58 A 44 44 0 0 1 99 58" stroke={track} strokeWidth={9} fill="none" strokeLinecap="round" />
+      <Path d="M 11 58 A 44 44 0 0 1 99 58" stroke={color} strokeWidth={9} fill="none" strokeLinecap="round" strokeDasharray={`${len * p} ${len}`} />
+    </Svg>
+  );
+}
+function SentimentCard({ s }: { s: Setup }) {
+  const P = usePal(), th = P.th;
+  const senti = s.bull >= 60 ? { l: 'Bullish', c: th.buy } : s.bull <= 40 ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
+  return (
+    <Panel style={{ padding: 16, gap: 6 }}>
+      <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700' }}>Market Sentiment</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ width: 110, height: 64, alignItems: 'center' }}>
+          <Gauge pct={s.bull} color={senti.c} track={P.dark ? th.panel2 : '#EEF2F8'} />
+          <Text style={{ position: 'absolute', bottom: 0, color: P.head, fontSize: 20, fontWeight: '800' }}>{s.ready ? `${Math.round(s.bull)}%` : '—'}</Text>
+        </View>
+        <View style={{ flex: 1, minWidth: 60 }}>
+          <Text style={{ color: senti.c, fontSize: 15, fontWeight: '800' }}>{s.ready ? senti.l : 'Loading'}</Text>
+          <Text style={{ color: P.body, fontSize: 10.5, lineHeight: 14 }}>Share of methods point up</Text>
+        </View>
+      </View>
+    </Panel>
+  );
+}
+function LevelsCard({ s }: { s: Setup }) {
+  const P = usePal(), th = P.th, cb = s.cb, fx = (v?: number) => (v == null ? '—' : v.toFixed(s.dec));
+  const row = (label: string, v?: number, color?: string) => (
+    <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
+      <Text style={{ color: color ?? P.body, fontSize: 13, fontWeight: color ? '600' : '500' }}>{label}</Text>
+      <Text style={{ color: color ?? P.head, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{fx(v)}</Text>
     </View>
   );
-};
-const Tabs = ({ items, on, set }: { items: string[]; on: string; set: (k: string) => void }) => {
-  const { th } = useApp();
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-      {items.map((k) => (
-        <Pressable key={k} onPress={() => set(k)} style={{ paddingHorizontal: 12, height: 28, borderRadius: 8, justifyContent: 'center', cursor: 'pointer', backgroundColor: on === k ? th.accent + '1A' : 'transparent' } as any}>
-          <Text style={{ color: on === k ? th.accent : th.dim, fontSize: 12, fontWeight: on === k ? '700' : '500' }}>{k}</Text>
+    <Panel style={{ padding: 16 }}>
+      <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700', marginBottom: 4 }}>Key Levels</Text>
+      {row('Entry', cb?.entry)}{row('Stop Loss', cb?.sl, th.sell)}{row('TP1', cb?.tps[0])}{row('TP2', cb?.tps[1])}{row('TP3', cb?.tps[2])}
+    </Panel>
+  );
+}
+function chartLevels(s: Setup) {
+  const th = usePalTheme(), cb = s.cb;
+  if (!cb) return [];
+  return [{ label: 'Entry', price: cb.entry, color: th.accent }, { label: 'SL', price: cb.sl, color: th.sell }, ...cb.tps.map((p: number, i: number) => ({ label: `TP${i + 1}`, price: p, color: th.buy }))];
+}
+const usePalTheme = () => useApp().th;
+
+function TfTabs({ tf, set }: { tf: string; set: (k: string) => void }) {
+  const P = usePal();
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+      {TFB.map(([k, l]) => (
+        <Pressable key={k} onPress={() => set(k)} style={((st: any) => ({ paddingHorizontal: 11, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: tf === k ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
+          <Text style={{ color: tf === k ? P.blue : P.body, fontSize: 12.5, fontWeight: tf === k ? '700' : '500' }}>{l}</Text>
         </Pressable>
       ))}
     </View>
   );
-};
-const Pill = ({ text, color }: { text: string; color: string }) => (
-  <View style={{ paddingHorizontal: 9, paddingVertical: 3, borderRadius: 10, backgroundColor: color + '1F' }}><Text style={{ color, fontSize: 10.5, fontWeight: '700' }}>{text}</Text></View>
-);
-
-export default function DesktopHome() {
-  const { th, lic, setTab, setAmethod, setAsym, signals, journal, desk, history, logSetup, toast } = useApp();
-  const L = useLayout(), real = useRealWindow();
-  const pageW = Math.min(real.width - L.sidebar, 1640) - 48;
-  const two = pageW >= 1020, RIGHT = 330, mainW = two ? pageW - RIGHT - 20 : pageW;
-  const d = useDash();
-  const { quotes, db } = useFeed(true);
-  const [mode, setMode] = useState<'analysis' | 'pro'>('analysis');
-  const [data, setData] = useState<Candle[]>([]);
-  const [err, setErr] = useState('');
-  const [dtab, setDtab] = useState('Setups');
-  const [ntab, setNtab] = useState('All');
-  const sym = symOf(d.sym), tv = tvSymbol(sym), quote = quotes[sym.id];
-  const paid = lic.admin || lic.status === 'paid';
-
-  useEffect(() => { setWatch('dash', [sym.id]); return () => setWatch('dash', []); }, [sym.id]);
-  useEffect(() => { setData([]); setErr(''); return watchCandles(sym.id, Number(d.tf), (c) => { setErr(''); setData(c); }, setErr); }, [sym.id, d.tf]);
-
-  // ---- the answer: TRADE or WAIT from the same quality gate as the phone
-  const land = useMemo(() => (data.length > 40 ? analyzeAll(data, new Date()) : null), [data]);
-  const qual = useMemo(() => (land ? qualify(land, { id: sym.id, cat: sym.cat, now: new Date(), c: data }) : null), [land, data, sym.id]);
-  const cb = land?.combo, dec = quote?.dec ?? 4, fx = (v: number) => v.toFixed(dec);
-  const isTrade = !!qual?.trade;
-  const vcol = !qual ? th.dim : isTrade ? (cb?.side === 'sell' ? th.sell : th.buy) : th.gold;
-  const conf = cb ? (cb.score >= 85 ? 'High Confidence' : cb.score >= 70 ? 'Medium Confidence' : 'Low Confidence') : '';
-  const why = qual && !qual.trade ? (qual.reasons[0] ?? 'The conditions are not all met yet.') : '';
-  const bull = cb ? (cb.side === 'buy' ? cb.score : 100 - cb.score) : (() => { const v = land?.votes ?? [], b = v.filter((x) => x.side === 'buy').length, s = v.filter((x) => x.side === 'sell').length; return b + s ? Math.round((b / (b + s)) * 100) : 50; })();
-  const senti = bull >= 60 ? { l: 'Bullish', c: th.buy } : bull <= 40 ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
-  const trend = land?.confirm?.ema200 === 'above' ? 'Uptrend' : land?.confirm?.ema200 === 'below' ? 'Downtrend' : land?.ict?.trend === 'bullish' ? 'Uptrend' : land?.ict?.trend === 'bearish' ? 'Downtrend' : 'Sideways';
-  const structure = !land ? '—' : land.ict.trend === 'bullish' ? 'Higher highs / higher lows' : land.ict.trend === 'bearish' ? 'Lower highs / lower lows' : 'Range-bound';
-  const adx = land?.confirm?.adx ?? 0, momentum = !land ? '—' : adx >= 25 ? 'Strong' : adx >= 18 ? 'Moderate' : 'Weak';
-  const volat = useMemo(() => { if (data.length < 60) return '—'; const r = (a: Candle[]) => a.reduce((s, c) => s + (c.h - c.l), 0) / a.length, k = r(data.slice(-14)) / (r(data.slice(-60)) || 1); return k > 1.3 ? 'High' : k < 0.75 ? 'Low' : 'Moderate'; }, [data]);
-  const last = data[data.length - 1];
-  const c = chg(sym.id), col = c >= 0 ? th.buy : th.sell, fav = db.favs.includes(sym.id);
-  const absChg = quote ? quote.price - quote.price / (1 + c / 100) : 0;
-  const open = (k = 'all') => { setAsym(sym.id); setAmethod(k); setTab(1); };
-  const addJournal = () => {
-    if (!cb) { toast('No setup to add yet. Wait for the chart to load.', 'info'); return; }
-    logSetup({ symId: sym.id, name: sym.name, tf: d.tf, dec, side: cb.side, entry: cb.entry, sl: cb.sl, tps: [...cb.tps], score: cb.score, grade: cb.grade, source: 'Combined', why: cb.checks.filter((x) => x.ok).map((x) => x.text).slice(0, 5), zone: [cb.zoneBottom, cb.zoneTop] });
-    toast('Setup added to your Journal.', 'good');
-  };
-
-  // ---- trade desk
-  const waiting = signals.filter((x) => x.status === 'signal'), live = signals.filter((x) => x.status !== 'signal');
-  const closedRows = journal.slice(0, 5), wins = journal.filter((x) => x.pnl > 0).length;
-  const todayMoney = todayPnl(journal);
-  const floatMoney = live.reduce((acc, x) => (x.status === 'open' && quotes[x.symId]?.price ? acc + totalR(x, quotes[x.symId].price) * x.risk : acc), 0);
-
-  // ---- news
-  const fxN = useHeadlines('forex'), crN = useHeadlines('crypto'), cal = useNews(true);
-  const newsRows = useMemo(() => {
-    if (ntab === 'Economy') return cal.events.filter((e) => e.impact === 'High' || e.impact === 'Medium').slice(0, 5).map((e) => ({ id: e.id, t: e.t, title: `${e.cur} · ${e.title}`, tag: e.impact, tc: e.impact === 'High' ? th.sell : th.gold }));
-    const f = fxN.items.map((h) => ({ id: h.id, t: h.t, title: h.title, tag: 'Forex', tc: th.accent })), k = crN.items.map((h) => ({ id: h.id, t: h.t, title: h.title, tag: 'Crypto', tc: th.gold }));
-    return (ntab === 'Forex' ? f : ntab === 'Crypto' ? k : [...f, ...k].sort((a, b) => b.t - a.t)).slice(0, 5);
-  }, [ntab, fxN.items, crN.items, cal.events]);
-
-  // ---- market overview: how many markets are green today
-  const overview = (['forex', 'crypto', 'metals', 'deriv'] as const).map((g) => { const list = SYMBOLS.filter((s) => groupKey(s) === g && quotes[s.id]); return { g, n: list.length, green: list.filter((s) => chg(s.id) >= 0).length }; });
-  const nMethods = MDEFS.filter((x) => x.host !== 'tab').length;
-  const aiItem = history[0];
-  const stat = (icon: string, color: string, v: string, l: string) => (
-    <View key={l} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 38, height: 38, borderRadius: 11, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color="#FFFFFF" /></View>
-      <View><Text style={{ color: th.text, fontSize: 17, fontWeight: '800' }}>{v}</Text><Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '500' }}>{l}</Text></View>
-    </View>
-  );
-  const lvl = (label: string, v: number | undefined, color?: string) => (
-    <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
-      <Text style={{ color: color ?? th.dim, fontSize: 13, fontWeight: color ? '600' : '500' }}>{label}</Text>
-      <Text style={{ color: color ?? th.text, fontSize: 13.5, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{v == null ? '—' : fx(v)}</Text>
-    </View>
-  );
-  const chartW = mainW - 32;
-
-  const rightCol = (
-    <View style={{ width: two ? RIGHT : '100%', gap: 20 }}>
-      <MarketsPanel height={430} />
-      <Panel style={{ padding: 18, gap: 8 }}>
-        <Text style={{ color: th.text, fontSize: 15, fontWeight: '700' }}>Market Sentiment</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ width: 150, height: 88, alignItems: 'center' }}>
-            <Gauge pct={bull} color={senti.c} track={th.panel2} />
-            <Text style={{ position: 'absolute', bottom: 2, color: th.text, fontSize: 24, fontWeight: '800' }}>{land ? `${Math.round(bull)}%` : '—'}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: senti.c, fontSize: 18, fontWeight: '800' }}>{land ? senti.l : 'Loading'}</Text>
-            <Text style={{ color: th.dim, fontSize: 11, lineHeight: 15 }}>{cb ? 'Setup score, from the analysis methods' : 'Share of methods that point up'}</Text>
-          </View>
-        </View>
-      </Panel>
-      <Panel style={{ padding: 18, gap: 4 }}>
-        <Text style={{ color: th.text, fontSize: 15, fontWeight: '700', marginBottom: 4 }}>Key Levels</Text>
-        {lvl('Entry', cb?.entry)}{lvl('Stop Loss', cb?.sl, th.sell)}{lvl('TP1', cb?.tps[0])}{lvl('TP2', cb?.tps[1])}{lvl('TP3', cb?.tps[2])}
-        <View style={{ height: 1, backgroundColor: th.line, marginVertical: 6 }} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}>
-          <Text style={{ color: th.text, fontSize: 13, fontWeight: '700' }}>Risk / Reward</Text>
-          <Text style={{ color: th.buy, fontSize: 13.5, fontWeight: '800' }}>{cb ? `1 : ${cb.rr[2].toFixed(1)}` : '—'}</Text>
-        </View>
-        <View style={{ height: 1, backgroundColor: th.line, marginVertical: 6 }} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 }}>
-          <Text style={{ color: th.text, fontSize: 13, fontWeight: '700' }}>Position Size</Text>
-          {desk.riskPct > 0
-            ? <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '700' }}>{desk.riskPct}% <Text style={{ color: desk.riskPct <= 1 ? th.buy : desk.riskPct <= 2 ? th.gold : th.sell, fontWeight: '600' }}>({desk.riskPct <= 1 ? 'Low' : desk.riskPct <= 2 ? 'Medium' : 'High'} Risk)</Text></Text>
-            : <Pressable onPress={() => setTab(3)} style={{ cursor: 'pointer' } as any}><Text style={{ color: th.accent, fontSize: 12.5, fontWeight: '700' }}>Set your risk ›</Text></Pressable>}
-        </View>
-      </Panel>
-    </View>
-  );
-
+}
+function ChartHeader({ s, sub, price }: { s: Setup; sub?: string; price?: boolean }) {
+  const P = usePal(), th = P.th, { db } = useFeed(true);
+  const c = chg(s.sym.id), fav = db.favs.includes(s.sym.id);
   return (
-    <ScrollView contentContainerStyle={{ padding: 24, gap: 20, width: '100%', maxWidth: pageW + 48, alignSelf: 'center' }} showsVerticalScrollIndicator={false}>
-      <View style={{ flexDirection: two ? 'row' : 'column', alignItems: 'flex-start', gap: 20 }}>
-        <View style={{ width: mainW, gap: 20 }}>
-          {/* hero */}
-          <View style={{ borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: th.line, backgroundColor: '#FFFFFF' }}>
-            <LinearGradient colors={[th.accent + '24', th.accent + '0C', '#FFFFFF00']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-            <View style={{ padding: 26, gap: 10 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingHorizontal: 11, height: 26, borderRadius: 13, backgroundColor: th.accent + '18' }}>
-                <Icon name="shield-checkmark" size={13} color={th.accent} /><Text style={{ color: th.accent, fontSize: 10.5, fontWeight: '700', letterSpacing: 1.2 }}>SMART TRADING ANALYSIS</Text>
-              </View>
-              <Text style={{ color: th.text, fontSize: 36, fontWeight: '800', letterSpacing: -1 }}>Scalp <Text style={{ color: th.accent }}>•</Text> Analyze <Text style={{ color: th.accent }}>•</Text> Execute</Text>
-              <Text style={{ color: th.dim, fontSize: 14, lineHeight: 21, maxWidth: 470 }}>Professional trading tools and analysis methods for Forex, Crypto and Deriv, with real-time charts, multi-timeframe analysis and smart insights.</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 8 }}>
-                {stat('flash', '#3B82F6', String(nMethods), 'Analysis Methods')}{stat('pulse', '#10B981', String(SYMBOLS.length), 'Live Markets')}{stat('time', '#F59E0B', '24/7', 'Crypto & Deriv')}{stat('flag', '#8B5CF6', '3 TPs', 'On every setup')}
-              </View>
-            </View>
-            {mainW >= 760 && (
-              <View pointerEvents="none" style={{ position: 'absolute', right: 44, top: 26, width: 240 }}>
-                <Text style={{ color: th.accent + 'CC', fontSize: 25, fontStyle: 'italic', lineHeight: 33, fontFamily: "'Segoe Script','Brush Script MT','Lucida Handwriting',cursive", transform: [{ rotate: '-6deg' }] } as any}>Better Analysis,{'\n'}Bigger Opportunities</Text>
-                <Svg width={90} height={50} style={{ marginLeft: 70, marginTop: 4 }}><Path d="M4 44 C 20 8, 52 4, 82 8" stroke={th.accent + 'AA'} strokeWidth={2} fill="none" strokeLinecap="round" /><Path d="M70 2 L84 8 L72 18" stroke={th.accent + 'AA'} strokeWidth={2} fill="none" strokeLinecap="round" /></Svg>
-              </View>
-            )}
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <Coin s={s.sym} size={36} />
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '700' }} numberOfLines={1}>{s.sym.name}</Text>
+        {!!sub && <Text style={{ color: P.body, fontSize: 11.5 }} numberOfLines={1}>{sub}</Text>}
+      </View>
+      {price && !!s.quote && <Text style={{ color: c >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700' }}>{`${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%`}</Text>}
+      <Pressable onPress={() => toggleFav(s.sym.id)} hitSlop={8} style={{ cursor: 'pointer' } as any}><Icon name={fav ? 'star' : 'star-outline'} size={19} color={fav ? th.gold : P.body} /></Pressable>
+    </View>
+  );
+}
+function ChartBody({ s, tf, width, height }: { s: Setup; tf: string; width: number; height: number }) {
+  const P = usePal(), levels = chartLevels(s);
+  if (width < 80) return <View style={{ height }} />;
+  return s.data.length > 2
+    ? <CandleChart data={s.data} width={width} dec={s.dec} height={height} gran={Number(tf)} levels={levels} />
+    : <View style={{ height, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: P.body, fontSize: 13 }}>{s.err || 'Loading candles...'}</Text></View>;
+}
+
+// ---------- sections
+function Hero({ w, go }: { w: number; go: (t: number) => void }) {
+  const P = usePal(), th = P.th, d = useDash();
+  const s = useSetup(d.sym, d.tf, 'dash');
+  const two = w >= 1020, [cw, setCw] = useState(0);
+  const c = chg(s.sym.id);
+  const feat = (icon: string, a: string, b: string) => (
+    <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={18} color={P.blue} /></View>
+      <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 16 }}>{a}{'\n'}{b}</Text>
+    </View>
+  );
+  return (
+    <View style={{ overflow: 'hidden' }}>
+      <LinearGradient colors={P.dark ? [th.bg, th.bg] : ['#EAF1FF', '#F6F9FF', '#FFFFFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+      <View pointerEvents="none" style={{ position: 'absolute', right: -80, top: 60, width: 640, height: 400, borderRadius: 320, backgroundColor: P.blue + (P.dark ? '14' : '12') }} />
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 52, paddingBottom: 60, flexDirection: two ? 'row' : 'column', alignItems: two ? 'center' : 'stretch', gap: 40 }}>
+        <View style={{ flex: two ? 0.82 : undefined, gap: 22, minWidth: 0 }}>
+          <Pill text="Smarter Analysis. Better Decisions." />
+          <Text style={{ color: P.head, fontSize: two ? 54 : 40, lineHeight: two ? 58 : 44, fontWeight: '800', letterSpacing: -1.6 }}>Professional Trading{'\n'}<Text style={{ color: P.blue }}>Analysis Platform</Text></Text>
+          <Text style={{ color: P.body, fontSize: 17.5, lineHeight: 27, maxWidth: 470 }}>Get real-time market insights, powerful analysis tools and personalized trading plans — all in one place.</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 4 }}>
+            <Btn label="Go to Analysis" onPress={() => go(1)} />
+            <Btn label="Explore Markets" ghost arrow={false} onPress={() => go(2)} />
           </View>
-
-          {/* chart */}
-          <Panel style={{ padding: 16, gap: 12 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <Coin s={sym} size={42} />
-              <View>
-                <Text style={{ color: th.text, fontSize: 16.5, fontWeight: '800' }}>{sym.name}</Text>
-                <Text style={{ color: th.dim, fontSize: 11.5 }}>{sym.sub ?? CAT_LABEL[sym.cat] ?? sym.cat}</Text>
-              </View>
-              <Text style={{ color: th.text, fontSize: 24, fontWeight: '800', marginLeft: 8, fontVariant: ['tabular-nums'] }}>{quote ? quote.price.toFixed(dec) : '—'}</Text>
-              {!!quote && <Text style={{ color: col, fontSize: 12.5, fontWeight: '700' }}>{`${absChg >= 0 ? '+' : '−'}${Math.abs(absChg).toFixed(dec)} (${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%)`}</Text>}
-              <View style={{ flex: 1 }} />
-              <Pressable onPress={() => toggleFav(sym.id)} hitSlop={6} style={{ cursor: 'pointer' } as any}><Icon name={fav ? 'star' : 'star-outline'} size={20} color={fav ? th.gold : th.dim} /></Pressable>
-            </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 4 }}>
-              {TFB.map(([k, l]) => (
-                <Pressable key={k} onPress={() => setDash({ tf: k })} style={{ paddingHorizontal: 12, height: 30, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: d.tf === k ? th.accent + '1F' : 'transparent' } as any}>
-                  <Text style={{ color: d.tf === k ? th.accent : th.dim, fontSize: 12.5, fontWeight: d.tf === k ? '700' : '500' }}>{l}</Text>
-                </Pressable>
-              ))}
-              <View style={{ flex: 1 }} />
-              {!!tv && (
-                <View style={{ flexDirection: 'row', borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden' }}>
-                  {([['analysis', 'Analysis'], ['pro', 'Pro chart']] as const).map(([k, l]) => (
-                    <Pressable key={k} onPress={() => setMode(k)} style={{ paddingHorizontal: 11, height: 28, justifyContent: 'center', cursor: 'pointer', backgroundColor: mode === k ? th.accent : 'transparent' } as any}><Text style={{ color: mode === k ? th.onAccent : th.dim, fontSize: 12, fontWeight: '700' }}>{l}</Text></Pressable>
-                  ))}
-                </View>
-              )}
-              <Pressable onPress={() => open()} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 30, paddingHorizontal: 12, marginLeft: 6, borderRadius: 8, borderWidth: 1, borderColor: th.line, cursor: 'pointer', backgroundColor: st.hovered ? th.accent + '12' : 'transparent' })) as any}>
-                <Icon name="expand-outline" size={14} color={th.accent} /><Text style={{ color: th.accent, fontSize: 12, fontWeight: '700' }}>Full chart</Text>
-              </Pressable>
-            </View>
-            {!!last && mode === 'analysis' && <Text style={{ color: th.dim, fontSize: 11.5, fontVariant: ['tabular-nums'] }}>O {fx(last.o)}  H {fx(last.h)}  L {fx(last.l)}  C {fx(last.c)}  <Text style={{ color: last.c >= last.o ? th.buy : th.sell }}>{last.c >= last.o ? '+' : '−'}{fx(Math.abs(last.c - last.o))}</Text></Text>}
-            <View style={{ borderRadius: 10, overflow: 'hidden' }}>
-              {mode === 'pro' && !!tv
-                ? <ChartWeb key={`tv-${sym.id}-${d.tf}-${th.dark}`} height={440} html={tvHtml(tv, TV_INTERVAL[d.tf] ?? '15', th.dark, th.bg, [], '1')} />
-                : (
-                  <View style={{ minHeight: 360, justifyContent: 'center' }}>
-                    {data.length > 40 && land
-                      ? <MethodChart data={data} all={land} method="ict" width={chartW} dec={dec} height={430} gran={Number(d.tf)} symId={sym.id} plan={cb ? { entry: cb.entry, sl: cb.sl, tps: [...cb.tps], tag: cb.side === 'buy' ? 'BUY' : 'SELL' } : null} />
-                      : data.length ? <CandleChart data={data} width={chartW} dec={dec} height={380} gran={Number(d.tf)} /> : <Text style={{ color: th.dim, textAlign: 'center', padding: 30 }}>{err || 'Loading candles...'}</Text>}
-                  </View>
-                )}
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Icon name="hand-left-outline" size={14} color={th.dim} />
-              <Text style={{ color: th.dim, fontSize: 11.5 }}>Hold and drag to move the chart. Scroll to zoom. Double-click to reset.</Text>
-            </View>
-          </Panel>
-
-          {/* answer, summary, plan */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
-            <Panel style={{ flex: 1.1, minWidth: 270, padding: 20, gap: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Icon name={isTrade ? 'checkmark-circle' : 'hourglass-outline'} size={36} color={vcol} />
-                <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={{ color: vcol, fontSize: 24, fontWeight: '800', letterSpacing: 0.4 }}>{!qual ? 'Reading…' : isTrade ? `TRADE ${cb?.side === 'sell' ? 'SELL' : 'BUY'}` : 'WAIT'}</Text>
-                  {!!conf && <View style={{ alignSelf: 'flex-start' }}><Pill text={conf} color={vcol} /></View>}
-                </View>
-                {!!cb && <View style={{ alignItems: 'center' }}><Ring pct={cb.score} color={vcol} track={th.panel2} label={`${Math.round(cb.score)}%`} /><Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '600' }}>Confluence Score</Text></View>}
-              </View>
-              <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 19 }}>{!qual ? 'Reading the chart…' : isTrade ? 'All quality-gate conditions are met. The analysis methods and the higher timeframe agree on this setup.' : why}</Text>
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 'auto' as any }}>
-                <Pressable onPress={addJournal} style={((st: any) => ({ flex: 1.3, height: 42, borderRadius: 10, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: isTrade ? th.buy : th.accent, opacity: !cb ? 0.45 : st.hovered ? 0.9 : 1 })) as any}><Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Add to Journal</Text></Pressable>
-                <Pressable onPress={() => open()} style={((st: any) => ({ flex: 1, height: 42, borderRadius: 10, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderWidth: 1, borderColor: th.line, backgroundColor: st.hovered ? th.accent + '10' : 'transparent' })) as any}><Text style={{ color: th.text, fontSize: 13, fontWeight: '700' }}>Open Chart</Text><Icon name="arrow-forward" size={13} color={th.text} /></Pressable>
-              </View>
-            </Panel>
-            <Panel style={{ flex: 1.3, minWidth: 290, padding: 20, gap: 10 }}>
-              <Title icon="sparkles" text="Analysis Summary" />
-              <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 19 }} numberOfLines={4}>{cb ? cb.basis : land?.why ?? 'Reading the chart…'}</Text>
-              <View style={{ borderRadius: 10, borderWidth: 1, borderColor: th.line, overflow: 'hidden' }}>
-                {([['Market Trend', trend, trend === 'Uptrend' ? th.buy : trend === 'Downtrend' ? th.sell : th.gold], ['Structure', structure, th.text], ['Momentum', momentum, momentum === 'Strong' ? th.buy : th.text], ['Volatility', volat, th.text]] as [string, string, string][]).map(([k, v, cc], i) => (
-                  <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, paddingHorizontal: 12, backgroundColor: i % 2 ? th.panel2 : 'transparent' }}>
-                    <Text style={{ color: th.dim, fontSize: 12.5 }}>{k}</Text><Text style={{ color: cc, fontSize: 12.5, fontWeight: '700' }}>{v}</Text>
-                  </View>
-                ))}
-              </View>
-            </Panel>
-            <Panel style={{ flex: 1.1, minWidth: 270, padding: 20, gap: 8 }}>
-              <Title icon="clipboard-outline" text="Trade Plan" />
-              {([['Entry', cb?.entry, th.accent, ''], ['Stop Loss', cb?.sl, th.sell, cb ? pipsText(sym.id, cb.entry, cb.sl) : ''], ['Take Profit 1', cb?.tps[0], th.buy, cb ? pipsText(sym.id, cb.entry, cb.tps[0]) : ''], ['Take Profit 2', cb?.tps[1], th.buy, cb ? pipsText(sym.id, cb.entry, cb.tps[1]) : ''], ['Take Profit 3', cb?.tps[2], th.buy, cb ? pipsText(sym.id, cb.entry, cb.tps[2]) : '']] as [string, number | undefined, string, string][]).map(([k, v, cc, p]) => (
-                <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 }}>
-                  <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: cc + '1F', alignItems: 'center', justifyContent: 'center' }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cc }} /></View>
-                  <Text style={{ flex: 1, color: th.dim, fontSize: 12.5 }}>{k}</Text>
-                  <Text style={{ color: th.text, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{v == null ? '—' : fx(v)}</Text>
-                  {!!p && <Text style={{ color: cc === th.sell ? th.sell : th.buy, fontSize: 11, fontWeight: '600', minWidth: 74, textAlign: 'right' }}>{p}</Text>}
-                </View>
-              ))}
-            </Panel>
-          </View>
-
-          {/* analysis methods */}
-          <Panel style={{ padding: 18, gap: 12 }}>
-            <Title icon="shield-checkmark" text="Analysis Methods" right="View all methods →" onRight={() => { setAmethod(''); setTab(1); }} />
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-              {METHOD_CARDS.map(({ k, label, vote, text }) => {
-                const def = mdef(k)!, v = vote ? land?.votes.find((x) => x.method === vote) : undefined;
-                const hv = vote === null ? (cb?.htf === 'with' ? { l: cb.side === 'buy' ? 'Buy' : 'Sell', c: cb.side === 'buy' ? th.buy : th.sell } : cb?.htf === 'against' ? { l: 'Against', c: th.sell } : { l: 'Neutral', c: th.gold }) : v?.side ? { l: v.side === 'buy' ? 'Buy' : 'Sell', c: v.side === 'buy' ? th.buy : th.sell } : { l: land ? 'Neutral' : '—', c: th.gold };
-                return (
-                  <Pressable key={k} onPress={() => open(k)} style={((st: any) => ({ flexGrow: 1, flexBasis: 128, minWidth: 128, padding: 12, gap: 8, borderRadius: 12, cursor: 'pointer', borderWidth: 1, borderColor: st.hovered ? th.accent : th.line, backgroundColor: '#FFFFFF' })) as any}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <MethodIcon def={def} size={30} />
-                      <Text style={{ flex: 1, color: th.text, fontSize: 13.5, fontWeight: '800' }} numberOfLines={1}>{label}</Text>
-                    </View>
-                    <View style={{ alignSelf: 'flex-start' }}><Pill text={hv.l} color={hv.c} /></View>
-                    <Text style={{ color: th.dim, fontSize: 11, lineHeight: 15 }} numberOfLines={3}>{text}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </Panel>
-
-          {/* trade desk, chart analysis, news */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
-            <Panel style={{ flex: 1.5, minWidth: 330, padding: 18, gap: 12 }}>
-              <Title icon="briefcase-outline" text="Trade Desk" right="Open Journal ›" onRight={() => setTab(3)} />
-              <Tabs items={[`Setups (${waiting.length})`, `Live (${live.length})`, 'Closed', 'Insights']} on={dtab.startsWith('Setups') ? `Setups (${waiting.length})` : dtab.startsWith('Live') ? `Live (${live.length})` : dtab} set={(k) => setDtab(k)} />
-              {(dtab.startsWith('Setups') || dtab.startsWith('Live')) && (() => {
-                const rows = dtab.startsWith('Setups') ? waiting : live;
-                return (
-                  <View>
-                    <View style={{ flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: th.line }}>
-                      {['Symbol', 'Type', 'Entry', 'SL', 'TP1', 'Status'].map((h, i) => <Text key={h} style={{ flex: i === 0 ? 1.6 : 1, color: th.dim, fontSize: 10.5, fontWeight: '700' }}>{h}</Text>)}
-                    </View>
-                    {rows.length === 0 && <Text style={{ color: th.dim, fontSize: 12.5, paddingVertical: 14, lineHeight: 19 }}>{dtab.startsWith('Setups') ? 'No setups waiting. Good setups from the scanner and analysis pages are added here for you.' : 'No trades running.'}</Text>}
-                    {rows.slice(0, 4).map((x) => (
-                      <Pressable key={x.id} onPress={() => setTab(3)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, cursor: 'pointer', backgroundColor: st.hovered ? th.accent + '08' : 'transparent' })) as any}>
-                        <View style={{ flex: 1.6, flexDirection: 'row', alignItems: 'center', gap: 7 }}><Coin s={symOf(x.symId)} size={22} /><Text style={{ color: th.text, fontSize: 12, fontWeight: '700' }} numberOfLines={1}>{x.name}</Text></View>
-                        <View style={{ flex: 1, alignItems: 'flex-start' }}><Pill text={x.side === 'buy' ? 'Buy' : 'Sell'} color={x.side === 'buy' ? th.buy : th.sell} /></View>
-                        <Text style={{ flex: 1, color: th.text, fontSize: 12, fontVariant: ['tabular-nums'] }}>{x.entry.toFixed(x.dec)}</Text>
-                        <Text style={{ flex: 1, color: th.text, fontSize: 12, fontVariant: ['tabular-nums'] }}>{x.sl.toFixed(x.dec)}</Text>
-                        <Text style={{ flex: 1, color: th.text, fontSize: 12, fontVariant: ['tabular-nums'] }}>{x.tps[0]?.toFixed(x.dec) ?? '—'}</Text>
-                        <View style={{ flex: 1, alignItems: 'flex-start' }}><Pill text={x.status === 'signal' ? 'Waiting' : x.status === 'pending' ? 'Pending' : 'Live'} color={x.status === 'open' ? th.buy : th.gold} /></View>
-                      </Pressable>
-                    ))}
-                  </View>
-                );
-              })()}
-              {dtab === 'Closed' && (
-                <View>
-                  {closedRows.length === 0 && <Text style={{ color: th.dim, fontSize: 12.5, paddingVertical: 14 }}>No closed trades yet.</Text>}
-                  {closedRows.map((x) => (
-                    <View key={x.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, gap: 8 }}>
-                      <Text style={{ flex: 1.6, color: th.text, fontSize: 12, fontWeight: '700' }} numberOfLines={1}>{x.symbol}</Text>
-                      <View style={{ flex: 1 }}><Pill text={x.side === 'buy' ? 'Buy' : 'Sell'} color={x.side === 'buy' ? th.buy : th.sell} /></View>
-                      <Text style={{ flex: 2, color: x.pnl >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700', textAlign: 'right' }}>{money(x.pnl)}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-              {dtab === 'Insights' && (
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  {([['CLOSED', String(journal.length), th.text], ['WIN RATE', journal.length ? `${Math.round((wins / journal.length) * 100)}%` : '—', th.buy], ['TODAY', money(todayMoney), todayMoney >= 0 ? th.buy : th.sell], ['FLOATING', floatMoney ? money(floatMoney) : '—', floatMoney >= 0 ? th.buy : th.sell]] as [string, string, string][]).map(([k, v, cc]) => (
-                    <View key={k} style={{ flex: 1, backgroundColor: th.panel2, borderRadius: 10, padding: 10 }}><Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '700', letterSpacing: 0.7 }}>{k}</Text><Text style={{ color: cc, fontSize: 16, fontWeight: '800', marginTop: 2 }} numberOfLines={1}>{v}</Text></View>
-                  ))}
-                </View>
-              )}
-            </Panel>
-
-            <Panel style={{ flex: 1.2, minWidth: 290, padding: 18, gap: 10 }}>
-              <Title icon="sparkles-outline" text="Chart Analysis" right="View all →" onRight={() => setTab(5)} />
-              {aiItem ? (
-                <>
-                  <Text style={{ color: th.dim, fontSize: 11 }}>{aiItem.symbol ?? 'Chart'}{aiItem.tf ? ` · ${aiItem.tf}` : ''} · {new Date(aiItem.date).toLocaleDateString()}</Text>
-                  <Text style={{ color: th.text, fontSize: 12.5, lineHeight: 19 }} numberOfLines={7}>{aiItem.result.reasoning || aiItem.result.trend.summary}</Text>
-                </>
-              ) : <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 19 }}>No saved analysis yet. Open an analysis page and press "Analysis of this chart". The newest one is shown here.</Text>}
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 'auto' as any }}>
-                {([['Run analysis', () => open('all')], ['History', () => setTab(5)]] as [string, () => void][]).map(([l, f]) => (
-                  <Pressable key={l} onPress={f} style={((st: any) => ({ flex: 1, height: 34, borderRadius: 9, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderWidth: 1, borderColor: th.line, backgroundColor: st.hovered ? th.accent + '10' : 'transparent' })) as any}><Text style={{ color: th.accent, fontSize: 12, fontWeight: '700' }}>{l}</Text></Pressable>
-                ))}
-              </View>
-            </Panel>
-
-            <Panel style={{ flex: 1.2, minWidth: 290, padding: 18, gap: 10 }}>
-              <Title icon="newspaper-outline" text="Latest News" right="View All →" onRight={() => setTab(13)} />
-              <Tabs items={['All', 'Forex', 'Crypto', 'Economy']} on={ntab} set={setNtab} />
-              <View>
-                {newsRows.length === 0 && <Text style={{ color: th.dim, fontSize: 12.5, paddingVertical: 12 }}>{fxN.loading || crN.loading ? 'Loading news…' : 'No news right now.'}</Text>}
-                {newsRows.map((n) => (
-                  <View key={n.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: th.line }}>
-                    <Text style={{ color: th.dim, fontSize: 11, width: 38, fontVariant: ['tabular-nums'] }}>{localTime(n.t)}</Text>
-                    <Text style={{ flex: 1, color: th.text, fontSize: 12, fontWeight: '500' }} numberOfLines={1}>{n.title}</Text>
-                    <Pill text={n.tag} color={n.tc} />
-                  </View>
-                ))}
-              </View>
-            </Panel>
-          </View>
-
-          {/* quick tools, market overview, upgrade */}
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 }}>
-            <Panel style={{ flex: 1.3, minWidth: 300, padding: 18, gap: 12 }}>
-              <Text style={{ color: th.text, fontSize: 15, fontWeight: '700' }}>Quick Tools</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {([['Scanner', 'search', () => { setAmethod('scanner'); setTab(1); }], ['Planner', 'calculator-outline', () => setTab(4)], ['Killzones', 'alarm-outline', () => setTab(8)], ['News', 'newspaper-outline', () => setTab(13)], ['Demo Trade', 'swap-vertical', () => setTab(MANUAL_TAB)], ['Journal', 'book-outline', () => setTab(3)]] as [string, string, () => void][]).map(([l, ic, f]) => (
-                  <Pressable key={l} onPress={f} style={((st: any) => ({ flexGrow: 1, flexBasis: 78, alignItems: 'center', gap: 6, paddingVertical: 11, borderRadius: 12, cursor: 'pointer', borderWidth: 1, borderColor: th.line, backgroundColor: st.hovered ? th.accent + '10' : '#FFFFFF' })) as any}>
-                    <Icon name={ic} size={19} color={th.accent} /><Text style={{ color: th.text, fontSize: 11.5, fontWeight: '600' }} numberOfLines={1}>{l}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </Panel>
-            <Panel style={{ flex: 1.7, minWidth: 330, padding: 18, gap: 12 }}>
-              <Text style={{ color: th.text, fontSize: 15, fontWeight: '700' }}>Market Overview</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {overview.map(({ g, n, green }) => (
-                  <View key={g} style={{ flex: 1, borderWidth: 1, borderColor: th.line, borderRadius: 10, padding: 10, gap: 4 }}>
-                    <Text style={{ color: th.text, fontSize: 12.5, fontWeight: '700', textTransform: 'capitalize' }}>{g}</Text>
-                    <Text style={{ color: n && green / n >= 0.5 ? th.buy : th.sell, fontSize: 11.5, fontWeight: '700' }}>{n ? `${green}/${n} Green` : '—'}</Text>
-                    <View style={{ flexDirection: 'row', height: 5, borderRadius: 3, overflow: 'hidden', backgroundColor: th.line }}>
-                      <View style={{ flex: green, backgroundColor: th.buy }} /><View style={{ flex: Math.max(0, n - green), backgroundColor: th.sell }} />
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </Panel>
-            <View style={{ flex: 1.1, minWidth: 260, borderRadius: 14, overflow: 'hidden', padding: 20, gap: 8, justifyContent: 'center' }}>
-              <LinearGradient colors={['#0B1B3F', '#1E3FD8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-              <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '800', lineHeight: 22 }}>Trade Smarter{'\n'}with Chart Reader</Text>
-              <Text style={{ color: '#FFFFFFB3', fontSize: 11.5, lineHeight: 16 }}>Get advanced tools, smart insights and real-time alerts.</Text>
-              {paid ? <Text style={{ color: '#7CF0C4', fontSize: 12.5, fontWeight: '700' }}>✓ Your PRO plan is active</Text> : (
-                <Pressable onPress={() => setTab(6)} style={((st: any) => ({ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 34, borderRadius: 9, cursor: 'pointer', backgroundColor: '#FFFFFF', opacity: st.hovered ? 0.92 : 1 })) as any}>
-                  <Text style={{ color: '#14306B', fontSize: 12.5, fontWeight: '700' }}>Upgrade Now</Text><Icon name="arrow-forward" size={13} color="#14306B" />
-                </Pressable>
-              )}
-            </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 18, marginTop: 14 }}>
+            {feat('flash', 'Real-time', 'Insights')}
+            <View style={{ width: 1, height: 34, backgroundColor: P.border }} />
+            {feat('shield-checkmark', 'Risk Management', 'Tools')}
+            <View style={{ width: 1, height: 34, backgroundColor: P.border }} />
+            {feat('locate', 'Detailed', 'Trade Plans')}
           </View>
         </View>
-        {rightCol}
-      </View>
 
-      {/* footer */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingTop: 14, paddingBottom: 10, borderTopWidth: 1, borderTopColor: th.line }}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 22 }}>
-          {([['Home', 0], ['Analysis', 1], ['Markets', 2], ['Journal', 3], ['Tools', 4], ['News', 13]] as [string, number][]).map(([l, i]) => (
-            <Pressable key={l} onPress={() => setTab(i)} style={{ cursor: 'pointer' } as any}><Text style={{ color: th.dim, fontSize: 12 }}>{l}</Text></Pressable>
+        <View style={{ flex: two ? 1.18 : undefined, minWidth: 0, flexDirection: w >= 700 ? 'row' : 'column', gap: 16, alignItems: 'flex-start' }}>
+          <Panel style={{ flex: 1, minWidth: 0, width: w >= 700 ? undefined : '100%', padding: 16, gap: 10 }}>
+            <ChartHeader s={s} sub={d.tf === '60' ? '1 minute' : TFB.find((x) => x[0] === d.tf)?.[1]} />
+            <TfTabs tf={d.tf} set={(k) => setDash({ tf: k })} />
+            <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ borderRadius: 10, overflow: 'hidden' }}>
+              <ChartBody s={s} tf={d.tf} width={cw} height={250} />
+            </View>
+            <Pressable onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
+              <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={17} color={P.blue} /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: P.head, fontSize: 13, fontWeight: '700' }}>Analysis Summary</Text>
+                <Text style={{ color: P.body, fontSize: 11.5 }} numberOfLines={1}>{s.structure}</Text>
+              </View>
+              <Icon name="chevron-forward" size={16} color={P.body} />
+            </Pressable>
+          </Panel>
+          <View style={{ width: w >= 700 ? 210 : '100%', gap: 14 }}>
+            <Panel style={{ padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Coin s={s.sym} size={34} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: P.head, fontSize: 12.5, fontWeight: '700' }} numberOfLines={1}>{s.sym.name}</Text>
+                <Text style={{ color: c >= 0 ? th.buy : th.sell, fontSize: 11, fontWeight: '700' }}>{`${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%`}</Text>
+              </View>
+              <Text style={{ color: P.head, fontSize: 15, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{s.quote ? s.quote.price.toFixed(s.dec) : '—'}</Text>
+            </Panel>
+            <SentimentCard s={s} />
+            <LevelsCard s={s} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function Overview({ w, go }: { w: number; go: (t: number, market?: string) => void }) {
+  const P = usePal(), th = P.th, { quotes } = useFeed(true);
+  const d = useDash();
+  const s = useSetup(d.sym, d.tf, 'dash-ov'); // candles + methods: the Candles and Top-Down cards read the same analysis as the hero
+  const groups = (['forex', 'crypto', 'metals', 'deriv'] as const).map((g) => {
+    const list = SYMBOLS.filter((x) => groupKey(x.id, x.cat) === g && quotes[x.id]);
+    const avg = list.length ? list.reduce((a, x) => a + chg(x.id), 0) / list.length : 0;
+    return { g, n: list.length, green: list.filter((x) => chg(x.id) >= 0).length, avg, pts: (quotes[LEAD[g]] ?? (list[0] ? quotes[list[0].id] : undefined))?.pts ?? [] };
+  });
+  const eur = quotes['frxEURUSD'];
+  const cdl = s.land?.votes.find((x) => x.method === 'CDL');
+  const cdlSide = cdl?.side === 'buy' ? { l: 'Buy', c: th.buy } : cdl?.side === 'sell' ? { l: 'Sell', c: th.sell } : { l: 'Neutral', c: th.gold };
+  const td = s.land?.ict.trend === 'bullish' ? { l: 'Bullish', c: th.buy } : s.land?.ict.trend === 'bearish' ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
+  const cardBase = (onPress: () => void, children: React.ReactNode, key: string) => (
+    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 14, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
+  );
+  const head = (icon: string, color: string, name: string) => (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color="#FFFFFF" /></View>
+      <Text style={{ color: P.head, fontSize: 15, fontWeight: '700' }}>{name}</Text>
+    </View>
+  );
+  const meta: Record<string, [string, string, string]> = { forex: ['cash', '#2F6BFF', 'Forex'], crypto: ['logo-bitcoin', '#16B97A', 'Crypto'], metals: ['layers', '#F5A524', 'Metals'], deriv: ['flash', '#7C4DFF', 'Deriv'] };
+  return (
+    <View style={{ backgroundColor: P.section }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 44, gap: 24 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 16 }}>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Pill text="Live Market Data" />
+            <Text style={{ color: P.head, fontSize: 36, fontWeight: '800', letterSpacing: -0.8 }}>Market Overview</Text>
+            <Text style={{ color: P.body, fontSize: 15, lineHeight: 22, maxWidth: 460 }}>Explore major markets at a glance. Track trends, compare assets and stay ahead with real-time data.</Text>
+          </View>
+          <Pressable onPress={() => go(2)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, cursor: 'pointer', paddingBottom: 6 } as any}>
+            <Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '600' }}>View All Markets</Text><Icon name="arrow-forward" size={14} color={P.blue} />
+          </Pressable>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+          {groups.map((g) => {
+            const [icon, color, name] = meta[g.g], up = g.avg >= 0, c = up ? th.buy : th.sell;
+            const forex = g.g === 'forex' && !!eur, ec = chg('frxEURUSD');
+            const big = forex ? eur.price.toFixed(eur.dec) : g.n ? `${g.green}/${g.n}` : '—';
+            const pct = forex ? ec : g.avg, pc = pct >= 0 ? th.buy : th.sell;
+            return cardBase(() => go(2, g.g), (
+              <>
+                {head(icon, color, name)}
+                <Text style={{ color: P.head, fontSize: 25, fontWeight: '800', fontVariant: ['tabular-nums'], marginTop: 4 }}>{big}</Text>
+                <Text style={{ color: pc, fontSize: 13.5, fontWeight: '700' }}>{`${pct >= 0 ? '+' : '−'}${Math.abs(pct).toFixed(2)}%`}</Text>
+                <Spark pts={forex ? eur.pts : g.pts} color={forex ? pc : c} w={140} />
+              </>
+            ), g.g);
+          })}
+          {cardBase(() => go(1, 'candle'), (
+            <>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#F0524F', alignItems: 'center', justifyContent: 'center' }}><Icon name="bar-chart" size={19} color="#FFFFFF" /></View>
+                <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Candles</Text>
+                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
+              </View>
+              <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 8 }}>{cdl?.text ?? 'Hammer, engulfing, confirmation candle'}</Text>
+            </>
+          ), 'candles')}
+          {cardBase(() => go(1, 'topdown'), (
+            <>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#F58A24', alignItems: 'center', justifyContent: 'center' }}><Icon name="layers" size={19} color="#FFFFFF" /></View>
+                <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Top-Down</Text>
+                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
+              </View>
+              <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 8 }}>H4 → H1 → M15{'\n'}multi-timeframe</Text>
+            </>
+          ), 'topdown')}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
+  const P = usePal();
+  const [tf, setTf] = useState('3600'), [cw, setCw] = useState(0);
+  const s = useSetup('frxXAUUSD', tf, 'dash-gold');
+  const three = w >= 1080, stat = (a: string, b: string) => (
+    <View key={a} style={{ gap: 2, paddingRight: 18, marginRight: 4, borderRightWidth: 1, borderRightColor: P.border }}>
+      <Text style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>{a}</Text><Text style={{ color: P.body, fontSize: 11.5 }}>{b}</Text>
+    </View>
+  );
+  return (
+    <View style={{ backgroundColor: P.alt }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: three ? 'center' : 'stretch', gap: 30 }}>
+        <View style={{ width: three ? 300 : '100%', gap: 16 }}>
+          <Pill text="Powerful Analysis Tools" />
+          <Text style={{ color: P.head, fontSize: 38, lineHeight: 42, fontWeight: '800', letterSpacing: -0.9 }}>Multi-Timeframe{'\n'}Analysis</Text>
+          <Text style={{ color: P.body, fontSize: 15, lineHeight: 23 }}>Analyze multiple timeframes, spot key levels, track trade ideas — all in real time.</Text>
+          <View style={{ flexDirection: 'row' }}><Btn label="Explore Analysis" onPress={() => go(1)} /></View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 12, marginTop: 14 }}>
+            {stat(`${SYMBOLS.length}+`, 'Symbols')}{stat('Multiple', 'Timeframes')}{stat('Real-time', 'Market Data')}
+            <View style={{ gap: 2 }}><Text style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>Advanced</Text><Text style={{ color: P.body, fontSize: 11.5 }}>Tools</Text></View>
+          </View>
+        </View>
+        <Panel style={{ flex: 1, minWidth: 0, width: three ? undefined : '100%', padding: 16, gap: 10 }}>
+          <ChartHeader s={s} sub="Gold / US Dollar" />
+          <TfTabs tf={tf} set={setTf} />
+          <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ borderRadius: 10, overflow: 'hidden' }}>
+            <ChartBody s={s} tf={tf} width={cw} height={310} />
+          </View>
+        </Panel>
+        <View style={{ width: three ? 230 : '100%', gap: 16 }}>
+          <SentimentCard s={s} />
+          <LevelsCard s={s} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const WHY: [string, string, string, string][] = [
+  ['stats-chart', '#2F6BFF', 'Advanced Analysis', 'Multi-timeframe charts, smart tools and detailed market analysis.'],
+  ['globe', '#16B1A5', 'Market Coverage', 'Forex, Crypto, Metals, Indices, Commodities and more.'],
+  ['shield-checkmark', '#16B97A', 'Risk Management', 'Plan your trades with built-in risk & TP tools.'],
+  ['book', '#7C4DFF', 'Trading Journal', 'Track your progress and improve with journaling tools.'],
+  ['flash', '#2F9BFF', 'Real-time Data', 'Up-to-date market data and instant alerts.'],
+  ['person', '#9B5CF6', 'Easy to Use', 'Clean, modern interface designed for traders.'],
+];
+function Why({ w }: { w: number }) {
+  const P = usePal();
+  return (
+    <View style={{ backgroundColor: P.section }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 52, paddingBottom: 28, gap: 28 }}>
+        <View style={{ alignItems: 'center', gap: 8 }}>
+          <Text style={{ color: P.head, fontSize: 34, fontWeight: '800', letterSpacing: -0.7, textAlign: 'center' }}>Why Choose Chart Reader?</Text>
+          <Text style={{ color: P.body, fontSize: 15.5, textAlign: 'center' }}>Everything you need for smarter, more confident trading.</Text>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+          {WHY.map(([icon, color, title, text]) => (
+            <View key={title} style={{ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 260, minWidth: 190, padding: 20, gap: 10, borderRadius: 14, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.04, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }}>
+              <View style={{ width: 50, height: 50, borderRadius: 13, backgroundColor: color + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={24} color={color} /></View>
+              <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', marginTop: 4 }}>{title}</Text>
+              <Text style={{ color: P.body, fontSize: 13, lineHeight: 19 }}>{text}</Text>
+            </View>
           ))}
         </View>
-        <Text style={{ color: th.dim, fontSize: 11.5 }}>© {new Date().getFullYear()} Chart Reader. All rights reserved.</Text>
       </View>
+    </View>
+  );
+}
+
+function Cta({ w, go }: { w: number; go: (t: number) => void }) {
+  const P = usePal(), wide = w >= 800;
+  const bars = [[8, 22, 40], [22, 30, 20], [14, 40, 26], [30, 24, 46], [18, 50, 30], [36, 28, 54], [24, 58, 36], [42, 34, 62]];
+  return (
+    <View style={{ backgroundColor: P.section }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingBottom: 44 }}>
+        <View style={{ borderRadius: 16, overflow: 'hidden', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 28, paddingHorizontal: 32 }}>
+          <LinearGradient colors={['#0A2466', '#143B9C', '#0B2A78']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+          <View pointerEvents="none" style={{ position: 'absolute', right: 170, bottom: 0, opacity: 0.16 }}>
+            <Svg width={360} height={110}>
+              {bars.map((b, i) => <Rect key={i} x={10 + i * 42} y={110 - b[1] - b[2]} width={14} height={b[1]} rx={2} fill="#FFFFFF" />)}
+            </Svg>
+          </View>
+          <View style={{ width: 58, height: 58, borderRadius: 29, borderWidth: 3, borderColor: '#7FA8FF', alignItems: 'center', justifyContent: 'center' }}><Icon name="locate" size={28} color="#9DBBFF" /></View>
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '800' }}>Ready to Trade Smarter?</Text>
+            <Text style={{ color: '#FFFFFFCC', fontSize: 14, lineHeight: 21, maxWidth: 560 }}>Join thousands of traders who rely on Chart Reader for real-time analysis, powerful tools and better decision making.</Text>
+          </View>
+          <Pressable accessibilityRole="button" onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, paddingHorizontal: 26, borderRadius: 10, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: st.hovered ? 0.92 : 1 })) as any}>
+            <Text style={{ color: '#143B9C', fontSize: 15, fontWeight: '700' }}>Get Started Free</Text><Icon name="arrow-forward" size={16} color="#143B9C" />
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function Footer({ w, go }: { w: number; go: (t: number, market?: string) => void }) {
+  const { setHelpOpen } = useApp();
+  const col = (title: string, items: [string, () => void][]) => (
+    <View key={title} style={{ gap: 9, minWidth: 130 }}>
+      <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700', marginBottom: 4 }}>{title}</Text>
+      {items.map(([l, f]) => (
+        <Pressable key={l} onPress={f} style={((st: any) => ({ cursor: 'pointer', opacity: st.hovered ? 1 : 0.72 })) as any}><Text style={{ color: '#DCE6FF', fontSize: 12.5 }}>{l}</Text></Pressable>
+      ))}
+    </View>
+  );
+  const social = ['logo-twitter', 'logo-youtube', 'paper-plane', 'logo-linkedin', 'logo-instagram'];
+  return (
+    <View style={{ backgroundColor: '#0A1A4A' }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 38, paddingBottom: 18, gap: 26 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 36, justifyContent: 'space-between' }}>
+          <View style={{ width: w >= 900 ? 290 : '100%', gap: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <LogoMark size={34} radius={9} />
+              <View><Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '800' }}>Chart Reader</Text><Text style={{ color: '#FFFFFFAA', fontSize: 8, fontWeight: '700', letterSpacing: 0.6 }}>TRADING ANALYSIS PLATFORM</Text></View>
+            </View>
+            <Text style={{ color: '#DCE6FFCC', fontSize: 12.5, lineHeight: 19 }}>Professional trading analysis tools, real-time market data and powerful insights to help you make better trading decisions.</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {social.map((n) => <View key={n} style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#FFFFFF1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={n} size={14} color="#FFFFFF" /></View>)}
+            </View>
+          </View>
+          {col('Quick Links', [['Home', () => go(0)], ['Analysis', () => go(1)], ['Markets', () => go(2)], ['Journal', () => go(3)], ['Risk & TP Planner', () => go(4)], ['Tools', () => go(9)]])}
+          {col('Markets', [['Forex', () => go(2, 'forex')], ['Crypto', () => go(2, 'crypto')], ['Metals', () => go(2, 'metals')], ['Deriv', () => go(2, 'deriv')], ['Candles', () => go(1, 'candle')], ['Top-Down', () => go(1, 'topdown')]])}
+          {col('Support', [['Help Center', () => setHelpOpen(true)], ['Contact Us', () => setHelpOpen(true)], ['Terms of Service', () => go(15)], ['Privacy Policy', () => go(15)], ['Disclaimer', () => go(15)]])}
+          <View style={{ width: w >= 900 ? 230 : '100%', gap: 10 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>Stay Updated</Text>
+            <Text style={{ color: '#DCE6FFCC', fontSize: 12.5, lineHeight: 18 }}>Get the latest market insights and updates.</Text>
+            <Pressable onPress={() => go(13)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 38, borderRadius: 8, backgroundColor: '#1F5FE8', cursor: 'pointer', opacity: st.hovered ? 0.9 : 1 })) as any}>
+              <Icon name="newspaper" size={15} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>Open Market News</Text>
+            </Pressable>
+          </View>
+        </View>
+        <View style={{ height: 1, backgroundColor: '#FFFFFF1F' }} />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+          <Text style={{ color: '#DCE6FFAA', fontSize: 11.5 }}>© {new Date().getFullYear()} Chart Reader. All rights reserved. Educational tool, not financial advice.</Text>
+          <Pressable onPress={() => Linking.openURL(BAHU_URL).catch(() => {})} style={{ cursor: 'pointer' } as any}><Text style={{ color: '#DCE6FFAA', fontSize: 11.5 }}>Powered by <Text style={{ color: '#FFFFFF', fontWeight: '700' }}>Bahu Technology</Text></Text></Pressable>
+          <Text style={{ color: '#DCE6FFAA', fontSize: 11.5 }}>Trade Smarter  •  Learn Faster  •  Grow Together</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export default function DesktopHome() {
+  const { setTab, setAmethod } = useApp();
+  const w = useRealWindow().width;
+  const go = (tab: number, extra?: string) => {
+    if (tab === 1 && extra) setAmethod(extra);
+    if (tab === 2 && extra) setDash({ market: extra === 'metals' ? 'forex' : (extra as any) });
+    setTab(tab);
+  };
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: usePalBg() }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+      <Hero w={w} go={go} />
+      <Overview w={w} go={go} />
+      <MultiTf w={w} go={go} />
+      <Why w={w} />
+      <Cta w={w} go={go} />
+      <Footer w={w} go={go} />
     </ScrollView>
   );
 }
+const usePalBg = () => usePal().bg;
