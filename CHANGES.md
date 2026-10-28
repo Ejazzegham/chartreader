@@ -1,3 +1,9 @@
+# Website v2.20: Killzones page redesigned like the mockup
+
+- **Killzones page** (`src/KillzonesHome.web.tsx`, wired in `src/screens/Killzones.tsx`; phone layout unchanged): blue hero with four feature chips, intro strip, **Live Killzones Clock** (digital UTC clock, analog clock, current session, next killzone countdown), **Killzones Overview** list (UTC and your local time, LIVE tag on every window that is open now), 6-step **How to Use Killzones** with a link to the full guide, and the **Trade the Best Time** call-to-action that opens the ICT analysis.
+- Kept from the old page: the 24 hour UTC timeline (now two lanes: main windows and Silver Bullet hours) and the local-time note. Times still follow US daylight saving through `killzonesFor` in `src/ict.ts`.
+- Not run in a browser or on a device (no packages could be installed where this was written): please open the Killzones page on the website and check it once.
+
 # Website v2.19: Risk & TP Planner redesigned like the mockup
 
 - **Risk & TP Planner page** (`src/RiskHome.web.tsx`, wired in `src/screens/Risk.tsx`): blue hero "Plan Your Trades with Confidence", left tips rail, 1. Account & Trade Details, 2. Position Size Calculator, Your Trade Plan, 3. Risk Reward Analysis (ratio / risk % / direction, what-if chart, "Apply to my plan"), Pro Trading Tips and footer. The server notice now sits under the hero (`Desktop.web.tsx` skips it on this tab).

@@ -4,9 +4,13 @@ import { useApp } from '../store';
 import { Screen, Card, Body, SectionTitle, Icon, Group, Cols } from '../ui';
 import { NAV } from '../nav';
 import { CONTENT } from '../guideContent';
+import { useLayout } from '../win';
+import GuideHome from '../GuideHome';
 
 export default function Guide() {
-  const { th, t, settings } = useApp();
+  const { th, t, settings, tab } = useApp();
+  // website: the How to Use page designed like the mockup (src/GuideHome.web.tsx); the phone keeps the layout below
+  if (useLayout().mode === 'desktop') return <GuideHome active={tab === 14} />;
   const c = (CONTENT[settings.lang] ?? CONTENT.en).guide;
   const gradeColor: Record<string, string> = { 'A+': th.buy, A: th.accent, B: th.gold, C: th.sell };
 

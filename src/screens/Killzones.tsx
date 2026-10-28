@@ -5,6 +5,8 @@ import { Screen, Card, Dim, Body, Badge, SectionTitle, Cols } from '../ui';
 import { Sessions } from '../MarketWidgets';
 import { killzonesFor, killzoneAt, nextKillzone } from '../ict';
 import { fxWeekendClosed } from '../markets';
+import { useLayout } from '../win';
+import KillzonesHome from '../KillzonesHome';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 // UTC hour -> the phone's local time text
@@ -15,6 +17,8 @@ export default function Killzones() {
   const { th, t, tab } = useApp();
   const [now, setNow] = useState(new Date());
   useEffect(() => { if (tab !== 8) return; const i = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(i); }, [tab]);
+  // website: the Killzones page designed like the mockup (src/KillzonesHome.web.tsx); the phone keeps the layout below
+  if (useLayout().mode === 'desktop') return <KillzonesHome active={tab === 8} />;
   const cur = killzoneAt(now), nx = nextKillzone(now), closed = fxWeekendClosed(now);
   const hh = Math.floor(nx.mins / 60), mm = nx.mins % 60;
   const utcPos = ((now.getUTCHours() * 60 + now.getUTCMinutes()) / 1440) * 100;
