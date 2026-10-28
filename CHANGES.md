@@ -1,3 +1,9 @@
+# Website: News page redesigned like Forex Factory; Demo Trading fixes
+
+- **News page** (`src/NewsHome.web.tsx`; phone layout unchanged): compact page header with underline tabs (Latest / Hottest / Forex / Crypto / Deriv) and search, a **Hot Stories** block on top (recent headlines ranked by market-moving keywords), a dense chronological news list grouped by day (time, topic tag, headline, source, keyword-tone dot) with "Show more", and the economic **Calendar** in a right sidebar (impact squares, time, currency, forecast, previous, countdown, impact and currency filters, news-window warning).
+- **Demo Trading page** (`src/screens/ManualTradeDesk.web.tsx`): BUY / SELL now place the order at once; Market Watch tabs Forex (with Pairs / Metals / Indices chips), Crypto, Deriv, Watchlist; full-width footer like the other pages.
+- Not run in a browser (packages could not be installed where this was written): please open the News and Demo Trading pages once.
+
 ## Same footer on every website page
 - The website footer is now one shared component: `src/SiteFooter.web.tsx` (`Footer`, `PageFooter`). Change it there and every page changes.
 - Pages built with `<Screen>` (History, Settings, Trade Checklist) get it automatically on the website; About us now uses it too (its old, different footer is kept on the phone layout only).

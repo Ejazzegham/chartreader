@@ -1,252 +1,293 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Linking } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Rect, Path, Circle, Line } from 'react-native-svg';
-import { Icon, HeroBanner } from './ui';
+import { Icon } from './ui';
 import { useRealWindow } from './win';
 import { useHeadlines, ago, tone, safeHttpUrl, Topic, Headline } from './headlines';
 import { useNews, newsRisk, fmtIn, localTime, Impact, NewsEvent } from './news';
-import { usePal, Panel, Footer, useGo } from './DesktopHome.web';
+import { usePal, Footer, useGo } from './DesktopHome.web';
 import { Notices } from './Desktop.web';
 
-// The website's News page, designed like the "Market News & Updates" mockup: hero, tabs (Calendar / Forex / Crypto / Deriv),
-// filters, a list of story cards, pagination, and a "Set News Alerts" bar. All stories and events come from the same live feeds as the phone app.
+// The website's News page, laid out like the Forex Factory news page: a compact page header with underline tabs,
+// a "Hot Stories" block on top, a dense chronological news list on the left, and the economic Calendar
+// (impact squares, time, currency, forecast, previous) in a sidebar on the right. Same live feeds as the phone app.
 type Props = { active: boolean };
-type Sub = 'cal' | Topic;
+type Sub = 'all' | 'hot' | Topic;
+type Item = Headline & { topic: Topic };
 
-const PER = 8;
-const IMPACT = [{ k: 'high', label: 'High only' }, { k: 'med', label: 'Medium +' }, { k: 'all', label: 'All' }];
+const TABS: { k: Sub; label: string }[] = [{ k: 'all', label: 'Latest' }, { k: 'hot', label: 'Hottest' }, { k: 'forex', label: 'Forex' }, { k: 'crypto', label: 'Crypto' }, { k: 'deriv', label: 'Deriv' }];
+const TOPIC: Record<Topic, { label: string; color: string }> = { forex: { label: 'Forex', color: '#2F6BFF' }, crypto: { label: 'Crypto', color: '#F59E0B' }, deriv: { label: 'Deriv', color: '#8B5CF6' } };
 const CURS = ['ALL', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD', 'CNY'];
-const TABS: { k: Sub; label: string; icon: string }[] = [
-  { k: 'cal', label: 'Calendar', icon: 'calendar-outline' },
-  { k: 'forex', label: 'Forex', icon: 'cash-outline' },
-  { k: 'crypto', label: 'Crypto', icon: 'logo-bitcoin' },
-  { k: 'deriv', label: 'Deriv', icon: 'git-network-outline' },
+const IMP: { k: Impact; label: string; color: string }[] = [
+  { k: 'High', label: 'High', color: '#E5484D' }, { k: 'Medium', label: 'Medium', color: '#F5A524' }, { k: 'Low', label: 'Low', color: '#E6CF3A' }, { k: 'Holiday', label: 'Holiday', color: '#98A2B3' },
 ];
-const TOPIC: Record<Topic, { label: string; icon: string; color: string }> = {
-  forex: { label: 'Forex', icon: 'swap-horizontal', color: '#2F6BFF' },
-  crypto: { label: 'Crypto', icon: 'logo-bitcoin', color: '#F59E0B' },
-  deriv: { label: 'Deriv', icon: 'pulse', color: '#8B5CF6' },
+const impColor = (i: Impact) => IMP.find((x) => x.k === i)!.color;
+// words that usually move markets: used to rank the Hot Stories block (a keyword hint, not a signal)
+const HOT = /\b(fed|powell|fomc|cpi|inflation|nfp|payrolls?|rate (cut|hike|decision)|ecb|lagarde|boe|boj|gold|record|surge[sd]?|plunge[sd]?|tumble[sd]?|crash(es|ed)?|soar(s|ed)?|slump(s|ed)?|tariffs?|war|sanctions?|etf|bitcoin|breaks?|jumps?|hits?|spikes?)\b/gi;
+
+const dayLabel = (t: number, now: number) => {
+  const d = new Date(t), n = new Date(now), s = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((s(d) - s(n)) / 86400000), base = d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+  return diff === 0 ? `Today · ${base}` : diff === -1 ? `Yesterday · ${base}` : diff === 1 ? `Tomorrow · ${base}` : base;
 };
-const CUR_COLOR: Record<string, string> = { USD: '#2F6BFF', EUR: '#1E40AF', GBP: '#7C3AED', JPY: '#EF4444', AUD: '#0EA5A4', CAD: '#DC2626', CHF: '#E11D48', NZD: '#0F766E', CNY: '#D97706' };
+const group = <T extends { t: number }>(list: T[], now: number) => {
+  const m = new Map<string, T[]>();
+  for (const x of list) { const k = dayLabel(x.t, now); m.set(k, [...(m.get(k) ?? []), x]); }
+  return [...m.entries()];
+};
+const open = (u: string) => { const url = safeHttpUrl(u); if (url) Linking.openURL(url).catch(() => {}); };
 
 // ---------- small pieces
-function Badge({ text, color, dot = true }: { text: string; color: string; dot?: boolean }) {
+function Box({ children, style }: { children: React.ReactNode; style?: any }) {
+  const P = usePal();
+  return <View style={[{ backgroundColor: P.card, borderWidth: 1, borderColor: P.border, borderRadius: 6, overflow: 'hidden' }, style]}>{children}</View>;
+}
+function BoxHead({ icon, color, title, right }: { icon: string; color?: string; title: string; right?: React.ReactNode }) {
+  const P = usePal();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 12, backgroundColor: color + '1A', borderWidth: 1, borderColor: color + '44' }}>
-      {dot && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color }} />}
-      <Text style={{ color, fontSize: 11, fontWeight: '700' }}>{text}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, height: 42, borderBottomWidth: 1, borderBottomColor: P.border, backgroundColor: P.dark ? P.th.panel2 : '#F3F5F9' }}>
+      <Icon name={icon} size={16} color={color ?? P.blue} />
+      <Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '800' }}>{title}</Text>{right}
     </View>
   );
 }
-
-function Chip({ label, on, onPress, wide }: { label: string; on: boolean; onPress: () => void; wide?: boolean }) {
+const Square = ({ c, size = 12 }: { c: string; size?: number }) => <View style={{ width: size, height: size, borderRadius: 3, backgroundColor: c }} />;
+function Toggle({ label, on, onPress, color }: { label: string; on: boolean; onPress: () => void; color?: string }) {
   const P = usePal();
   return (
     <Pressable accessibilityRole="button" accessibilityState={{ selected: on }} onPress={onPress}
-      style={((s: any) => ({ minWidth: wide ? 74 : 56, paddingHorizontal: 16, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: on ? P.blue : P.border, backgroundColor: on ? P.blue : s.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
-      <Text style={{ color: on ? P.th.onAccent : P.head, fontSize: 12.5, fontWeight: '700' }}>{label}</Text>
+      style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: 5, borderWidth: 1, borderColor: on ? (color ?? P.blue) : P.border, backgroundColor: on ? (color ?? P.blue) + '1A' : s.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+      {!!color && <Square c={color} size={10} />}<Text style={{ color: on ? P.head : P.body, fontSize: 11.5, fontWeight: '700' }}>{label}</Text>
     </Pressable>
   );
 }
+function TopicTag({ topic }: { topic: Topic }) {
+  const c = TOPIC[topic];
+  return <View style={{ paddingHorizontal: 6, height: 17, borderRadius: 3, justifyContent: 'center', backgroundColor: c.color + '1F', minWidth: 46, alignItems: 'center' }}><Text style={{ color: c.color, fontSize: 9.5, fontWeight: '800', letterSpacing: 0.4 }}>{c.label.toUpperCase()}</Text></View>;
+}
+function ToneDot({ title }: { title: string }) {
+  const P = usePal(), t = tone(title);
+  return <View accessibilityLabel={t === 'up' ? 'Positive wording' : t === 'down' ? 'Negative wording' : 'Neutral wording'} style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: t === 'up' ? P.th.buy : t === 'down' ? P.th.sell : P.border }} />;
+}
 
-// ---------- hero
-function Hero({ w, setSub }: { w: number; setSub: (k: Sub) => void }) {
+// ---------- Hot Stories (top block)
+function HotStories({ items, now }: { items: Item[]; now: number }) {
+  const P = usePal();
+  if (!items.length) return null;
   return (
-    <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingTop: 24 }}>
-      <HeroBanner icon="newspaper-outline" title="Market News & Updates" subtitle="Get the latest market news, economic events and trading insights from around the world."
-        features={[{ icon: 'globe-outline', title: 'Forex News', sub: 'Real-time updates', onPress: () => setSub('forex') }, { icon: 'logo-bitcoin', title: 'Crypto News', sub: 'Market movements', onPress: () => setSub('crypto') }, { icon: 'newspaper-outline', title: 'Deriv News', sub: 'Trading opportunities', onPress: () => setSub('deriv') }, { icon: 'calendar-outline', title: 'Economic Calendar', sub: 'Key events & data', onPress: () => setSub('cal') }]} />
-    </View>
+    <Box>
+      <BoxHead icon="flame" color="#F26A21" title="Hot Stories" right={<Text style={{ color: P.body, fontSize: 11 }}>Most market-moving headlines right now</Text>} />
+      {items.map((h, i) => (
+        <Pressable key={h.id} onPress={() => open(h.link)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 14, paddingVertical: 11, borderTopWidth: i ? 1 : 0, borderTopColor: P.border, backgroundColor: s.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+          <Text style={{ width: 20, color: '#F26A21', fontSize: 18, fontWeight: '900', lineHeight: 22 }}>{i + 1}</Text>
+          <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+            <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '800', lineHeight: 20 }} numberOfLines={2}>{h.title}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TopicTag topic={h.topic} /><Text style={{ color: P.blue, fontSize: 11.5, fontWeight: '700', flexShrink: 1 }} numberOfLines={1}>{h.source}</Text><Text style={{ color: P.body, fontSize: 11.5 }}>{ago(h.t, now)}</Text>
+            </View>
+          </View>
+          <ToneDot title={h.title} />
+        </Pressable>
+      ))}
+    </Box>
   );
 }
 
-// ---------- one story card (calendar event or headline), laid out like the mockup row
-function Card({ icon, iconText, color, tag, title, body, time, source, right, onPress, hot }: {
-  icon?: string; iconText?: string; color: string; tag: string; title: string; body?: string; time: string; source: string;
-  right: { text: string; color: string }; onPress?: () => void; hot?: boolean;
-}) {
+// ---------- the news list
+function NewsList({ items, now, loading, err, retry }: { items: Item[]; now: number; loading: boolean; err: string; retry: () => void }) {
   const P = usePal();
+  const [more, setMore] = useState(40);
+  useEffect(() => setMore(40), [items.length]);
+  const groups = useMemo(() => group(items.slice(0, more), now), [items, more, now]);
   return (
-    <Pressable disabled={!onPress} onPress={onPress}
-      style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: hot ? right.color + '66' : P.border, backgroundColor: hot ? right.color + '0F' : s.hovered && onPress ? P.alt : P.card, cursor: onPress ? 'pointer' : 'default', shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } })) as any}>
-      <View style={{ width: 54, height: 54, borderRadius: 27, backgroundColor: color + '1F', borderWidth: 1, borderColor: color + '44', alignItems: 'center', justifyContent: 'center' }}>
-        {iconText ? <Text style={{ color, fontSize: 13, fontWeight: '800' }}>{iconText}</Text> : <Icon name={icon ?? 'newspaper'} size={24} color={color} />}
-      </View>
-      <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-        <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, height: 20, borderRadius: 10, backgroundColor: color + '1F' }}>
-          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color }} /><Text style={{ color, fontSize: 10.5, fontWeight: '700' }}>{tag}</Text>
+    <Box>
+      <BoxHead icon="newspaper" title="News" right={<Text style={{ color: P.body, fontSize: 11.5 }}>{items.length} stories</Text>} />
+      {loading && <Text style={{ color: P.body, fontSize: 13, padding: 16 }}>Loading headlines…</Text>}
+      {!!err && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, backgroundColor: P.th.sell + '12' }}>
+          <Icon name="alert-circle" size={16} color={items.length ? P.th.gold : P.th.sell} />
+          <Text style={{ flex: 1, color: P.head, fontSize: 12.5, lineHeight: 18 }}>{items.length ? `Showing saved stories. ${err}` : err}</Text>
+          <Pressable onPress={retry} style={{ paddingHorizontal: 12, height: 28, borderRadius: 5, backgroundColor: P.blue, justifyContent: 'center', cursor: 'pointer' } as any}><Text style={{ color: P.th.onAccent, fontSize: 12, fontWeight: '700' }}>Try again</Text></Pressable>
         </View>
-        <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '700', lineHeight: 20 }} numberOfLines={2}>{title}</Text>
-        {!!body && <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }} numberOfLines={1}>{body}</Text>}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 2 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><Icon name="time-outline" size={13} color={P.body} /><Text style={{ color: P.body, fontSize: 11.5 }}>{time}</Text></View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 1 }}><Icon name="globe-outline" size={13} color={P.body} /><Text style={{ color: P.body, fontSize: 11.5 }} numberOfLines={1}>{source}</Text></View>
+      )}
+      {!loading && !err && !items.length && <Text style={{ color: P.body, fontSize: 13, padding: 16 }}>No stories match.</Text>}
+      {groups.map(([day, list]) => (
+        <View key={day}>
+          <View style={{ paddingHorizontal: 14, height: 28, justifyContent: 'center', backgroundColor: P.dark ? P.th.panel2 : '#EEF1F6', borderTopWidth: 1, borderBottomWidth: 1, borderColor: P.border }}>
+            <Text style={{ color: P.body, fontSize: 11, fontWeight: '800', letterSpacing: 0.6 }}>{day.toUpperCase()}</Text>
+          </View>
+          {list.map((h, i) => (
+            <Pressable key={h.id} onPress={() => open(h.link)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 9, borderTopWidth: i ? 1 : 0, borderTopColor: P.border, backgroundColor: s.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+              <Text style={{ width: 40, color: P.body, fontSize: 11.5, fontWeight: '700' }}>{localTime(h.t)}</Text>
+              <TopicTag topic={h.topic} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '600', lineHeight: 19 }} numberOfLines={2}>{h.title}</Text>
+                <Text style={{ color: P.body, fontSize: 11.5 }} numberOfLines={1}>{h.source}</Text>
+              </View>
+              <ToneDot title={h.title} />
+            </Pressable>
+          ))}
         </View>
-      </View>
-      <Badge text={right.text} color={right.color} />
-      {!!onPress && <Icon name="chevron-forward" size={18} color={P.blue} />}
-    </Pressable>
+      ))}
+      {items.length > more && (
+        <Pressable onPress={() => setMore(more + 40)} style={((s: any) => ({ height: 42, alignItems: 'center', justifyContent: 'center', borderTopWidth: 1, borderTopColor: P.border, backgroundColor: s.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+          <Text style={{ color: P.blue, fontSize: 12.5, fontWeight: '800' }}>Show more stories</Text>
+        </Pressable>
+      )}
+    </Box>
   );
 }
 
-// ---------- pagination
-function Pager({ page, pages, set }: { page: number; pages: number; set: (n: number) => void }) {
-  const P = usePal();
-  if (pages <= 1) return null;
-  const nums: number[] = [];
-  const from = Math.max(1, Math.min(page - 2, pages - 4)), to = Math.min(pages, from + 4);
-  for (let i = from; i <= to; i++) nums.push(i);
-  const box = (key: string, on: boolean, off: boolean, onPress: () => void, child: React.ReactNode) => (
-    <Pressable key={key} disabled={off} onPress={onPress} accessibilityRole="button"
-      style={((s: any) => ({ width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: on ? P.blue : P.border, backgroundColor: on ? P.blue : s.hovered && !off ? P.alt : P.card, opacity: off ? 0.4 : 1, cursor: off ? 'default' : 'pointer' })) as any}>{child}</Pressable>
-  );
+// ---------- the economic calendar (sidebar)
+function Calendar({ active, now, term }: { active: boolean; now: number; term: string }) {
+  const P = usePal(), th = P.th;
+  const cal = useNews(active);
+  const [imps, setImps] = useState<Impact[]>(['High', 'Medium']), [cur, setCur] = useState('ALL');
+  const flip = (k: Impact) => setImps(imps.includes(k) ? imps.filter((x) => x !== k) : [...imps, k]);
+  const list = useMemo(() => cal.events.filter((e) => imps.includes(e.impact) && (cur === 'ALL' || e.cur === cur) && (!term || (e.title + ' ' + e.cur).toLowerCase().includes(term))), [cal.events, imps, cur, term]);
+  const groups = useMemo(() => group(list, now), [list, now]);
+  const risk = newsRisk(cur === 'ALL' ? null : [cur], cal.events, now);
+  const next = cal.events.find((e) => e.impact === 'High' && e.t >= now - 15 * 60000 && (cur === 'ALL' || e.cur === cur));
+  const rc = risk.level === 'danger' ? th.sell : risk.level === 'caution' ? th.gold : th.buy;
+  const err = cal.err || (cal.state === 'error' ? 'Could not load the calendar.' : '');
+  const th_ = (t: string, w?: number, flex?: number, right?: boolean) => <Text style={{ width: w, flex, color: P.body, fontSize: 10.5, fontWeight: '800', textAlign: right ? 'right' : 'left' }}>{t}</Text>;
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 6 }}>
-      {box('p', false, page <= 1, () => set(page - 1), <Icon name="chevron-back" size={15} color={P.head} />)}
-      {nums.map((n) => box('n' + n, n === page, false, () => set(n), <Text style={{ color: n === page ? P.th.onAccent : P.head, fontSize: 12.5, fontWeight: '700' }}>{n}</Text>))}
-      {box('x', false, page >= pages, () => set(page + 1), <Icon name="chevron-forward" size={15} color={P.head} />)}
-    </View>
+    <Box>
+      <BoxHead icon="calendar" title="Calendar" right={<Pressable onPress={cal.reload} hitSlop={8} accessibilityLabel="Refresh calendar" style={{ cursor: 'pointer' } as any}><Icon name="refresh" size={15} color={P.blue} /></Pressable>} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, backgroundColor: rc + '12', borderBottomWidth: 1, borderBottomColor: P.border }}>
+        <Icon name={risk.level === 'clear' ? 'shield-checkmark' : 'warning'} size={17} color={rc} />
+        <Text style={{ flex: 1, color: P.head, fontSize: 12, lineHeight: 17 }}>
+          <Text style={{ fontWeight: '800', color: rc }}>{risk.level === 'danger' ? 'News window: stay out. ' : risk.level === 'caution' ? 'News is close: be careful. ' : 'No high-impact news right now. '}</Text>
+          {next ? `Next: ${next.cur} ${next.title}, ${fmtIn((next.t - now) / 60000)} (${localTime(next.t)}).` : cal.state === 'loading' ? 'Loading…' : 'No more high-impact events this week.'}
+        </Text>
+      </View>
+      <View style={{ padding: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: P.border }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{IMP.map((i) => <Toggle key={i.k} label={i.label} color={i.color} on={imps.includes(i.k)} onPress={() => flip(i.k)} />)}</View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{CURS.map((c) => <Toggle key={c} label={c} on={cur === c} onPress={() => setCur(c)} />)}</View>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 28, borderBottomWidth: 1, borderBottomColor: P.border }}>
+        {th_('Time', 40)}{th_('Cur', 34)}{th_('Imp', 22)}{th_('Event', undefined, 1)}{th_('Fcst', 46, undefined, true)}{th_('Prev', 46, undefined, true)}
+      </View>
+      <ScrollView style={{ maxHeight: 640 }} nestedScrollEnabled>
+        {cal.state === 'loading' && !cal.events.length && <Text style={{ color: P.body, fontSize: 12.5, padding: 14 }}>Loading this week’s calendar…</Text>}
+        {!!err && (
+          <View style={{ padding: 12, gap: 6 }}>
+            <Text style={{ color: cal.events.length ? th.gold : th.sell, fontSize: 12, lineHeight: 17 }}>{cal.events.length ? `Showing saved data. ${err}` : err}</Text>
+            <Pressable onPress={cal.reload} style={{ alignSelf: 'flex-start', paddingHorizontal: 12, height: 28, borderRadius: 5, backgroundColor: P.blue, justifyContent: 'center', cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12, fontWeight: '700' }}>Try again</Text></Pressable>
+          </View>
+        )}
+        {cal.state === 'ok' && !groups.length && <Text style={{ color: P.body, fontSize: 12.5, padding: 14 }}>No events match these filters.</Text>}
+        {groups.map(([day, items]) => {
+          const today = day.startsWith('Today');
+          return (
+            <View key={day}>
+              <View style={{ paddingHorizontal: 12, height: 26, justifyContent: 'center', backgroundColor: today ? P.blue + '1F' : P.dark ? th.panel2 : '#EEF1F6' }}>
+                <Text style={{ color: today ? P.blue : P.body, fontSize: 10.5, fontWeight: '800', letterSpacing: 0.5 }}>{day.toUpperCase()}</Text>
+              </View>
+              {items.map((e: NewsEvent) => {
+                const mins = (e.t - now) / 60000, past = mins < -15, hot = !past && e.impact === 'High' && mins <= 30;
+                return (
+                  <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderTopWidth: 1, borderTopColor: P.border, opacity: past ? 0.5 : 1, backgroundColor: hot ? th.sell + '10' : 'transparent' }}>
+                    <Text style={{ width: 40, color: P.head, fontSize: 11.5, fontWeight: '700' }}>{localTime(e.t)}</Text>
+                    <Text style={{ width: 34, color: P.head, fontSize: 11.5, fontWeight: '800' }}>{e.cur}</Text>
+                    <View style={{ width: 22 }}><Square c={impColor(e.impact)} /></View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={{ color: P.head, fontSize: 12, fontWeight: '600', lineHeight: 16 }} numberOfLines={2}>{e.title}</Text>
+                      {!past && Math.abs(mins) < 600 && <Text style={{ color: hot ? th.sell : P.body, fontSize: 10.5, fontWeight: '700' }}>{fmtIn(mins)}</Text>}
+                    </View>
+                    <Text style={{ width: 46, color: P.head, fontSize: 11.5, textAlign: 'right' }} numberOfLines={1}>{e.forecast || '-'}</Text>
+                    <Text style={{ width: 46, color: P.body, fontSize: 11.5, textAlign: 'right' }} numberOfLines={1}>{e.previous || '-'}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          );
+        })}
+      </ScrollView>
+      <Text style={{ color: P.body, fontSize: 10.5, lineHeight: 15, padding: 10, borderTopWidth: 1, borderTopColor: P.border }}>
+        {cal.fetchedAt ? `Forex Factory data · updated ${localTime(cal.fetchedAt)} · ` : ''}Times are in your time zone and can change.
+      </Text>
+    </Box>
   );
 }
 
 export default function NewsHome({ active }: Props) {
-  const P = usePal(), th = P.th, go = useGo();
-  const w = useRealWindow().width;
-  const [sub, setSub] = useState<Sub>('cal'), [imp, setImp] = useState('med'), [cur, setCur] = useState('ALL'), [q, setQ] = useState(''), [page, setPage] = useState(1), [now, setNow] = useState(Date.now());
-  const cal = useNews(active && sub === 'cal');
-  const fx = useHeadlines('forex', active && sub === 'forex');
-  const cr = useHeadlines('crypto', active && sub === 'crypto');
-  const dv = useHeadlines('deriv', active && sub === 'deriv');
+  const P = usePal(), go = useGo(), w = useRealWindow().width;
+  const [sub, setSub] = useState<Sub>('all'), [q, setQ] = useState(''), [now, setNow] = useState(Date.now());
+  const fx = useHeadlines('forex', active), cr = useHeadlines('crypto', active), dv = useHeadlines('deriv', active);
   useEffect(() => { if (!active) return; setNow(Date.now()); const i = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(i); }, [active]);
-  useEffect(() => { setPage(1); }, [sub, imp, cur, q]);
 
-  const feed = sub === 'forex' ? fx : sub === 'crypto' ? cr : sub === 'deriv' ? dv : null;
   const term = q.trim().toLowerCase();
-  const icol = (i: Impact) => (i === 'High' ? th.sell : i === 'Medium' ? th.gold : i === 'Holiday' ? '#8B5CF6' : th.buy);
+  const all: Item[] = useMemo(() => {
+    const seen = new Set<string>(), out: Item[] = [];
+    ([['forex', fx.items], ['crypto', cr.items], ['deriv', dv.items]] as [Topic, Headline[]][]).forEach(([topic, items]) => items.forEach((h) => {
+      const k = h.title.toLowerCase().replace(/\W+/g, ' ').trim(); if (seen.has(k)) return; seen.add(k); out.push({ ...h, topic });
+    }));
+    return out.sort((a, b) => b.t - a.t);
+  }, [fx.items, cr.items, dv.items]);
+  const hot = useMemo(() => all.map((h) => {
+    const age = (now - h.t) / 3600000, hits = (h.title.match(HOT) ?? []).length;
+    return { h, score: hits * 2 + (age < 3 ? 3 : age < 12 ? 2 : age < 24 ? 1 : 0) };
+  }).filter((x) => x.score >= 3).sort((a, b) => b.score - a.score || b.h.t - a.h.t).slice(0, 5).map((x) => x.h), [all, now]);
 
-  const events = useMemo(() => cal.events.filter((e) =>
-    (cur === 'ALL' || e.cur === cur) && (imp === 'all' ? true : imp === 'med' ? e.impact === 'High' || e.impact === 'Medium' : e.impact === 'High') &&
-    (!term || (e.title + ' ' + e.cur).toLowerCase().includes(term))), [cal.events, cur, imp, term]);
-  const stories = useMemo(() => (feed ? feed.items.filter((h) => !term || (h.title + ' ' + h.summary + ' ' + h.source).toLowerCase().includes(term)) : []), [feed?.items, term]);
+  const shown = useMemo(() => {
+    let l = sub === 'hot' ? hot : sub === 'all' ? all : all.filter((h) => h.topic === sub);
+    if (term) l = l.filter((h) => (h.title + ' ' + h.summary + ' ' + h.source).toLowerCase().includes(term));
+    return l;
+  }, [all, hot, sub, term]);
+  const feeds = [fx, cr, dv];
+  const loading = feeds.some((f) => f.loading) && !all.length;
+  const err = !all.length ? (feeds.map((f) => f.err).find(Boolean) ?? '') : feeds.every((f) => f.err) ? feeds[0].err : '';
+  const reloadAll = () => feeds.forEach((f) => f.reload());
+  const stamp = Math.max(0, ...feeds.map((f) => f.at ?? 0));
 
-  const total = sub === 'cal' ? events.length : stories.length;
-  const pages = Math.max(1, Math.ceil(total / PER)), pg = Math.min(page, pages);
-  const risk = newsRisk(cur === 'ALL' ? null : [cur], cal.events, now);
-  const next = cal.events.find((e) => e.impact === 'High' && e.t >= now - 15 * 60000 && (cur === 'ALL' || e.cur === cur));
-  const rc = risk.level === 'danger' ? th.sell : risk.level === 'caution' ? th.gold : th.buy;
-  const reload = () => (sub === 'cal' ? cal.reload() : feed?.reload());
-  const loading = sub === 'cal' ? cal.state === 'loading' && !cal.events.length : !!feed?.loading && !feed.items.length;
-  const err = sub === 'cal' ? (cal.err || (cal.state === 'error' ? 'Could not load the calendar.' : '')) : feed?.err ?? '';
-  const stamp = sub === 'cal' ? cal.fetchedAt : feed?.at;
-
-  const toneOf = (h: Headline) => { const t = tone(h.title); return t === 'up' ? { text: 'Positive', color: th.buy } : t === 'down' ? { text: 'Negative', color: th.sell } : { text: 'Neutral', color: P.blue }; };
-  const evTime = (e: NewsEvent) => { const d = new Date(e.t); return `${d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} · ${localTime(e.t)}`; };
-
-  const list: React.ReactNode[] = sub === 'cal'
-    ? events.slice((pg - 1) * PER, pg * PER).map((e) => {
-        const mins = (e.t - now) / 60000, past = mins < -15, hot = !past && e.impact === 'High' && mins <= 30, c = CUR_COLOR[e.cur] ?? P.blue;
-        return (
-          <Card key={e.id} iconText={e.cur} color={c} tag="Calendar" hot={hot}
-            title={`${e.cur} ${e.title}`}
-            body={e.forecast || e.previous ? `${e.forecast ? `Forecast ${e.forecast}` : ''}${e.forecast && e.previous ? '  ·  ' : ''}${e.previous ? `Previous ${e.previous}` : ''}` : undefined}
-            time={Math.abs(mins) < 600 && !past ? `${evTime(e)} · ${fmtIn(mins)}` : evTime(e)} source="Forex Factory"
-            right={{ text: `${e.impact} Impact`, color: icol(e.impact) }} />
-        );
-      })
-    : stories.slice((pg - 1) * PER, pg * PER).map((h) => {
-        const tp = TOPIC[sub as Topic], url = safeHttpUrl(h.link);
-        return <Card key={h.id} icon={tp.icon} color={tp.color} tag={tp.label} title={h.title} body={h.summary} time={ago(h.t, now)} source={h.source} right={toneOf(h)} onPress={url ? () => Linking.openURL(url).catch(() => {}) : undefined} />;
-      });
-
-  const pad = w >= 700 ? 32 : 16;
+  const pad = w >= 700 ? 28 : 14, wide = w >= 1120;
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <Hero w={w} setSub={setSub} />
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 30, gap: 18 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: P.dark ? P.bg : '#EEF1F6', display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 20, paddingBottom: 28, gap: 14 }}>
         <Notices flush />
-        {/* tabs */}
-        <View style={{ alignSelf: 'flex-start', flexDirection: 'row', flexWrap: 'wrap', gap: 6, padding: 5, borderRadius: 14, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
-          {TABS.map((t) => {
-            const on = sub === t.k;
-            return (
-              <Pressable key={t.k} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => setSub(t.k)}
-                style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, height: 38, borderRadius: 10, backgroundColor: on ? P.blue : s.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
-                <Icon name={t.icon} size={15} color={on ? th.onAccent : P.head} /><Text style={{ color: on ? th.onAccent : P.head, fontSize: 13, fontWeight: '700' }}>{t.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* filters */}
-        <Panel style={{ padding: 20, gap: 14 }}>
-          <View style={{ flexDirection: w >= 900 ? 'row' : 'column', gap: 16, alignItems: w >= 900 ? 'flex-start' : 'stretch' }}>
-            {sub === 'cal' ? (
-              <View style={{ flex: 1, gap: 12 }}>
-                <View style={{ gap: 6 }}>
-                  <Text style={{ color: P.body, fontSize: 10.5, fontWeight: '800', letterSpacing: 1 }}>IMPACT</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{IMPACT.map((i) => <Chip key={i.k} wide label={i.label} on={imp === i.k} onPress={() => setImp(i.k)} />)}</View>
-                </View>
-                <View style={{ gap: 6 }}>
-                  <Text style={{ color: P.body, fontSize: 10.5, fontWeight: '800', letterSpacing: 1 }}>CURRENCY</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{CURS.map((c) => <Chip key={c} label={c} on={cur === c} onPress={() => setCur(c)} />)}</View>
-                </View>
-              </View>
-            ) : (
-              <View style={{ flex: 1, gap: 6, justifyContent: 'center' }}>
-                <Text style={{ color: P.head, fontSize: 15, fontWeight: '800' }}>{TOPIC[sub as Topic].label} headlines</Text>
-                <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>
-                  {sub === 'deriv' ? 'Volatility, Boom, Crash, Step and Jump indices are generated by an algorithm, so economic news does not move them. Deriv forex, gold, silver and crypto do react: check the Calendar tab before trading those.' : 'The label on the right is a keyword hint (positive, negative, neutral), not a trading signal. Click a story to read it at the source.'}
-                </Text>
-              </View>
-            )}
-            <View style={{ flex: 1, maxWidth: w >= 900 ? 520 : undefined, gap: 12, alignItems: 'stretch' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#FAFBFE' }}>
-                <Icon name="search" size={16} color={P.body} />
-                <TextInput value={q} onChangeText={setQ} placeholder="Search news, events or keywords..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 13, outlineStyle: 'none' } as any} />
-                {!!q && <Pressable onPress={() => setQ('')} hitSlop={8}><Icon name="close-circle" size={16} color={P.body} /></Pressable>}
-              </View>
-              <Pressable onPress={reload} style={{ alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 6, cursor: 'pointer' } as any}>
-                <Icon name="refresh" size={15} color={P.blue} /><Text style={{ color: P.blue, fontSize: 12.5, fontWeight: '700' }}>Refresh</Text>
-              </Pressable>
-            </View>
+        {/* page header: title, tabs, search */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', flexWrap: 'wrap', gap: 14, borderBottomWidth: 1, borderBottomColor: P.border }}>
+          <View style={{ paddingBottom: 8 }}>
+            <Text style={{ color: P.head, fontSize: 26, fontWeight: '900', letterSpacing: -0.5 }}>News</Text>
+            <Text style={{ color: P.body, fontSize: 12 }}>Market headlines and the economic calendar{stamp ? ` · updated ${localTime(stamp)}` : ''}</Text>
           </View>
-          {sub === 'cal' && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 10, backgroundColor: rc + '12', borderWidth: 1, borderColor: rc + '33' }}>
-              <Icon name={risk.level === 'clear' ? 'shield-checkmark' : 'warning'} size={17} color={rc} />
-              <Text style={{ color: P.head, fontSize: 12.5, flex: 1, lineHeight: 18 }}>
-                <Text style={{ fontWeight: '800', color: rc }}>{risk.level === 'danger' ? 'News window: stay out. ' : risk.level === 'caution' ? 'News is close: be careful. ' : 'No high-impact news right now. '}</Text>
-                {next ? `Next: ${next.cur} ${next.title}, ${fmtIn((next.t - now) / 60000)} (${localTime(next.t)} your time).` : cal.state === 'loading' ? 'Loading calendar…' : 'No more high-impact events this week for this filter.'}
-              </Text>
-            </View>
-          )}
-        </Panel>
-
-        {/* list */}
-        <View style={{ gap: 12 }}>
-          {loading && <Panel style={{ padding: 20 }}><Text style={{ color: P.body, fontSize: 13 }}>{sub === 'cal' ? 'Loading this week’s calendar…' : 'Loading headlines…'}</Text></Panel>}
-          {!!err && (
-            <Panel style={{ padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Icon name="alert-circle" size={18} color={total ? th.gold : th.sell} />
-              <Text style={{ color: total ? th.gold : th.sell, fontSize: 12.5, flex: 1, lineHeight: 18 }}>{total ? `Showing saved data. ${err}` : err}</Text>
-              <Pressable onPress={reload} style={{ paddingHorizontal: 14, height: 32, borderRadius: 8, backgroundColor: P.blue, justifyContent: 'center', cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12, fontWeight: '700' }}>Try again</Text></Pressable>
-            </Panel>
-          )}
-          {!loading && !err && total === 0 && <Panel style={{ padding: 20 }}><Text style={{ color: P.body, fontSize: 13 }}>{sub === 'cal' ? 'No events match this filter.' : 'No stories match.'}</Text></Panel>}
-          {list}
-          <Pager page={pg} pages={pages} set={setPage} />
-          <Text style={{ color: P.body, fontSize: 11.5, textAlign: 'center', marginTop: 4 }}>
-            {stamp ? `${sub === 'cal' ? 'Forex Factory' : feed?.source} · updated ${localTime(stamp)} · ` : ''}{total} {sub === 'cal' ? 'events' : 'stories'}. {sub === 'cal' ? 'Times are shown in your time zone and can change.' : ''} Educational tool, not financial advice.
-          </Text>
+          <View style={{ flexDirection: 'row', gap: 2, marginLeft: wide ? 24 : 0 }}>
+            {TABS.map((t) => {
+              const on = sub === t.k;
+              return (
+                <Pressable key={t.k} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => setSub(t.k)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, height: 40, borderBottomWidth: 3, borderBottomColor: on ? P.blue : 'transparent', backgroundColor: s.hovered && !on ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+                  {t.k === 'hot' && <Icon name="flame" size={14} color="#F26A21" />}
+                  <Text style={{ color: on ? P.blue : P.head, fontSize: 13.5, fontWeight: on ? '800' : '600' }}>{t.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <View style={{ flex: 1 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 34, paddingHorizontal: 10, marginBottom: 6, width: wide ? 320 : '100%', borderRadius: 5, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+            <Icon name="search" size={15} color={P.body} />
+            <TextInput value={q} onChangeText={setQ} placeholder="Search news and events..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
+            {!!q && <Pressable onPress={() => setQ('')} hitSlop={8}><Icon name="close-circle" size={15} color={P.body} /></Pressable>}
+            <Pressable onPress={reloadAll} hitSlop={8} accessibilityLabel="Refresh news" style={{ cursor: 'pointer' } as any}><Icon name="refresh" size={15} color={P.blue} /></Pressable>
+          </View>
         </View>
 
-        {/* alerts bar */}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 14, padding: 14, borderRadius: 12, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
-          <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: P.blue + '26', alignItems: 'center', justifyContent: 'center' }}><Icon name="notifications-outline" size={17} color={P.blue} /></View>
-          <Text style={{ color: P.head, fontSize: 12.5, flex: 1, minWidth: 220 }}>Stay updated with the latest market news and make better trading decisions.</Text>
-          <Pressable onPress={() => go(6)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, height: 38, borderRadius: 8, backgroundColor: P.blue, opacity: s.hovered ? 0.9 : 1, cursor: 'pointer' })) as any}>
-            <Icon name="notifications" size={14} color={th.onAccent} /><Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '700' }}>Set News Alerts</Text>
-          </Pressable>
+        {/* body: news on the left, calendar on the right */}
+        <View style={{ flexDirection: wide ? 'row' : 'column', gap: 14, alignItems: 'flex-start' }}>
+          <View style={{ flex: 1, width: wide ? undefined : '100%', minWidth: 0, gap: 14 }}>
+            {sub !== 'hot' && !term && <HotStories items={hot} now={now} />}
+            <NewsList items={shown} now={now} loading={loading} err={err} retry={reloadAll} />
+          </View>
+          <View style={{ width: wide ? 470 : '100%' }}>
+            <Calendar active={active} now={now} term={term} />
+          </View>
         </View>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
+          <Icon name="notifications-outline" size={17} color={P.blue} />
+          <Text style={{ color: P.head, fontSize: 12.5, flex: 1, minWidth: 220 }}>Get warned before high-impact news. Turn on news alerts in Settings.</Text>
+          <Pressable onPress={() => go(6)} style={((s: any) => ({ paddingHorizontal: 16, height: 32, borderRadius: 5, justifyContent: 'center', backgroundColor: P.blue, opacity: s.hovered ? 0.9 : 1, cursor: 'pointer' })) as any}><Text style={{ color: P.th.onAccent, fontSize: 12.5, fontWeight: '700' }}>Set News Alerts</Text></Pressable>
+        </View>
+        <Text style={{ color: P.body, fontSize: 11, textAlign: 'center' }}>The dot beside a headline is a keyword hint (green positive, red negative), not a trading signal. Hot Stories ranks recent headlines by market-moving keywords. Educational tool, not financial advice.</Text>
       </View>
       <Footer w={w} go={go} />
     </ScrollView>
