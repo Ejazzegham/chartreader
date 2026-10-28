@@ -15,6 +15,8 @@ import TopDown from './TopDown';
 import Scanner from './Scanner';
 import Insight from './Insight';
 import CRAnalysis from './CRAnalysis';
+import AnalysisHome from '../AnalysisHome';
+import { useDesktop } from '../Desktop';
 
 export const ANALYSIS_TAB = 1;
 
@@ -83,6 +85,7 @@ export default function Analysis() {
   const [q, setQ] = useState('');
   const [mq, setMq] = useState('');
   const [cfg, setCfg] = useState<ScanCfg>(CFG0);
+  const desk = useDesktop(); // website on a wide screen: the new Analysis page (src/AnalysisHome.web.tsx) replaces the method list; method workspaces below are unchanged
   const cur = mdef(amethod);
   const m = cur && cur.host !== 'tab' ? cur : undefined; // an open method (Planner and Settings are pages of their own)
 
@@ -360,27 +363,34 @@ export default function Analysis() {
   const show = (h: Host) => ({ display: m && m.host === h ? 'flex' : 'none' } as const);
   const live = (h: Host) => active && !!m && m.host === h;
 
+  const deskHome = desk && !m;
+  const pickPair = (id: string) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); };
   return (
-    <Screen title="Analysis" bare scrollKey={amethod}>
-      <View style={{ gap: 14 }}>
-        {header}
-        <RunningAlert active={active} />
-        {!m && (
-          <>
-            {bgCard}
-            {choose}
-            <Dim>Educational tool, not financial advice.</Dim>
-          </>
-        )}
-        {backRow}
-        {/* Each method keeps its own state while hidden; only the open one loads candles. */}
-        <View style={show('ict')}><ICTLab {...common} on={live('ict')} method={m && m.host === 'ict' ? m.k : 'all'} /></View>
-        <View style={show('cr')}><CRAnalysis {...common} on={live('cr')} /></View>
-        <View style={show('topdown')}><TopDown {...common} on={live('topdown')} /></View>
-        <View style={show('scanner')}><Scanner embedded on={live('scanner')} group={market} cfg={cfg} onOpen={(id) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); }} /></View>
-        <View style={show('scalp')}><Scalping {...common} on={live('scalp')} /></View>
-        <View style={show('insight')}><Insight {...common} on={live('insight')} method={m && m.host === 'insight' ? m.k : 'liquidity'} /></View>
+    <View style={{ flex: 1 }}>
+      {deskHome && active && <AnalysisHome cfg={cfg} setC={setC} probs={PROBS} onOpenMethod={openMethod} onPair={pickPair} top={<RunningAlert active={active} />} />}
+      <View style={{ flex: 1, display: deskHome ? 'none' : 'flex' }}>
+        <Screen title="Analysis" bare scrollKey={amethod}>
+          <View style={{ gap: 14 }}>
+            {header}
+            <RunningAlert active={active && !deskHome} />
+            {!m && !desk && (
+              <>
+                {bgCard}
+                {choose}
+                <Dim>Educational tool, not financial advice.</Dim>
+              </>
+            )}
+            {backRow}
+            {/* Each method keeps its own state while hidden; only the open one loads candles. */}
+            <View style={show('ict')}><ICTLab {...common} on={live('ict')} method={m && m.host === 'ict' ? m.k : 'all'} /></View>
+            <View style={show('cr')}><CRAnalysis {...common} on={live('cr')} /></View>
+            <View style={show('topdown')}><TopDown {...common} on={live('topdown')} /></View>
+            <View style={show('scanner')}><Scanner embedded on={live('scanner')} group={market} cfg={cfg} onOpen={(id) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); }} /></View>
+            <View style={show('scalp')}><Scalping {...common} on={live('scalp')} /></View>
+            <View style={show('insight')}><Insight {...common} on={live('insight')} method={m && m.host === 'insight' ? m.k : 'liquidity'} /></View>
+          </View>
+        </Screen>
       </View>
-    </Screen>
+    </View>
   );
 }

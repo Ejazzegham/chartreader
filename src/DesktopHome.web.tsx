@@ -19,7 +19,7 @@ const METALS = ['frxXAUUSD', 'frxXAGUSD', 'frxWTI', 'frxBRENT'];
 const groupKey = (id: string, cat: string) => (cat === 'crypto' ? 'crypto' : cat === 'deriv' ? 'deriv' : METALS.includes(id) ? 'metals' : 'forex');
 const LEAD: Record<string, string> = { forex: 'frxEURUSD', crypto: 'cryBTCUSD', metals: 'frxXAUUSD', deriv: 'R_100' };
 
-function usePal() {
+export function usePal() {
   const { th } = useApp();
   const d = th.dark;
   return {
@@ -33,7 +33,7 @@ function usePal() {
 }
 
 // ---------- live setup for one pair + timeframe (candles, analysis, sentiment, key levels)
-function useSetup(symId: string, tf: string, key: string) {
+export function useSetup(symId: string, tf: string, key: string) {
   const { quotes } = useFeed(true);
   const [data, setData] = useState<Candle[]>([]);
   const [err, setErr] = useState('');
@@ -50,15 +50,15 @@ function useSetup(symId: string, tf: string, key: string) {
 type Setup = ReturnType<typeof useSetup>;
 
 // ---------- small building blocks
-function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
+export function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
   const P = usePal();
   return <View style={[{ backgroundColor: P.card, borderRadius: 14, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
 }
-const Pill = ({ text, tone }: { text: string; tone?: string }) => {
+export const Pill = ({ text, tone }: { text: string; tone?: string }) => {
   const P = usePal(), c = tone ?? P.blue;
   return <View style={{ alignSelf: 'flex-start', paddingHorizontal: 12, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: tone ? c + '1F' : P.soft }}><Text style={{ color: c, fontSize: 12.5, fontWeight: '600' }}>{text}</Text></View>;
 };
-function Btn({ label, onPress, ghost, arrow = true }: { label: string; onPress: () => void; ghost?: boolean; arrow?: boolean }) {
+export function Btn({ label, onPress, ghost, arrow = true }: { label: string; onPress: () => void; ghost?: boolean; arrow?: boolean }) {
   const P = usePal();
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 26, borderRadius: 10, cursor: 'pointer', backgroundColor: ghost ? (s.hovered ? P.soft : P.dark ? 'transparent' : '#FFFFFF80') : P.blue, borderWidth: ghost ? 1.5 : 0, borderColor: P.blue + '55', opacity: !ghost && s.hovered ? 0.92 : 1, shadowColor: P.blue, shadowOpacity: ghost ? 0 : 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } })) as any}>
@@ -67,7 +67,7 @@ function Btn({ label, onPress, ghost, arrow = true }: { label: string; onPress: 
     </Pressable>
   );
 }
-function Spark({ pts, color, w = 130, h = 34 }: { pts: number[]; color: string; w?: number; h?: number }) {
+export function Spark({ pts, color, w = 130, h = 34 }: { pts: number[]; color: string; w?: number; h?: number }) {
   const a = pts.slice(-40);
   if (a.length < 2) return <View style={{ width: w, height: h }} />;
   const lo = Math.min(...a), hi = Math.max(...a), r = hi - lo || 1;
@@ -90,7 +90,7 @@ function Gauge({ pct, color, track }: { pct: number; color: string; track: strin
     </Svg>
   );
 }
-function SentimentCard({ s }: { s: Setup }) {
+export function SentimentCard({ s }: { s: Setup }) {
   const P = usePal(), th = P.th;
   const senti = s.bull >= 60 ? { l: 'Bullish', c: th.buy } : s.bull <= 40 ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
   return (
@@ -109,7 +109,7 @@ function SentimentCard({ s }: { s: Setup }) {
     </Panel>
   );
 }
-function LevelsCard({ s }: { s: Setup }) {
+export function LevelsCard({ s }: { s: Setup }) {
   const P = usePal(), th = P.th, cb = s.cb, fx = (v?: number) => (v == null ? '—' : v.toFixed(s.dec));
   const row = (label: string, v?: number, color?: string) => (
     <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
@@ -131,7 +131,7 @@ function chartLevels(s: Setup) {
 }
 const usePalTheme = () => useApp().th;
 
-function TfTabs({ tf, set }: { tf: string; set: (k: string) => void }) {
+export function TfTabs({ tf, set }: { tf: string; set: (k: string) => void }) {
   const P = usePal();
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
@@ -143,7 +143,7 @@ function TfTabs({ tf, set }: { tf: string; set: (k: string) => void }) {
     </View>
   );
 }
-function ChartHeader({ s, sub, price }: { s: Setup; sub?: string; price?: boolean }) {
+export function ChartHeader({ s, sub, price }: { s: Setup; sub?: string; price?: boolean }) {
   const P = usePal(), th = P.th, { db } = useFeed(true);
   const c = chg(s.sym.id), fav = db.favs.includes(s.sym.id);
   return (
@@ -158,7 +158,7 @@ function ChartHeader({ s, sub, price }: { s: Setup; sub?: string; price?: boolea
     </View>
   );
 }
-function ChartBody({ s, tf, width, height }: { s: Setup; tf: string; width: number; height: number }) {
+export function ChartBody({ s, tf, width, height }: { s: Setup; tf: string; width: number; height: number }) {
   const P = usePal(), levels = chartLevels(s);
   if (width < 80) return <View style={{ height }} />;
   return s.data.length > 2
@@ -407,7 +407,7 @@ function Cta({ w, go }: { w: number; go: (t: number) => void }) {
   );
 }
 
-function Footer({ w, go }: { w: number; go: (t: number, market?: string) => void }) {
+export function Footer({ w, go }: { w: number; go: (t: number, market?: string) => void }) {
   const { setHelpOpen } = useApp();
   const col = (title: string, items: [string, () => void][]) => (
     <View key={title} style={{ gap: 9, minWidth: 130 }}>
@@ -454,14 +454,19 @@ function Footer({ w, go }: { w: number; go: (t: number, market?: string) => void
   );
 }
 
-export default function DesktopHome() {
+// go(tab, extra): open a page; extra = the analysis method (Analysis page) or the market group (Markets page).
+export function useGo() {
   const { setTab, setAmethod } = useApp();
-  const w = useRealWindow().width;
-  const go = (tab: number, extra?: string) => {
+  return (tab: number, extra?: string) => {
     if (tab === 1 && extra) setAmethod(extra);
     if (tab === 2 && extra) setDash({ market: extra === 'metals' ? 'forex' : (extra as any) });
     setTab(tab);
   };
+}
+
+export default function DesktopHome() {
+  const w = useRealWindow().width;
+  const go = useGo();
   return (
     <ScrollView style={{ flex: 1, backgroundColor: usePalBg() }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <Hero w={w} go={go} />
