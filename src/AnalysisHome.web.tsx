@@ -22,7 +22,7 @@ const WL_TABS = ['All', 'Forex', 'Metals', 'Crypto', 'Deriv'];
 const S_COL = ['#2F6BFF', '#F0524F', '#7C4DFF', '#F5A524'], S_ABBR = ['SYD', 'TYO', 'LDN', 'NY'];
 const S_TEXT = ['Low volatility, limited movement.', 'Increased activity, good for range trades.', 'High volatility, strong trends.', 'Solid volume, great for breakouts.'];
 
-function SectionHead({ icon, title, sub, right, onRight }: { icon: string; title: string; sub?: string; right?: string; onRight?: () => void }) {
+export function SectionHead({ icon, title, sub, right, onRight }: { icon: string; title: string; sub?: string; right?: string; onRight?: () => void }) {
   const P = usePal();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -202,7 +202,7 @@ function Watchlist({ onPair, go }: { onPair: (id: string) => void; go: (t: numbe
 }
 
 // ---------- 4. forex sessions
-function Sessions({ go }: { go: (t: number) => void }) {
+export function Sessions({ go, style }: { go: (t: number) => void; style?: any }) {
   const P = usePal(), th = P.th;
   const [now, setNow] = useState(new Date());
   useEffect(() => { const i = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(i); }, []);
@@ -210,7 +210,7 @@ function Sessions({ go }: { go: (t: number) => void }) {
   const hh = (x: number) => String((((x + tzo) % 24) + 24) % 24).padStart(2, '0') + ':00';
   const gmt = `GMT${tzo >= 0 ? '+' : '−'}${Math.abs(tzo)}`;
   return (
-    <Panel style={{ flex: 1, minWidth: 300, padding: 22, gap: 12 }}>
+    <Panel style={{ flex: 1, minWidth: 300, padding: 22, gap: 12, ...style }}>
       <SectionHead icon="globe-outline" title="Forex Sessions" right="View All" onRight={() => go(13)} />
       {SESSIONS.map((s, i) => {
         const on = !closed && sessionOpen(h, s.s, s.e), tone = on ? th.buy : closed ? P.body : P.blue;

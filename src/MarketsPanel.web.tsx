@@ -13,7 +13,7 @@ const FX_FIRST = ['frxDXY', 'frxEURUSD', 'frxGBPUSD', 'frxUSDJPY', 'frxAUDUSD', 
 const kind = (s: Sym) => (s.cat === 'crypto' ? 'Crypto' : s.cat === 'deriv' ? 'Deriv' : METALS.includes(s.id) ? 'Metals' : 'Forex');
 const TABS = ['All', 'Forex', 'Metals', 'Crypto', 'Deriv', 'Favourites'];
 
-export default function MarketsPanel({ height, goHome = false }: { height: number; goHome?: boolean }) {
+export default function MarketsPanel({ height, goHome = false, onPick, selected }: { height: number; goHome?: boolean; onPick?: (id: string) => void; selected?: string }) {
   const { th, setTab } = useApp();
   const { quotes, db } = useFeed(true);
   const d = useDash();
@@ -54,9 +54,9 @@ export default function MarketsPanel({ height, goHome = false }: { height: numbe
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingVertical: 4 }} showsVerticalScrollIndicator={false}>
         {rows.length === 0 && <Text style={{ color: th.dim, fontSize: 12.5, padding: 18, lineHeight: 18 }}>{tab === 'Favourites' && !q ? 'Tap the star on a pair to keep it here.' : 'No pair found.'}</Text>}
         {rows.map((s) => {
-          const x = quotes[s.id], c = chg(s.id), on = d.sym === s.id, fav = db.favs.includes(s.id);
+          const x = quotes[s.id], c = chg(s.id), on = (selected ?? d.sym) === s.id, fav = db.favs.includes(s.id);
           return (
-            <Pressable key={s.id} onPress={() => { setDash({ sym: s.id, market: groupOf(s.cat) }); if (goHome) setTab(0); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, paddingHorizontal: 16, cursor: 'pointer', borderLeftWidth: 3, borderLeftColor: on ? th.accent : 'transparent', backgroundColor: on ? th.accent + '12' : st.hovered ? th.accent + '08' : 'transparent' })) as any}>
+            <Pressable key={s.id} onPress={() => { if (onPick) { onPick(s.id); return; } setDash({ sym: s.id, market: groupOf(s.cat) }); if (goHome) setTab(0); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, paddingHorizontal: 16, cursor: 'pointer', borderLeftWidth: 3, borderLeftColor: on ? th.accent : 'transparent', backgroundColor: on ? th.accent + '12' : st.hovered ? th.accent + '08' : 'transparent' })) as any}>
               <Coin s={s} size={30} />
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ color: th.text, fontSize: 13, fontWeight: on ? '700' : '600' }} numberOfLines={1}>{s.name}</Text>

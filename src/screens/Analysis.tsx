@@ -16,6 +16,7 @@ import Scanner from './Scanner';
 import Insight from './Insight';
 import CRAnalysis from './CRAnalysis';
 import AnalysisHome from '../AnalysisHome';
+import MethodPage from '../MethodPage';
 import { useDesktop } from '../Desktop';
 
 export const ANALYSIS_TAB = 1;
@@ -365,15 +366,78 @@ export default function Analysis() {
 
   const deskHome = desk && !m;
   const pickPair = (id: string) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); };
+  // Each method keeps its own state while hidden; only the open one loads candles.
+  const bodies = (
+    <>
+      <View style={show('ict')}><ICTLab {...common} on={live('ict')} method={m && m.host === 'ict' ? m.k : 'all'} /></View>
+      <View style={show('cr')}><CRAnalysis {...common} on={live('cr')} /></View>
+      <View style={show('topdown')}><TopDown {...common} on={live('topdown')} /></View>
+      <View style={show('scanner')}><Scanner embedded on={live('scanner')} group={market} cfg={cfg} onOpen={(id) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); }} /></View>
+      <View style={show('scalp')}><Scalping {...common} on={live('scalp')} /></View>
+      <View style={show('insight')}><Insight {...common} on={live('insight')} method={m && m.host === 'insight' ? m.k : 'liquidity'} /></View>
+    </>
+  );
+
+  // Website: market and pair pickers inside the method header (the method itself is chosen in the card grid above).
+  const chip = (on: boolean) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 32, borderRadius: 16, borderWidth: 1, borderColor: on ? th.accent + '88' : th.line, backgroundColor: on ? th.accent + '1A' : th.panel, cursor: 'pointer' } as any);
+  const deskControls = (
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+        {MARKETS.map((x) => {
+          const on = market === x.k;
+          return (
+            <Pressable key={x.k} onPress={() => pickMarket(x.k)} accessibilityRole="button" accessibilityState={{ selected: on }} style={chip(on)}>
+              <Icon name={x.icon} size={14} color={on ? th.accent : th.dim} />
+              <Text style={{ color: on ? th.accent : th.dim, fontWeight: on ? '700' : '500', fontSize: 12.5 }}>{x.label}</Text>
+            </Pressable>
+          );
+        })}
+        {m && m.host !== 'scanner' && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, minWidth: 220, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel2, marginLeft: 'auto' } as any}>
+            <Icon name="search" size={14} color={th.dim} />
+            <TextInput value={q} onChangeText={setQ} placeholder="Search any pair" placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, fontSize: 12.5, outlineStyle: 'none' } as any} />
+            {!!q && <Pressable onPress={() => setQ('')} hitSlop={8}><Icon name="close-circle" size={14} color={th.dim} /></Pressable>}
+          </View>
+        )}
+      </View>
+      {m && m.host !== 'scanner' && found.length > 0 && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {found.map((x) => (
+            <Pressable key={x.id} onPress={() => { setSymId(x.id); setMarket(groupOf(x.cat)); setQ(''); }} style={chip(false)}><Text style={{ color: th.text, fontSize: 12.5, fontWeight: '600' }}>{x.name}</Text></Pressable>
+          ))}
+        </View>
+      )}
+      {m && m.host !== 'scanner' && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          {chips.map((id) => {
+            const on = id === symId;
+            return (
+              <Pressable key={id} onPress={() => setSymId(id)} style={chip(on)}>
+                <Text style={{ color: on ? th.accent : th.text, fontWeight: on ? '700' : '500', fontSize: 12.5 }}>{symOf(id).name}</Text>
+              </Pressable>
+            );
+          })}
+          {!chips.includes(symId) && <View style={chip(true)}><Text style={{ color: th.accent, fontWeight: '700', fontSize: 12.5 }}>{sym.name}</Text></View>}
+        </ScrollView>
+      )}
+      {chips.length === 0 && m && m.host !== 'scanner' && <Dim>No pairs in this list yet. Star pairs in Markets to fill your Watch list, or search above.</Dim>}
+      {m && m.host === 'scanner' && scanSetup}
+    </View>
+  );
+
   return (
     <View style={{ flex: 1 }}>
       {deskHome && active && <AnalysisHome cfg={cfg} setC={setC} probs={PROBS} onOpenMethod={openMethod} onPair={pickPair} top={<RunningAlert active={active} />} />}
-      <View style={{ flex: 1, display: deskHome ? 'none' : 'flex' }}>
+      {desk ? (
+        <MethodPage visible={!deskHome} m={m} symId={symId} sym={sym.name} onOpenMethod={openMethod} onPair={(id: string) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); }} top={<RunningAlert active={active && !deskHome} />} controls={deskControls}>
+          {bodies}
+        </MethodPage>
+      ) : (
         <Screen title="Analysis" bare scrollKey={amethod}>
           <View style={{ gap: 14 }}>
             {header}
-            <RunningAlert active={active && !deskHome} />
-            {!m && !desk && (
+            <RunningAlert active={active} />
+            {!m && (
               <>
                 {bgCard}
                 {choose}
@@ -381,16 +445,10 @@ export default function Analysis() {
               </>
             )}
             {backRow}
-            {/* Each method keeps its own state while hidden; only the open one loads candles. */}
-            <View style={show('ict')}><ICTLab {...common} on={live('ict')} method={m && m.host === 'ict' ? m.k : 'all'} /></View>
-            <View style={show('cr')}><CRAnalysis {...common} on={live('cr')} /></View>
-            <View style={show('topdown')}><TopDown {...common} on={live('topdown')} /></View>
-            <View style={show('scanner')}><Scanner embedded on={live('scanner')} group={market} cfg={cfg} onOpen={(id) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); }} /></View>
-            <View style={show('scalp')}><Scalping {...common} on={live('scalp')} /></View>
-            <View style={show('insight')}><Insight {...common} on={live('insight')} method={m && m.host === 'insight' ? m.k : 'liquidity'} /></View>
+            {bodies}
           </View>
         </Screen>
-      </View>
+      )}
     </View>
   );
 }
