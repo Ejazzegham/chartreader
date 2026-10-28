@@ -5,6 +5,7 @@ import { useApp } from '../store';
 import { Screen, Card, Field, Btn, Row, Dim, SectionTitle, StatTile, Cols } from '../ui';
 import { TpLadder } from '../ProUI';
 import { TP_SPLIT } from '../gemini';
+import RiskHome from '../RiskHome';
 
 const num = (s: string) => parseFloat(s.replace(',', '.'));
 const f = (n: number, d = 2) => n.toLocaleString('en-US', { maximumFractionDigits: d });
@@ -20,16 +21,17 @@ export default function Risk() {
   const [err, setErr] = useState('');
   const [out, setOut] = useState<null | { side: 'buy' | 'sell'; amt: number; dist: number; units: number; rows: { label: string; price: number; r: number; pct: number; units: number; profit: number }[]; total: number; blended: number; be: number }>(null);
   const [from, setFrom] = useState('');
+  const desk = useLayout().mode === 'desktop';
 
   // Levels sent from the ICT Lab land here.
   useEffect(() => {
-    if (tab !== 4 || !prefill) return;
+    if (desk || tab !== 4 || !prefill) return; // website: RiskHome.web.tsx takes the levels
     const d = Math.abs(prefill.entry) >= 100 ? 2 : Math.abs(prefill.entry) >= 1 ? 4 : 5;
     setEntry(prefill.entry.toFixed(d)); setSl(prefill.sl.toFixed(d));
     setTp([0, 1, 2].map((i) => (prefill.tps[i] !== undefined ? prefill.tps[i].toFixed(d) : '')));
     setFrom(prefill.symbol ?? ''); setOut(null); setErr('');
     setPrefill(null);
-  }, [tab, prefill]);
+  }, [tab, prefill, desk]);
 
   const calc = () => {
     const b = num(bal), r = num(risk), e = num(entry), s = num(sl);
@@ -57,7 +59,7 @@ export default function Risk() {
     </View>
   );
 
-  const desk = useLayout().mode === 'desktop';
+  if (desk) return <RiskHome />; // website: the Risk & TP Planner page (src/RiskHome.web.tsx); the phone keeps the screen below
   return (
     <Screen icon="calculator" title={t('calcTitle')} subtitle={t('navDescRisk')}>
       <Cols>

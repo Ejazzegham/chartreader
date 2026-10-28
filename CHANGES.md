@@ -1,3 +1,8 @@
+# Website v2.19: Risk & TP Planner redesigned like the mockup
+
+- **Risk & TP Planner page** (`src/RiskHome.web.tsx`, wired in `src/screens/Risk.tsx`): blue hero "Plan Your Trades with Confidence", left tips rail, 1. Account & Trade Details, 2. Position Size Calculator, Your Trade Plan, 3. Risk Reward Analysis (ratio / risk % / direction, what-if chart, "Apply to my plan"), Pro Trading Tips and footer. The server notice now sits under the hero (`Desktop.web.tsx` skips it on this tab).
+- Position size is now in **lots** (pick the instrument; Auto Calculate or type your own lots). The 3-target ladder with % split is kept behind "Split across 3 take profits". Levels sent from the ICT Lab still fill the form. The phone screen is unchanged.
+
 # Website v2.18: reset / confirmation email fix, no "AI" / "Gemini" words
 
 - **Reset password said "check your internet connection" and Confirm email showed "errNetwork"**: when our own email design could not be sent (the Netlify function not reachable from the website, or server mail not set up) the website gave up. Now the website falls back to Firebase's own email (`AUTH_MAIL_FIREBASE_FALLBACK = IS_WEB_APP` in `src/license.ts`), so reset, confirmation and change-email always go out. Order: our function (`/mailer`) -> the server's mail route (`/srv/auth/...`) -> Firebase's email. The phone is unchanged. The raw key "errNetwork" is now translated.

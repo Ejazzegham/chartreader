@@ -218,7 +218,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
     <View style={{ flex: 1 }}>
       <TopNav />
       <View style={{ flex: 1, flexDirection: 'row' }}>
-        <View style={{ flex: 1, minWidth: 0 }}>{tab !== 13 && <Notices />}{children}</View>
+        <View style={{ flex: 1, minWidth: 0 }}>{tab !== 13 && tab !== 4 && <Notices />}{children}</View>
       </View>
     </View>
   );
