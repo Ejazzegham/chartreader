@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import * as SecureStore from './secureStore';
 import * as Crypto from 'expo-crypto';
 
@@ -44,7 +45,17 @@ export async function loadClock() { const v = Number(await SecureStore.getItemAs
 export const saveClock = () => { SecureStore.setItemAsync(SEEN_KEY, String(trustedNow())).catch(() => {}); };
 
 // The address can be changed inside the app (Settings > Server address), so a new tunnel or host never needs an app update.
-let base = SERVER;
+// The website does NOT call the server address directly: browsers block that (CORS, and the free ngrok page that stops browsers). Its calls go to the
+// same address as the page (/srv/...), and Vercel / Netlify pass them on to the server (see vercel.json / netlify.toml). A custom address set in
+// Settings still works and is called directly. The phone calls the server directly as before.
+export const IS_WEB_APP = Platform.OS === 'web';
+export const WEB_BASE = '/srv';
+const DEFAULT_BASE = IS_WEB_APP ? WEB_BASE : SERVER;
+export const deviceKind: 'web' | 'mobile' = IS_WEB_APP ? 'web' : 'mobile'; // one email may be signed in on one phone and one computer at a time
+let base = DEFAULT_BASE;
+// Called when the server says this device was signed out because the same email signed in on another device of the same kind.
+let onReplaced: ((msg: string) => void) | null = null, replacedFired = 0;
+export const setReplacedHandler = (f: ((msg: string) => void) | null) => { onReplaced = f; };
 const SERVER_KEY = 'server_url';
 export const getServer = () => base;
 export async function loadServer() {
@@ -54,7 +65,7 @@ export async function loadServer() {
 // Returns an error message, or '' when saved. An empty string resets to the built-in address.
 export async function setServer(raw: string): Promise<string> {
   const v = raw.trim().replace(/\/+$/, '');
-  if (!v) { base = SERVER; await SecureStore.deleteItemAsync(SERVER_KEY).catch(() => {}); return ''; }
+  if (!v) { base = DEFAULT_BASE; await SecureStore.deleteItemAsync(SERVER_KEY).catch(() => {}); return ''; }
   if (!/^https?:\/\/[^\s/]+\.[^\s]+$/i.test(v) && !/^https?:\/\/localhost/i.test(v)) return 'Enter the full address, for example https://your-name.trycloudflare.com';
   base = v; await SecureStore.setItemAsync(SERVER_KEY, v).catch(() => {});
   return '';
@@ -73,7 +84,11 @@ async function post(path: string, body: any, token = '', ms = 25000) {
   const j = await r.json().catch(() => null);
   // Our server always answers in JSON. An HTML page (ngrok "tunnel offline", a proxy error) or a 5xx means the server itself is not there.
   if (j === null || r.status >= 500) throw net(r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'The server is not running right now. Try again in a minute.');
-  if (!r.ok) throw new Error(j.error || 'Server error');
+  if (!r.ok) {
+    const err = Object.assign(new Error(j.error || 'Server error'), j.code ? { code: String(j.code) } : {});
+    if (r.status === 401 && j.code === 'replaced' && onReplaced && Date.now() - replacedFired > 10000) { replacedFired = Date.now(); onReplaced(err.message); } // signs this device out once, with the reason
+    throw err;
+  }
   return j;
 }
 // Account emails (reset password, confirm email, change email) in our own design. They are sent by a Netlify Function,
@@ -84,16 +99,21 @@ export const AUTH_MAIL_FIREBASE_FALLBACK = false;
 // 'fallback' = Netlify is not set up / not reachable; the caller decides what to do (see AUTH_MAIL_FIREBASE_FALLBACK).
 export const authMail = async (kind: 'reset' | 'verify' | 'change-email', body: any): Promise<'sent' | 'limited' | 'fallback'> => {
   if (AUTH_MAIL_URL.includes('YOUR-SITE')) return 'fallback';
+  // The website calls /api/auth-mail on its own address (Vercel / Netlify pass it on to the Netlify function), because a browser may not call
+  // another site's function unless that function allows it. The phone calls the function directly.
+  const url = IS_WEB_APP ? '/api/auth-mail' : AUTH_MAIL_URL;
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
-    const r = await fetch(AUTH_MAIL_URL, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ...body }) });
+    const r = await fetch(url, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ...body }) });
     if (r.status === 429) return 'limited';
-    return r.ok ? 'sent' : 'fallback';
-  } catch { return 'fallback'; } finally { clearTimeout(to); }
+    if (r.ok) return 'sent';
+  } catch { /* the function could not be reached: try the licence server's own mail route below */ } finally { clearTimeout(to); }
+  try { await post('/auth/' + kind, body, '', 12000); return 'sent'; } // the server sends the same email when it is set up for it (server/BRANDED_EMAILS.md)
+  catch (e: any) { return /too many|limit/i.test(String(e?.message)) ? 'limited' : 'fallback'; }
 };
 // idToken = the Firebase ID token of the signed-in user; the server verifies it and reads the email from it.
 // accountCreated = when Firebase created the account (ms). The server uses it so a trial that already ran offline is not started again from zero.
-export const registerLic = async (idToken: string, accountCreated?: number): Promise<Lic> => post('/register', { idToken, deviceId: await deviceId(), ...(accountCreated && accountCreated > 0 ? { accountCreated } : {}) });
+export const registerLic = async (idToken: string, accountCreated?: number, fresh = false): Promise<Lic> => post('/register', { idToken, deviceId: await deviceId(), kind: deviceKind, fresh, ...(accountCreated && accountCreated > 0 ? { accountCreated } : {}) }); // fresh = the person has just typed their password / used Google here
 export type AdminUser = { id?: string; email: string; status: 'paid' | 'trial' | 'expired'; trialEnd: number; paidUntil: number; created: number; last: number };
 export type PayStatus = 'review' | 'approved' | 'rejected';
 export type AdminPay = { txid: string; pid?: string; email: string; network: string; usd: number; days: number; at: number; status: PayStatus; wallet: string; plan: string; suggest: number; verified: boolean; from: string; note: string; decidedAt: number };

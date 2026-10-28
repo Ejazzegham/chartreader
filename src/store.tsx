@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from './secureStore';
+import { showAlert } from './dialog';
 import * as Crypto from 'expo-crypto';
 import { themeFor, Theme } from './theme';
 import { STR, Lang } from './i18n';
 import type { MarketAI } from './gemini';
 import { flushChatOutbox } from './chatOutbox';
 import { setupsToLog } from './inboxSetups';
-import { Lic, NO_LIC, localTrial, isNetworkError, registerLic, loadServer, cloudGet, cloudPut, profilePut, accountDelete, trustedNow, syncClock, loadClock, saveClock, inboxPull, inboxAck, supportPull, adminBadge as fetchAdminBadge, authMail, AUTH_MAIL_FIREBASE_FALLBACK } from './license';
+import { setReplacedHandler, Lic, NO_LIC, localTrial, isNetworkError, registerLic, loadServer, cloudGet, cloudPut, profilePut, accountDelete, trustedNow, syncClock, loadClock, saveClock, inboxPull, inboxAck, supportPull, adminBadge as fetchAdminBadge, authMail, AUTH_MAIL_FIREBASE_FALLBACK } from './license';
 import { auth } from './firebase';
 import { authReady as waitAuth } from './authReady';
 import { futAligned } from './fallback';
@@ -40,7 +41,7 @@ type Account = { name: string; email: string; phone?: string; uid?: string; salt
 const errKey = (code?: string) => code === 'auth/email-already-in-use' ? 'errInUse' : code === 'auth/network-request-failed' ? 'errNetwork' : code === 'auth/too-many-requests' ? 'errMany' : code === 'auth/requires-recent-login' ? 'errRecent' : code === 'auth/weak-password' || code === 'auth/invalid-email' ? 'errFields' : 'errLogin';
 type Settings = { theme: string; lang: Lang; model: string; nav: 'bottom' | 'side'; bio: boolean };
 // A fresh install opens in Glass Frost (the bright glass theme). People who already picked a theme keep it (it is saved in their settings).
-const DEFAULTS: Settings = { theme: Platform.OS === 'web' ? 'glassPearl' : 'glassFrost', // the website starts in the calm ivory and sapphire theme; the choice in Settings is kept
+const DEFAULTS: Settings = { theme: Platform.OS === 'web' ? 'glassClean' : 'glassFrost', // the website starts in the bright white and blue theme; the choice in Settings is kept
   lang: 'en', model: 'gemini-3.8-flash', nav: 'bottom', bio: false };
 
 // Read one saved value. A damaged entry gives the fallback instead of stopping everything that loads after it
@@ -209,7 +210,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
   };
   const setLic = (l: Lic) => { syncClock(l.now); licRef.current = l; _lic(l); SecureStore.setItemAsync('lic', JSON.stringify(l)).catch(() => {}); saveClock(); };
   // Asks the server who this account is. Admin rights come from a confirmed admin email: no code to type.
-  const refreshLic = async () => {
+  const refreshLic = async (fresh = false) => { // fresh = the person has just typed their password / used Google on THIS device (that signs the other device of the same kind out)
     try {
       const u = auth.currentUser;
       // Bug fix (kept): remember "unverified" BEFORE reload(), otherwise the token is not refreshed after the link was tapped and the server keeps seeing email_verified=false.
@@ -219,7 +220,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
       if (!idToken) throw new Error('Please log in again');
       setEmailVerified(!!u?.emailVerified);
       const created = Date.parse(u?.metadata?.creationTime || ''); // Firebase's own date for the account: lets the server count a trial that already ran offline
-      const l = await registerLic(idToken, isFinite(created) ? created : undefined);
+      const l = await registerLic(idToken, isFinite(created) ? created : undefined, fresh === true); // === true: a button press passes an event here, which must not count as a sign-in
       setLic(l); setLicErr(''); tokRef.current = l.token;
       if (!cloudOk.current) restoreCloud(); // first contact of this login: bring the backup back
       flushChatOutbox(l.token); // messages written to support while the server was off
@@ -638,7 +639,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
     if (account && account.email !== em) await wipeUserData();
     await saveAcc({ name: name.trim(), email: em, uid: auth.currentUser?.uid });
     await SecureStore.setItemAsync('remember', '1');
-    await refreshLic();
+    await refreshLic(true);
     return null;
   };
   const bioUnlock = () => { pinFails.current = { n: 0, until: 0 }; SecureStore.deleteItemAsync(PIN_FAILS_KEY).catch(() => {}); setLocked(false); setCovered(false); };
@@ -670,7 +671,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
     else if (account.hash || account.email !== em || !account.uid) { const { salt, hash, ...rest } = account; await saveAcc({ ...rest, email: em, uid }); } // old local password hash is no longer needed // old local password hash is no longer needed
     if (remember) await SecureStore.setItemAsync('remember', '1'); else await SecureStore.deleteItemAsync('remember');
     setLoggedIn(true); setLocked(false);
-    refreshLic();
+    refreshLic(true);
     return null;
   };
   // ---- Continue with Google (sign up and log in are the same button) ----
@@ -691,9 +692,9 @@ export function Provider({ children }: { children: React.ReactNode }) {
     if (!account || !samePerson) await saveAcc({ name: u.displayName ?? '', email: em, uid });
     else if (account.hash || account.email !== em || !account.uid) { const { salt, hash, ...rest } = account; await saveAcc({ ...rest, email: em, uid }); }
     await SecureStore.setItemAsync('remember', '1');
-    if (isNew) { await refreshLic(); return { err: null, isNew: true }; } // a new account goes on to set its PIN, like a normal sign up
+    if (isNew) { await refreshLic(true); return { err: null, isNew: true }; } // a new account goes on to set its PIN, like a normal sign up
     setLoggedIn(true); setLocked(false);
-    refreshLic();
+    refreshLic(true);
     return { err: null, isNew: false };
   };
   const resetPassword = async (email: string) => {
@@ -776,6 +777,15 @@ export function Provider({ children }: { children: React.ReactNode }) {
     return null;
   };
   const logout = () => { unregisterPush(tokRef.current); remote.setToken(''); if (cloudOk.current && tokRef.current) { const tk = tokRef.current, snap = snapshot(); cloudPut(tk, snap).catch(() => {}); } cloudOk.current = false; clearTimeout(pushTimer.current); pushTimer.current = null; setLoggedIn(false); setCovered(false); setTab(0); setMenu(false); setAdminOpen(false); setHelpOpen(false); setSupportUnread(0); setAdminBadge({ chats: 0, pays: 0 }); supRef.current = { since: 0, init: false, chats: 0, pays: 0, binit: false }; setHistOpen(false); setNotesOpen(false); SecureStore.deleteItemAsync('remember').catch(() => {}); signOut(auth).catch(() => {}); };
+  // This email was signed in on another phone / another computer: this device is signed out and told why (one email = one phone + one computer at a time).
+  const logoutRef = useRef<() => void>(() => {}); logoutRef.current = logout;
+  useEffect(() => { setReplacedHandler((msg) => { showAlert('Signed out', msg); logoutRef.current(); }); return () => setReplacedHandler(null); }, []);
+  // Website: after the person taps the link in the confirmation email, this tab notices by itself (no need to press a button or reload).
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !loggedIn || emailVerified) return;
+    const iv = setInterval(() => { if (typeof document === 'undefined' || document.visibilityState === 'visible') refreshRef.current(); }, 6000);
+    return () => clearInterval(iv);
+  }, [loggedIn, emailVerified]);
   const resetAccount = async () => {
     if (cloudOk.current && tokRef.current) await cloudPut(tokRef.current, snapshot()).catch(() => {}); // keep the backup of the account that is being replaced on this phone
     await wipeUserData(); await signOut(auth).catch(() => {});

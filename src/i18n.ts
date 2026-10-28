@@ -234,7 +234,7 @@ const MARKETS_EN: Record<string, string> = {
 
 // v2.0 Pro features. Other languages fall back to English until translated (Urdu has the navigation labels).
 const PRO_EN: Record<string, string> = {
-  th_glassNight: "Glass Night", th_glassFrost: "Glass Frost", th_glassAurora: "Glass Aurora", th_glassRose: "Glass Rose", th_glassObsidian: "Glass Obsidian", th_glassPearl: "Glass Pearl",
+  th_glassNight: "Glass Night", th_glassFrost: "Glass Frost", th_glassAurora: "Glass Aurora", th_glassRose: "Glass Rose", th_glassObsidian: "Glass Obsidian", th_glassClean: "Clean Light", th_glassPearl: "Glass Pearl",
   tabManual: "Demo Trade", navDescManual: "Practice trading on live prices with virtual money, like MetaTrader 5: SELL / BUY, then stop loss, take profit and partial closes from the chart",
   tabIct: "ICT Lab", tabKillzones: "Killzones", tabPerf: "Performance", tabTopDown: "Top-Down", navDescTopDown: "Pick any 3 timeframes: direction, zone and entry", tabTools: "Risk & TP Planner", calcTitle: "Risk & TP planner", th_royal: "Royal Gold", th_graphite: "Graphite", th_cloud: "Cloud",
   navPages: "PAGES", navProTools: "PRO TOOLS",

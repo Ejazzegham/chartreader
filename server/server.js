@@ -13,7 +13,7 @@ const TRON = 'TKvEQSzioWQGZBHdrzSLGWUnmQhJsEHUhA', BSC = '0xd7065772295fb0d563c1
 const USDT_TRON = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', USDT_BSC = '0x55d398326f99059ff775485246999027b3197955';
 const TRANSFER = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
-let db = { people: {}, emails: {}, ipTrials: {}, devices: {}, sessions: {}, tx: {}, pays: {}, wallets: {}, support: {}, seenMail: [], usage: {}, geminiKey: process.env.GEMINI_API_KEY || '', model: '', secret: '' };
+let db = { people: {}, emails: {}, ipTrials: {}, devices: {}, sessions: {}, revoked: {}, tx: {}, pays: {}, wallets: {}, support: {}, seenMail: [], usage: {}, geminiKey: process.env.GEMINI_API_KEY || '', model: '', secret: '' };
 try { db = { ...db, ...JSON.parse(fs.readFileSync(DBF, 'utf8')) }; } catch {}
 for (const [em, pid] of Object.entries(db.emails || {})) { const p = db.people[pid]; if (p && !p.email) p.email = em; } // old records: the email lived only in db.emails, so the admin list showed "?"
 if (!db.secret) db.secret = process.env.TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
@@ -48,6 +48,12 @@ const session = (req, body) => {
   return s && db.people[s.pid] ? { ...s, admin: !!s.admin && ADMINS.includes(s.email), token: tok } : null; // removed from the admin list = admin rights end at once
 };
 
+const tokenOf = (req, body) => (req.headers.authorization || '').replace('Bearer ', '') || body?.token || '';
+// One email may be signed in on ONE phone and ONE computer (the website) at the same time. A new sign-in on a phone signs the other phone out,
+// a new sign-in on a computer signs the other computer out; a phone and a computer never push each other out. Admin emails are exempt.
+const REPLACED = { phone: 'This email was signed in on another phone, so this phone was signed out. One email can use one phone and one computer at a time.', computer: 'This email was signed in on another computer, so this one was signed out. One email can use one phone and one computer at a time.' };
+const replacedMsg = (kind) => (kind === 'web' ? REPLACED.computer : REPLACED.phone);
+const kickedBody = (req, body) => { const r = db.revoked[tokenOf(req, body)]; return r ? { error: replacedMsg(r.kind), code: 'replaced' } : null; };
 // --- Firebase ID token check (RS256 JWT signed by Google). No SDK needed: we check the signature against Google's public certs. ---
 let certs = { at: 0, keys: {} };
 async function fbCert(kid) {
@@ -104,7 +110,20 @@ async function register(req, b) {
   // Admin needs an email on the admin list that is CONFIRMED. Anyone can type an admin's address into the sign-up form; only the owner can click the link in the mailbox.
   const admin = ADMINS.includes(email) && verified;
   const token = crypto.createHmac('sha256', SECRET).update(pid + ':' + dev + ':' + admin).digest('hex');
-  db.sessions[token] = { pid, admin, email }; save();
+  const kind = b.kind === 'web' ? 'web' : 'mobile', now = Date.now(); // an older phone app sends no kind: it is a phone
+  // fresh: true = the person just typed their password / used Google on this device; false = the app only renews its session in the background;
+  // missing = an older app (treated like a sign-in, except that a device that was signed out has to wait before it may come back by itself).
+  const fresh = b.fresh === true ? true : b.fresh === false ? false : null;
+  if (!admin) {
+    const was = db.revoked[token];
+    if (was && fresh !== true && !(fresh === null && now - was.at > 30 * 60e3)) throw Object.assign(new Error(replacedMsg(kind)), { code: 'replaced' });
+    const others = Object.entries(db.sessions).filter(([t, v]) => v.pid === pid && (v.kind || 'mobile') === kind && t !== token);
+    if (others.length && fresh === false && !db.sessions[token]) throw Object.assign(new Error(replacedMsg(kind)), { code: 'replaced' }); // a background renewal never takes the place of the device that is signed in
+    for (const [t] of others) { delete db.sessions[t]; db.revoked[t] = { at: now, kind }; } // sign the other device of this kind out
+    delete db.revoked[token];
+  }
+  for (const [t, v] of Object.entries(db.revoked)) if (now - v.at > 60 * 864e5) delete db.revoked[t];
+  db.sessions[token] = { pid, admin, email, kind }; save();
   if (firstTime && !admin) notifyAdmins('New signup', email + (verified ? ' (email confirmed)' : '')).catch(() => {}); // only a push to the admin phone; never blocks the signup
   return { ...lic(pid, admin, token, email), emailVerified: verified };
 }
@@ -141,7 +160,7 @@ http.createServer(async (req, res) => {
   // Attachments: the upload is raw bytes (not JSON) and a file is shown by its random link, so both are handled before the JSON body is read.
   if ((req.method === 'GET' || req.method === 'HEAD') && req.url.startsWith('/media/')) return media.serve(req, res, req.url.slice(7).split('?')[0]);
   if (req.method === 'POST' && req.url === '/support/upload') {
-    const s = session(req, null); if (!s) { req.resume(); return send(401, { error: 'Session expired, please log in again' }); }
+    const s = session(req, null); if (!s) { req.resume(); return send(401, kickedBody(req, null) || { error: 'Session expired, please log in again' }); }
     try { return send(200, await media.upload(req, s)); } catch (e) { return send(e.status || 400, { error: e.message }); }
   }
   const chunks = []; let size = 0;
@@ -149,14 +168,14 @@ http.createServer(async (req, res) => {
   const raw = Buffer.concat(chunks).toString('utf8'); // joining Buffers first keeps multi-byte characters intact
   try {
     const b = raw ? JSON.parse(raw) : {}, s = session(req, b), u = req.url;
-    if (u === '/register') return send(200, await register(req, b));
+    if (u === '/register') { try { return send(200, await register(req, b)); } catch (e) { if (e.code === 'replaced') return send(401, { error: e.message, code: 'replaced' }); throw e; } }
     if (u.startsWith('/auth/')) { const r = await authMail.handle(u, b, ipOf(req)); return send(r.status, r.body); } // public: used before / without a license session
     if (u === '/inbound/email') {
       if (!INBOUND_SECRET) return send(503, { error: 'Email to app is not set up' });
       if (!same(req.headers['x-inbound-secret'] || '', INBOUND_SECRET)) return send(401, { error: 'Bad secret' });
       return send(200, support.inbound(b));
     }
-    if (!s) return send(401, { error: 'Session expired, please log in again' });
+    if (!s) return send(401, kickedBody(req, b) || { error: 'Session expired, please log in again' });
     if (u === '/status') return send(200, lic(s.pid, s.admin, s.token, s.email));
     if (u === '/pay') return send(200, await payments.submit(s, b));   // a CLAIM: the admin approves it, nothing is added here
     if (u === '/pay/mine') return send(200, { pays: payments.mine(s.pid) });

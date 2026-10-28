@@ -6,6 +6,7 @@ import MarketsPanel from './MarketsPanel';
 import { Icon, LiveDot, BellButton, Card } from './ui';
 import { LogoMark } from './Brand';
 import { NAV } from './nav';
+import { APP_VERSION } from './version';
 import { MDEFS } from './MethodArt';
 import { Coin } from './MarketWidgets';
 import NewsBanner from './NewsBanner';
@@ -74,28 +75,24 @@ function Sidebar({ width }: { width: number }) {
           </Pressable>
         ))}
       </ScrollView>
-      {height >= 860 && (
-        <View style={{ marginHorizontal: 14, marginBottom: 12, borderRadius: 16, overflow: 'hidden', padding: 16, gap: 8 }}>
-          <LinearGradient colors={['#0B1B3F', '#14306B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', lineHeight: 21 }}>Trade Smarter{'\n'}With Better Analysis</Text>
-          <Text style={{ color: '#FFFFFFB3', fontSize: 11.5, lineHeight: 16 }}>Professional tools for better decisions and consistent results.</Text>
-          {paid ? <Text style={{ color: '#7CF0C4', fontSize: 12.5, fontWeight: '800', marginTop: 4 }}>✓ Your PRO plan is active</Text> : (
-            <Pressable onPress={() => setTab(6)} style={((s: any) => ({ marginTop: 4, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 36, borderRadius: 9, cursor: 'pointer', backgroundColor: s.hovered ? '#FFFFFF' : '#F1F5FF' })) as any}>
-              <Text style={{ color: '#14306B', fontSize: 12.5, fontWeight: '800' }}>Upgrade to Pro</Text><Icon name="arrow-forward" size={14} color="#14306B" />
-            </Pressable>
-          )}
+      <View style={{ marginHorizontal: 14, marginBottom: 12, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: th.gold + '55', backgroundColor: th.gold + '10', gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><Icon name="ribbon" size={17} color={th.gold} /><Text style={{ color: th.text, fontSize: 14.5, fontWeight: '800' }}>{paid ? 'PRO is active' : 'Go Pro'}</Text></View>
+        <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>{paid ? 'Thank you for supporting Chart Reader.' : 'Unlock full features, AI analysis, and more.'}</Text>
+        {!paid && (
+          <Pressable onPress={() => setTab(6)} style={((s: any) => ({ marginTop: 4, height: 36, borderRadius: 9, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: th.accent, opacity: s.hovered ? 0.9 : 1 })) as any}>
+            <Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '800' }}>Upgrade Now</Text>
+          </Pressable>
+        )}
+      </View>
+      {height >= 780 && (
+        <View style={{ marginHorizontal: 16, marginBottom: 14, gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
+            <LogoMark size={28} radius={7} />
+            <View><Text style={{ color: th.text, fontSize: 12.5, fontWeight: '800' }}>Chart Reader</Text><Text style={{ color: th.dim, fontSize: 10 }}>v{APP_VERSION}</Text></View>
+          </View>
+          <Text style={{ color: th.dim, fontSize: 10, lineHeight: 14 }}>Smarter Analysis. Better Decisions.{'\n'}Educational tool, not financial advice. Trading involves risk.</Text>
         </View>
       )}
-      <Pressable onPress={() => setTab(6)} style={((s: any) => ({ marginHorizontal: 14, marginBottom: 14, paddingTop: 12, flexDirection: 'row', alignItems: 'center', gap: 10, cursor: 'pointer', borderTopWidth: 1, borderTopColor: th.line, opacity: s.hovered ? 0.85 : 1 })) as any}>
-        {avatar ? <Image source={{ uri: avatar }} style={{ width: 38, height: 38, borderRadius: 19 }} /> : (
-          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: th.accent + '26', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.accent, fontSize: 16, fontWeight: '900' }}>{(account?.name ?? '?').trim().charAt(0).toUpperCase()}</Text></View>
-        )}
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }} numberOfLines={1}>{account?.name ?? ''}</Text>
-          <Text style={{ color: th.dim, fontSize: 11 }} numberOfLines={1}>{lic.admin ? 'Admin' : paid ? 'Premium Trader' : lic.status === 'trial' ? 'Free trial' : 'Account'}</Text>
-        </View>
-        <Icon name="settings-outline" size={18} color={th.dim} />
-      </Pressable>
     </View>
   );
 }
@@ -214,6 +211,30 @@ function Rail({ width }: { width: number }) {
   );
 }
 
+// A slim strip under the top bar for the two things that need the person: the server cannot be reached, or the email is not confirmed yet.
+function Notices() {
+  const { th, lic, licErr, refreshLic, emailVerified, sendVerify, googleOnly, account, toast } = useApp();
+  const [busy, setBusy] = useState(''), [sent, setSent] = useState(false);
+  const run = async (k: string, f: () => Promise<any>) => { setBusy(k); try { await f(); } finally { setBusy(''); } };
+  const rows: { key: string; tone: string; icon: string; text: string; btns: [string, () => void][] }[] = [];
+  if (licErr && /reach|server|internet|connect|too long|not running/i.test(licErr) && !/Firebase/i.test(licErr)) rows.push({ key: 'srv', tone: th.sell, icon: 'cloud-offline-outline', text: 'Cannot reach the Chart Reader server right now, so alerts, backup and chat are paused. Charts and analysis still work.', btns: [[busy === 'srv' ? 'Trying…' : 'Try again', () => run('srv', async () => { const ok = await refreshLic(); toast(ok ? 'Connected to the server.' : 'Still cannot reach the server.', ok ? 'good' : 'info'); })]] });
+  if (!emailVerified && !googleOnly) rows.push({ key: 'mail', tone: th.gold, icon: 'mail-unread-outline', text: sent ? `We sent a confirmation link to ${account?.email ?? 'your email'}. Tap it, then come back here: this page notices by itself.` : `Please confirm your email address${account?.email ? ` (${account.email})` : ''}. It keeps your account safe and unlocks all features.`, btns: [[busy === 'mail' ? 'Sending…' : sent ? 'Send again' : 'Send confirmation email', () => run('mail', async () => { const e = await sendVerify(); if (e) toast(String(e), 'bad'); else { setSent(true); toast('Confirmation email sent. Check your inbox and spam.', 'good'); } })], [busy === 'chk' ? 'Checking…' : 'I confirmed it', () => run('chk', async () => { await refreshLic(); toast('Checked.', 'info'); })]] });
+  if (!rows.length) return null;
+  return (
+    <View style={{ gap: 8, paddingHorizontal: 20, paddingTop: 10 }}>
+      {rows.map((r) => (
+        <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: r.tone + '55', backgroundColor: r.tone + '14' }}>
+          <Icon name={r.icon} size={19} color={r.tone} />
+          <Text style={{ flex: 1, color: th.text, fontSize: 13, lineHeight: 18 }}>{r.text}</Text>
+          {r.btns.map(([l, f]) => (
+            <Pressable key={l} onPress={f} style={((st: any) => ({ height: 32, paddingHorizontal: 14, borderRadius: 9, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: r.tone, opacity: st.hovered ? 0.9 : 1 })) as any}><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>{l}</Text></Pressable>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function DesktopShell({ children }: { children: React.ReactNode }) {
   const L = useLayout();
   const { tab } = useApp(); // Home has its own right column (watchlist, sentiment, key levels), so the market-watch panel is for the other pages
@@ -223,7 +244,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
       <View style={{ flex: 1, minWidth: 0 }}>
         <TopBar />
         <View style={{ flex: 1, flexDirection: 'row' }}>
-          <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
+          <View style={{ flex: 1, minWidth: 0 }}><Notices />{children}</View>
           {L.rail > 0 && tab !== 0 && <Rail width={L.rail} />}
         </View>
       </View>

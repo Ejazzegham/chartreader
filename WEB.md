@@ -83,3 +83,9 @@ VSA reads real traded volume, not spread. Crypto: Binance spot volume. Forex, go
 The website and the phone app are ONE codebase. Web-only files end in `.web.tsx` / `.web.ts` or are named in WEB.md above (Desktop, DesktopHome, Frame, Landing, LiveCandles, dash, dialog, net, win, secureStore, Modal). Everything else is the app's own code.
 When the app changes, copy the new `src/` over and re-apply only these web hooks: App.tsx (Frame + DesktopShell), screens/Home.tsx (DesktopHome wrapper), ChartZoom.tsx (wheel + hover), markets.ts (dialog + IS_WEB), fallback.ts (xfetch), and the imports `Modal`, `showAlert`, `shareText`, `useWindowDimensions`, `secureStore` instead of the react-native / expo ones. Then run: `npx tsc --noEmit`, the tests, `npx expo export --platform web`, and `python3 tests/web/smoke.py` (serve `dist` on port 8099 first).
 Server: `server/server.js` needs the CORS headers and `await proxy(req, res)` line (see CHANGES.md).
+
+
+## Server address, rewrites and the device rule (v2.17)
+
+- The website calls `/srv/...` and `/api/auth-mail` on its own address. `vercel.json` (Vercel) and `netlify.toml` (Netlify) pass them to the server (`https://mockup-borrowing-overprice.ngrok-free.dev`, the SERVER constant in `src/license.ts`) and to the Netlify email function. Keep the three in step if the server address changes.
+- The server decides who may be signed in: one phone + one computer per email (see CHANGES.md). Deploy the new `server/` folder for it to work.

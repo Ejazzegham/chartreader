@@ -2,6 +2,20 @@
   command = "npx expo export --platform web"
   publish = "dist"
 
+# The website talks to your server and to the account-email function through its OWN address (see WEB.md), so the browser never makes a
+# cross-site call (no CORS problem, no ngrok warning page). If you change SERVER in src/license.ts, change the address below too.
+[[redirects]]
+  from = "/srv/*"
+  to = "https://mockup-borrowing-overprice.ngrok-free.dev/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/auth-mail"
+  to = "https://genuine-pika-2ac700.netlify.app/.netlify/functions/auth-mail"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
