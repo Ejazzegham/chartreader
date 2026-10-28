@@ -20,11 +20,17 @@ import { manualTarget, MANUAL_TAB } from '../manualTarget';
 // a trade panel (volume, stop loss, take profit, estimated P/L), live account stats and the feature strip.
 // Same paper-trading engine as the phone terminal: orders fill at the live price, closed trades go to the Journal and Trade history.
 const START = 1000, LEVERAGE = 100;
-const WATCH_TABS: { k: string; label: string; ids: (s: { id: string; cat: string }) => boolean }[] = [
-  { k: 'forex', label: 'Forex', ids: (s) => s.id.startsWith('frx') && !/XAU|XAG|WTI|BRENT|DXY/.test(s.id) && s.cat !== 'indices' },
-  { k: 'crypto', label: 'Crypto', ids: (s) => s.cat === 'crypto' },
-  { k: 'indices', label: 'Indices', ids: (s) => s.cat === 'indices' || s.id === 'frxDXY' },
-  { k: 'metals', label: 'Metals', ids: (s) => /XAU|XAG/.test(s.id) },
+const isMetal = (s: { id: string }) => /XAU|XAG/.test(s.id);
+const isIndex = (s: { id: string; cat: string }) => s.cat === 'indices' || s.id === 'frxDXY';
+const isForexTab = (s: { id: string; cat: string }) => s.cat === 'forex' || s.cat === 'indices' || s.id === 'frxDXY'; // metals, oil and indices live inside Forex
+const FX_SUBS: { k: string; label: string; ok: (s: { id: string; cat: string }) => boolean }[] = [
+  { k: 'all', label: 'All', ok: () => true },
+  { k: 'majors', label: 'Pairs', ok: (s) => !isMetal(s) && !isIndex(s) && !/WTI|BRENT/.test(s.id) },
+  { k: 'metals', label: 'Metals', ok: (s) => isMetal(s) },
+  { k: 'indices', label: 'Indices', ok: (s) => isIndex(s) },
+];
+const WATCH_TABS: { k: string; label: string }[] = [
+  { k: 'forex', label: 'Forex' }, { k: 'crypto', label: 'Crypto' }, { k: 'deriv', label: 'Deriv' }, { k: 'watch', label: 'Watchlist' },
 ];
 const usd = (n: number, sign = true) => `${n < 0 ? '-' : sign && n > 0 ? '+' : ''}$${Math.abs(n).toFixed(2)}`;
 const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -41,7 +47,7 @@ export default function ManualTradeDesk() {
 
   const [symId, setSymId] = useState(manualTarget.sym || db.favs[0] || 'frxEURUSD');
   const [gran, setGran] = useState(60);
-  const [wTab, setWTab] = useState('forex');
+  const [wTab, setWTab] = useState('forex'), [fxSub, setFxSub] = useState('all'), [wq, setWq] = useState('');
   const [picker, setPicker] = useState(false), [pq, setPq] = useState('');
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const [lotsBy, setLotsBy] = useState<Record<string, string>>({});
@@ -52,8 +58,16 @@ export default function ManualTradeDesk() {
 
   useEffect(() => { if (active && manualTarget.sym) { setSymId(manualTarget.sym); manualTarget.sym = ''; } }, [active]);
   useEffect(() => { loadCrypto().catch(() => {}); }, []);
-  const watchList = useMemo(() => { const t = WATCH_TABS.find((x) => x.k === wTab)!; return SYMBOLS.filter(t.ids).slice(0, 8); }, [wTab, SYMBOLS.length]);
-  const watchIds = useMemo(() => [...new Set([symId, ...positions.map((p) => p.symId), ...watchList.map((s) => s.id)])], [symId, positions, watchList]);
+  const pool = useMemo(() => [...SYMBOLS, ...EXTRA.filter((e) => !SYMBOLS.some((s) => s.id === e.id))], [SYMBOLS.length]);
+  const watchList = useMemo(() => {
+    let l = wTab === 'forex' ? pool.filter(isForexTab).filter(FX_SUBS.find((x) => x.k === fxSub)!.ok)
+      : wTab === 'crypto' ? pool.filter((s) => s.cat === 'crypto')
+      : wTab === 'deriv' ? pool.filter((s) => s.cat === 'deriv')
+      : db.favs.map((id) => symOf(id));
+    const t = wq.trim().toLowerCase(); if (t) l = l.filter((s) => (s.name + s.id).toLowerCase().includes(t));
+    return l.slice(0, 40);
+  }, [wTab, fxSub, wq, pool, SYMBOLS.length, db.favs.join(',')]);
+  const watchIds = useMemo(() => [...new Set([symId, ...positions.map((p) => p.symId), ...watchList.slice(0, 20).map((s) => s.id)])], [symId, positions, watchList]);
   useEffect(() => { setWatch('manual', active ? watchIds : []); return () => setWatch('manual', []); }, [active, watchIds.join(',')]);
   useEffect(() => { setSlTxt(''); setTpTxt(''); }, [symId]);
 
@@ -70,17 +84,18 @@ export default function ManualTradeDesk() {
   const slV = num(slTxt), tpV = num(tpTxt);
   const estPnl = px && isFinite(tpV) && isFinite(lots) ? (side === 'buy' ? 1 : -1) * (tpV - px) * perPoint(lots, symId, px, rate) : undefined;
 
-  const place = () => {
-    const now = Date.now(); if (now - lastSend.current < 700) return; lastSend.current = now;
+  const place = (sd: 'buy' | 'sell') => {
+    const now = Date.now(); if (now - lastSend.current < 500) return; lastSend.current = now;
+    const price = sd === 'buy' ? ask : bid; // BUY fills at the ask, SELL at the bid
     if (isClosed(symId)) { toast(`${sym.name}: the market is closed right now.`, 'bad'); return; }
     if (!futAligned(symId)) { toast('The live gold / silver price is still being matched to spot. Try again in a minute.', 'bad'); return; }
-    if (!px) { toast('Waiting for the live price of this pair…', 'bad'); return; }
+    if (!price) { toast('Waiting for the live price of this pair…', 'bad'); return; }
     if (lotsErr) { toast(lotsErr, 'bad'); return; }
     const before = new Set(positions.map((p) => p.id));
-    const e = openPos({ symId, name: sym.name, side, lots, perLot: perPoint(1, symId, px, rate), price: px, tf: String(gran), dec });
+    const e = openPos({ symId, name: sym.name, side: sd, lots, perLot: perPoint(1, symId, price, rate), price, tf: String(gran), dec });
     if (e) { toast(e, 'bad'); return; }
-    toast(`${side.toUpperCase()} ${fmtLots(lots)} ${sym.name} at ${px.toFixed(dec)}`, 'good');
-    if (isFinite(slV) || isFinite(tpV)) pending.current = { before, symId, px, sl: isFinite(slV) ? slV : undefined, tp: isFinite(tpV) ? tpV : undefined }; // attached once the new position appears
+    toast(`${sd.toUpperCase()} ${fmtLots(lots)} ${sym.name} at ${price.toFixed(dec)}`, 'good');
+    if (isFinite(slV) || isFinite(tpV)) pending.current = { before, symId, px: price, sl: isFinite(slV) ? slV : undefined, tp: isFinite(tpV) ? tpV : undefined }; // attached once the new position appears
   };
   const pending = useRef<{ before: Set<string>; symId: string; px: number; sl?: number; tp?: number } | null>(null);
   useEffect(() => {
@@ -115,12 +130,11 @@ export default function ManualTradeDesk() {
   const th_ = (label: string, flex = 1, right = false) => <Text style={{ flex, color: th.dim, fontSize: 11.5, fontWeight: '700', textAlign: right ? 'right' : 'left' }}>{label}</Text>;
   const badge = (s: string) => { const b = s === 'buy'; return <View style={{ alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 6, backgroundColor: (b ? th.buy : th.sell) + '1F' }}><Text style={{ color: b ? th.buy : th.sell, fontSize: 11.5, fontWeight: '800' }}>{b ? 'Buy' : 'Sell'}</Text></View>; };
 
-  const pool = useMemo(() => [...SYMBOLS, ...EXTRA.filter((e) => !SYMBOLS.some((s) => s.id === e.id))], [SYMBOLS.length]);
   const hits = pool.filter((s) => !pq.trim() || (s.name + s.id).toLowerCase().includes(pq.trim().toLowerCase())).slice(0, 8);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: dark ? th.bg : '#F5F8FE' }} contentContainerStyle={{ alignItems: 'center' }}>
-      <View style={{ width: '100%', maxWidth: 1360, padding: 24, gap: 20 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: dark ? th.bg : '#F5F8FE' }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: W < 1120 ? 16 : 28, paddingVertical: 24, gap: 20 }}>
 
         {/* ---- hero */}
         <View style={{ borderRadius: 20, overflow: 'hidden', minHeight: 226, justifyContent: 'center', paddingHorizontal: 36, paddingVertical: 30 }}>
@@ -201,7 +215,7 @@ export default function ManualTradeDesk() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <Text style={{ color: ink, fontSize: 16, fontWeight: '800' }}>Market Watch</Text>
                 <View style={{ flex: 1 }} />
-                <Pressable onPress={() => { toggleFav(symId); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, cursor: 'pointer' } as any}><Icon name="add" size={14} color={th.accent} /><Text style={{ color: th.accent, fontSize: 12, fontWeight: '800' }}>Add</Text></Pressable>
+                <Pressable onPress={() => { if (!db.favs.includes(symId)) toggleFav(symId); setWTab('watch'); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, cursor: 'pointer' } as any}><Icon name="add" size={14} color={th.accent} /><Text style={{ color: th.accent, fontSize: 12, fontWeight: '800' }}>Add</Text></Pressable>
               </View>
               <View style={{ flexDirection: 'row', gap: 4, borderBottomWidth: 1, borderBottomColor: border, marginBottom: 6 }}>
                 {WATCH_TABS.map((x) => (
@@ -210,18 +224,34 @@ export default function ManualTradeDesk() {
                   </Pressable>
                 ))}
               </View>
+              {wTab === 'forex' && (
+                <View style={{ flexDirection: 'row', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                  {FX_SUBS.map((x) => (
+                    <Pressable key={x.k} onPress={() => setFxSub(x.k)} style={{ paddingHorizontal: 12, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: fxSub === x.k ? th.accent : soft, cursor: 'pointer' } as any}>
+                      <Text style={{ color: fxSub === x.k ? th.onAccent : th.dim, fontSize: 11.5, fontWeight: '800' }}>{x.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 10, borderRadius: 10, borderWidth: 1, borderColor: border, backgroundColor: soft, marginBottom: 6 }}>
+                <Icon name="search" size={14} color={th.dim} />
+                <TextInput value={wq} onChangeText={setWq} placeholder="Search symbol..." placeholderTextColor={th.dim} style={{ flex: 1, color: ink, fontSize: 12.5, outlineStyle: 'none' } as any} />
+              </View>
               <View style={{ flexDirection: 'row', paddingVertical: 6 }}>{th_('Symbol', 1.6)}{th_('Price', 1, true)}{th_('Change', 1, true)}<View style={{ width: 26 }} /></View>
+              {watchList.length === 0 && <Text style={{ color: th.dim, fontSize: 12.5, textAlign: 'center', padding: 18 }}>{wTab === 'watch' ? 'Tap the star on any symbol to add it to your Watchlist.' : 'No symbols found.'}</Text>}
+              <ScrollView style={{ maxHeight: 520 }} nestedScrollEnabled>
               {watchList.map((s) => {
                 const lq = quotes[s.id], c = chg(s.id), on = s.id === symId;
                 return (
                   <Pressable key={s.id} onPress={() => setSymId(s.id)} style={((x: any) => ({ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, borderTopWidth: 1, borderTopColor: border, cursor: 'pointer', backgroundColor: on ? th.accent + '10' : x.hovered ? th.accent + '08' : 'transparent' })) as any}>
                     <View style={{ flex: 1.6, flexDirection: 'row', alignItems: 'center', gap: 9 }}><Coin s={s} size={26} /><Text style={{ color: ink, fontSize: 13, fontWeight: '700' }} numberOfLines={1}>{s.name}</Text></View>
-                    <Text style={{ flex: 1, color: ink, fontSize: 13, textAlign: 'right' }}>{lq ? lq.price.toFixed(lq.dec) : '…'}</Text>
+                    <Text style={{ flex: 1, color: ink, fontSize: 13, textAlign: 'right' }}>{lq ? lq.price.toFixed(lq.dec) : '...'}</Text>
                     <Text style={{ flex: 1, color: c >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700', textAlign: 'right' }}>{lq ? `${c >= 0 ? '+' : ''}${c.toFixed(2)}%` : ''}</Text>
                     <Pressable onPress={() => toggleFav(s.id)} style={{ width: 26, alignItems: 'flex-end' }}><Icon name={db.favs.includes(s.id) ? 'star' : 'star-outline'} size={15} color={db.favs.includes(s.id) ? th.gold : th.dim} /></Pressable>
                   </Pressable>
                 );
               })}
+              </ScrollView>
             </View>
             <View style={{ borderRadius: 16, overflow: 'hidden', padding: 20, minHeight: 170, justifyContent: 'center' }}>
               <LinearGradient colors={['#2A2D9B', '#4B3FD6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
@@ -287,7 +317,7 @@ export default function ManualTradeDesk() {
               {(['buy', 'sell'] as const).map((s) => {
                 const on = side === s, c = s === 'buy' ? th.buy : th.sell;
                 return (
-                  <Pressable key={s} onPress={() => setSide(s)} style={((x: any) => ({ flex: 1, height: 62, borderRadius: 10, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? c : c + '1A', borderWidth: 1, borderColor: c, opacity: x.hovered ? 0.92 : 1 })) as any}>
+                  <Pressable key={s} onPress={() => { setSide(s); place(s); }} accessibilityRole="button" accessibilityLabel={`${s} ${sym.name}`} style={((x: any) => ({ flex: 1, height: 62, borderRadius: 10, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? c : c + '1A', borderWidth: 1, borderColor: c, opacity: x.hovered ? 0.92 : 1 })) as any}>
                     <Text style={{ color: on ? '#fff' : c, fontSize: 14, fontWeight: '900' }}>{s.toUpperCase()}</Text>
                     <Text style={{ color: on ? '#fff' : c, fontSize: 14, fontWeight: '700' }}>{(s === 'buy' ? ask : bid)?.toFixed(dec) ?? '…'}</Text>
                   </Pressable>
@@ -316,9 +346,9 @@ export default function ManualTradeDesk() {
               <Text style={{ color: estPnl === undefined ? th.dim : estPnl >= 0 ? th.buy : th.sell, fontSize: 14, fontWeight: '800' }}>{estPnl === undefined ? '-' : usd(estPnl)}</Text>
               {estPnl !== undefined && <Text style={{ color: th.dim, fontSize: 11, marginLeft: 4 }}>at take profit</Text>}
             </View>
-            <Pressable onPress={place} accessibilityRole="button" style={((x: any) => ({ marginTop: 16, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
+            <Pressable onPress={() => place(side)} accessibilityRole="button" style={((x: any) => ({ marginTop: 16, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
               <LinearGradient colors={['#5B3FD9', '#7B4DF0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 12 }} />
-              <Icon name="flash" size={17} color="#fff" /><Text style={{ color: '#fff', fontSize: 14.5, fontWeight: '800' }}>Place Order</Text>
+              <Icon name="flash" size={17} color="#fff" /><Text style={{ color: '#fff', fontSize: 14.5, fontWeight: '800' }}>Place {side === 'buy' ? 'Buy' : 'Sell'} Order</Text>
             </Pressable>
           </View>
 
