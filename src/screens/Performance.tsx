@@ -3,11 +3,14 @@ import { View, Text } from 'react-native';
 import { useApp } from '../store';
 import { Screen, Card, Dim, Body, SectionTitle, StatTile, Cols } from '../ui';
 import EquityCurve from '../Equity';
+import PerformanceHome from '../PerformanceHome';
+import { useLayout } from '../win';
 
 const f = (n: number, d = 2) => (isFinite(n) ? n.toLocaleString('en-US', { maximumFractionDigits: d }) : '-');
 
 export default function Performance() {
   const { th, t, journal, history } = useApp();
+  const desk = useLayout().mode === 'desktop';
   const wins = journal.filter((j) => j.pnl > 0), losses = journal.filter((j) => j.pnl < 0);
   const gw = wins.reduce((a, j) => a + j.pnl, 0), gl = Math.abs(losses.reduce((a, j) => a + j.pnl, 0));
   const total = gw - gl, n = journal.length;
@@ -27,6 +30,8 @@ export default function Performance() {
   const grades: Record<string, number> = { 'A+': 0, A: 0, B: 0, C: 0 };
   history.forEach((h) => { if (h.result.ict) grades[h.result.ict.grade] = (grades[h.result.ict.grade] ?? 0) + 1; });
   const gTotal = Object.values(grades).reduce((a, b) => a + b, 0);
+
+  if (desk) return <PerformanceHome />; // website: the Performance page (src/PerformanceHome.web.tsx); the phone keeps the screen below
 
   return (
     <Screen icon="stats-chart" title={t('tabPerf')} subtitle={t('navDescPerf')}>
