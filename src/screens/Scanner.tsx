@@ -72,13 +72,13 @@ function candlesOnce(id: string, gran: number, count = 150, wantVol = true): Pro
 }
 
 export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }: BodyProps = {}) {
-  const { th, t, tab, setPrefill, setTab, logSetup, toast, raiseAlarm, signals, setupHandled } = useApp();
+  const { th, t, tab, setPrefill, setTab, logSetup, toast, raiseAlarm, signals, setupHandled, settings } = useApp();
   const active = embedded ? !!on : tab === TAB;
   const { db } = useFeed(active);
   const { events } = useNews(active);
   const [groupLocal, setGroup] = useState('forex');
   const group = groupProp ?? groupLocal;
-  const [tf, setTf] = useState('900');
+  const [tf, setTf] = useState(settings.defTf || '900');
   const [hits, setHits] = useState<Hit[]>([]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(0);

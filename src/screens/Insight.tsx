@@ -16,9 +16,9 @@ import { Candle, TFS, symOf, watchCandles, quotes } from '../markets';
 
 // ---------------------------------------------------------------- the screen
 export default function Insight({ on, symId = 'frxEURUSD', method = 'liquidity' }: BodyProps) {
-  const { th, setPrefill, setTab } = useApp();
+  const { th, setPrefill, setTab, settings } = useApp();
   const { width } = useWindowDimensions();
-  const [tf, setTf] = useState('900');
+  const [tf, setTf] = useState(settings.defTf || '900');
   const [data, setData] = useState<Candle[]>([]);
   const [err, setErr] = useState('');
   const [nonce, setNonce] = useState(0);

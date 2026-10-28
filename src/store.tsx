@@ -39,10 +39,10 @@ export type NewSignal = Pick<Signal, 'symId' | 'name' | 'side' | 'entry' | 'sl' 
 // salt/hash are only present on accounts created before Firebase; they are used once to upgrade the account, then removed.
 type Account = { name: string; email: string; phone?: string; uid?: string; salt?: string; hash?: string; pinSalt?: string; pinHash?: string };
 const errKey = (code?: string) => code === 'auth/email-already-in-use' ? 'errInUse' : code === 'auth/network-request-failed' ? 'errNetwork' : code === 'auth/too-many-requests' ? 'errMany' : code === 'auth/requires-recent-login' ? 'errRecent' : code === 'auth/weak-password' || code === 'auth/invalid-email' ? 'errFields' : 'errLogin';
-type Settings = { theme: string; lang: Lang; model: string; nav: 'bottom' | 'side'; bio: boolean };
+type Settings = { theme: string; lang: Lang; model: string; nav: 'bottom' | 'side'; bio: boolean; defTf: string; defMarket: string };
 // A fresh install opens in Glass Frost (the bright glass theme). People who already picked a theme keep it (it is saved in their settings).
 const DEFAULTS: Settings = { theme: Platform.OS === 'web' ? 'glassClean' : 'glassFrost', // the website starts in the bright white and blue theme; the choice in Settings is kept
-  lang: 'en', model: 'gemini-3.8-flash', nav: 'bottom', bio: false };
+  lang: 'en', model: 'gemini-3.8-flash', nav: 'bottom', bio: false, defTf: '900', defMarket: 'forex' };
 
 // Read one saved value. A damaged entry gives the fallback instead of stopping everything that loads after it
 // (before, one bad value could leave the journal empty, and the next save would then overwrite the real journal).

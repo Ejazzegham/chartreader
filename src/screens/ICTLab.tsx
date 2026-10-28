@@ -30,7 +30,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
   const { db } = useFeed(active);
   const [symLocal, setSymLocal] = useState('frxEURUSD');
   const symId = symProp ?? symLocal, setSymId = setSymProp ?? setSymLocal;
-  const [tf, setTf] = useState('900');
+  const [tf, setTf] = useState(settings.defTf || '900');
   const [data, setData] = useState<Candle[]>([]);
   const [err, setErr] = useState('');
   const [q, setQ] = useState('');
