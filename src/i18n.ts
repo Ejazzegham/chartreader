@@ -236,7 +236,7 @@ const MARKETS_EN: Record<string, string> = {
 const PRO_EN: Record<string, string> = {
   th_glassNight: "Glass Night", th_glassFrost: "Glass Frost", th_glassAurora: "Glass Aurora", th_glassRose: "Glass Rose", th_glassObsidian: "Glass Obsidian", th_glassClean: "Clean Light", th_glassPearl: "Glass Pearl",
   tabManual: "Demo Trade", navDescManual: "Practice trading on live prices with virtual money, like MetaTrader 5: SELL / BUY, then stop loss, take profit and partial closes from the chart",
-  tabIct: "ICT Lab", tabKillzones: "Forex Market Hours", tabPropFirms: "Prop Firms", tabBrokers: "Forex Brokers", navDescBrokers: "Major forex brokers with official website links", navDescPropFirms: "Ranked funded-trading firms with official website links", tabPerf: "Performance", tabTopDown: "Top-Down", navDescTopDown: "Pick any 3 timeframes: direction, zone and entry", tabTools: "Risk & TP Planner", calcTitle: "Risk & TP planner", th_royal: "Royal Gold", th_graphite: "Graphite", th_cloud: "Cloud",
+  tabIct: "ICT Lab", tabKillzones: "Forex Market Hours", tabPropFirms: "Prop Firms", tabBrokers: "Forex Brokers", tabCrypto: "Crypto Exchanges", navDescCrypto: "Leading centralized and decentralized exchanges with official links", navDescBrokers: "Major forex brokers with official website links", navDescPropFirms: "Ranked funded-trading firms with official website links", tabPerf: "Performance", tabTopDown: "Top-Down", navDescTopDown: "Pick any 3 timeframes: direction, zone and entry", tabTools: "Risk & TP Planner", calcTitle: "Risk & TP planner", th_royal: "Royal Gold", th_graphite: "Graphite", th_cloud: "Cloud",
   navPages: "PAGES", navProTools: "PRO TOOLS",
   errWeak: "The new password must be at least 6 characters.", errCurrentPw: "Your current password is not correct.", errRecent: "For safety, please log out, log in again and retry.",
   forgotTitle: "Reset your password", forgotSub: "Enter the email of your account. We will send a link to choose a new password.", sendLink: "Send reset link", backLogin: "Back to login",
@@ -281,7 +281,7 @@ const PRO_EN: Record<string, string> = {
   bestTrade: "Best trade", worstTrade: "Worst trade", buySell: "Buys vs sells", bySymbol: "Result by symbol", ictGrades: "ICT grades of your analyses", ictGradesEmpty: "Analyze a chart screenshot to see the ICT grades here.", perfEmpty: "Add trades in the Journal to unlock your performance numbers.",
 };
 const PRO_UR: Record<string, string> = {
-  tabIct: "ICT لیب", tabTopDown: "ٹاپ ڈاؤن", tabScalp: "تجزیہ", tabChecklist: "ٹریڈ چیک لسٹ", tabScanner: "اسکینر", tabNews: "خبریں", tabKillzones: "فاریکس مارکیٹ کے اوقات", tabPropFirms: "پراپ فرمز", tabBrokers: "فاریکس بروکرز", navDescBrokers: "بڑے فاریکس بروکرز اور ان کی ویب سائٹ کے لنک", navDescPropFirms: "درجہ بندی کے ساتھ فنڈڈ ٹریڈنگ فرمز اور ان کی ویب سائٹ کے لنک", tabPerf: "کارکردگی", navPages: "صفحات", navProTools: "پرو ٹولز",
+  tabIct: "ICT لیب", tabTopDown: "ٹاپ ڈاؤن", tabScalp: "تجزیہ", tabChecklist: "ٹریڈ چیک لسٹ", tabScanner: "اسکینر", tabNews: "خبریں", tabKillzones: "فاریکس مارکیٹ کے اوقات", tabPropFirms: "پراپ فرمز", tabBrokers: "فاریکس بروکرز", tabCrypto: "کرپٹو ایکسچینجز", navDescCrypto: "بڑے مرکزی اور غیر مرکزی ایکسچینجز اور ان کے سرکاری لنک", navDescBrokers: "بڑے فاریکس بروکرز اور ان کی ویب سائٹ کے لنک", navDescPropFirms: "درجہ بندی کے ساتھ فنڈڈ ٹریڈنگ فرمز اور ان کی ویب سائٹ کے لنک", tabPerf: "کارکردگی", navPages: "صفحات", navProTools: "پرو ٹولز",
 };
 
 export const STR = Object.fromEntries(

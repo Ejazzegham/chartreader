@@ -19,7 +19,7 @@ import { useDash, setDash, listFor, groupOf, MarketTab } from './dash';
 export const useDesktop = () => useLayout().mode === 'desktop';
 
 const LINKS: [string, number][] = [['Home', 0], ['Analysis', 1], ['Markets', 2], ['Journal', 3], ['Risk & TP Planner', 4]];
-const TOOLS: [number, string][] = [[8, 'globe'], [17, 'briefcase'], [18, 'business'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
+const TOOLS: [number, string][] = [[8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
 // The website's top navigation (replaces the old left sidebar): logo, main pages, a Tools menu, search, live status, alerts and the account menu.
 function TopNav() {

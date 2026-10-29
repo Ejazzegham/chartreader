@@ -1,3 +1,11 @@
+# Website v2.24: Crypto Exchanges page
+
+- **New page "Crypto Exchanges"** in the Tools menu (tab 19, added last). Website: `src/CryptoHome.web.tsx`. Phone: `src/screens/CryptoExchanges.tsx`. A switch at the top shows **30 centralized exchanges** (Binance first) or **10 decentralized exchanges** (Uniswap first). Each row has the name, website, a short "Known for" line and a **Visit website** link (new tab); search also looks inside the "Known for" text; "Listed order" / "A to Z".
+- Each list has its own "How to ..." section (choosing an exchange; using a DEX safely) and a crypto risk note. The numbers are list order only, not a ranking.
+- **Lists:** edit `src/cryptoExchanges.ts`. The source tags that were pasted into the descriptions (for example "kucoin+1") were removed.
+- `src/DirectoryBody.tsx` now supports an optional note per row (`note` in `src/propFirms.ts` type). Prop Firms and Forex Brokers are unchanged.
+- Tests: `tests/propfirms.test.ts` now 14 checks (adds the crypto lists, no leftover tags, search in notes). Rendered in Chromium (light, dark, phone, DEX tab); full Expo build not run here.
+
 # Website v2.23: Forex Brokers page
 
 - **New page "Forex Brokers"** in the Tools menu (tab 18, added last). Website: `src/BrokersHome.web.tsx`. Phone: `src/screens/Brokers.tsx`. 42 major brokers, Pepperstone first, each with a **Visit website** link (new tab), search, "Listed order" / "A to Z", a "How to Choose a Forex Broker" section and a risk note. The numbers are the list order only (no medals): the page says it is not a ranking.

@@ -1,2 +1,2 @@
-Forex Brokers page. Copy every file here over the same path in your project. This also replaces the Prop Firms files (they now use the shared src/DirectoryBody.tsx). Nothing to delete, no new packages.
-To edit brokers: src/brokers.ts. Then: npm run build:web
+Crypto Exchanges page. Copy every file here over the same path in your project (App.tsx, nav.ts, i18n.ts, Desktop.web.tsx, DirectoryBody.tsx, propFirms.ts, CHANGES.md also hold the earlier pages' changes). Nothing to delete, no new packages.
+To edit exchanges: src/cryptoExchanges.ts. Then: npm run build:web

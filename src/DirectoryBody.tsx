@@ -10,7 +10,7 @@ export type DirectoryCfg = { items: PropFirm[]; ranked: boolean; noun: string; n
 const WEB = Platform.OS === 'web';
 const hand: any = WEB ? { cursor: 'pointer' } : null;
 
-function usePal() {
+export function usePal() {
   const { th } = useApp();
   const d = th.dark;
   return { th, dark: d, alt: d ? th.panel2 : '#F5F8FE', card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E5EBF5', head: d ? th.text : '#0B1B3F', body: d ? th.dim : '#5A6B89', blue: th.accent, soft: th.accent + (d ? '26' : '14'), shadow: d ? '#000000' : '#1B3A7A' };
@@ -39,7 +39,7 @@ function Head({ P, icon, title, sub, right }: { P: Pal; icon: string; title: str
     </View>
   );
 }
-function Chip({ P, label, on, onPress }: { P: Pal; label: string; on: boolean; onPress: () => void }) {
+export function Chip({ P, label, on, onPress }: { P: Pal; label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole={'radio' as any} accessibilityState={{ selected: on, checked: on }}
       style={((s: any) => ({ height: 36, paddingHorizontal: 14, borderRadius: 18, justifyContent: 'center', borderWidth: 1, borderColor: on ? P.blue : P.border, backgroundColor: on ? P.blue : s.hovered ? P.soft : P.alt, ...hand })) as any}>
@@ -74,6 +74,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
   const P = usePal(), th = P.th;
   const [q, setQ] = useState(''), [sort, setSort] = useState<'rank' | 'az'>('rank');
   const { items, ranked } = cfg;
+  const notes = items.some((f) => !!f.note); // lists with a "Known for" line get a wider layout
   const wide = w >= 760, three = w >= 900;
   const found = useMemo(() => { const r = searchFirms(q, items); return sort === 'az' ? [...r].sort((a, b) => a.name.localeCompare(b.name)) : r; }, [q, sort, items]);
   const podium = ranked && sort === 'rank' && !q.trim() && three;
@@ -119,8 +120,8 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
         {wide && rows.length > 0 && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 14 }}>
             <Text style={{ width: 34, color: P.body, fontSize: 12, fontWeight: '700', textAlign: 'center' }}>{ranked ? 'Rank' : 'No.'}</Text>
-            <Text style={{ flex: 1.2, color: P.body, fontSize: 12, fontWeight: '700', marginLeft: 56 }}>{cfg.noun.charAt(0).toUpperCase() + cfg.noun.slice(1)}</Text>
-            <Text style={{ flex: 1, color: P.body, fontSize: 12, fontWeight: '700' }}>Website</Text>
+            <Text style={{ flex: notes ? 1 : 1.2, color: P.body, fontSize: 12, fontWeight: '700', marginLeft: 56 }}>{cfg.noun.charAt(0).toUpperCase() + cfg.noun.slice(1)}</Text>
+            <Text style={{ flex: notes ? 1.5 : 1, color: P.body, fontSize: 12, fontWeight: '700' }}>{notes ? 'Known for' : 'Website'}</Text>
             <View style={{ width: 150 }} />
           </View>
         )}
@@ -131,8 +132,20 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
               <Avatar P={P} f={f} />
               {wide ? (
                 <>
-                  <Text style={{ flex: 1.2, color: P.head, fontSize: 14.5, fontWeight: '800' }} numberOfLines={1}>{f.name}</Text>
-                  <Text style={{ flex: 1, color: P.body, fontSize: 13.5 }} numberOfLines={1}>{domainOf(f.url)}</Text>
+                  {notes ? (
+                    <>
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '800' }} numberOfLines={1}>{f.name}</Text>
+                        <Text style={{ color: P.body, fontSize: 12.5 }} numberOfLines={1}>{domainOf(f.url)}</Text>
+                      </View>
+                      <Text style={{ flex: 1.5, color: P.body, fontSize: 13, lineHeight: 18 }} numberOfLines={2}>{f.note}</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={{ flex: 1.2, color: P.head, fontSize: 14.5, fontWeight: '800' }} numberOfLines={1}>{f.name}</Text>
+                      <Text style={{ flex: 1, color: P.body, fontSize: 13.5 }} numberOfLines={1}>{domainOf(f.url)}</Text>
+                    </>
+                  )}
                   <View style={{ width: 150 }}><VisitBtn P={P} f={f} compact /></View>
                 </>
               ) : (
@@ -140,6 +153,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '800' }} numberOfLines={2}>{f.name}</Text>
                     <Text style={{ color: P.body, fontSize: 12.5 }} numberOfLines={1}>{domainOf(f.url)}</Text>
+                    {!!f.note && <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 17, marginTop: 2 }} numberOfLines={3}>{f.note}</Text>}
                   </View>
                   <FirmLink f={f} style={(h) => ({ width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: h ? P.blue + '30' : P.soft, ...hand })}><Icon name="open-outline" size={18} color={P.blue} /></FirmLink>
                 </>

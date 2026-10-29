@@ -1,5 +1,6 @@
 import { PROP_FIRMS, domainOf, searchFirms } from '../src/propFirms';
 import { BROKERS } from '../src/brokers';
+import { CEX, DEX } from '../src/cryptoExchanges';
 let fails = 0;
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m); } else console.log('ok  ', m); };
 ok(PROP_FIRMS.length === 35 && PROP_FIRMS[0].name === 'FTMO' && PROP_FIRMS[34].name === 'Fidelcrest', '35 firms, FTMO is rank 1, Fidelcrest is rank 35');
@@ -11,4 +12,9 @@ ok(searchFirms('fund').length > 5 && searchFirms('FTMO')[0].rank === 1 && search
 ok(BROKERS.length === 42 && BROKERS[0].name === 'Pepperstone' && BROKERS[41].name === 'EC Markets' && BROKERS.every((f, i) => f.rank === i + 1), '42 brokers in the given order');
 ok(BROKERS.every((f) => /^https:\/\/[a-z0-9.-]+\.[a-z]{2,}$/.test(f.url)) && new Set(BROKERS.map((f) => f.url)).size === 42 && new Set(BROKERS.map((f) => f.name)).size === 42, 'broker links are plain https, no duplicates');
 ok(domainOf('https://www.home.saxo') === 'home.saxo' && searchFirms('markets', BROKERS).length >= 4 && searchFirms('etoro', BROKERS)[0].name === 'eToro', 'broker search and domain text');
+ok(CEX.length === 30 && CEX[0].name === 'Binance' && CEX[29].name === 'Hyperliquid' && DEX.length === 10 && DEX[0].name === 'Uniswap' && DEX[9].name === 'Orca', '30 centralized and 10 decentralized exchanges in the given order');
+ok([...CEX, ...DEX].every((f) => /^https:\/\/[a-z0-9.-]+\.[a-z]{2,}$/.test(f.url) && !!f.note && f.note!.length > 8), 'crypto links are plain https and every exchange has a note');
+ok([...CEX, ...DEX].every((f) => !/(coingecko|kucoin\+|coinmarket|investopedia|coindesk|\+1|\bkraken\b$)/i.test(f.note ?? '') || f.name === 'Kraken' || f.name === 'KuCoin'), 'no leftover source tags in the notes');
+ok(new Set([...CEX, ...DEX].map((f) => f.url)).size === 40, 'no duplicate crypto links');
+ok(searchFirms('perpetual', CEX).length >= 2 && searchFirms('solana', DEX).length === 3, 'search also looks inside the note');
 if (fails) { console.log(fails + ' FAILED'); process.exit(1); } else console.log('all prop firm tests passed');

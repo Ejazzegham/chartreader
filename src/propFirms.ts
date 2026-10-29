@@ -1,5 +1,5 @@
 // Prop firms, in the order the site owner ranks them (rank 1 first). Edit this list to change the page: name + website.
-export type PropFirm = { rank: number; name: string; url: string };
+export type PropFirm = { rank: number; name: string; url: string; note?: string };
 const LIST: [string, string][] = [
   ['FTMO', 'https://ftmo.com'], ['The5ers', 'https://the5ers.com'], ['FXIFY', 'https://fxify.com'], ['FundedNext', 'https://fundednext.com'],
   ['FundingPips', 'https://fundingpips.com'], ['Alpha Capital Group', 'https://alphacapitalgroup.uk'], ['City Traders Imperium', 'https://citytradersimperium.com'],
@@ -16,5 +16,5 @@ const LIST: [string, string][] = [
 export const PROP_FIRMS: PropFirm[] = LIST.map(([name, url], i) => ({ rank: i + 1, name, url }));
 /** website text without https:// and www. */
 export const domainOf = (url: string) => url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
-/** filter by name or website; empty search returns everything */
-export const searchFirms = (q: string, list: PropFirm[] = PROP_FIRMS) => { const s = q.trim().toLowerCase(); return s ? list.filter((f) => f.name.toLowerCase().includes(s) || domainOf(f.url).includes(s)) : list; };
+/** filter by name, website or the short note; empty search returns everything */
+export const searchFirms = (q: string, list: PropFirm[] = PROP_FIRMS) => { const s = q.trim().toLowerCase(); return s ? list.filter((f) => f.name.toLowerCase().includes(s) || domainOf(f.url).includes(s) || (f.note ?? '').toLowerCase().includes(s)) : list; };
