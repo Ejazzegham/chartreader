@@ -1,3 +1,13 @@
+# Website v2.21: Forex Market Hours page replaces the Killzones page
+
+- **New page "Forex Market Hours"** in the Pro Tools group of the menu (same tab slot and icon area as the old Killzones page; the tab key `tabKillzones` is kept so saved links and the guide still work). Website: `src/ForexHoursHome.web.tsx` (hero, notices, page, footer). Phone: `src/screens/ForexHours.tsx` (same body inside the normal Screen).
+- **Page body** `src/ForexHoursBody.tsx`: Forex Market Time Zone Converter (My time zone, UTC, New York, London, Dubai, Karachi, Tokyo, Sydney; 12 / 24 hour), live clock, one card per session (open or closed, countdown, local hours and the hours in the chosen zone), a 24 hour timeline with overlap bands, a typical-volume strip and a "now" line, Best Times to Trade (session overlaps), How to Use, FAQ and a call to action. It uses the website's own palette, panels, hero and footer, so every theme works.
+- **Times** come from `src/forexHours.ts`: each session is its city's own working day (Sydney 7 to 16, Tokyo 9 to 18, London 8 to 17, New York 8 to 17) and the zones come from `Intl`, so the page follows daylight saving in every city by itself. The forex week is Sunday 17:00 to Friday 17:00 New York time.
+- **ICT killzones are not lost**: `src/ict.ts` and the ICT analysis still use them; the page links to the ICT analysis.
+- Removed: `src/KillzonesHome.web.tsx`, `src/KillzonesHome.tsx`, `src/screens/Killzones.tsx`. Menu text changed in `src/i18n.ts` (English, Urdu) and `src/guideContent.ts` (six languages); Home tile now says "Market Hours".
+- Tests: `tests/forexhours.test.ts` (34 checks: time zones, daylight saving, open / closed, weekend, countdowns, overlaps, timeline). Run: `npx tsx --tsconfig tests/tsconfig.json tests/forexhours.test.ts`.
+- Checked: TypeScript passes for the new files; the page body was rendered in Chromium in light, dark and phone width. The full Expo web build could not be run where this was written: please open the page once on your site.
+
 # Website: News page redesigned like Forex Factory; Demo Trading fixes
 
 - **News page** (`src/NewsHome.web.tsx`; phone layout unchanged): compact page header with underline tabs (Latest / Hottest / Forex / Crypto / Deriv) and search, a **Hot Stories** block on top (recent headlines ranked by market-moving keywords), a dense chronological news list grouped by day (time, topic tag, headline, source, keyword-tone dot) with "Show more", and the economic **Calendar** in a right sidebar (impact squares, time, currency, forecast, previous, countdown, impact and currency filters, news-window warning).

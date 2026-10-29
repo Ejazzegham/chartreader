@@ -12,7 +12,7 @@ import Journal from './src/screens/Journal';
 import Risk from './src/screens/Risk';
 import History from './src/screens/History';
 import Settings from './src/screens/Settings';
-import Killzones from './src/screens/Killzones';
+import ForexHours from './src/screens/ForexHours';
 import Performance from './src/screens/Performance';
 import Analysis from './src/screens/Analysis';
 import Checklist from './src/screens/Checklist';
@@ -44,7 +44,7 @@ const Go = (method: string, slot: number) => function Go() {
   useEffect(() => { if (tab === slot) { setAmethod(method); setTab(1); } }, [tab]);
   return null;
 };
-const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), Killzones, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade]; // same order as NAV in src/nav.ts
+const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade]; // same order as NAV in src/nav.ts
 const TABS = NAV.map((n, i) => ({ key: n.key, icon: n.icon, Comp: COMPS[i] }));
 
 // Every page stays mounted (so charts keep their state). The one you open fades and rises in.

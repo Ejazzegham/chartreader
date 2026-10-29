@@ -9,7 +9,7 @@ export const NAV: NavItem[] = [
   { key: 'tabHistory', icon: 'time', group: 'main', desc: 'navDescHistory' },
   { key: 'tabSettings', icon: 'settings', group: 'main', desc: 'navDescSettings' },
   { key: 'tabIct', icon: 'git-network', group: 'hidden', desc: 'navDescIct' },
-  { key: 'tabKillzones', icon: 'alarm', group: 'pro', desc: 'navDescKz' },
+  { key: 'tabKillzones', icon: 'globe', group: 'pro', desc: 'navDescKz' },
   { key: 'tabPerf', icon: 'stats-chart', group: 'pro', desc: 'navDescPerf' },
   { key: 'tabTopDown', icon: 'layers', group: 'hidden', desc: 'navDescTopDown' },
   { key: 'tabChecklist', icon: 'shield-checkmark', group: 'pro', desc: 'navDescChecklist' },

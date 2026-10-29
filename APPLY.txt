@@ -1,16 +1,7 @@
-HOW TO APPLY (copy each file over the same path in your project, then DELETE the files listed at the bottom)
-  server/server.js, server/alerts.js   -> restart the server (Node 22+). Nothing else to install.
-  App.tsx, tsconfig.json, src/*, tests/*, CHANGES.md   -> publish an update (eas update) or rebuild.
-  No new packages, no app.json change. (Not verified against your current build: if the update does not reach the phone, make a new build.)
-
-DELETE from your project (not used by the app):
-  src/AlertCenter.tsx  src/ChartView.tsx  src/ResultView.tsx  src/TradeDecision.tsx  src/alarm.ts  src/analysisAssets.ts
-  src/screens/Analyze.tsx  src/scalp.old-backup.txt  src/Splash.flat-backup.txt  README.txt  assets/analysis/ (whole folder)
-
-THEN CHECK ON THE PHONE (nothing here was run on a device):
-  1. Settings > Background alerts > Send a test alarm. Lock the phone. The alarm rings, the icon shows a number (Samsung / Xiaomi / Oppo) or a dot (Pixel), the bell shows 1 unread after opening the app.
-  2. Set a price alert, close the app, let the price reach it: the push arrives, and the line is in the bell when you open the app.
-  3. Lock page: in the admin tools give the test account -365 days (or use an account whose trial ended). The app must show only the payment page. Pay or grant days, then "Already paid? Check my status": the app opens.
-  4. Server log: look for lines starting "push NOT delivered": they name the reason a push did not arrive (for example a missing Firebase key).
-
-Tests: npx tsx --tsconfig tests/tsconfig.json tests/alerts.test.ts   (and license.test.ts, lots.test.ts, ...)
+Forex Market Hours page (replaces Killzones). Copy every file here over the same path in your project.
+Then DELETE these three old files:
+  src/KillzonesHome.web.tsx
+  src/KillzonesHome.tsx
+  src/screens/Killzones.tsx
+Then run: npm run build:web   (or npm run web to test on your computer)
+No new packages. Open "Forex Market Hours" in the Pro Tools menu once to check it.

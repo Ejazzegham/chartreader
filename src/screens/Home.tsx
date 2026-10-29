@@ -59,7 +59,7 @@ function PhoneHome() {
     { label: 'Top-Down', icon: 'layers', colors: ['#FFB62E', '#FF7A18'], onPress: () => go('topdown') },
     { label: 'Planner', icon: 'calculator', colors: ['#9D6BFF', '#6D28D9'], onPress: () => setTab(4) },
     { label: 'Journal', icon: 'book', colors: ['#34D399', '#0F9D63'], onPress: () => setTab(3) },
-    { label: 'Killzones', icon: 'alarm', colors: ['#FF6B7A', '#E0314B'], onPress: () => setTab(8) },
+    { label: 'Market Hours', icon: 'globe', colors: ['#FF6B7A', '#E0314B'], onPress: () => setTab(8) },
     { label: 'News', icon: 'newspaper', colors: ['#2DD4BF', '#0E9F8E'], onPress: () => setTab(13) },
   ];
 
@@ -75,7 +75,7 @@ function PhoneHome() {
   // Pro tools: one featured card (Analysis: scanner, top-down, ICT, SMC, VSA, candlesticks, scalping) and a clean 2-column grid for the rest.
   const grid: Tool[] = [
     { key: 'tabNews', icon: 'newspaper', tab: 13, desc: 'navDescNews', tint: [th.gold, th.sell] },
-    { key: 'tabKillzones', icon: 'alarm', tab: 8, desc: 'navDescKz', tint: [th.sell, th.gold] },
+    { key: 'tabKillzones', icon: 'globe', tab: 8, desc: 'navDescKz', tint: [th.sell, th.gold] },
     { key: 'tabPerf', icon: 'stats-chart', tab: 9, desc: 'navDescPerf', tint: [th.buy, th.accent2] },
     { key: 'tabChecklist', icon: 'shield-checkmark', tab: 11, desc: 'navDescChecklist', tint: [th.accent, th.buy] },
   ];
