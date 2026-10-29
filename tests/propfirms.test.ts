@@ -1,0 +1,14 @@
+import { PROP_FIRMS, domainOf, searchFirms } from '../src/propFirms';
+import { BROKERS } from '../src/brokers';
+let fails = 0;
+const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m); } else console.log('ok  ', m); };
+ok(PROP_FIRMS.length === 35 && PROP_FIRMS[0].name === 'FTMO' && PROP_FIRMS[34].name === 'Fidelcrest', '35 firms, FTMO is rank 1, Fidelcrest is rank 35');
+ok(PROP_FIRMS.every((f, i) => f.rank === i + 1), 'ranks run 1 to 35 in order');
+ok(PROP_FIRMS.every((f) => /^https:\/\/[a-z0-9.-]+\.[a-z]{2,}$/.test(f.url)), 'every link is a plain https address');
+ok(new Set(PROP_FIRMS.map((f) => f.url)).size === 35 && new Set(PROP_FIRMS.map((f) => f.name)).size === 35, 'no duplicate names or links');
+ok(domainOf('https://www.upcomers.com') === 'upcomers.com' && domainOf('https://ftmo.com') === 'ftmo.com', 'domain text drops https:// and www.');
+ok(searchFirms('fund').length > 5 && searchFirms('FTMO')[0].rank === 1 && searchFirms('  ').length === 35 && searchFirms('zzz').length === 0, 'search by name or website, case-insensitive');
+ok(BROKERS.length === 42 && BROKERS[0].name === 'Pepperstone' && BROKERS[41].name === 'EC Markets' && BROKERS.every((f, i) => f.rank === i + 1), '42 brokers in the given order');
+ok(BROKERS.every((f) => /^https:\/\/[a-z0-9.-]+\.[a-z]{2,}$/.test(f.url)) && new Set(BROKERS.map((f) => f.url)).size === 42 && new Set(BROKERS.map((f) => f.name)).size === 42, 'broker links are plain https, no duplicates');
+ok(domainOf('https://www.home.saxo') === 'home.saxo' && searchFirms('markets', BROKERS).length >= 4 && searchFirms('etoro', BROKERS)[0].name === 'eToro', 'broker search and domain text');
+if (fails) { console.log(fails + ' FAILED'); process.exit(1); } else console.log('all prop firm tests passed');

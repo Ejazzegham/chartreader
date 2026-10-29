@@ -1,3 +1,18 @@
+# Website v2.23: Forex Brokers page
+
+- **New page "Forex Brokers"** in the Tools menu (tab 18, added last). Website: `src/BrokersHome.web.tsx`. Phone: `src/screens/Brokers.tsx`. 42 major brokers, Pepperstone first, each with a **Visit website** link (new tab), search, "Listed order" / "A to Z", a "How to Choose a Forex Broker" section and a risk note. The numbers are the list order only (no medals): the page says it is not a ranking.
+- **List:** edit `src/brokers.ts` (name + website per line).
+- **Shared page:** Prop Firms and Forex Brokers now both use `src/DirectoryBody.tsx`; `src/PropFirmsBody.tsx` and `src/BrokersBody.tsx` only hold each page's text. Prop Firms looks and works the same as before.
+- Tests: `tests/propfirms.test.ts` now also checks the broker list (9 checks in all). Page rendered in Chromium (light, dark, phone); full Expo build not run here.
+
+# Website v2.22: Prop Firms page
+
+- **New page "Prop Firms"** in the Tools menu (tab 17, added last so older tab numbers do not move). Website: `src/PropFirmsHome.web.tsx` (hero, notices, page, footer). Phone: `src/screens/PropFirms.tsx`. Shared body: `src/PropFirmsBody.tsx`.
+- 35 prop firms in ranked order (FTMO first). Top three as cards, the rest as a table with rank, firm, website and a **Visit website** link that opens a new tab (real links on the website, so right-click and copy link work). Search by name or website, "By rank" / "A to Z", a "How to Choose a Prop Firm" section and a risk note.
+- **To change the list or the order, edit `src/propFirms.ts`** (name + website per line; the rank is the line number).
+- Menu text in `src/i18n.ts` (English, Urdu). Tools menu in `src/Desktop.web.tsx` also shows the Forex Market Hours globe icon.
+- Tests: `tests/propfirms.test.ts` (6 checks: 35 firms, ranks, https links, no duplicates, search). The page body was rendered in Chromium in light, dark and phone width; the full Expo build was not run here.
+
 # Website v2.21: Forex Market Hours page replaces the Killzones page
 
 - **New page "Forex Market Hours"** in the Pro Tools group of the menu (same tab slot and icon area as the old Killzones page; the tab key `tabKillzones` is kept so saved links and the guide still work). Website: `src/ForexHoursHome.web.tsx` (hero, notices, page, footer). Phone: `src/screens/ForexHours.tsx` (same body inside the normal Screen).

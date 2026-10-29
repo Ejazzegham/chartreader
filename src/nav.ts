@@ -18,4 +18,6 @@ export const NAV: NavItem[] = [
   { key: 'tabGuide', icon: 'help-circle', group: 'main', desc: 'navDescGuide' },
   { key: 'tabAbout', icon: 'information-circle', group: 'main', desc: 'navDescAbout' },
   { key: 'tabManual', icon: 'swap-vertical', group: 'hidden', desc: 'navDescManual' }, // Manual Trade: opened from Home (and from a pair's chart in Markets), not part of the menu
+  { key: 'tabPropFirms', icon: 'briefcase', group: 'pro', desc: 'navDescPropFirms' }, // tab 17: added last so the older tab numbers stay the same
+  { key: 'tabBrokers', icon: 'business', group: 'pro', desc: 'navDescBrokers' }, // tab 18: added last so older tab numbers stay the same
 ];

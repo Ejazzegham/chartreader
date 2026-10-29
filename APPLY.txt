@@ -1,7 +1,2 @@
-Forex Market Hours page (replaces Killzones). Copy every file here over the same path in your project.
-Then DELETE these three old files:
-  src/KillzonesHome.web.tsx
-  src/KillzonesHome.tsx
-  src/screens/Killzones.tsx
-Then run: npm run build:web   (or npm run web to test on your computer)
-No new packages. Open "Forex Market Hours" in the Pro Tools menu once to check it.
+Forex Brokers page. Copy every file here over the same path in your project. This also replaces the Prop Firms files (they now use the shared src/DirectoryBody.tsx). Nothing to delete, no new packages.
+To edit brokers: src/brokers.ts. Then: npm run build:web
