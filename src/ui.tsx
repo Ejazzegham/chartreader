@@ -113,7 +113,7 @@ const HERO_CANDLES: [number, number, number, number, number, 's' | 'b' | 'p'][] 
 
 // One hero for every page, the size of the Settings hero: blue card, big title, one or two lines of text and an optional row of feature chips.
 export const HERO_H = 220;
-const HERO_BLUE = ['#0A2A8F', '#1747D1', '#2B63F0'] as [string, string, string];
+const HERO_BLUE = ['#0A1530', '#12285C', '#1E40AF'] as [string, string, string];
 export type HeroFeature = { icon: string; title: string; sub: string; onPress?: () => void };
 export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { title: string; subtitle?: string; icon?: string; features?: HeroFeature[]; right?: React.ReactNode; tag?: string }) => {
   const { rtl } = useApp();
@@ -184,7 +184,7 @@ export const PageHero = ({ title, subtitle, icon, right, tag }: { title: string;
 
 // bare: the page draws its own header (the Analysis page does). scrollKey: when it changes the page jumps back to the top.
 // Every other page gets the same header row and hero banner as the Analysis page.
-export const Screen = ({ title, subtitle, right, children, bare, scrollKey, icon, tag }: { title: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string }) => {
+export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey, icon, tag }: { title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string }) => {
   const { th } = useApp();
   const L = useLayout();
   const insets = useSafeAreaInsets();
@@ -216,7 +216,7 @@ export const Card = ({ children, style, glow }: { children: React.ReactNode; sty
   const { th } = useApp();
   const desk = useLayout().mode === 'desktop';
   return (
-    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: desk ? 14 : 8, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.glass ? (th.dark ? 0.18 : 0.08) : glow ? (th.dark ? 0.3 : 0.14) : th.dark ? 0.22 : 0.05, shadowRadius: glow ? 16 : 10, shadowOffset: { width: 0, height: glow ? 6 : 4 }, elevation: th.glass ? 0 : glow ? 4 : 1 }, style]}>
+    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: desk ? 12 : 8, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.glass ? (th.dark ? 0.18 : 0.08) : glow ? (th.dark ? 0.3 : 0.14) : th.dark ? 0.22 : 0.05, shadowRadius: glow ? 16 : 10, shadowOffset: { width: 0, height: glow ? 6 : 4 }, elevation: th.glass ? 0 : glow ? 4 : 1 }, style]}>
       <LinearGradient pointerEvents="none" colors={th.glass ? ['transparent', th.dark ? '#FFFFFF66' : '#FFFFFFE6', 'transparent'] : ['transparent', th.accent + (th.dark ? '66' : '40'), 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 18, right: 18, height: 1 }} />
       {children}
     </View>

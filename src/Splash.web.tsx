@@ -48,7 +48,7 @@ function DesktopSplash({ done, onGone, duration }: { done: boolean; onGone: () =
   return (
     <Animated.View pointerEvents={done ? 'none' : 'auto'} onLayout={() => SplashScreen.hideAsync().catch(() => {})}
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, opacity: out, direction: 'ltr', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-      <LinearGradient colors={['#1E3FD8', '#4B3CE0', '#7C3AED']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+      <LinearGradient colors={['#0A1530', '#12285C', '#1E40AF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       {blob(520, { right: -160, top: -180 }, 1)}
       {blob(420, { left: -140, bottom: -200 }, -1)}
       {blob(240, { left: W * 0.18, top: H * 0.12 }, 0.6)}

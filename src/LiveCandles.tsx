@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Svg, { Defs, LinearGradient, Stop, Path, Rect, Line, G, Text as SText } from 'react-native-svg';
-import { Platform } from 'react-native';
 import { frame, Vr, UP, DN } from './splashMath';
 
 const BLUE = '#2F5BFF', MUTE = '#8A93A6', INK = '#1E3778';
-const MONO = Platform.select({ ios: 'Menlo', default: 'monospace' });
 
 // The same endless live candle chart as the start screen (maths in splashMath.ts), drawn on a light card. Used on the website's landing page.
 export default function LiveCandles({ width, height }: { width: number; height: number }) {
@@ -38,10 +36,10 @@ export default function LiveCandles({ width, height }: { width: number; height: 
         <Path d={f.bodyUp} fill={UP} />
         <Path d={f.bodyDn} fill={DN} />
         <Rect x={0} y={f.y0 - 6} width={f.x0 + f.sw * 4} height={f.y1 - f.y0 + 10} fill="url(#lcfade)" />
-        {f.labels.map((l) => <SText key={l.txt} x={f.x1 + 8} y={l.y + 3.5} fontSize={9.5} fill={MUTE} fontFamily={MONO}>{l.txt}</SText>)}
+        {f.labels.map((l) => <SText key={l.txt} x={f.x1 + 8} y={l.y + 3.5} fontSize={9.5} fill={MUTE}>{l.txt}</SText>)}
         <Line x1={f.tag.x} x2={f.x1 + 4} y1={f.tag.y} y2={f.tag.y} stroke={f.tag.col} strokeOpacity={0.6} strokeWidth={1.2} strokeDasharray="5,4" />
         <Rect x={f.x1 + 2} y={f.tag.y - 9} width={W - f.x1 - 8} height={18} rx={4} fill={f.tag.col} />
-        <SText x={f.x1 + 2 + (W - f.x1 - 8) / 2} y={f.tag.y + 3.5} fontSize={10} fontWeight="700" fill="#FFFFFF" textAnchor="middle" fontFamily={MONO}>{f.tag.txt}</SText>
+        <SText x={f.x1 + 2 + (W - f.x1 - 8) / 2} y={f.tag.y + 3.5} fontSize={10} fontWeight="700" fill="#FFFFFF" textAnchor="middle">{f.tag.txt}</SText>
       </G>
     </Svg>
   );

@@ -271,12 +271,9 @@ const PRO_EN: Record<string, string> = {
   tpLadder: "Take profit ladder", closePct: "Close", price: "price", levels: "Levels", allTps: "If all 3 TPs hit", beAfterTp1: "TP1 then stopped at break-even", worstCase: "Worst case (stop loss)", unitsShort: "units",
   needTp: "Enter at least TP1.", tpSide: "Take profits must be on the profit side of the entry (above for a buy, below for a sell).", splitSum: "The close percentages must add up to 100",
   rrBlend: "Blended risk / reward", prefilled: "Levels imported from",
-  kzNone: "Between killzones", kzNext: "Next", kzWaiting: "WAITING", kzTimeline: "24 hour UTC timeline", kzYourTime: "your time", kzLocalNote: "The white line is now. Killzones follow New York time (8 PM to midnight Asia, 2 to 5 AM London, 7 to 10 AM New York AM, 10 AM to noon London Close, 1:30 to 4 PM New York PM, plus three one-hour Silver Bullets). The windows move by one hour in UTC when the US changes its clock.",
-  kzRules: "How to use killzones",
-  kzRule1: "Most daily highs and lows form inside the London or New York killzones. Trade there, stay flat outside.",
-  kzRule2: "London often sweeps the Asian range first (Judas swing), then reverses. Look for the sweep, then a CHoCH.",
-  kzRule3: "New York AM continues or reverses the London move. Wait for a fair value gap after the displacement.",
-  kzRule4: "The Silver Bullet hour is for one clean trade only: sweep, MSS, then enter on the fair value gap.",
+  kzNone: "Between killzones", 
+  
+  
   profitFactor: "Profit factor", expectancy: "Expectancy", tradeStats: "Trade statistics", avgWin: "Average win", avgLoss: "Average loss", winStreak: "Best win streak", lossStreak: "Worst loss streak",
   bestTrade: "Best trade", worstTrade: "Worst trade", buySell: "Buys vs sells", bySymbol: "Result by symbol", ictGrades: "ICT grades of your analyses", ictGradesEmpty: "Analyze a chart screenshot to see the ICT grades here.", perfEmpty: "Add trades in the Journal to unlock your performance numbers.",
 };

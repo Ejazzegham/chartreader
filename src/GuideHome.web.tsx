@@ -257,7 +257,7 @@ export default function GuideHome({ active }: Props) {
             <Text style={{ color: P.head, fontSize: 14, fontWeight: '800' }}>Start your journey</Text>
             <Text style={{ color: P.body, fontSize: 13, lineHeight: 19 }}>Explore the platform step by step and learn how to use the key features, from market analysis to trade planning.</Text>
           </View>
-          {w >= 900 && <Text style={{ color: P.blue, fontSize: 18, fontStyle: 'italic', transform: [{ rotate: '-4deg' }], fontFamily: "'Segoe Script','Brush Script MT','Lucida Handwriting',cursive" } as any}>Better Tools. Smarter Trading.</Text>}
+          {w >= 900 && <Text style={{ color: P.blue, fontSize: 15, fontWeight: '700', letterSpacing: 0.2 }}>Better Tools. Smarter Trading.</Text>}
         </View>
 
         {GROUPS.map((g) => {

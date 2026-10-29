@@ -22,11 +22,11 @@ const FEATURES: { icon: string; title: string; text: string }[] = [
 export default function Landing() {
   const { th } = useApp();
   const [pw, setPw] = useState(0);
-  const tx = th.onAccent, soft = tx + 'CC';
+  const tx = '#FFFFFF', soft = '#FFFFFFCC'; // fixed navy panel: always white text
   return (
     <View style={{ flex: 1.15, minWidth: 0 }} onLayout={(e) => setPw(e.nativeEvent.layout.width)}>
-      <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-      <View pointerEvents="none" style={{ position: 'absolute', right: -120, top: -120, width: 420, height: 420, borderRadius: 210, backgroundColor: tx + '10' }} />
+      <LinearGradient colors={['#0A1530', '#12285C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+      <View pointerEvents="none" style={{ position: 'absolute', right: -120, top: -120, width: 420, height: 420, borderRadius: 210, backgroundColor: '#FFFFFF08' }} />
       <View pointerEvents="none" style={{ position: 'absolute', left: -100, bottom: -140, width: 360, height: 360, borderRadius: 180, backgroundColor: tx + '0C' }} />
       <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 40, justifyContent: 'center', gap: 22 }} showsVerticalScrollIndicator={false}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>

@@ -11,7 +11,6 @@ import { CONTENT, CONTACT_EMAIL } from '../guideContent';
 import { ABOUT_EN } from '../aboutContent';
 
 const NAVY = '#071B3F';
-const SCRIPT = Platform.OS === 'web' ? "'Segoe Script','Brush Script MT','Snell Roundhand','Lucida Handwriting',cursive" : undefined;
 const hand = { cursor: 'pointer' } as any;
 
 // Small label with a short line after it ("ABOUT US ——")
@@ -101,7 +100,7 @@ export default function About() {
         <Text accessibilityRole="header" style={{ color: th.text, fontSize: h2, fontWeight: '900', letterSpacing: -0.8 }}>{x.whoTitle}</Text>
         <Text style={{ color: th.dim, fontSize: 15, lineHeight: 24 }}>{x.who1}</Text>
         <Text style={{ color: th.dim, fontSize: 15, lineHeight: 24 }}>{x.who2}</Text>
-        <Text style={{ color: th.accent, fontSize: 21, marginTop: 6, fontStyle: 'italic', fontFamily: SCRIPT }}>{x.sign}</Text>
+        <Text style={{ color: th.accent, fontSize: 16, marginTop: 6, fontWeight: '700', letterSpacing: 0.2 }}>{x.sign}</Text>
       </View>
       <Card style={{ flex: 1, minWidth: 0, padding: wide ? 28 : 20, gap: 22 }}>
         {mv('locate', x.missionTitle, x.mission)}
