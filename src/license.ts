@@ -3,7 +3,7 @@ import * as SecureStore from './secureStore';
 import * as Crypto from 'expo-crypto';
 
 // Put the public URL of server/server.js here (must be https for release builds).
-export const SERVER = 'https://mockup-borrowing-overprice.ngrok-free.dev';
+export const SERVER = 'https://hardhat-unfasten-overture.ngrok-free.dev';
 export const PAY = { TRON: 'TKvEQSzioWQGZBHdrzSLGWUnmQhJsEHUhA', BSC: '0xd7065772295fb0d563c1c6b00e4464bcd4b03f81' };
 export const PLANS = { weekly: 8, monthly: 20 };
 // The address people can write to. Emails sent here reach the admin panel (see EMAIL_TO_APP.md in the server folder).
