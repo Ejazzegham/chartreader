@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StatusBar, ActivityIndicator } from 'react-native';
 import { useWindowDimensions } from './win';
 import Modal from './Modal';
@@ -242,7 +242,7 @@ function ReplayChart({ data, width: fullW, height, dec, gran, j, eI, xI, onGran 
   const [wheel, setWheel] = useState(false), [showLv, setShowLv] = useState(true);
   const z = useZoom(data.length, W, height, { onTap: () => setWheel((w) => !w) });
   const s0 = z.start, vis = data.slice(z.start, z.end), n = z.slots;
-  const buy = j.side === 'buy', k = buy ? 1 : -1, win = j.pnl > 0 ? th.buy : j.pnl < 0 ? th.sell : th.dim;
+  const buy = j.side === 'buy', win = j.pnl > 0 ? th.buy : j.pnl < 0 ? th.sell : th.dim;
   const sl = j.sl, tps = j.tps ?? [], hits = j.hits ?? 0, last = tps.length ? tps[tps.length - 1] : undefined;
   const hasSl = sl !== undefined && isFinite(sl as number);
   const moved = hasSl && j.stopEnd !== undefined && Math.abs((j.stopEnd as number) - (sl as number)) > 1e-9;

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Line, Rect } from 'react-native-svg';
+import { LinearGradient } from './FlatGradient';
+
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
 import { MDEFS, MDef, MethodIcon } from './MethodArt';
@@ -22,23 +22,7 @@ type Props = {
 
 const GAP = 14;
 
-// faint candlesticks behind the hero, like the mockup
-function HeroArt({ color }: { color: string }) {
-  const bars = [[8, 40, 18], [20, 52, 14], [14, 36, 26], [26, 60, 16], [18, 44, 30], [34, 70, 20], [28, 58, 34], [44, 84, 22], [38, 74, 40], [52, 96, 28]];
-  return (
-    <Svg width={330} height={120} style={{ position: 'absolute', right: 40, top: 0, opacity: 0.5 } as any} pointerEvents="none">
-      {bars.map(([lo, hi, h], i) => {
-        const x = 12 + i * 32, y = 112 - hi;
-        return (
-          <React.Fragment key={i}>
-            <Line x1={x + 7} y1={y - 8} x2={x + 7} y2={y + h + 8} stroke={color} strokeWidth={1.5} opacity={0.5} />
-            <Rect x={x} y={y} width={14} height={h} rx={2} fill={color} opacity={0.18 + i * 0.03} />
-          </React.Fragment>
-        );
-      })}
-    </Svg>
-  );
-}
+
 
 function Hero({ w }: { w: number }) {
   return <HeroBanner icon="analytics" title="Choose Your Analysis Method" subtitle={`Explore ${MDEFS.length} powerful analysis methods to get deeper market insights and identify high-probability setups.`} />;
@@ -193,7 +177,7 @@ export default function MethodPage({ m, visible, symId, sym, onOpenMethod, onPai
   return (
     <ScrollView ref={scroller} style={{ flex: 1, backgroundColor: P.alt, display: visible ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <LinearGradient pointerEvents="none" colors={P.dark ? [P.bg, P.bg] : ['#E7F0FF', '#F5F8FE']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 330 }} />
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 22, paddingBottom: 30, gap: 22 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
         {top}
         <Hero w={w} />
         <MethodGrid w={w} cur={m?.k} onOpen={onOpenMethod} />

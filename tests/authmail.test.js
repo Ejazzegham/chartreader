@@ -10,10 +10,10 @@ const mail = require(mailPath);
 
 // ---- templates ----
 const names = Object.keys(mail.SUBJECT);
-ok(names.length === 6 && names.every((n) => fs.existsSync(path.join(__dirname, '../server/emails', n + '.html'))), 'six templates exist: confirm-signup, reset-password, change-email, invite, magic-link, reauthentication');
+ok(names.length === 3 && names.every((n) => fs.existsSync(path.join(__dirname, '../server/emails', n + '.html'))), 'three templates exist: confirm-signup, reset-password, change-email');
 const vars = { ConfirmationURL: 'https://s.netlify.app/?mode=x&oobCode=A', Email: 'a@b.com', NewEmail: 'n@b.com', Token: '123456', SiteURL: 'https://s.netlify.app' };
 ok(names.every((n) => { const m = mail.render(n, vars); return !/\{\{/.test(m.html) && m.html.includes('Chart') && m.subject; }), 'every template renders with no placeholder left');
-ok(mail.render('reauthentication', vars).html.includes('123456') && mail.render('change-email', vars).html.includes('n@b.com'), 'code and new-email placeholders are filled');
+ok(mail.render('change-email', vars).html.includes('n@b.com'), 'new-email placeholder is filled');
 const evil = mail.render('reset-password', { ...vars, Email: '<script>alert(1)</script>' }).html;
 ok(!evil.includes('<script>') && evil.includes('&lt;script&gt;'), 'values are HTML-escaped (no markup injection)');
 ok(mail.render('reset-password', vars).html.includes('href="https://s.netlify.app/?mode=x&amp;oobCode=A"'), 'link is placed in the button, & escaped for HTML');

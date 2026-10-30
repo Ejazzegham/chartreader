@@ -147,8 +147,7 @@ export function vsaAnalyze(c: Candle[]): VSA {
 // ---------------------------------------------------------------------------------------------------------
 // Looks for the most advanced reversal among the VSA structures of the last 45 candles.
 function findReversal(c: Candle[], signals: VsaSignal[], a: number): VsaReversal | undefined {
-  const n = c.length, sp = (x: Candle) => x.h - x.l;
-  const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / Math.max(1, arr.length);
+  const n = c.length;
   // quiet bar: real volume clearly below the recent average
   const quiet = (j: number) => {
     const win = c.slice(Math.max(0, j - 20), j);

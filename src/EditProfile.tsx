@@ -9,7 +9,7 @@ import { Avatar } from './Brand';
 
 // Edit profile: name, phone, email (confirmed by a link sent to the new address), cloud backup status, delete account.
 export default function EditProfile({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const { th, t, account, avatar, cloud, syncNow, saveProfile, changeEmail, deleteAccount, emailVerified, googleOnly } = useApp();
+  const { th, t, account, cloud, syncNow, saveProfile, changeEmail, deleteAccount, emailVerified, googleOnly } = useApp();
   const insets = useSafeAreaInsets();
   const [name, setName] = useState(''), [phone, setPhone] = useState('');
   const [pBusy, setPBusy] = useState(false), [pMsg, setPMsg] = useState<{ ok: boolean; text: string } | null>(null);

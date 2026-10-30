@@ -22,7 +22,7 @@ const EXPIRE = 20; // an unfilled limit order is cancelled after this many candl
 export function planEntry(c: Candle[], side: 'buy' | 'sell', entry: number, sl: number, zTop: number, zBot: number, tp1: number, a: number, f: (n: number) => string = (n) => n.toFixed(4), live?: number, zoneI?: number): EntryPlan {
   // c = CLOSED candles (a reaction is read from candles that have closed, so it cannot disappear), live = the current price (where we would actually enter)
   const buy = side === 'buy', n = c.length, last = c[n - 1], price = live !== undefined && isFinite(live) ? live : last.c, d = buy ? 1 : -1;
-  const risk = Math.abs(entry - sl), dist = (price - entry) * d;       // > 0: price is already beyond the entry in the trade direction
+  const dist = (price - entry) * d;       // > 0: price is already beyond the entry in the trade direction
   const distAtr = Math.abs(price - entry) / a;
   const pad = 0.1 * a;
   const inZone = buy ? price <= zTop + pad && price >= zBot - pad : price >= zBot - pad && price <= zTop + pad;

@@ -2,7 +2,7 @@ import { APP_VERSION } from './version';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, Animated, ScrollView, Easing } from 'react-native';
 import { useWindowDimensions } from './win';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from './FlatGradient';
 import { useApp } from './store';
 import { LogoMark, PoweredBy, Avatar } from './Brand';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,7 +25,6 @@ export default function RightSidebar() {
   if (!mounted) return null;
 
   const go = (i: number) => { setTab(i); setMenu(false); };
-  const initials = (account?.name ?? '?').split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
   const backdrop = x.interpolate({ inputRange: [0, W], outputRange: [0.55, 0], extrapolate: 'clamp' });
 
   // One menu row: a clear icon tile, a readable name (15.5 px, full-contrast colour) and a one-line explanation, so nobody has to guess what a page does.

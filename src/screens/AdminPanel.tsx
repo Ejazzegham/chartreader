@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, FlatList, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Pressable, FlatList, TextInput, ScrollView, KeyboardAvoidingView } from 'react-native';
 import Modal from '../Modal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../store';
@@ -10,7 +10,6 @@ import { Avatar, Bubble, Composer, DayDivider, dayKey, useAttach } from '../Chat
 
 const date = (ms: number) => (ms ? new Date(ms).toLocaleDateString() : '-');
 const dateTime = (ms: number) => (ms ? new Date(ms).toLocaleString() : '-');
-const short = (s: string) => (s.length > 20 ? s.slice(0, 10) + '…' + s.slice(-8) : s);
 
 type Tab = 'overview' | 'subs' | 'pays' | 'chats' | 'tools' | 'setup';
 

@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Line, Rect, Polyline, Path } from 'react-native-svg';
+import { LinearGradient } from './FlatGradient';
+import Svg, { Circle, Polyline, Path } from 'react-native-svg';
 import { useApp, Trade } from './store';
 import { Icon, confirmAction, HeroBanner } from './ui';
 import { Coin } from './MarketWidgets';
@@ -11,7 +11,7 @@ import { quotes, setWatch, symOf, chg } from './markets';
 import { useRealWindow } from './win';
 import { usePal, Panel, Footer, Btn, useGo } from './DesktopHome.web';
 import { Sessions } from './AnalysisHome.web';
-import { Signal, totalR, floatR, money, fmtR, dirOf, sourceName, todayPnl, stopAtBE } from './trades';
+import { Signal, totalR, floatR, money, fmtR, sourceName, todayPnl, stopAtBE } from './trades';
 
 // The website's Journal page, designed like the "Trading Journal" mockup: hero, performance overview, Signals / Live / Closed / Insights tabs
 // with filters and tables, and a right column with risk settings, sessions, discipline, strategy results, sentiment and a tip.
@@ -511,14 +511,14 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 22, paddingBottom: 30, gap: 22 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
         <HeroBanner icon="book" tag="Journal / Trading Tools" title="Trading Journal" subtitle="Track every setup from scanner to outcome. Improve your strategy, find strengths, fix mistakes and grow consistently." />
         <GuardBanner />
         <View style={{ flexDirection: two ? 'row' : 'column', gap: 22, alignItems: 'flex-start' }}>
           <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 20 }}>{overview}{tabs}{main}</View>
           {right}
         </View>
-        <LinearGradient colors={['#0A55E0', '#1F7AF0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 18, borderRadius: 14 }}>
+        <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 18, borderRadius: 14 }}>
           <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: '#FFFFFF2A', alignItems: 'center', justifyContent: 'center' }}><Icon name="book" size={22} color="#FFFFFF" /></View>
           <View style={{ flex: 1 }}><Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800' }}>Refine Your Setups. Trade Smarter.</Text><Text style={{ color: '#EAF2FFDD', fontSize: 12.5, marginTop: 2 }}>Use your journal insights to improve your strategy, reduce mistakes and grow consistently.</Text></View>
           <Btn label="Open Analysis" onPress={() => setTab(1)} />

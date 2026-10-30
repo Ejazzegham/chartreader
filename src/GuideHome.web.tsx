@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, ScrollView, Linking } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Rect, Circle, Line, Path, G, Text as SvgText, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
+import { LinearGradient } from './FlatGradient';
+import Svg, { Rect, Circle, Line, Path, G, Text as SvgText } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
 import { useRealWindow } from './win';
@@ -148,32 +148,6 @@ function Art({ kind }: { kind: Kind }) {
   );
 }
 
-// ---------- hero art: a laptop with a live-looking chart and three floating tiles (book, chart, gear)
-function HeroArt({ w }: { w: number }) {
-  const tile = (icon: string, x: number, y: number, s: number, c: [string, string]) => (
-    <View key={icon} style={{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: s * 0.24, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } }}>
-      <LinearGradient colors={c} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FFFFFF55', borderRadius: s * 0.24 }}>
-        <Icon name={icon} size={s * 0.5} color="#FFFFFF" />
-      </LinearGradient>
-    </View>
-  );
-  const cs = Array.from({ length: 22 }, (_, i) => { const x = 40 + i * 14, m = 150 - i * 4.2 + Math.sin(i * 1.7) * 12, h = 7 + ((i * 5) % 9), u = i % 3 !== 1; return { x, m, h, c: u ? '#34E3B5' : '#FF6B88' }; });
-  return (
-    <View style={{ width: Math.min(w, 520), height: 250 }} pointerEvents="none">
-      <Svg width="100%" height="250" viewBox="0 0 400 250" style={{ position: 'absolute', left: 0, top: 0 } as any}>
-        <Defs><SvgGrad id="gh" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#1B3FA8" /><Stop offset="1" stopColor="#0A1E66" /></SvgGrad></Defs>
-        {[0, 1, 2, 3, 4].map((i) => <Rect key={i} x={14 + i * 22} y={150 - i * 16 - (i % 2) * 14} width="14" height={90 + i * 16} rx="3" fill="#3C7BFF" opacity="0.22" />)}
-        <Path d="M46 214 L70 70 Q72 60 84 60 L330 60 Q342 60 344 70 L368 214 Z" fill="url(#gh)" stroke="#6FA0FF" strokeWidth="2" />
-        <Rect x="58" y="72" width="296" height="130" rx="4" fill="#0A1840" />
-        {cs.map((c, i) => <G key={i}><Line x1={c.x + 30} y1={c.m - c.h - 14 + 20} x2={c.x + 30} y2={c.m + c.h + 14 + 20} stroke={c.c} strokeWidth="1.3" /><Rect x={c.x + 26.5} y={c.m - c.h + 20} width="7" height={c.h * 1.5} rx="1.5" fill={c.c} /></G>)}
-        <Path d="M20 222 H392 L378 236 Q376 240 370 240 H42 Q36 240 34 236 Z" fill="#C8D9FF" opacity="0.9" />
-      </Svg>
-      {tile('book-outline', 330, 6, 82, ['#5E94FF', '#2B63F0'])}
-      {tile('stats-chart', 352, 100, 60, ['#6FA8FF', '#3C73F5'])}
-      {tile('settings', 346, 176, 66, ['#5B8CFF', '#2A56D9'])}
-    </View>
-  );
-}
 
 function StepCard({ s, i, width, onOpen }: { s: Step; i: number; width: number | string; onOpen: () => void }) {
   const P = usePal(), th = P.th;
@@ -221,7 +195,6 @@ export default function GuideHome({ active }: Props) {
   const { setHelpOpen } = useApp();
   const w = useRealWindow().width;
   const pad = w >= 700 ? 32 : 16;
-  const inner = Math.min(w, 1360) - pad * 2;
   const cols3 = w >= 900 ? 3 : w >= 600 ? 2 : 1, cols4 = w >= 1180 ? 4 : w >= 600 ? 2 : 1;
   const basis = (cols: number) => `${100 / cols - 1.6}%`;
   const open = (s: Step) => go(s.tab, s.extra);
@@ -242,12 +215,12 @@ export default function GuideHome({ active }: Props) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       {/* hero: same banner as every other page */}
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 22 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
         <HeroBanner icon="book-outline" tag="Guide & Tutorials" title="How to Use Chart Reader" subtitle="Follow this step-by-step guide to learn how to use the platform, find the right tools, and make the most of your trading experience."
           features={hero.map((h) => ({ icon: h.icon, title: h.t, sub: h.s }))} />
       </View>
 
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 22, paddingBottom: 34, gap: 34 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 34, gap: 34 }}>
         <Notices flush />
 
         {/* intro strip */}

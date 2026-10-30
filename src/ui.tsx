@@ -3,8 +3,8 @@ import { ScrollView, Text, View, Pressable, ActivityIndicator, TextInput, TextIn
 import { showAlert } from './dialog';
 import { useWindowDimensions, useLayout, WidthCtx } from './win';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Line, Rect } from 'react-native-svg';
+import { LinearGradient } from './FlatGradient';
+import Svg, { Path, Line } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from './store';
 import { ScrollLockContext } from './scrollLock';
@@ -45,9 +45,9 @@ export const LiveDot = () => {
   useEffect(() => subscribeFeed(() => setSt((p) => (flags.status === p ? p : flags.status))), []);
   const c = st === 'live' ? th.buy : st === 'offline' ? th.sell : th.gold;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, height: 28, paddingHorizontal: 9, borderRadius: 8, backgroundColor: c + '1C', borderWidth: 1, borderColor: c + '55' }}>
-      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: c, shadowColor: c, shadowOpacity: 1, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
-      <Text style={{ color: c, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.8 }}>{st === 'live' ? 'LIVE' : st === 'offline' ? 'OFFLINE' : 'SYNC'}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 28, paddingHorizontal: 4 }}>
+      <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: c }} />
+      <Text style={{ color: th.dim, fontSize: 11.5, fontWeight: '600', letterSpacing: 0.3 }}>{st === 'live' ? 'Live' : st === 'offline' ? 'Offline' : 'Syncing'}</Text>
     </View>
   );
 };
@@ -105,87 +105,72 @@ export const AppHeader = () => {
   );
 };
 
-// small candlestick picture (same one the Analysis banner draws)
-const HERO_CANDLES: [number, number, number, number, number, 's' | 'b' | 'p'][] = [
-  [8, 52, 72, 56, 68, 's'], [20, 46, 70, 50, 62, 'p'], [32, 40, 62, 44, 56, 'b'], [44, 34, 58, 40, 52, 's'], [56, 28, 52, 32, 46, 'b'],
-  [68, 22, 44, 26, 38, 'p'], [80, 18, 40, 22, 34, 'b'], [92, 10, 34, 14, 28, 'b'], [104, 14, 38, 20, 32, 's'],
-];
-
-// One hero for every page, the size of the Settings hero: blue card, big title, one or two lines of text and an optional row of feature chips.
-export const HERO_H = 220;
-const HERO_BLUE = ['#0A1530', '#12285C', '#1E40AF'] as [string, string, string];
+// ONE hero for every page of the website: the same width (the page width), the same height, the same flat deep-navy surface with a brass hairline.
+// No gradients, glows, circles or watermark icons. Title + one line of text on the left, an optional action on the right, an optional quiet row of key points at the foot.
+export const HERO_H = 232;
+export const HERO_BG = '#0F1E3D', HERO_BRASS = '#C8A96A';
 export type HeroFeature = { icon: string; title: string; sub: string; onPress?: () => void };
 export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { title: string; subtitle?: string; icon?: string; features?: HeroFeature[]; right?: React.ReactNode; tag?: string }) => {
   const { rtl } = useApp();
   const { width } = useWindowDimensions();
   const wide = width >= 640;
-  return (
-    <View style={{ borderRadius: 18, overflow: 'hidden', direction: 'ltr', ...(wide ? { height: HERO_H } : null) }}>
-      <LinearGradient colors={HERO_BLUE} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: wide ? 28 : 20, gap: 18, ...(wide ? { height: HERO_H, justifyContent: 'center' } : null) }}>
-        <View pointerEvents="none" style={{ position: 'absolute', right: -30, top: -40, width: 260, height: 260, borderRadius: 130, backgroundColor: '#FFFFFF10' }} />
-        {!!icon && <View pointerEvents="none" style={{ position: 'absolute', right: wide ? 70 : 10, top: wide ? 30 : 14, opacity: 0.22 }}><Icon name={icon} size={wide ? 150 : 84} color="#FFFFFF" /></View>}
-        <View style={{ gap: 6, direction: rtl ? 'rtl' : 'ltr' }}>
-          {!!tag && <Text style={{ color: '#9CC4FF', fontSize: 11.5, fontWeight: '800', letterSpacing: 1.3 }}>{tag.toUpperCase()}</Text>}
-          <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: wide ? 34 : 26, fontWeight: '900', letterSpacing: -0.8 }} numberOfLines={1}>{title}</Text>
-          {!!subtitle && <Text style={{ color: '#DCE6FF', fontSize: 14.5, lineHeight: 21, maxWidth: 560 }} numberOfLines={2}>{subtitle}</Text>}
-          {!!right && <View style={{ flexDirection: 'row', alignSelf: 'flex-start', marginTop: 4 }}>{right}</View>}
-        </View>
-        {!!features?.length && (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            {features.map((f) => (
-              <Pressable key={f.title} disabled={!f.onPress} onPress={f.onPress} style={{ flexBasis: wide ? '23%' : '47%', flexGrow: 1, minWidth: 150, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF1A', borderColor: '#FFFFFF2E', borderWidth: 1, borderRadius: 12, padding: 10, cursor: f.onPress ? 'pointer' : 'default' } as any}>
-                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: '#FFFFFF24', alignItems: 'center', justifyContent: 'center' }}><Icon name={f.icon} size={18} color="#FFFFFF" /></View>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }} numberOfLines={1}>{f.title}</Text>
-                  {!!f.sub && <Text style={{ color: '#C9D8FF', fontSize: 11.5 }} numberOfLines={1}>{f.sub}</Text>}
-                </View>
-              </Pressable>
-            ))}
+  const feats = !!features?.length && (
+    <View style={{ flexDirection: wide ? 'row' : 'column', gap: wide ? 0 : 8, borderTopWidth: 1, borderTopColor: '#FFFFFF1F', paddingTop: wide ? 14 : 12 }}>
+      {features!.map((f, i) => (
+        <Pressable key={f.title} disabled={!f.onPress} onPress={f.onPress} style={{ flex: wide ? 1 : undefined, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: wide && i > 0 ? 18 : 0, marginLeft: wide && i > 0 ? 18 : 0, borderLeftWidth: wide && i > 0 ? 1 : 0, borderLeftColor: '#FFFFFF1F', cursor: f.onPress ? 'pointer' : 'default' } as any}>
+          <Icon name={f.icon} size={17} color={HERO_BRASS} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 13 }} numberOfLines={1}>{f.title}</Text>
+            {!!f.sub && <Text style={{ color: '#A9B6D0', fontSize: 11.5 }} numberOfLines={1}>{f.sub}</Text>}
           </View>
-        )}
-      </LinearGradient>
+        </Pressable>
+      ))}
+    </View>
+  );
+  return (
+    <View style={{ borderRadius: 14, overflow: 'hidden', direction: 'ltr', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', ...(wide ? { height: HERO_H } : null) }}>
+      <View style={{ padding: wide ? 32 : 20, paddingVertical: wide ? 26 : 20, gap: 14, ...(wide ? { height: HERO_H, justifyContent: 'center' } : null) }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24, direction: rtl ? 'rtl' : 'ltr' }}>
+          <View style={{ flex: 1, minWidth: 0, gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{ width: 26, height: 2, backgroundColor: HERO_BRASS }} />
+              <Text style={{ color: HERO_BRASS, fontSize: 11, fontWeight: '700', letterSpacing: 1.8 }} numberOfLines={1}>{(tag || 'Chart Reader').toUpperCase()}</Text>
+            </View>
+            <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: wide ? 32 : 24, fontWeight: '700', letterSpacing: -0.5 }} numberOfLines={1}>{title}</Text>
+            {!!subtitle && <Text style={{ color: '#B4C0D8', fontSize: 14.5, lineHeight: 22, maxWidth: 780 }} numberOfLines={2}>{subtitle}</Text>}
+            {!!right && !wide && <View style={{ flexDirection: 'row', alignSelf: 'flex-start', marginTop: 4 }}>{right}</View>}
+          </View>
+          {!!right && wide && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>{right}</View>}
+        </View>
+        {feats}
+      </View>
     </View>
   );
 };
 
-// Hero banner at the top of every page: the same look as the Analysis page banner (soft accent gradient, candles on the right).
+// Phone and tablet: a quiet header card (the website uses the HeroBanner above).
 export const PageHero = ({ title, subtitle, icon, right, tag }: { title: string; subtitle?: string; icon?: string; right?: React.ReactNode; tag?: string }) => {
   const { th, rtl } = useApp();
-  const { width } = useWindowDimensions();
-  const W = width - 32, fs = Math.max(20, Math.min(26, Math.round(W * 0.064)));
   const desk = useLayout().mode === 'desktop';
-  if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />; // website: the same hero as Settings
+  if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />;
   return (
-    <LinearGradient colors={[th.accent + (th.dark ? '2E' : '16'), th.accent2 + (th.dark ? '38' : '26')]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-      style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', minHeight: 112, justifyContent: 'center', direction: 'ltr' }}>
-      <View pointerEvents="none" style={{ position: 'absolute', right: 8, top: 12, bottom: 12, width: W >= 520 ? '26%' : '34%', justifyContent: 'center', opacity: 0.9 }}>
-        <Svg width="100%" height="100%" viewBox="0 0 120 80" preserveAspectRatio="xMidYMid meet">
-          <Path d="M4 68 C 30 66, 44 50, 62 40 S 94 22, 112 12" stroke={th.accent2} strokeWidth="2" strokeOpacity="0.35" fill="none" strokeLinecap="round" />
-          {HERO_CANDLES.map(([x, wt, wb, bt, bb, c], i) => {
-            const col = c === 'b' ? th.buy : c === 's' ? th.sell : th.accent2;
-            return (<React.Fragment key={i}><Line x1={x} y1={wt} x2={x} y2={wb} stroke={col} strokeWidth="1.6" strokeLinecap="round" /><Rect x={x - 3.4} y={bt} width="6.8" height={bb - bt} rx="1.6" fill={col} /></React.Fragment>);
-          })}
-        </Svg>
-      </View>
-      <View style={{ padding: 16, paddingRight: W >= 520 ? '30%' : '36%', gap: 10, direction: rtl ? 'rtl' : 'ltr' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          {!!icon && <IconTile icon={icon} size={46} />}
-          <View style={{ flex: 1 }}>
-            {!!tag && <Text style={{ color: th.accent, fontSize: 10, fontWeight: '900', letterSpacing: 1.4, marginBottom: 2 }}>{tag.toUpperCase()}</Text>}
-            <Text accessibilityRole="header" style={{ color: th.text, fontSize: fs, fontWeight: '900', letterSpacing: -0.5 }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>{title}</Text>
-          </View>
+    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, padding: 16, gap: 10, direction: rtl ? 'rtl' : 'ltr' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {!!icon && <IconTile icon={icon} size={44} />}
+        <View style={{ flex: 1 }}>
+          {!!tag && <Text style={{ color: th.accent2, fontSize: 10, fontWeight: '700', letterSpacing: 1.4, marginBottom: 2 }}>{tag.toUpperCase()}</Text>}
+          <Text accessibilityRole="header" style={{ color: th.text, fontSize: 22, fontWeight: '700', letterSpacing: -0.3 }} numberOfLines={2}>{title}</Text>
         </View>
-        {!!subtitle && <Text style={{ color: th.dim, fontSize: 12, lineHeight: 17 }} numberOfLines={3}>{subtitle}</Text>}
-        {!!right && <View style={{ flexDirection: 'row', alignSelf: 'flex-start' }}>{right}</View>}
       </View>
-    </LinearGradient>
+      {!!subtitle && <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18 }} numberOfLines={3}>{subtitle}</Text>}
+      {!!right && <View style={{ flexDirection: 'row', alignSelf: 'flex-start' }}>{right}</View>}
+    </View>
   );
 };
 
 // bare: the page draws its own header (the Analysis page does). scrollKey: when it changes the page jumps back to the top.
 // Every other page gets the same header row and hero banner as the Analysis page.
 export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey, icon, tag }: { title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string }) => {
-  const { th } = useApp();
   const L = useLayout();
   const insets = useSafeAreaInsets();
   const scroller = useRef<ScrollView>(null);
@@ -193,8 +178,6 @@ export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey,
   useEffect(() => { scroller.current?.scrollTo({ y: 0, animated: false }); }, [scrollKey]);
   return (
     <View style={{ flex: 1 }}>
-      {/* soft accent glow behind the header: gives every page the same premium depth */}
-      {L.mode !== 'desktop' && <LinearGradient pointerEvents="none" colors={[th.accent + (th.dark ? '2E' : '1C'), th.accent2 + (th.dark ? '0E' : '08'), th.bg + '00']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280 }} />}
       <ScrollLockContext.Provider value={setLock}>
       <ScrollView ref={scroller} scrollEnabled={!lock} style={{ flex: 1 }} contentContainerStyle={L.mode === 'desktop' ? { flexGrow: 1 } : { padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {/* website: the page body is centred and limited in width; the shared footer below it spans the full width (same as every other page) */}
@@ -216,21 +199,20 @@ export const Card = ({ children, style, glow }: { children: React.ReactNode; sty
   const { th } = useApp();
   const desk = useLayout().mode === 'desktop';
   return (
-    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: desk ? 12 : 8, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.glass ? (th.dark ? 0.18 : 0.08) : glow ? (th.dark ? 0.3 : 0.14) : th.dark ? 0.22 : 0.05, shadowRadius: glow ? 16 : 10, shadowOffset: { width: 0, height: glow ? 6 : 4 }, elevation: th.glass ? 0 : glow ? 4 : 1 }, style]}>
-      <LinearGradient pointerEvents="none" colors={th.glass ? ['transparent', th.dark ? '#FFFFFF66' : '#FFFFFFE6', 'transparent'] : ['transparent', th.accent + (th.dark ? '66' : '40'), 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 18, right: 18, height: 1 }} />
+    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: desk ? 12 : 8, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.dark ? 0.16 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 0 }, style]}>
       {children}
     </View>
   );
 };
 
-// Rounded gradient icon tile (home tools, headers, empty states).
-export const IconTile = ({ icon, size = 44, colors }: { icon: string; size?: number; colors?: [string, string] }) => {
+// Quiet icon tile: a soft tint of the brand colour with a hairline border. Every page uses the same one, so the icons never turn into a rainbow.
+export const IconTile = ({ icon, size = 44 }: { icon: string; size?: number; colors?: [string, string] }) => {
   const { th } = useApp();
   const desk = useLayout().mode === 'desktop';
   return (
-    <LinearGradient colors={colors ?? [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: size, height: size, borderRadius: desk ? 12 : 8, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name={icon} size={size * 0.5} color={th.onAccent} />
-    </LinearGradient>
+    <View style={{ width: size, height: size, borderRadius: desk ? 10 : 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + (th.dark ? '2A' : '12'), borderWidth: 1, borderColor: th.accent + (th.dark ? '44' : '24') }}>
+      <Icon name={icon} size={size * 0.48} color={th.dark ? th.text : th.accent} />
+    </View>
   );
 };
 
@@ -323,7 +305,6 @@ export const Btn = ({ label, onPress, ghost, busy, disabled, icon, danger, tone 
     <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!(busy || disabled), busy: !!busy }} onPress={onPress} disabled={busy || disabled} style={({ pressed }) => ({ borderRadius: 10, overflow: flat ? 'hidden' : 'visible', opacity: busy || disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }], borderWidth: flat ? 1 : 0, borderColor: warn ? th.gold + '88' : danger ? th.sell + '66' : th.line, shadowColor: base, shadowOpacity: flat || disabled ? 0 : th.dark ? 0.4 : 0.25, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: flat || disabled ? 0 : 5 })}>
       {flat ? <View style={{ minHeight: 50, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: warn ? th.gold + '16' : th.panel2 }}>{inner}</View> : (
         <LinearGradient colors={solid ? [base, base + 'CC'] : [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ minHeight: 52, borderRadius: 10, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '48%', backgroundColor: '#FFFFFF', opacity: 0.12 }} />
           {inner}
         </LinearGradient>
       )}
@@ -348,7 +329,6 @@ export const ActionBtn = ({ label, icon, onPress, tone = 'neutral', disabled, fl
       style={({ pressed }) => ({ flex, borderRadius: 12, overflow: 'hidden', opacity: disabled && tone !== 'done' ? 0.45 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }], borderWidth: solid ? 0 : 1, borderColor: tone === 'neutral' ? th.line : c + '77', shadowColor: c, shadowOpacity: solid && !disabled ? 0.4 : 0, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: solid && !disabled ? 5 : 0 })}>
       {solid ? (
         <LinearGradient colors={[c, c + 'D0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-          <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '45%', backgroundColor: '#FFFFFF', opacity: 0.12 }} />
           {inner}
         </LinearGradient>
       ) : <View style={{ backgroundColor: tone === 'neutral' ? th.panel2 : c + '16' }}>{inner}</View>}
@@ -433,10 +413,6 @@ export const Group = ({ title, children, gap = 12 }: { title: string; children: 
   );
 };
 
-export const Divider = ({ inset = 0 }: { inset?: number }) => {
-  const { th } = useApp();
-  return <View style={{ height: 1, backgroundColor: th.hair, marginVertical: 10, marginHorizontal: inset }} />;
-};
 
 // Friendly empty page: icon, a short title, one line of help and an optional action.
 export const EmptyState = ({ icon, title, body, action, onAction }: { icon: string; title: string; body?: string; action?: string; onAction?: () => void }) => {

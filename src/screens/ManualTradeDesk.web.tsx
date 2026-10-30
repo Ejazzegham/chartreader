@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
-import Svg, { Polyline, Defs, LinearGradient as SvgGrad, Stop, Path, Rect } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Polyline, Defs, LinearGradient as SvgGrad, Stop, Path } from 'react-native-svg';
+import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
-import { Icon } from '../ui';
+import { Icon, HeroBanner } from '../ui';
 import { Coin } from '../MarketWidgets';
 import TerminalChart, { Hit } from '../TerminalChart';
 import PositionSheet from '../PositionSheet';
@@ -133,41 +133,12 @@ export default function ManualTradeDesk() {
   const hits = pool.filter((s) => !pq.trim() || (s.name + s.id).toLowerCase().includes(pq.trim().toLowerCase())).slice(0, 8);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: dark ? th.bg : '#F5F8FE' }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View style={{ flex: 1, width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: W < 1120 ? 16 : 28, paddingVertical: 24, gap: 20 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: dark ? th.bg : '#F6F7F9' }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: W < 1120 ? 16 : 32, paddingVertical: 24, gap: 20 }}>
 
-        {/* ---- hero */}
-        <View style={{ borderRadius: 20, overflow: 'hidden', minHeight: 226, justifyContent: 'center', paddingHorizontal: 36, paddingVertical: 30 }}>
-          <LinearGradient colors={['#17216B', '#3A2FB8', '#5A3FD9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ flex: 1, gap: 12 }}>
-              <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#FFFFFF1F' }}>
-                <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#2DE3B0' }} /><Text style={{ color: '#2DE3B0', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 }}>LIVE TRADING</Text>
-              </View>
-              <Text style={{ color: '#FFFFFF', fontSize: 40, fontWeight: '900', letterSpacing: -1 }}>Trade Live with Confidence</Text>
-              <Text style={{ color: '#E3E8FF', fontSize: 15, lineHeight: 22, maxWidth: 520 }}>Watch the markets in real-time, analyze price action, and make smarter trading decisions with our professional trading platform.</Text>
-              <View style={{ flexDirection: 'row', gap: 26, marginTop: 8, flexWrap: 'wrap' }}>
-                {[['stats-chart', 'Real-time Charts', 'MTS Powered'], ['pulse', 'Live Market Data', 'Forex, Crypto, Indices'], ['construct', 'Advanced Tools', 'For Better Decisions']].map(([ic, t1, t2]) => (
-                  <View key={t1} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-                    <View style={{ width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: '#FFFFFF55', alignItems: 'center', justifyContent: 'center' }}><Icon name={ic} size={19} color="#FFFFFF" /></View>
-                    <View><Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '800' }}>{t1}</Text><Text style={{ color: '#C9D2FF', fontSize: 11.5 }}>{t2}</Text></View>
-                  </View>
-                ))}
-              </View>
-            </View>
-            {W > 1000 && (
-              <View style={{ width: 380, height: 180, alignItems: 'center', justifyContent: 'center' }}>
-                <View style={{ width: 300, height: 170, borderRadius: 14, backgroundColor: '#0E1238', borderWidth: 2, borderColor: '#FFFFFF33', padding: 12, transform: [{ rotate: '-3deg' }] }}>
-                  <Svg width="100%" height="100%" viewBox="0 0 276 146">
-                    {Array.from({ length: 22 }).map((_, i) => { const x = 6 + i * 12.4, h = 14 + ((i * 37) % 26) + i * 2.2, y = 120 - i * 4.4 - h / 2, g = i % 4 !== 3; return <Rect key={i} x={x} y={y} width={6} height={h} rx={1} fill={g ? '#2DE3B0' : '#FF6B87'} />; })}
-                  </Svg>
-                </View>
-                <View style={{ position: 'absolute', top: 0, left: 10, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#19C48B' }}><Icon name="star-outline" size={13} color="#fff" /><Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>BUY</Text></View>
-                <View style={{ position: 'absolute', top: 36, right: 0, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#F0455F' }}><Icon name="star-outline" size={13} color="#fff" /><Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>SELL</Text></View>
-              </View>
-            )}
-          </View>
-        </View>
+        {/* ---- hero: the same banner as every other page */}
+        <HeroBanner icon="swap-vertical" tag="Demo Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. No real money."
+          features={[{ icon: 'stats-chart-outline', title: 'Real-time charts', sub: 'Live candles' }, { icon: 'pulse-outline', title: 'Live market data', sub: 'Forex, crypto, indices' }, { icon: 'construct-outline', title: 'Advanced tools', sub: 'For better decisions' }]} />
 
         {/* ---- chart + market watch */}
         <View style={{ flexDirection: stack ? 'column' : 'row', gap: 20, alignItems: 'flex-start' }}>
@@ -254,7 +225,7 @@ export default function ManualTradeDesk() {
               </ScrollView>
             </View>
             <View style={{ borderRadius: 16, overflow: 'hidden', padding: 20, minHeight: 170, justifyContent: 'center' }}>
-              <LinearGradient colors={['#2A2D9B', '#4B3FD6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+              <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
               <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900' }}>Trade Smarter, Not Harder</Text>
               <Text style={{ color: '#DDE3FF', fontSize: 12.5, lineHeight: 18, marginTop: 8, maxWidth: 230 }}>Use our advanced tools, real-time data and expert analysis to stay ahead in the markets.</Text>
               <ExploreBtn />
@@ -347,7 +318,7 @@ export default function ManualTradeDesk() {
               {estPnl !== undefined && <Text style={{ color: th.dim, fontSize: 11, marginLeft: 4 }}>at take profit</Text>}
             </View>
             <Pressable onPress={() => place(side)} accessibilityRole="button" style={((x: any) => ({ marginTop: 16, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
-              <LinearGradient colors={['#5B3FD9', '#7B4DF0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 12 }} />
+              <LinearGradient colors={['#0F1E3D', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 12 }} />
               <Icon name="flash" size={17} color="#fff" /><Text style={{ color: '#fff', fontSize: 14.5, fontWeight: '800' }}>Place {side === 'buy' ? 'Buy' : 'Sell'} Order</Text>
             </Pressable>
           </View>
@@ -383,7 +354,7 @@ function ExploreBtn() {
   const { setTab } = useApp();
   return (
     <Pressable onPress={() => setTab(1)} style={((x: any) => ({ alignSelf: 'flex-start', marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 8, height: 38, paddingHorizontal: 16, borderRadius: 9, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
-      <Text style={{ color: '#3A2FB8', fontSize: 13, fontWeight: '800' }}>Explore Analysis</Text><Icon name="arrow-forward" size={14} color="#3A2FB8" />
+      <Text style={{ color: '#3B5B93', fontSize: 13, fontWeight: '800' }}>Explore Analysis</Text><Icon name="arrow-forward" size={14} color="#3A2FB8" />
     </Pressable>
   );
 }

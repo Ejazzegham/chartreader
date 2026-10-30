@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, TextInput, Image, ActivityIndicator, Keyboard, Linking, Platform, StatusBar } from 'react-native';
 import Modal from './Modal';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from './FlatGradient';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from './store';

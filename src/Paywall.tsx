@@ -19,7 +19,7 @@ import PayBox from './PayBox';
 //   expired:  the normal case. Pay and the app opens by itself.
 // =====================================================================================
 export default function Paywall() {
-  const { th, t, rtl, lic, licErr, refreshLic, logout, emailVerified, sendVerify, setHelpOpen, supportUnread } = useApp();
+  const { th, t, lic, licErr, refreshLic, logout, emailVerified, sendVerify, setHelpOpen, supportUnread } = useApp();
   const insets = useSafeAreaInsets();
   const [plan, setPlan] = useState<'weekly' | 'monthly'>('monthly');
   const [net, setNet] = useState<'TRON' | 'BSC'>('TRON');

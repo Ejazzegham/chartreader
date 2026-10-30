@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import Modal from './Modal';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from './FlatGradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from './store';
 

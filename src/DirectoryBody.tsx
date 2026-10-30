@@ -62,7 +62,7 @@ function VisitBtn({ P, f, compact }: { P: Pal; f: PropFirm; compact?: boolean })
   );
 }
 function Avatar({ P, f, size = 40 }: { P: Pal; f: PropFirm; size?: number }) {
-  const th = P.th, cols = [th.accent, th.accent2, th.buy, th.gold, '#D77CF2', '#2F6BFF'], c = cols[(f.rank - 1) % cols.length];
+  const th = P.th, cols = [th.accent, th.accent2, th.buy, th.gold, '#D77CF2', '#3B5B93'], c = cols[(f.rank - 1) % cols.length];
   return <View style={{ width: size, height: size, borderRadius: size / 3, backgroundColor: c + '22', borderWidth: 1, borderColor: c + '55', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: P.dark ? c : P.head, fontSize: size * 0.34, fontWeight: '900' }}>{initials(f.name)}</Text></View>;
 }
 function Rank({ f, size = 34, medal = true }: { f: PropFirm; size?: number; medal?: boolean }) {

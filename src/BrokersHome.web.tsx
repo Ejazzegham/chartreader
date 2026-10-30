@@ -13,7 +13,7 @@ export default function BrokersHome({ active }: { active: boolean }) {
   const w = useRealWindow().width, pad = w >= 700 ? 32 : 16;
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
         <HeroBanner icon="business" title="Forex Brokers" subtitle="Major forex brokers in one list, each with a direct link to its official website."
           features={[
             { icon: 'business-outline', title: 'Major Brokers', sub: `${BROKERS.length} brokers` },
@@ -22,9 +22,9 @@ export default function BrokersHome({ active }: { active: boolean }) {
             { icon: 'shield-checkmark-outline', title: 'Choose Wisely', sub: 'Four checks first' },
           ]} />
       </View>
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 30, gap: 20 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 30, gap: 20 }}>
         <Notices flush />
-        <BrokersBody w={Math.min(w, 1360) - pad * 2} />
+        <BrokersBody w={Math.min(w, 1280) - pad * 2} />
       </View>
       <Footer w={w} go={go} />
     </ScrollView>

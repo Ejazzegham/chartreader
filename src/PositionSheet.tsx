@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from './store';
 import { Icon } from './ui';
 import { useFeed, quotes } from './markets';
-import { totalPnl, floating, dirP, lotsForPct, closeLots, inProfit, Position } from './positions';
+import { totalPnl, floating, dirP, lotsForPct, closeLots, inProfit } from './positions';
 import { lotSpec, fmtLots } from './lots';
 import { ink } from './theme';
 

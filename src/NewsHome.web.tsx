@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Linking } from 'react-native';
-import { Icon } from './ui';
+import { Icon, HeroBanner } from './ui';
 import { useRealWindow } from './win';
 import { useHeadlines, ago, tone, safeHttpUrl, Topic, Headline } from './headlines';
 import { useNews, newsRisk, fmtIn, localTime, Impact, NewsEvent } from './news';
@@ -15,10 +15,10 @@ type Sub = 'all' | 'hot' | Topic;
 type Item = Headline & { topic: Topic };
 
 const TABS: { k: Sub; label: string }[] = [{ k: 'all', label: 'Latest' }, { k: 'hot', label: 'Hottest' }, { k: 'forex', label: 'Forex' }, { k: 'crypto', label: 'Crypto' }, { k: 'deriv', label: 'Deriv' }];
-const TOPIC: Record<Topic, { label: string; color: string }> = { forex: { label: 'Forex', color: '#2F6BFF' }, crypto: { label: 'Crypto', color: '#F59E0B' }, deriv: { label: 'Deriv', color: '#8B5CF6' } };
+const TOPIC: Record<Topic, { label: string; color: string }> = { forex: { label: 'Forex', color: '#3B5B93' }, crypto: { label: 'Crypto', color: '#F59E0B' }, deriv: { label: 'Deriv', color: '#3B5B93' } };
 const CURS = ['ALL', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD', 'CNY'];
 const IMP: { k: Impact; label: string; color: string }[] = [
-  { k: 'High', label: 'High', color: '#E5484D' }, { k: 'Medium', label: 'Medium', color: '#F5A524' }, { k: 'Low', label: 'Low', color: '#E6CF3A' }, { k: 'Holiday', label: 'Holiday', color: '#98A2B3' },
+  { k: 'High', label: 'High', color: '#E5484D' }, { k: 'Medium', label: 'Medium', color: '#3B5B93' }, { k: 'Low', label: 'Low', color: '#E6CF3A' }, { k: 'Holiday', label: 'Holiday', color: '#98A2B3' },
 ];
 const impColor = (i: Impact) => IMP.find((x) => x.k === i)!.color;
 // words that usually move markets: used to rank the Hot Stories block (a keyword hint, not a signal)
@@ -240,17 +240,14 @@ export default function NewsHome({ active }: Props) {
   const reloadAll = () => feeds.forEach((f) => f.reload());
   const stamp = Math.max(0, ...feeds.map((f) => f.at ?? 0));
 
-  const pad = w >= 700 ? 28 : 14, wide = w >= 1120;
+  const pad = w >= 700 ? 32 : 16, wide = w >= 1120;
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: P.dark ? P.bg : '#EEF1F6', display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View style={{ flex: 1, width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 20, paddingBottom: 28, gap: 14 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: P.bg, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 28, gap: 14 }}>
+        <HeroBanner icon="newspaper" tag="Market News" title="News" subtitle={`Market headlines and the economic calendar${stamp ? ` · updated ${localTime(stamp)}` : ''}`} />
         <Notices flush />
-        {/* page header: title, tabs, search */}
+        {/* tabs and search */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', flexWrap: 'wrap', gap: 14, borderBottomWidth: 1, borderBottomColor: P.border }}>
-          <View style={{ paddingBottom: 8 }}>
-            <Text style={{ color: P.head, fontSize: 26, fontWeight: '900', letterSpacing: -0.5 }}>News</Text>
-            <Text style={{ color: P.body, fontSize: 12 }}>Market headlines and the economic calendar{stamp ? ` · updated ${localTime(stamp)}` : ''}</Text>
-          </View>
           <View style={{ flexDirection: 'row', gap: 2, marginLeft: wide ? 24 : 0 }}>
             {TABS.map((t) => {
               const on = sub === t.k;

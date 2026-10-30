@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Rect, Line, Circle, Polyline, Defs, LinearGradient as SG, Stop, Text as SText } from 'react-native-svg';
+import { LinearGradient } from './FlatGradient';
+import Svg, { Line, Circle, Polyline, Text as SText } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
 import { quotes, setWatch } from './markets';
@@ -23,33 +23,6 @@ function Chip({ icon, color, size = 40 }: { icon: string; color: string; size?: 
   return <View style={{ width: size, height: size, borderRadius: size / 2.6, backgroundColor: color + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={size * 0.47} color={color} /></View>;
 }
 
-function HeroArt({ rate, pf }: { rate: number; pf: string }) {
-  const bars = [[40, 70, 'u'], [70, 100, 'u'], [95, 130, 'd'], [60, 110, 'u'], [90, 150, 'u'], [120, 170, 'd'], [100, 160, 'u'], [140, 200, 'u']] as const;
-  return (
-    <View style={{ width: 520, height: 250 }}>
-      <Svg width={520} height={250} viewBox="0 0 520 250">
-        <Defs>
-          <SG id="pscr" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#0E2C78" /><Stop offset="1" stopColor="#071A4A" /></SG>
-          <SG id="pcoin" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#4FA3FF" /><Stop offset="1" stopColor="#1B54E6" /></SG>
-        </Defs>
-        {bars.map(([a, b, c], i) => <Rect key={i} x={10 + i * 28} y={235 - b} width={9} height={b - a + 30} rx={2} fill={c === 'u' ? '#34E3B5' : '#FF7390'} opacity={0.3} />)}
-        <Path d="M96 40 L340 28 L378 188 L60 206 Z" fill="url(#pscr)" stroke="#3E6FD8" strokeWidth={4} strokeLinejoin="round" />
-        <Path d="M84 206 L392 190 L408 214 L60 232 Z" fill="#2B4FA8" />
-        {[[130, 140, 'u'], [150, 124, 'u'], [170, 130, 'd'], [190, 104, 'u'], [210, 112, 'd'], [230, 86, 'u'], [250, 92, 'd'], [270, 66, 'u'], [290, 56, 'u']].map(([x, y, c], i) => (
-          <React.Fragment key={i}><Line x1={x as number} y1={(y as number) - 14} x2={x as number} y2={(y as number) + 24} stroke={c === 'u' ? '#34E3B5' : '#FF5C7A'} strokeWidth={1.6} /><Rect x={(x as number) - 4} y={y as number} width={8} height={16} fill={c === 'u' ? '#34E3B5' : '#FF5C7A'} /></React.Fragment>
-        ))}
-        <Circle cx={92} cy={196} r={36} fill="url(#pcoin)" stroke="#9CC9FF" strokeWidth={4} />
-        <Path d="M74 206 L86 194 L96 202 L112 184" stroke="#FFFFFF" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      </Svg>
-      {([['trending-up', 'Win Rate', `${f(rate, 0)}%`, 0], ['analytics', 'Profit Factor', pf, 82]] as const).map(([ic, k, v, y], i) => (
-        <View key={k} style={{ position: 'absolute', right: i ? 0 : 30, top: i ? 96 : 0, width: 176, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, backgroundColor: '#3A6FE0AA', borderWidth: 1, borderColor: '#FFFFFF40' }}>
-          <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: '#FFFFFF26', alignItems: 'center', justifyContent: 'center' }}><Icon name={ic} size={21} color="#FFFFFF" /></View>
-          <View><Text style={{ color: '#DCE8FF', fontSize: 12.5 }}>{k}</Text><Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '800' }}>{v}</Text></View>
-        </View>
-      ))}
-    </View>
-  );
-}
 
 function Select({ value, options, onChange }: { value: string; options: [string, string][]; onChange: (k: string) => void }) {
   const P = usePal();
@@ -79,7 +52,7 @@ function Head({ icon, title, sub, color }: { icon: string; title: string; sub: s
   const P = usePal();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 13 }}>
-      <Chip icon={icon} color={color ?? '#7B4DF0'} size={38} />
+      <Chip icon={icon} color={color ?? '#3B5B93'} size={38} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={{ color: P.head, fontSize: 17, fontWeight: '800', letterSpacing: -0.2 }}>{title}</Text>
         <Text style={{ color: P.body, fontSize: 12.5, marginTop: 2 }}>{sub}</Text>
@@ -226,7 +199,7 @@ export default function PerformanceHome() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.bg }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 18, gap: 20 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, gap: 20 }}>
         <Notices flush />
 
         {/* hero: same banner as every other page */}
@@ -244,10 +217,10 @@ export default function PerformanceHome() {
 
         {/* kpis */}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          {kpi('cube', '#F0527A', 'Profit Factor', pfTxt, 'Total profit / Total loss', pf >= 1 ? th.buy : n ? th.sell : th.sell)}
-          {kpi('pulse', '#8B5CF6', 'Expectancy', f(expct), 'Avg. win/loss per trade', expct > 0 ? th.buy : expct < 0 ? th.sell : P.head)}
+          {kpi('cube', '#3B5B93', 'Profit Factor', pfTxt, 'Total profit / Total loss', pf >= 1 ? th.buy : n ? th.sell : th.sell)}
+          {kpi('pulse', '#3B5B93', 'Expectancy', f(expct), 'Avg. win/loss per trade', expct > 0 ? th.buy : expct < 0 ? th.sell : P.head)}
           {kpi('trophy', '#1FB58F', 'Win Rate', `${f(rate, 0)}%`, 'Winning trades percentage', P.head)}
-          {kpi('swap-horizontal', '#2F6BFF', 'Total Trades', String(n), 'Total executed trades')}
+          {kpi('swap-horizontal', '#3B5B93', 'Total Trades', String(n), 'Total executed trades')}
         </View>
 
         {/* overview + statistics */}
@@ -261,7 +234,7 @@ export default function PerformanceHome() {
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 {CHART_R.map(([k]) => {
                   const on = cr === k;
-                  return <Pressable key={k} onPress={() => setCr(k)} style={((s: any) => ({ minWidth: 40, height: 30, paddingHorizontal: 11, borderRadius: 15, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? '#1F6BFF' : s.hovered ? P.soft : P.soft, borderWidth: on ? 0 : 1, borderColor: P.blue + '33' })) as any}><Text style={{ color: on ? '#FFFFFF' : P.blue, fontSize: 12.5, fontWeight: '800' }}>{k}</Text></Pressable>;
+                  return <Pressable key={k} onPress={() => setCr(k)} style={((s: any) => ({ minWidth: 40, height: 30, paddingHorizontal: 11, borderRadius: 15, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? '#3B5B93' : s.hovered ? P.soft : P.soft, borderWidth: on ? 0 : 1, borderColor: P.blue + '33' })) as any}><Text style={{ color: on ? '#FFFFFF' : P.blue, fontSize: 12.5, fontWeight: '800' }}>{k}</Text></Pressable>;
                 })}
               </View>
             </View>
@@ -274,13 +247,13 @@ export default function PerformanceHome() {
           <Panel style={{ flex: wide ? 1 : undefined, padding: 22, gap: 8, minWidth: 0 }}>
             <Head icon="bar-chart" title="Trade Statistics" sub="Detailed breakdown of your trading performance." />
             <View style={{ marginTop: 6 }}>
-              {row('stats-chart', '#8B5CF6', 'Total Trades', String(n), P.head)}
+              {row('stats-chart', '#3B5B93', 'Total Trades', String(n), P.head)}
               {row('bar-chart', '#1FB58F', 'Average Win', avgW ? `+${f(avgW)}` : '0', avgW ? th.buy : P.head)}
-              {row('trending-down', '#F0527A', 'Average Loss', avgL ? `-${f(avgL)}` : '0', avgL ? th.sell : P.head)}
+              {row('trending-down', '#3B5B93', 'Average Loss', avgL ? `-${f(avgL)}` : '0', avgL ? th.sell : P.head)}
               {row('flame', '#F5A623', 'Best Win Streak', String(best), P.head)}
-              {row('thunderstorm', '#8B5CF6', 'Worst Loss Streak', String(Math.abs(worst)), P.head)}
-              {row('trophy', '#2F6BFF', 'Best Trade', bestT === null ? '-' : sg(bestT), bestT && bestT > 0 ? th.buy : P.head)}
-              {row('warning', '#F0527A', 'Worst Trade', worstT === null ? '-' : sg(worstT), worstT && worstT < 0 ? th.sell : P.head, true)}
+              {row('thunderstorm', '#3B5B93', 'Worst Loss Streak', String(Math.abs(worst)), P.head)}
+              {row('trophy', '#3B5B93', 'Best Trade', bestT === null ? '-' : sg(bestT), bestT && bestT > 0 ? th.buy : P.head)}
+              {row('warning', '#3B5B93', 'Worst Trade', worstT === null ? '-' : sg(worstT), worstT && worstT < 0 ? th.sell : P.head, true)}
             </View>
           </Panel>
         </View>
@@ -294,7 +267,7 @@ export default function PerformanceHome() {
               <View style={{ flex: 1, minWidth: 200 }}>
                 {pnlRow(th.buy, 'Total Profit', f(gw))}
                 {pnlRow(th.sell, 'Total Loss', f(gl))}
-                {pnlRow('#2F6BFF', 'Net P&L', sg(net))}
+                {pnlRow('#3B5B93', 'Net P&L', sg(net))}
               </View>
             </View>
             {base === 0 && n > 0 && <Text style={{ color: P.body, fontSize: 12 }}>Set your account balance in the Journal risk settings to see the return in %.</Text>}
@@ -310,7 +283,7 @@ export default function PerformanceHome() {
         </View>
 
         {/* call to action */}
-        <LinearGradient colors={['#2F4FE0', '#5B4BEA', '#8A5CF0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ borderRadius: 22, marginBottom: 28 }}>
+        <LinearGradient colors={['#0F1E3D', '#3B5B93', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ borderRadius: 22, marginBottom: 28 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18, flexWrap: 'wrap', paddingHorizontal: 28, paddingVertical: 22 }}>
             <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#FFFFFF26', alignItems: 'center', justifyContent: 'center' }}><Icon name="locate" size={28} color="#FFFFFF" /></View>
             <View style={{ flex: 1, minWidth: 240 }}>
@@ -318,7 +291,7 @@ export default function PerformanceHome() {
               <Text style={{ color: '#E3ECFF', fontSize: 13.5, marginTop: 3 }}>Use your trading journal, analyze your trades, and follow your plan to achieve better results.</Text>
             </View>
             <Pressable accessibilityRole="button" onPress={() => go(3)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 46, paddingHorizontal: 22, borderRadius: 10, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: s.hovered ? 0.92 : 1 })) as any}>
-              <Text style={{ color: '#2F4FE0', fontSize: 14, fontWeight: '700' }}>View Journal</Text><Icon name="arrow-forward" size={16} color="#2F4FE0" />
+              <Text style={{ color: '#0F1E3D', fontSize: 14, fontWeight: '700' }}>View Journal</Text><Icon name="arrow-forward" size={16} color="#2F4FE0" />
             </Pressable>
           </View>
         </LinearGradient>

@@ -104,5 +104,3 @@ export function stepPosition(p: Position, price: number): { pos: Position; close
   return { pos: p };
 }
 
-// "BUY 0.25, +12.40 USD" like the label MT5 draws on the entry line
-export const posLabel = (p: Position, pnl: number, fmtLots: (n: number) => string) => `${p.side.toUpperCase()} ${fmtLots(p.lots)}, ${pnl >= 0 ? '+' : '-'}${Math.abs(pnl).toFixed(2)} USD`;

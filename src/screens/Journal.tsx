@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import { shareText } from '../dialog';
 import Modal from '../Modal';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from '../FlatGradient';
 import { useApp, Trade } from '../store';
 import { Screen, Card, Field, Btn, ActionBtn, Segment, Dim, Body, Icon, Badge, SectionTitle, confirmAction } from '../ui';
 import EquityCurve from '../Equity';
@@ -399,7 +399,7 @@ function Empty({ icon, title, text, children }: { icon: string; title: string; t
 
 // ---------------------------------------------------------------- screen
 export default function Journal() {
-  const { th, t, tab, journal, signals, desk, setDesk, takeSignal, cancelSignal, skipSetup, closeSignal, breakEven, clearSignals, updateTrade, removeTrade, addTrade, toast, setPrefill, setTab, setHistOpen } = useApp();
+  const { th, t, tab, journal, signals, desk, setDesk, takeSignal, skipSetup, closeSignal, breakEven, clearSignals, updateTrade, removeTrade, toast, setPrefill, setTab, setHistOpen } = useApp();
   const active = tab === 3;
   const wide = useLayout().mode === 'desktop'; // website: the Trading Journal page (src/JournalHome.web.tsx)
   useFeed(active);

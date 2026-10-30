@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Animated, Easing } from 'react-native';
+import { View, Animated, Easing, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider, useApp } from './src/store';
@@ -40,7 +40,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 SplashScreen.preventAutoHideAsync().catch(() => {}); // keep the phone's splash up until our animated one is drawn
 
-const SPLASH_MS = 3600; // minimum time the start screen stays up so the whole intro plays (it leaves as soon as the app is ready after that)
+const SPLASH_MS = Platform.OS === 'web' ? 1400 : 3600; // minimum time the start screen stays up so the whole intro plays (it leaves as soon as the app is ready after that)
 // ICT Lab, Top-Down and Scanner moved into the Analysis tab. Their old slots keep the tab numbers stable and forward to the right method.
 const Go = (method: string, slot: number) => function Go() {
   const { tab, setTab, setAmethod } = useApp();

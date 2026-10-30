@@ -51,9 +51,9 @@ The site must be served over **https** (the app's PIN hashing and the licence de
 
 ## Real volume for VSA (app, website and server)
 
-VSA reads real traded volume, not spread. Crypto: Binance spot volume. Forex, gold, silver, DXY: volume of the matching CME / COMEX / ICE futures contract (spot forex has no central exchange). Deriv synthetic indices have no market volume, so VSA reads spread there and says so. The VSA screen names the volume source. Details: `src/realvol.ts` and CHANGES.md.
+VSA reads real traded volume, not spread. Crypto: Binance spot volume. Forex, gold, silver, DXY: volume of the matching CME / COMEX / ICE futures contract (spot forex has no central exchange). Deriv synthetic indices have no market volume, so VSA reads spread there and says so. The VSA screen names the volume source. Details: `src/volume.ts`, `src/volumeFeed.ts` and CHANGES.md.
 
-**Copy to your server and restart it:** `server/alerts.js`, `server/proxy.js`, `server/build-analysis.js` and the whole `server/analysis/` folder (new: `realvol.js`, `net.js`; changed: `fallback.js`, `vsa.js`). Without it the website and app use real volume, but the server's background alerts still score VSA from spread.
+**Copy to your server and restart it:** `server/alerts.js`, `server/proxy.js`, `server/build-analysis.js` and the whole `server/analysis/` folder (`net.js`, `fallback.js`, `vsa.js`). Without it the website and app use real volume, but the server's background alerts still score VSA from spread.
 
 ## What is different in the browser
 
@@ -89,3 +89,11 @@ Server: `server/server.js` needs the CORS headers and `await proxy(req, res)` li
 
 - The website calls `/srv/...` and `/mailer` on its own address. `vercel.json` (Vercel) and `netlify.toml` (Netlify) pass them to the server (`https://mockup-borrowing-overprice.ngrok-free.dev`, the SERVER constant in `src/license.ts`) and to the Netlify email function. Keep the three in step if the server address changes.
 - The server decides who may be signed in: one phone + one computer per email (see CHANGES.md). Deploy the new `server/` folder for it to work.
+
+
+## Look and feel (calm and classy)
+- One page width everywhere: navbar, heroes, sections and footer are all 1280 px wide with 32 px sides (`PAGE_MAX` in `src/win.web.ts` is that width minus the page padding).
+- One hero for every page: `HeroBanner` in `src/ui.tsx`. Same width and the same height (`HERO_H`), flat deep navy (`HERO_BG`) with a brass hairline (`HERO_BRASS`). The Home page uses it too, with its live chart in a section below.
+- Flat everywhere: no gradients, glows, orbs or gloss. `src/FlatGradient.tsx` stands in for `LinearGradient` (it draws one flat colour), so any screen that still says `<LinearGradient>` stays flat.
+- Icons are one quiet navy tint (`IconTile`, `MethodIcon`), not a rainbow. The only strong colours left are the meaningful ones: buy green, sell red, and amber warnings.
+- Navbar: `TopNav` in `src/Desktop.web.tsx` (72 px, hairline, brass underline on the open page).

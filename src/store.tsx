@@ -419,7 +419,6 @@ export function Provider({ children }: { children: React.ReactNode }) {
   const markNotesRead = () => { if (notesRef.current.some((x) => !x.read)) saveNotes(notesRef.current.map((x) => (x.read ? x : { ...x, read: true }))); };
   const clearNotes = () => saveNotes([]);
   const removeNote = (id: string) => saveNotes(notesRef.current.filter((x) => x.id !== id));
-  const equityNow = () => deskRef.current.balance + jrRef.current.reduce((a, j) => a + j.pnl, 0);
 
   // Analysis screens call this with their best setup. Duplicates (same pair / method / side, nearly the same entry) only refresh the old one.
   const saveSkip = (l: Skipped[]) => { const k = pruneSkipped(l); skipRef.current = k; _skip(k); AsyncStorage.setItem('skipped', JSON.stringify(k)).catch(() => {}); };

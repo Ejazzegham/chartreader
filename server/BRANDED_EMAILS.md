@@ -23,17 +23,14 @@ PowerShell:
 ## Try it
 Forgot password in the app > the email arrives in the new design > the button opens your email page > new password > "Open the app".
 
-## The six templates (`server/emails/`)
-Same layout and the same `{{ .ConfirmationURL }}` style placeholders as your FitLife Pro ones. Edit the HTML freely (keep the placeholders). Placeholders: `.ConfirmationURL` `.Email` `.NewEmail` `.Token` `.SiteURL`.
+## The three templates (`server/emails/`)
+Same `{{ .ConfirmationURL }}` style placeholders as Firebase / Supabase templates. Edit the HTML freely (keep the placeholders). Placeholders: `.ConfirmationURL` `.Email` `.NewEmail` `.Token` `.SiteURL`.
 
 | File | Used by the app now? |
 |---|---|
 | `reset-password.html` | Yes: Forgot password |
 | `confirm-signup.html` | Yes: after sign up, and "Send again" in Settings |
 | `change-email.html` | Yes: Edit profile > Email (goes to the NEW address) |
-| `invite.html` | Not wired. "Invite friends" in Settings opens the phone's share sheet with the download link (no email is sent, so nobody can use your server to spam). |
-| `magic-link.html` | Not wired. The app has no "log in by email link" yet. |
-| `reauthentication.html` | Not wired. The app re-checks a password (or Google) instead of emailing a code. |
 
 ## Limits built in
 Reset: 3 per mailbox per hour, 20 per IP per hour. Verify / change email: 6 per account per hour. The reset answer is always the same, so nobody can find out which emails have an account. Changing an email needs a login from the last 5 minutes (the app re-asks the password first).

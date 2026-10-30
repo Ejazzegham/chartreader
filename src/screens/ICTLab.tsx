@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import { useWindowDimensions } from '../win';
 import { useApp } from '../store';
 import { Screen, Card, Dim, Body, Btn, Row, Badge, SectionTitle, Icon, TimeframeBar } from '../ui';
-import { TpLadder, ScoreRing, Checklist, Tile, SetupCard } from '../ProUI';
+import { TpLadder, Checklist, Tile, SetupCard } from '../ProUI';
 import NewsBanner from '../NewsBanner';
 import { analyzeAll, methodsContext } from '../refine';
 import MethodChart, { Method } from '../MethodChart';
@@ -76,8 +76,6 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
   const term = q.trim().toLowerCase();
   const found = term ? SYMBOLS.filter((x) => !isBad(x.id) && (x.name + x.id).toLowerCase().includes(term)).slice(0, 6) : [];
   const chips = [...new Set([...db.favs, 'frxEURUSD', 'frxXAUUSD', 'cryBTCUSD', 'R_75'])].slice(0, 12);
-  const sc = s ? (s.score >= 70 ? th.buy : s.score >= 50 ? th.gold : th.sell) : th.dim;
-  const bc = s ? (s.side === 'buy' ? th.buy : th.sell) : th.gold;
 
   // the setup of the view that is open goes to the Journal by itself
   const GR: Record<string, number> = { 'A+': 90, A: 80, B: 65, C: 50 };

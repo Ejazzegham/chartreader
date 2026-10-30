@@ -13,7 +13,7 @@ import ChartWeb from './ChartWeb';
 import TradingViewPanel from './TradingViewPanel';
 import { tvSymbol, tvHtml, matchSymbol, TV_INTERVAL, DERIV_CHARTS, TV_STUDIES } from './tv';
 import { manualTarget, MANUAL_TAB } from './manualTarget';
-import { Sym, Candle, SYMBOLS, symOf, isBad, TFS, candleLeft, fmtLeft, useFeed, watchCandles, setWatch, chg, toggleFav, addAlert, removeAlert, SESSIONS, sessionOpen, fxWeekendClosed, spreadOf } from './markets';
+import { Sym, Candle, SYMBOLS, symOf, isBad, candleLeft, fmtLeft, useFeed, watchCandles, setWatch, chg, toggleFav, addAlert, removeAlert, SESSIONS, sessionOpen, fxWeekendClosed, spreadOf } from './markets';
 
 export function Sessions() {
   const { th, t } = useApp();
@@ -124,15 +124,6 @@ export function CandleChart({ data: all, width: fullW, dec, height = 270, ema20:
   );
 }
 
-const Chip = ({ label, on, color, onPress }: { label: string; on: boolean; color: string; onPress: () => void }) => {
-  const { th } = useApp();
-  return (
-    <Pressable onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: on ? color : th.line, backgroundColor: on ? color + '22' : 'transparent' }}>
-      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-      <Text style={{ color: on ? th.text : th.dim, fontSize: 12, fontWeight: '600' }}>{label}</Text>
-    </Pressable>
-  );
-};
 
 const TINTS = ['#6366F1', '#F59E0B', '#10B981', '#EC4899', '#06B6D4', '#8B5CF6', '#F97316', '#14B8A6'];
 const tint = (s: string) => TINTS[[...s].reduce((a, ch) => a + ch.charCodeAt(0), 0) % TINTS.length];
@@ -224,7 +215,7 @@ function PairPicker({ current, onPick, onClose }: { current: string; onPick: (s:
 
 export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose: () => void }) {
   const { th, t, rtl } = useApp();
-  const { width, height } = useWindowDimensions();
+  const { height } = useWindowDimensions();
   // `picked` is the market that was tapped in the list. `ov` is the pair the user switched to afterwards (picker, or the chart's own
   // symbol box). The header, price, star, candles and alerts all use `sym`, the pair that is active right now.
   const [ov, setOv] = useState<{ from: string; sym: Sym } | null>(null);

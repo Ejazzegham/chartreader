@@ -1,3 +1,9 @@
+# Clean-up and calm redesign
+
+- Removed dead files: `server/analysis/realvol.js` (nothing used it), the three unwired email templates (`invite`, `magic-link`, `reauthentication`) with their entries and test lines, `src/LiveCandles.tsx`, a stray `__pycache__`, and the unused `expo-linear-gradient` dependency.
+- Removed dead code: 6 unused `HeroArt` copies, the old sidebar `Rail`, `ZoomBar`, `VScroll`, `getDash`, `listFor`, `TF_BUTTONS`, `posLabel`, `easeInOut`, `FS`, `Divider`, plus 70+ unused imports and variables.
+- New look: one navbar style, one hero (same width and height on every page), one page width, flat surfaces, quiet icons, a calm start screen and landing panel. The red scrolling Boom & Crash ticker is now a plain reminder line.
+
 # Website v2.24: Crypto Exchanges page
 
 - **New page "Crypto Exchanges"** in the Tools menu (tab 19, added last). Website: `src/CryptoHome.web.tsx`. Phone: `src/screens/CryptoExchanges.tsx`. A switch at the top shows **30 centralized exchanges** (Binance first) or **10 decentralized exchanges** (Uniswap first). Each row has the name, website, a short "Known for" line and a **Visit website** link (new tab); search also looks inside the "Known for" text; "Listed order" / "A to Z".

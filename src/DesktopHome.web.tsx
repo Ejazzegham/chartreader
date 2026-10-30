@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, Linking } from 'react-native';
-import Svg, { Path, Rect, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, Pressable, ScrollView } from 'react-native';
+import Svg, { Path, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from './store';
-import { Icon } from './ui';
-import { BAHU_URL, LogoMark } from './Brand';
+import { Icon, HeroBanner, HERO_BG } from './ui';
 import { Coin, CandleChart } from './MarketWidgets';
 import { useFeed, chg, symOf, SYMBOLS, watchCandles, toggleFav, setWatch, Candle } from './markets';
 import { analyzeAll } from './refine';
@@ -26,11 +24,11 @@ export function usePal() {
   const d = th.dark;
   return {
     th, dark: d,
-    bg: d ? th.bg : '#F5F8FE', section: d ? th.bg : '#FFFFFF', alt: d ? th.panel2 : '#F5F8FE',
-    card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E5EBF5',
-    head: d ? th.text : '#0B1B3F', body: d ? th.dim : '#5A6B89',
-    blue: th.accent, soft: th.accent + (d ? '26' : '14'),
-    shadow: d ? '#000000' : '#1B3A7A',
+    bg: d ? th.bg : '#F6F7F9', section: d ? th.bg : '#FFFFFF', alt: d ? th.panel2 : '#F6F7F9',
+    card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E2E5EB',
+    head: d ? th.text : '#0F1B33', body: d ? th.dim : '#5B6577',
+    blue: th.accent, brass: th.accent2, soft: th.accent + (d ? '26' : '12'),
+    shadow: d ? '#000000' : '#0F1B33',
   };
 }
 
@@ -54,18 +52,18 @@ type Setup = ReturnType<typeof useSetup>;
 // ---------- small building blocks
 export function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
   const P = usePal();
-  return <View style={[{ backgroundColor: P.card, borderRadius: 14, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: P.card, borderRadius: 12, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } }, style]}>{children}</View>;
 }
 export const Pill = ({ text, tone }: { text: string; tone?: string }) => {
-  const P = usePal(), c = tone ?? P.blue;
-  return <View style={{ alignSelf: 'flex-start', paddingHorizontal: 12, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: tone ? c + '1F' : P.soft }}><Text style={{ color: c, fontSize: 12.5, fontWeight: '600' }}>{text}</Text></View>;
+  const P = usePal(), c = tone ?? P.brass;
+  return <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 10 }}><View style={{ width: 22, height: 2, backgroundColor: c }} /><Text style={{ color: c, fontSize: 11, fontWeight: '700', letterSpacing: 1.6 }}>{text.toUpperCase()}</Text></View>;
 };
 export function Btn({ label, onPress, ghost, arrow = true }: { label: string; onPress: () => void; ghost?: boolean; arrow?: boolean }) {
   const P = usePal();
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 26, borderRadius: 10, cursor: 'pointer', backgroundColor: ghost ? (s.hovered ? P.soft : P.dark ? 'transparent' : '#FFFFFF80') : P.blue, borderWidth: ghost ? 1.5 : 0, borderColor: P.blue + '55', opacity: !ghost && s.hovered ? 0.92 : 1, shadowColor: P.blue, shadowOpacity: ghost ? 0 : 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } })) as any}>
-      <Text style={{ color: ghost ? P.blue : P.th.onAccent, fontSize: 15, fontWeight: '600' }}>{label}</Text>
-      {arrow && <Icon name="arrow-forward" size={16} color={ghost ? P.blue : P.th.onAccent} />}
+    <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 44, paddingHorizontal: 22, borderRadius: 8, cursor: 'pointer', borderWidth: 1, borderColor: ghost ? P.border : P.blue, backgroundColor: ghost ? (s.hovered ? P.alt : 'transparent') : P.blue, opacity: !ghost && s.hovered ? 0.92 : 1 })) as any}>
+      <Text style={{ color: ghost ? P.head : P.th.onAccent, fontSize: 14, fontWeight: '600' }}>{label}</Text>
+      {arrow && <Icon name="arrow-forward" size={15} color={ghost ? P.head : P.th.onAccent} />}
     </Pressable>
   );
 }
@@ -174,58 +172,41 @@ function Hero({ w, go }: { w: number; go: (t: number) => void }) {
   const s = useSetup(d.sym, d.tf, 'dash');
   const two = w >= 1020, [cw, setCw] = useState(0);
   const c = chg(s.sym.id);
-  const feat = (icon: string, a: string, b: string) => (
-    <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={18} color={P.blue} /></View>
-      <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 16 }}>{a}{'\n'}{b}</Text>
-    </View>
+  const cta = (label: string, onPress: () => void, solid?: boolean) => (
+    <Pressable key={label} accessibilityRole="button" onPress={onPress} style={((st: any) => ({ height: 42, paddingHorizontal: 20, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: solid ? '#FFFFFF' : 'transparent', borderWidth: 1, borderColor: solid ? '#FFFFFF' : '#FFFFFF4D', opacity: st.hovered ? 0.9 : 1 })) as any}>
+      <Text style={{ color: solid ? HERO_BG : '#FFFFFF', fontSize: 13.5, fontWeight: '600' }}>{label}</Text>
+    </Pressable>
   );
   return (
-    <View style={{ overflow: 'hidden' }}>
-      <LinearGradient colors={P.dark ? [th.bg, th.bg] : ['#EAF1FF', '#F6F9FF', '#FFFFFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-      <View pointerEvents="none" style={{ position: 'absolute', right: -80, top: 60, width: 640, height: 400, borderRadius: 320, backgroundColor: P.blue + (P.dark ? '14' : '12') }} />
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 52, paddingBottom: 60, flexDirection: two ? 'row' : 'column', alignItems: two ? 'center' : 'stretch', gap: 40 }}>
-        <View style={{ flex: two ? 0.82 : undefined, gap: 22, minWidth: 0 }}>
-          <Pill text="Smarter Analysis. Better Decisions." />
-          <Text style={{ color: P.head, fontSize: two ? 54 : 40, lineHeight: two ? 58 : 44, fontWeight: '800', letterSpacing: -1.6 }}>Professional Trading{'\n'}<Text style={{ color: P.blue }}>Analysis Platform</Text></Text>
-          <Text style={{ color: P.body, fontSize: 17.5, lineHeight: 27, maxWidth: 470 }}>Get real-time market insights, powerful analysis tools and personalized trading plans — all in one place.</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 4 }}>
-            <Btn label="Go to Analysis" onPress={() => go(1)} />
-            <Btn label="Explore Markets" ghost arrow={false} onPress={() => go(2)} />
-          </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 18, marginTop: 14 }}>
-            {feat('flash', 'Real-time', 'Insights')}
-            <View style={{ width: 1, height: 34, backgroundColor: P.border }} />
-            {feat('shield-checkmark', 'Risk Management', 'Tools')}
-            <View style={{ width: 1, height: 34, backgroundColor: P.border }} />
-            {feat('locate', 'Detailed', 'Trade Plans')}
-          </View>
-        </View>
-
-        <View style={{ flex: two ? 1.18 : undefined, minWidth: 0, flexDirection: w >= 700 ? 'row' : 'column', gap: 16, alignItems: 'flex-start' }}>
-          <Panel style={{ flex: 1, minWidth: 0, width: w >= 700 ? undefined : '100%', padding: 16, gap: 10 }}>
+    <View style={{ backgroundColor: P.bg }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingTop: 24, paddingBottom: 40, gap: 24 }}>
+        <HeroBanner tag="Smarter analysis. Better decisions." title="Trading Analysis Platform" subtitle="Real-time market insights, powerful analysis tools and personalized trading plans, all in one place."
+          right={<>{cta('Go to Analysis', () => go(1), true)}{cta('Explore Markets', () => go(2))}</>}
+          features={[{ icon: 'flash-outline', title: 'Real-time insights', sub: 'Live prices and signals' }, { icon: 'shield-checkmark-outline', title: 'Risk management', sub: 'Position size and limits' }, { icon: 'locate-outline', title: 'Detailed trade plans', sub: 'Entry, stop loss, 3 targets' }]} />
+        <View style={{ flexDirection: two ? 'row' : 'column', gap: 20, alignItems: 'flex-start' }}>
+          <Panel style={{ flex: 1, minWidth: 0, width: two ? undefined : '100%', padding: 16, gap: 10 }}>
             <ChartHeader s={s} sub={d.tf === '60' ? '1 minute' : TFB.find((x) => x[0] === d.tf)?.[1]} />
             <TfTabs tf={d.tf} set={(k) => setDash({ tf: k })} />
-            <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ borderRadius: 10, overflow: 'hidden' }}>
-              <ChartBody s={s} tf={d.tf} width={cw} height={250} />
+            <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ borderRadius: 8, overflow: 'hidden' }}>
+              <ChartBody s={s} tf={d.tf} width={cw} height={280} />
             </View>
-            <Pressable onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
-              <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={17} color={P.blue} /></View>
+            <Pressable onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
+              <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={17} color={P.blue} /></View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: P.head, fontSize: 13, fontWeight: '700' }}>Analysis Summary</Text>
+                <Text style={{ color: P.head, fontSize: 13, fontWeight: '600' }}>Analysis Summary</Text>
                 <Text style={{ color: P.body, fontSize: 11.5 }} numberOfLines={1}>{s.structure}</Text>
               </View>
               <Icon name="chevron-forward" size={16} color={P.body} />
             </Pressable>
           </Panel>
-          <View style={{ width: w >= 700 ? 210 : '100%', gap: 14 }}>
+          <View style={{ width: two ? 280 : '100%', gap: 16 }}>
             <Panel style={{ padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Coin s={s.sym} size={34} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={{ color: P.head, fontSize: 12.5, fontWeight: '700' }} numberOfLines={1}>{s.sym.name}</Text>
-                <Text style={{ color: c >= 0 ? th.buy : th.sell, fontSize: 11, fontWeight: '700' }}>{`${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%`}</Text>
+                <Text style={{ color: P.head, fontSize: 12.5, fontWeight: '600' }} numberOfLines={1}>{s.sym.name}</Text>
+                <Text style={{ color: c >= 0 ? th.buy : th.sell, fontSize: 11, fontWeight: '600' }}>{`${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%`}</Text>
               </View>
-              <Text style={{ color: P.head, fontSize: 15, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{s.quote ? s.quote.price.toFixed(s.dec) : '—'}</Text>
+              <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{s.quote ? s.quote.price.toFixed(s.dec) : '—'}</Text>
             </Panel>
             <SentimentCard s={s} />
             <LevelsCard s={s} />
@@ -250,22 +231,22 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
   const cdlSide = cdl?.side === 'buy' ? { l: 'Buy', c: th.buy } : cdl?.side === 'sell' ? { l: 'Sell', c: th.sell } : { l: 'Neutral', c: th.gold };
   const td = s.land?.ict.trend === 'bullish' ? { l: 'Bullish', c: th.buy } : s.land?.ict.trend === 'bearish' ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
   const cardBase = (onPress: () => void, children: React.ReactNode, key: string) => (
-    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 14, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
+    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 12, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
   );
-  const head = (icon: string, color: string, name: string) => (
+  const head = (icon: string, name: string) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color="#FFFFFF" /></View>
+      <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color={P.blue} /></View>
       <Text style={{ color: P.head, fontSize: 15, fontWeight: '700' }}>{name}</Text>
     </View>
   );
-  const meta: Record<string, [string, string, string]> = { forex: ['cash', '#2F6BFF', 'Forex'], crypto: ['logo-bitcoin', '#16B97A', 'Crypto'], metals: ['layers', '#F5A524', 'Metals'], deriv: ['flash', '#7C4DFF', 'Deriv'] };
+  const meta: Record<string, [string, string]> = { forex: ['cash', 'Forex'], crypto: ['logo-bitcoin', 'Crypto'], metals: ['layers', 'Metals'], deriv: ['flash', 'Deriv'] };
   return (
     <View style={{ backgroundColor: P.section }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 44, gap: 24 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 16 }}>
           <View style={{ flex: 1, gap: 8 }}>
             <Pill text="Live Market Data" />
-            <Text style={{ color: P.head, fontSize: 36, fontWeight: '800', letterSpacing: -0.8 }}>Market Overview</Text>
+            <Text style={{ color: P.head, fontSize: 30, fontWeight: '700', letterSpacing: -0.8 }}>Market Overview</Text>
             <Text style={{ color: P.body, fontSize: 15, lineHeight: 22, maxWidth: 460 }}>Explore major markets at a glance. Track trends, compare assets and stay ahead with real-time data.</Text>
           </View>
           <Pressable onPress={() => go(2)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, cursor: 'pointer', paddingBottom: 6 } as any}>
@@ -274,13 +255,13 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
           {groups.map((g) => {
-            const [icon, color, name] = meta[g.g], up = g.avg >= 0, c = up ? th.buy : th.sell;
+            const [icon, name] = meta[g.g], up = g.avg >= 0, c = up ? th.buy : th.sell;
             const forex = g.g === 'forex' && !!eur, ec = chg('frxEURUSD');
             const big = forex ? eur.price.toFixed(eur.dec) : g.n ? `${g.green}/${g.n}` : '—';
             const pct = forex ? ec : g.avg, pc = pct >= 0 ? th.buy : th.sell;
             return cardBase(() => go(2, g.g), (
               <>
-                {head(icon, color, name)}
+                {head(icon, name)}
                 <Text style={{ color: P.head, fontSize: 25, fontWeight: '800', fontVariant: ['tabular-nums'], marginTop: 4 }}>{big}</Text>
                 <Text style={{ color: pc, fontSize: 13.5, fontWeight: '700' }}>{`${pct >= 0 ? '+' : '−'}${Math.abs(pct).toFixed(2)}%`}</Text>
                 <Spark pts={forex ? eur.pts : g.pts} color={forex ? pc : c} w={140} />
@@ -290,7 +271,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
           {cardBase(() => go(1, 'candle'), (
             <>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#F0524F', alignItems: 'center', justifyContent: 'center' }}><Icon name="bar-chart" size={19} color="#FFFFFF" /></View>
+                <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="bar-chart" size={19} color={P.blue} /></View>
                 <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Candles</Text>
                 <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
               </View>
@@ -300,7 +281,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
           {cardBase(() => go(1, 'topdown'), (
             <>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#F58A24', alignItems: 'center', justifyContent: 'center' }}><Icon name="layers" size={19} color="#FFFFFF" /></View>
+                <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="layers" size={19} color={P.blue} /></View>
                 <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Top-Down</Text>
                 <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
               </View>
@@ -327,7 +308,7 @@ function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: three ? 'center' : 'stretch', gap: 30 }}>
         <View style={{ width: three ? 300 : '100%', gap: 16 }}>
           <Pill text="Powerful Analysis Tools" />
-          <Text style={{ color: P.head, fontSize: 38, lineHeight: 42, fontWeight: '800', letterSpacing: -0.9 }}>Multi-Timeframe{'\n'}Analysis</Text>
+          <Text style={{ color: P.head, fontSize: 38, lineHeight: 38, fontWeight: '700', letterSpacing: -0.9 }}>Multi-Timeframe{'\n'}Analysis</Text>
           <Text style={{ color: P.body, fontSize: 15, lineHeight: 23 }}>Analyze multiple timeframes, spot key levels, track trade ideas — all in real time.</Text>
           <View style={{ flexDirection: 'row' }}><Btn label="Explore Analysis" onPress={() => go(1)} /></View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 12, marginTop: 14 }}>
@@ -351,13 +332,13 @@ function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
   );
 }
 
-const WHY: [string, string, string, string][] = [
-  ['stats-chart', '#2F6BFF', 'Advanced Analysis', 'Multi-timeframe charts, smart tools and detailed market analysis.'],
-  ['globe', '#16B1A5', 'Market Coverage', 'Forex, Crypto, Metals, Indices, Commodities and more.'],
-  ['shield-checkmark', '#16B97A', 'Risk Management', 'Plan your trades with built-in risk & TP tools.'],
-  ['book', '#7C4DFF', 'Trading Journal', 'Track your progress and improve with journaling tools.'],
-  ['flash', '#2F9BFF', 'Real-time Data', 'Up-to-date market data and instant alerts.'],
-  ['person', '#9B5CF6', 'Easy to Use', 'Clean, modern interface designed for traders.'],
+const WHY: [string, string, string][] = [
+  ['stats-chart', 'Advanced Analysis', 'Multi-timeframe charts, smart tools and detailed market analysis.'],
+  ['globe', 'Market Coverage', 'Forex, Crypto, Metals, Indices, Commodities and more.'],
+  ['shield-checkmark', 'Risk Management', 'Plan your trades with built-in risk & TP tools.'],
+  ['book', 'Trading Journal', 'Track your progress and improve with journaling tools.'],
+  ['flash', 'Real-time Data', 'Up-to-date market data and instant alerts.'],
+  ['person', 'Easy to Use', 'Clean, modern interface designed for traders.'],
 ];
 function Why({ w }: { w: number }) {
   const P = usePal();
@@ -365,13 +346,13 @@ function Why({ w }: { w: number }) {
     <View style={{ backgroundColor: P.section }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 52, paddingBottom: 28, gap: 28 }}>
         <View style={{ alignItems: 'center', gap: 8 }}>
-          <Text style={{ color: P.head, fontSize: 34, fontWeight: '800', letterSpacing: -0.7, textAlign: 'center' }}>Why Choose Chart Reader?</Text>
+          <Text style={{ color: P.head, fontSize: 28, fontWeight: '700', letterSpacing: -0.7, textAlign: 'center' }}>Why Choose Chart Reader?</Text>
           <Text style={{ color: P.body, fontSize: 15.5, textAlign: 'center' }}>Everything you need for smarter, more confident trading.</Text>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
-          {WHY.map(([icon, color, title, text]) => (
-            <View key={title} style={{ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 260, minWidth: 190, padding: 20, gap: 10, borderRadius: 14, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.04, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }}>
-              <View style={{ width: 50, height: 50, borderRadius: 13, backgroundColor: color + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={24} color={color} /></View>
+          {WHY.map(([icon, title, text]) => (
+            <View key={title} style={{ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 260, minWidth: 190, padding: 20, gap: 10, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.04, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }}>
+              <View style={{ width: 46, height: 46, borderRadius: 10, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={22} color={P.blue} /></View>
               <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', marginTop: 4 }}>{title}</Text>
               <Text style={{ color: P.body, fontSize: 13, lineHeight: 19 }}>{text}</Text>
             </View>
@@ -384,24 +365,16 @@ function Why({ w }: { w: number }) {
 
 function Cta({ w, go }: { w: number; go: (t: number) => void }) {
   const P = usePal(), wide = w >= 800;
-  const bars = [[8, 22, 40], [22, 30, 20], [14, 40, 26], [30, 24, 46], [18, 50, 30], [36, 28, 54], [24, 58, 36], [42, 34, 62]];
   return (
     <View style={{ backgroundColor: P.section }}>
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingBottom: 44 }}>
-        <View style={{ borderRadius: 16, overflow: 'hidden', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 28, paddingHorizontal: 32 }}>
-          <LinearGradient colors={['#0A2466', '#143B9C', '#0B2A78']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-          <View pointerEvents="none" style={{ position: 'absolute', right: 170, bottom: 0, opacity: 0.16 }}>
-            <Svg width={360} height={110}>
-              {bars.map((b, i) => <Rect key={i} x={10 + i * 42} y={110 - b[1] - b[2]} width={14} height={b[1]} rx={2} fill="#FFFFFF" />)}
-            </Svg>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingBottom: 48 }}>
+        <View style={{ borderRadius: 14, backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 32, paddingHorizontal: 32 }}>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '700', letterSpacing: -0.3 }}>Ready to trade with a plan?</Text>
+            <Text style={{ color: '#B4C0D8', fontSize: 14.5, lineHeight: 22, maxWidth: 560 }}>Real-time analysis, risk tools and a trading journal in one place.</Text>
           </View>
-          <View style={{ width: 58, height: 58, borderRadius: 29, borderWidth: 3, borderColor: '#7FA8FF', alignItems: 'center', justifyContent: 'center' }}><Icon name="locate" size={28} color="#9DBBFF" /></View>
-          <View style={{ flex: 1, gap: 6 }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '800' }}>Ready to Trade Smarter?</Text>
-            <Text style={{ color: '#FFFFFFCC', fontSize: 14, lineHeight: 21, maxWidth: 560 }}>Join thousands of traders who rely on Chart Reader for real-time analysis, powerful tools and better decision making.</Text>
-          </View>
-          <Pressable accessibilityRole="button" onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, paddingHorizontal: 26, borderRadius: 10, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: st.hovered ? 0.92 : 1 })) as any}>
-            <Text style={{ color: '#143B9C', fontSize: 15, fontWeight: '700' }}>Get Started Free</Text><Icon name="arrow-forward" size={16} color="#143B9C" />
+          <Pressable accessibilityRole="button" onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 22, borderRadius: 8, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: st.hovered ? 0.92 : 1 })) as any}>
+            <Text style={{ color: HERO_BG, fontSize: 14, fontWeight: '600' }}>Get started</Text><Icon name="arrow-forward" size={15} color={HERO_BG} />
           </Pressable>
         </View>
       </View>

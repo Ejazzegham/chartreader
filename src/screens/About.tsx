@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Linking, Pressable, TextInput, ScrollView, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Ellipse, Path, Line, Rect, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
+import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
 import { Icon, Card, AppHeader, HeroBanner } from '../ui';
 import { LogoMark, PoweredBy } from '../Brand';
@@ -26,37 +25,6 @@ const Eyebrow = ({ children, center }: { children: string; center?: boolean }) =
   );
 };
 
-// Hero picture: a laptop with a live chart and a globe (drawn in SVG, so it is sharp on every screen and follows the theme colours)
-const HeroArt = ({ buy, sell, accent }: { buy: string; sell: string; accent: string }) => {
-  const cs: [number, number, number, number, boolean][] = [[150, 128, 150, 136, true], [162, 120, 146, 124, false], [174, 124, 150, 130, true], [186, 112, 140, 118, false], [198, 104, 136, 110, false], [210, 108, 138, 114, true], [222, 94, 128, 100, false], [234, 86, 122, 92, false], [246, 90, 120, 96, true], [258, 74, 112, 80, false], [270, 64, 102, 70, false], [282, 58, 98, 64, false]];
-  return (
-    <Svg width="100%" height="100%" viewBox="0 0 380 240" preserveAspectRatio="xMidYMid meet">
-      <Defs>
-        <SvgGrad id="gl" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#CFE6FF" /><Stop offset="1" stopColor={accent} stopOpacity="0.85" /></SvgGrad>
-        <SvgGrad id="sc" x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor="#0E2A5E" /><Stop offset="1" stopColor="#061633" /></SvgGrad>
-      </Defs>
-      <Circle cx="92" cy="140" r="70" fill="url(#gl)" opacity="0.9" />
-      <Ellipse cx="92" cy="140" rx="70" ry="26" stroke="#FFFFFF" strokeOpacity="0.6" strokeWidth="1.2" fill="none" />
-      <Ellipse cx="92" cy="140" rx="30" ry="70" stroke="#FFFFFF" strokeOpacity="0.6" strokeWidth="1.2" fill="none" />
-      <Line x1="92" y1="70" x2="92" y2="210" stroke="#FFFFFF" strokeOpacity="0.6" strokeWidth="1.2" />
-      <Path d="M60 112 q14 -10 30 -2 q8 10 -6 18 q-14 4 -24 -4 z M104 150 q16 -6 26 6 q-4 16 -20 14 q-10 -8 -6 -20 z" fill="#FFFFFF" opacity="0.5" />
-      <Rect x="128" y="42" width="214" height="136" rx="9" fill="#12203F" />
-      <Rect x="134" y="48" width="202" height="124" rx="5" fill="url(#sc)" />
-      <Path d="M142 160 C 170 158, 190 138, 214 122 S 280 80, 330 56" stroke={accent} strokeOpacity="0.7" strokeWidth="1.5" fill="none" />
-      {cs.map(([x, t, b, bt, up], i) => (
-        <React.Fragment key={i}>
-          <Line x1={x} y1={t - 4} x2={x} y2={b + 14} stroke={up ? buy : sell} strokeWidth="1.2" />
-          <Rect x={x - 3} y={bt - 6} width="6" height={Math.max(8, b - bt + 12)} rx="1" fill={up ? buy : sell} />
-        </React.Fragment>
-      ))}
-      {[0, 1, 2, 3].map((i) => <Rect key={i} x={298} y={58 + i * 16} width={30} height={5} rx={2.5} fill="#FFFFFF" opacity={0.18} />)}
-      <Path d="M112 178 H358 L346 192 H124 Z" fill="#C9D6EC" />
-      <Rect x="206" y="178" width="54" height="4" rx="2" fill="#9FB1D1" />
-      <Path d="M300 70 L356 20" stroke="#BFE0FF" strokeWidth="9" strokeLinecap="round" opacity="0.9" />
-      <Path d="M334 18 H360 V44" stroke="#BFE0FF" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9" />
-    </Svg>
-  );
-};
 
 export default function About() {
   const { th, t, settings, rtl, setTab } = useApp();
@@ -70,7 +38,7 @@ export default function About() {
   const mail = (subject = 'Chart Reader', body = '') => Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}${body ? `&body=${encodeURIComponent(body)}` : ''}`).catch(() => {});
   const subscribe = () => mail('Subscribe to Chart Reader updates', mailIn.trim() ? `Please add this email to the updates list: ${mailIn.trim()}` : '');
 
-  const h1 = wide ? 46 : 34, h2 = wide ? 34 : 27;
+  const h2 = wide ? 34 : 27;
   const circle = (icon: string, size = 46, bg?: string, col?: string) => (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: bg ?? th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={icon} size={size * 0.46} color={col ?? th.accent} />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Rect, Line, Circle, Path, Defs, LinearGradient as SG, Stop, Text as SText } from 'react-native-svg';
+import { LinearGradient } from './FlatGradient';
+import Svg, { Rect, Line } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
 import { SYMBOLS, useFeed } from './markets';
@@ -76,52 +76,6 @@ function CardHead({ n, title, icon }: { n?: number; title: string; icon: string 
   );
 }
 
-// ---------- artwork
-function HeroArt({ risk, reward, rr }: { risk: number; reward: number; rr: number }) {
-  const bars = [[40, 70, 'u'], [70, 100, 'u'], [95, 130, 'd'], [60, 110, 'u'], [90, 150, 'u'], [120, 170, 'd'], [100, 160, 'u'], [140, 200, 'u']] as const;
-  return (
-    <View style={{ width: 500, height: 250 }}>
-      <Svg width={500} height={250} viewBox="0 0 500 250">
-        <Defs>
-          <SG id="scr" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#0E2C78" /><Stop offset="1" stopColor="#071A4A" /></SG>
-          <SG id="coin" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#4FA3FF" /><Stop offset="1" stopColor="#1B54E6" /></SG>
-          <SG id="shd" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#7DB6FF" /><Stop offset="1" stopColor="#2A5FE0" /></SG>
-        </Defs>
-        {bars.map(([a, b, c], i) => <Rect key={i} x={10 + i * 28} y={235 - b} width={9} height={b - a + 30} rx={2} fill={c === 'u' ? '#34E3B5' : '#FF7390'} opacity={0.35} />)}
-        <Path d="M96 40 L340 28 L378 188 L60 206 Z" fill="url(#scr)" stroke="#3E6FD8" strokeWidth={4} strokeLinejoin="round" />
-        <Path d="M84 206 L392 190 L408 214 L60 232 Z" fill="#2B4FA8" />
-        {[[130, 130, 'u'], [150, 112, 'u'], [170, 120, 'd'], [190, 96, 'u'], [210, 104, 'd'], [230, 78, 'u'], [250, 84, 'd'], [270, 60, 'u'], [290, 52, 'u']].map(([x, y, c], i) => (
-          <React.Fragment key={i}><Line x1={x as number} y1={(y as number) - 14} x2={x as number} y2={(y as number) + 24} stroke={c === 'u' ? '#34E3B5' : '#FF5C7A'} strokeWidth={1.6} /><Rect x={(x as number) - 4} y={y as number} width={8} height={16} fill={c === 'u' ? '#34E3B5' : '#FF5C7A'} /></React.Fragment>
-        ))}
-        <Path d="M120 150 C 170 130, 200 110, 240 84 S 300 50, 322 44" stroke="#7DB6FF" strokeWidth={2} fill="none" opacity={0.8} />
-        <Circle cx={318} cy={100} r={44} fill="url(#coin)" stroke="#9CC9FF" strokeWidth={4} />
-        <SText x={318} y={118} fontSize={50} fontWeight="800" fill="#FFFFFF" textAnchor="middle">$</SText>
-        <Path d="M420 96 L470 114 L470 168 Q470 208 420 230 Q370 208 370 168 L370 114 Z" fill="url(#shd)" stroke="#BFDCFF" strokeWidth={3} strokeLinejoin="round" />
-        <Path d="M400 168 L416 184 L444 148" stroke="#FFFFFF" strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      </Svg>
-      <View style={{ position: 'absolute', right: 0, top: 0, width: 152, paddingVertical: 12, paddingHorizontal: 14, gap: 7, borderRadius: 12, backgroundColor: '#3A6FE099', borderWidth: 1, borderColor: '#FFFFFF40' }}>
-        {[['Risk', `${f(risk, 1)}%`], ['Reward', `${f(reward, 1)}%`], ['RR', `1:${rr}`]].map(([k, v]) => (
-          <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ color: '#DCE8FF', fontSize: 13 }}>{k}</Text><Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '800' }}>{v}</Text></View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-function ToolArt() {
-  return (
-    <Svg width={290} height={190} viewBox="0 0 290 190">
-      <Defs><SG id="cb" x1="0" y1="0" x2="1" y2="1"><Stop offset="0" stopColor="#4C8DFF" /><Stop offset="1" stopColor="#1F4FD8" /></SG></Defs>
-      <Path d="M40 168 L210 168 L250 150 L84 150 Z" fill="#2F6BFF" opacity={0.16} />
-      <Rect x={34} y={30} width={86} height={118} rx={12} fill="url(#cb)" />
-      <Rect x={44} y={40} width={66} height={24} rx={5} fill="#CFE2FF" />
-      {[0, 1, 2].map((r) => [0, 1, 2].map((c) => <Rect key={`${r}${c}`} x={46 + c * 22} y={74 + r * 22} width={16} height={15} rx={4} fill={c === 2 && r === 2 ? '#FF9A3D' : '#9CC4FF'} />))}
-      <Rect x={134} y={84} width={26} height={62} rx={4} fill="#2F6BFF" /><Rect x={168} y={62} width={26} height={84} rx={4} fill="#1F4FD8" />
-      <Circle cx={232} cy={98} r={44} fill="#EAF2FF" stroke="#8FB8FF" strokeWidth={3} /><Circle cx={232} cy={98} r={30} fill="#FFFFFF" stroke="#2F6BFF" strokeWidth={9} /><Circle cx={232} cy={98} r={9} fill="#2F6BFF" />
-      <Line x1={232} y1={98} x2={274} y2={50} stroke="#1F4FD8" strokeWidth={4} strokeLinecap="round" /><Path d="M262 46 L282 40 L276 60 Z" fill="#1F4FD8" />
-    </Svg>
-  );
-}
 
 // the what-if chart: price path into the entry, a green reward zone and a red risk zone sized by the ratio
 function RRChart({ w, rr, rp, buy }: { w: number; rr: number; rp: number; buy: boolean }) {
@@ -212,12 +166,6 @@ export default function RiskHome() {
   };
 
   const wide = w >= 1060, pad = w >= 700 ? 32 : 16;
-  const feat = (icon: string, a: string, b: string) => (
-    <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 11 }}>
-      <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#2F6BFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#4C8DFF', shadowOpacity: 0.6, shadowRadius: 12 }}><Icon name={icon} size={19} color="#FFFFFF" /></View>
-      <View><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '800' }}>{a}</Text><Text style={{ color: '#B8CCF5', fontSize: 11 }}>{b}</Text></View>
-    </View>
-  );
   const tile = (icon: string, c: string, k: string, v: string, vc: string) => (
     <View key={k} style={{ flexGrow: 1, flexBasis: 170, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? P.alt : '#FBFCFF' }}>
       <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: c + '24', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color={c} /></View>
@@ -235,7 +183,7 @@ export default function RiskHome() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.bg }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       {/* hero: same banner as every other page */}
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 18 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
         <HeroBanner icon="calculator" tag="Risk & TP Planner" title="Plan Your Trades with Confidence" subtitle="Calculate your position size, set stop loss and take profit levels, and manage your risk with precision."
           features={[
             { icon: 'calculator', title: 'Position Size', sub: 'Trade with the right size' },
@@ -245,7 +193,7 @@ export default function RiskHome() {
           ]} />
       </View>
 
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 20, paddingBottom: 40, gap: 22 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 40, gap: 22 }}>
         <Notices flush />
         {!!from && <View style={{ padding: 12, borderRadius: 10, borderWidth: 1, borderColor: P.blue, backgroundColor: P.soft }}><Text style={{ color: P.head, fontSize: 13 }}>{t('prefilled')} {from}</Text></View>}
 
@@ -260,7 +208,6 @@ export default function RiskHome() {
                 <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={i} size={15} color={P.blue} /></View><View><Text style={{ color: P.head, fontSize: 11.5, fontWeight: '700' }}>{a}</Text><Text style={{ color: P.body, fontSize: 10.5 }}>{b}</Text></View></View>
               ))}
             </View>
-            <View style={{ alignItems: 'center', paddingVertical: 6 }}><ToolArt /></View>
             <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
               <Icon name="bulb" size={22} color={P.blue} />
               <View style={{ flex: 1, gap: 8 }}>
@@ -315,7 +262,7 @@ export default function RiskHome() {
                 </View>
               </View>
               <Pressable accessibilityRole="button" onPress={calc} style={((s: any) => ({ cursor: 'pointer', opacity: s.hovered ? 0.93 : 1 })) as any}>
-                <LinearGradient colors={['#2F6BFF', '#7A3FF0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 52, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <LinearGradient colors={['#3B5B93', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 52, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <Icon name="calculator" size={19} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Calculate</Text>
                 </LinearGradient>
               </Pressable>

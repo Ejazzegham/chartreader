@@ -8,9 +8,6 @@ const SUBJECT = {
   'confirm-signup': 'Confirm your Chart Reader account',
   'reset-password': 'Reset your Chart Reader password',
   'change-email': 'Confirm your new Chart Reader email address',
-  invite: "You're invited to Chart Reader",
-  'magic-link': 'Your Chart Reader login link',
-  reauthentication: 'Your Chart Reader security code',
 };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 

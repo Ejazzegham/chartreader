@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
 import { Screen, Card, Dim, Body, Btn, Badge, Icon, TimeframeBar, Chip } from '../ui';
 import { useHeadlines, loadFng, Fng, ago, tone, safeHttpUrl } from '../headlines';

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from './FlatGradient';
 import { useApp, NewSignal } from './store';
 import { Icon } from './ui';
 import { Logged } from './signalLog';

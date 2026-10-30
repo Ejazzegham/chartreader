@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import Svg, { Line, Rect, G, Circle, Defs, ClipPath, Text as SvgText } from 'react-native-svg';
 import { useApp } from './store';

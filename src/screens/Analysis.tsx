@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, Switch, BackHandler, Animated, Easing, AccessibilityInfo } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, ScrollView, TextInput, Switch, BackHandler } from 'react-native';
 import { useWindowDimensions } from '../win';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from '../FlatGradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../store';
-import { Screen, Card, Dim, Body, Icon, LiveDot, MenuButton, BellButton, AppHeader } from '../ui';
+import { Screen, Card, Dim, Body, Icon, AppHeader } from '../ui';
 import { SYMBOLS, symOf, isBad, useFeed } from '../markets';
 import { MDEFS, MDef, Host, mdef, MethodIcon } from '../MethodArt';
 import { BodyProps } from '../embed';
@@ -33,45 +32,13 @@ type ScanCfg = { auto: boolean; alarm: boolean; minProb: number; watch?: boolean
 const CFG0: ScanCfg = { auto: true, alarm: true, minProb: 75 };
 const groupOf = (cat: string) => (cat === 'indices' ? 'forex' : cat);
 
-// Running news-style warning at the top of the Analysis page. One message, scrolling right to left, nonstop while the page is open.
-// (Reduce-motion users get the same message standing still.)
-const TICKER_TEXT = "DON'T ANTI TRADE ON BOOM & CRASH";
-function RunningAlert({ active }: { active: boolean }) {
+// A quiet standing reminder at the top of the Analysis page (it used to be a red scrolling ticker).
+function RunningAlert(_: { active: boolean }) {
   const { th } = useApp();
-  const x = useRef(new Animated.Value(0)).current;
-  const [seg, setSeg] = useState(0);   // width of one repeated message
-  const [box, setBox] = useState(0);   // width of the visible strip
-  const [still, setStill] = useState(false);
-  useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setStill).catch(() => {}); }, []);
-  useEffect(() => {
-    if (!active || still || !seg) return;
-    x.setValue(0);
-    const loop = Animated.loop(Animated.timing(x, { toValue: -seg, duration: Math.max(4000, seg * 24), easing: Easing.linear, useNativeDriver: true }));
-    loop.start();
-    return () => loop.stop();
-  }, [active, still, seg]);
-  const copies = seg ? Math.ceil(box / seg) + 2 : 1;
-  const msg = (k: number) => (
-    <View key={k} onLayout={k === 0 ? (e) => setSeg(e.nativeEvent.layout.width) : undefined} style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0, paddingRight: 34 }}>
-      <Text numberOfLines={1} style={{ color: th.text, fontSize: 12, fontWeight: '900', letterSpacing: 0.9 }}>{TICKER_TEXT}</Text>
-      <Text style={{ color: th.sell, fontSize: 10, marginLeft: 34 }}>◆</Text>
-    </View>
-  );
   return (
-    <View accessible accessibilityRole="alert" accessibilityLabel="Do not anti trade on Boom and Crash" style={{ flexDirection: 'row', alignItems: 'center', height: 32, borderRadius: 8, borderWidth: 1, borderColor: th.sell + '88', backgroundColor: th.sell + (th.dark ? '22' : '14'), overflow: 'hidden', direction: 'ltr' }}>
-      <View style={{ height: '100%', paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: th.sell }}>
-        <Icon name="warning" size={13} color="#FFFFFF" />
-        <Text style={{ color: '#FFFFFF', fontSize: 10.5, fontWeight: '900', letterSpacing: 1 }}>ALERT</Text>
-      </View>
-      <View onLayout={(e) => setBox(e.nativeEvent.layout.width)} style={{ flex: 1, height: '100%', overflow: 'hidden' }}>
-        {still ? (
-          <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 10 }}><Text numberOfLines={1} style={{ color: th.text, fontSize: 12, fontWeight: '900', letterSpacing: 0.6 }}>{TICKER_TEXT}</Text></View>
-        ) : (
-          <Animated.View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', transform: [{ translateX: x }] }}>
-            {Array.from({ length: copies }, (_, k) => msg(k))}
-          </Animated.View>
-        )}
-      </View>
+    <View accessible accessibilityRole="alert" accessibilityLabel="Do not anti trade on Boom and Crash" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 40, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: th.line, borderLeftWidth: 3, borderLeftColor: th.gold, backgroundColor: th.panel }}>
+      <Icon name="information-circle-outline" size={17} color={th.gold} />
+      <Text style={{ flex: 1, color: th.text, fontSize: 13, fontWeight: '500' }}>{"Reminder: don't anti-trade on Boom & Crash."}</Text>
     </View>
   );
 }

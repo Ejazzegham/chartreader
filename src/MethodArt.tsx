@@ -1,6 +1,6 @@
+import { useApp } from './store';
 import React from 'react';
 import { View, Text } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Rect, Line, Circle } from 'react-native-svg';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -68,15 +68,13 @@ function Art({ g, size }: { g: Glyph; size: number }) {
   );
 }
 
-// Glossy gradient tile with a white glyph: the icon style of the Analysis page.
+// Quiet navy tile with a white glyph: one icon style for every method (no rainbow of colours).
 export function MethodIcon({ def, size = 52 }: { def: MDef; size?: number }) {
-  const r = 8;
+  const { th } = useApp();
   return (
-    <LinearGradient colors={def.colors} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }}
-      style={{ width: size, height: size, borderRadius: r, alignItems: 'center', justifyContent: 'center', shadowColor: def.colors[1], shadowOpacity: 0.32, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 3, direction: 'ltr' }}>
-      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: size * 0.5, borderTopLeftRadius: r, borderTopRightRadius: r, backgroundColor: '#FFFFFF', opacity: 0.16 }} />
+    <View style={{ width: size, height: size, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.dark ? th.accent : '#1F3A68', direction: 'ltr' }}>
       <Art g={def.glyph} size={size * 0.52} />
-    </LinearGradient>
+    </View>
   );
 }
 

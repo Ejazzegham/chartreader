@@ -1,11 +1,11 @@
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from '../FlatGradient';
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, Switch, Platform, TextInput } from 'react-native';
 import { shareText } from '../dialog';
 
 import Modal from '../Modal';
 import { useApp } from '../store';
-import { Screen, Card, Field, Dim, Btn, Segment, Icon, confirmAction, AppHeader, HeroBanner } from '../ui';
+import { Screen, Field, Dim, Btn, Segment, Icon, confirmAction, AppHeader, HeroBanner } from '../ui';
 import { useWindowDimensions, useLayout } from '../win';
 import { auth } from '../firebase';
 import { TFS } from '../markets';
@@ -36,14 +36,11 @@ const SetRow = ({ icon, tint, title, sub, right, onPress, last }: { icon: string
     </Pressable>
   );
 };
-const Panel = ({ children }: { children: React.ReactNode }) => <Card style={{ paddingVertical: 2, paddingHorizontal: 14 }}>{children}</Card>;
 const Pill = ({ text, color }: { text: string; color: string }) => (
   <View style={{ backgroundColor: color + '22', borderColor: color + '66', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}><Text style={{ color, fontSize: 11, fontWeight: '900', letterSpacing: 0.4 }}>{text}</Text></View>
 );
 
 
-// ---- Page building blocks (the account-settings look: light cards, blue icon tiles, bordered field tiles) ----
-const BRAND_BLUE = ['#0A2A8F', '#1747D1', '#2B63F0'] as [string, string, string];
 
 // One section card: round icon tile, title + helper line (and an optional action on the right), then the content.
 const Section = ({ icon, title, sub, right, children }: { icon: string; title: string; sub?: string; right?: React.ReactNode; children: React.ReactNode }) => {
@@ -145,7 +142,7 @@ const joined = () => { try { const d = new Date(auth.currentUser?.metadata?.crea
 const shortId = (uid?: string) => { if (!uid) return ''; let h = 0; for (const ch of uid) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return 'CR-' + String(h % 1000000).padStart(6, '0'); };
 
 export default function Settings() {
-  const { th, t, rtl, settings, setSettings, lic, licErr, setLic, refreshLic, account, setPin, logout, avatar, setAvatar, changePassword, googleOnly, emailVerified, sendVerify, lockNow, pushState, startPush, setHelpOpen, supportUnread, desk, setDesk } = useApp();
+  const { th, t, rtl, settings, setSettings, lic, licErr, refreshLic, account, setPin, logout, avatar, setAvatar, changePassword, googleOnly, emailVerified, sendVerify, lockNow, pushState, startPush, setHelpOpen, supportUnread, desk, setDesk } = useApp();
   const { width } = useWindowDimensions();
   const wide = width >= 640;
   const [payOpen, setPayOpen] = useState(false);
@@ -179,9 +176,7 @@ export default function Settings() {
   const [pinModal, setPinModal] = useState(false);
   const [net, setNet] = useState<'TRON' | 'BSC'>('TRON');
   const [plan, setPlan] = useState<'weekly' | 'monthly'>('weekly');
-  const [tx, setTx] = useState('');
-  const [msg, setMsg] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [msg] = useState('');
   const [srv, setSrv] = useState(getServer());
   const [srvMsg, setSrvMsg] = useState('');
   const saveSrv = async (reset = false) => {
@@ -215,11 +210,6 @@ export default function Settings() {
 
   const sw = (v: boolean, f: (b: boolean) => void) => <Switch value={v} onValueChange={f} trackColor={{ true: th.accent, false: th.line }} thumbColor="#FFFFFF" />;
 
-  const chip = (active: boolean) => ({
-    flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8,
-    borderWidth: 1.5, borderColor: active ? th.accent : th.line, borderRadius: 8,
-    paddingVertical: 8, paddingHorizontal: 14, backgroundColor: active ? th.accent + '22' : 'transparent',
-  });
 
   const planName = lic.status === 'admin' ? 'Admin' : lic.status === 'paid' ? 'Pro' : lic.status === 'trial' ? 'Free trial' : 'Expired';
   const siteMode = useLayout().mode === 'desktop'; // website on a wide screen
@@ -339,7 +329,7 @@ export default function Settings() {
               const on = themeId(settings.theme) === id;
               return (
                 <Pressable key={id} onPress={() => setSettings({ theme: id })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '13%' : '47%', flexGrow: 1, minWidth: 110, borderRadius: 12, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel2, padding: 8, gap: 8, opacity: pressed ? 0.85 : 1 })}>
-                  <LinearGradient colors={tm.glass ? tm.grad : [tm.bg, tm.bg, tm.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 52, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
+                  <LinearGradient colors={[tm.bg, tm.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 52, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
                     {[tm.panel, tm.accent, tm.accent2].map((c, i) => <View key={i} style={{ width: i ? 14 : 26, height: 16, borderRadius: 6, backgroundColor: c, borderWidth: i ? 0 : 1, borderColor: tm.line }} />)}
                   </LinearGradient>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>

@@ -13,7 +13,7 @@ export default function CryptoHome({ active }: { active: boolean }) {
   const w = useRealWindow().width, pad = w >= 700 ? 32 : 16;
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
         <HeroBanner icon="logo-bitcoin" title="Crypto Exchanges" subtitle="Leading centralized and decentralized crypto exchanges, each with a direct link to its official website."
           features={[
             { icon: 'logo-bitcoin', title: 'Top Exchanges', sub: `${CEX.length} CEX and ${DEX.length} DEX` },
@@ -22,9 +22,9 @@ export default function CryptoHome({ active }: { active: boolean }) {
             { icon: 'shield-checkmark-outline', title: 'Trade Safely', sub: 'Security checks first' },
           ]} />
       </View>
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 30, gap: 20 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 30, gap: 20 }}>
         <Notices flush />
-        <CryptoBody w={Math.min(w, 1360) - pad * 2} />
+        <CryptoBody w={Math.min(w, 1280) - pad * 2} />
       </View>
       <Footer w={w} go={go} />
     </ScrollView>

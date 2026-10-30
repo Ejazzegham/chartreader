@@ -71,7 +71,6 @@ export default function Markets() {
     return () => setWatch('markets', []);
   }, [tab === 2, key, favKey]);
   const live = status === 'live';
-  const count = (c: string) => (c === 'fav' ? db.favs.length : SYMBOLS.filter((s) => s.cat === c && !isBad(s.id)).length);
   const desk = useLayout().mode === 'desktop';
   const nCrypto = SYMBOLS.filter((s) => s.cat === 'crypto').length;
 

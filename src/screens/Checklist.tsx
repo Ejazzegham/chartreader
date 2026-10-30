@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, TextInput } from 'react-native';
 import Svg, { Circle, Rect, Line, Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
 import { Screen, Card, Icon, AppHeader, IconTile, HeroBanner } from '../ui';
 import { useWindowDimensions, useLayout } from '../win';
@@ -31,12 +31,12 @@ const OLD: Record<string, number> = {
 const norm = (x: any): Item => (typeof x === 'string' ? (OLD[x] !== undefined ? DEFAULTS[OLD[x]] : { t: x }) : { t: String(x?.t ?? ''), d: x?.d });
 
 const TILES: { icon: string; c: [string, string] }[] = [
-  { icon: 'trending-up', c: ['#8B5CF6', '#6D4AE8'] },
+  { icon: 'trending-up', c: ['#3B5B93', '#3B5B93'] },
   { icon: 'locate', c: ['#22C55E', '#16A34A'] },
   { icon: 'shield-half', c: ['#F05252', '#DC2626'] },
-  { icon: 'aperture', c: ['#3B82F6', '#2563EB'] },
+  { icon: 'aperture', c: ['#3B5B93', '#3B5B93'] },
   { icon: 'newspaper', c: ['#FBBF24', '#F97316'] },
-  { icon: 'time', c: ['#A855F7', '#7C3AED'] },
+  { icon: 'time', c: ['#3B5B93', '#7C3AED'] },
   { icon: 'sparkles', c: ['#14B8A6', '#0EA5E9'] },
 ];
 const TIPS = [
@@ -185,7 +185,7 @@ export default function Checklist() {
 
   // ---------- pieces ----------
   const hero = (
-    <LinearGradient colors={['#2F55E8', '#5B4BEA', '#8B5CF6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 18, overflow: 'hidden', padding: mid ? 28 : 20, minHeight: mid ? 200 : undefined, justifyContent: 'center', direction: 'ltr' }}>
+    <LinearGradient colors={['#0F1E3D', '#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 18, overflow: 'hidden', padding: mid ? 28 : 20, minHeight: mid ? 200 : undefined, justifyContent: 'center', direction: 'ltr' }}>
       <View pointerEvents="none" style={{ position: 'absolute', right: -40, top: -50, width: 280, height: 280, borderRadius: 140, backgroundColor: '#FFFFFF12' }} />
       {mid && <View pointerEvents="none" style={{ position: 'absolute', right: 28, top: 0, bottom: 0, justifyContent: 'center' }}><HeroArt /></View>}
       <View style={{ gap: 8, maxWidth: mid ? 520 : undefined }}>
@@ -286,7 +286,7 @@ export default function Checklist() {
       )}
 
       <Pressable accessibilityRole="button" disabled={confirmed} onPress={go ? confirm : markAll} style={{ borderRadius: 10, overflow: 'hidden', opacity: confirmed ? 0.7 : 1, cursor: confirmed ? 'default' : 'pointer' } as any}>
-        <LinearGradient colors={confirmed ? [th.buy, th.buy] : ['#2563EB', '#7C4DFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <LinearGradient colors={confirmed ? [th.buy, th.buy] : ['#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <Icon name={confirmed ? 'checkmark-done' : 'checkmark'} size={16} color="#FFFFFF" />
           <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>{confirmed ? 'Done today' : go ? 'Confirm day' : 'Mark All as Complete'}</Text>
         </LinearGradient>
@@ -295,10 +295,10 @@ export default function Checklist() {
   );
 
   const quick = [
-    { icon: 'create-outline', c: ['#A855F7', '#7C3AED'] as [string, string], t: 'Use Risk & TP Planner', d: 'Plan your risk and targets', tab: 4 },
+    { icon: 'create-outline', c: ['#3B5B93', '#7C3AED'] as [string, string], t: 'Use Risk & TP Planner', d: 'Plan your risk and targets', tab: 4 },
     { icon: 'analytics', c: ['#6366F1', '#4F46E5'] as [string, string], t: 'View Market Analysis', d: 'Find the best opportunities', tab: 1 },
-    { icon: 'book', c: ['#3B82F6', '#2563EB'] as [string, string], t: 'Open Journal', d: 'Track your trades & notes', tab: 3 },
-    { icon: 'apps', c: ['#2563EB', '#7C4DFF'] as [string, string], t: 'Explore Tools', d: 'More trading utilities', tab: 8 },
+    { icon: 'book', c: ['#3B5B93', '#3B5B93'] as [string, string], t: 'Open Journal', d: 'Track your trades & notes', tab: 3 },
+    { icon: 'apps', c: ['#3B5B93', '#3B5B93'] as [string, string], t: 'Explore Tools', d: 'More trading utilities', tab: 8 },
   ];
   const actions = (
     <Card style={{ padding: 18, gap: 10 }}>
@@ -329,7 +329,7 @@ export default function Checklist() {
   );
 
   const cta = (
-    <LinearGradient colors={['#5B4BEA', '#7C4DFF', '#8B5CF6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 14, padding: 20, gap: 10, overflow: 'hidden', direction: 'ltr' }}>
+    <LinearGradient colors={['#3B5B93', '#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 14, padding: 20, gap: 10, overflow: 'hidden', direction: 'ltr' }}>
       <View pointerEvents="none" style={{ position: 'absolute', right: -50, bottom: -60, width: 200, height: 200, borderRadius: 100, backgroundColor: '#FFFFFF14' }} />
       <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF26', alignItems: 'center', justifyContent: 'center' }}><Icon name="trophy" size={22} color="#FFFFFF" /></View>
       <Text style={{ color: '#FFFFFF', fontSize: 19, fontWeight: '900' }}>Trade with Confidence</Text>
@@ -343,7 +343,7 @@ export default function Checklist() {
 
   const banner = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: mid ? 20 : 14, borderRadius: 14, backgroundColor: soft, borderColor: th.accent + (th.dark ? '33' : '1F'), borderWidth: 1, overflow: 'hidden' }}>
-      <IconTile icon="trophy" size={52} colors={['#8B5CF6', '#6D4AE8']} />
+      <IconTile icon="trophy" size={52} colors={['#3B5B93', '#3B5B93']} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={{ color: th.text, fontWeight: '800', fontSize: 16 }}>Discipline Builds Profits</Text>
         <Text style={{ color: th.dim, fontSize: 13, lineHeight: 19 }}>Small steps, when followed consistently, lead to big results.</Text>

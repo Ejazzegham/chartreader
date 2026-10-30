@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Switch } from 'react-native';
-import Svg, { Line, Rect, Path, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
-import { LinearGradient } from 'expo-linear-gradient';
+
+import { LinearGradient } from './FlatGradient';
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
 import { Coin } from './MarketWidgets';
 import { MDEFS, MDef, MethodIcon, mdef } from './MethodArt';
-import { SYMBOLS, symOf, chg, setWatch, toggleFav, useFeed, SESSIONS, sessionOpen, fxWeekendClosed, isBad } from './markets';
+import { SYMBOLS, symOf, chg, setWatch, useFeed, SESSIONS, sessionOpen, fxWeekendClosed, isBad } from './markets';
 import { useRealWindow } from './win';
-import { usePal, useSetup, Panel, Pill, Btn, Spark, SentimentCard, LevelsCard, TfTabs, ChartHeader, ChartBody, Footer, useGo } from './DesktopHome.web';
+import { usePal, useSetup, Panel, Spark, SentimentCard, LevelsCard, TfTabs, ChartHeader, ChartBody, Footer, useGo } from './DesktopHome.web';
 
 // The website's Analysis page (when no method is open), designed like the "Analysis" mockup: alert scanner with notification preferences,
 // the analysis methods, market watchlist, forex sessions, latest market analysis, learning banner and footer. The method workspaces
@@ -20,7 +20,7 @@ const METALS = ['frxXAUUSD', 'frxXAGUSD', 'frxWTI', 'frxBRENT'];
 const groupKey = (id: string, cat: string) => (cat === 'crypto' ? 'crypto' : cat === 'deriv' ? 'deriv' : METALS.includes(id) ? 'metals' : 'forex');
 const DEFAULT_LIST = ['frxEURUSD', 'frxGBPUSD', 'frxXAUUSD', 'cryBTCUSD', 'frxUSDJPY', 'R_100'];
 const WL_TABS = ['All', 'Forex', 'Metals', 'Crypto', 'Deriv'];
-const S_COL = ['#2F6BFF', '#F0524F', '#7C4DFF', '#F5A524'], S_ABBR = ['SYD', 'TYO', 'LDN', 'NY'];
+const S_COL = ['#3B5B93', '#3B5B93', '#3B5B93', '#3B5B93'], S_ABBR = ['SYD', 'TYO', 'LDN', 'NY'];
 const S_TEXT = ['Low volatility, limited movement.', 'Increased activity, good for range trades.', 'High volatility, strong trends.', 'Solid volume, great for breakouts.'];
 
 export function SectionHead({ icon, title, sub, right, onRight }: { icon: string; title: string; sub?: string; right?: string; onRight?: () => void }) {
@@ -101,10 +101,10 @@ function Scanner({ w, cfg, setC, probs }: { w: number; cfg: Cfg; setC: Props['se
           <Icon name="settings-outline" size={16} color={P.head} />
           <Text style={{ color: P.head, fontSize: 15, fontWeight: '800', flex: 1 }}>Notification Preferences</Text>
         </View>
-        {pref('eye', '#8B5CF6', 'Early heads-up', 'Setup forming at the POI but not A-grade yet.', cfg.watch !== false, (b) => setC({ watch: b }))}
+        {pref('eye', '#3B5B93', 'Early heads-up', 'Setup forming at the POI but not A-grade yet.', cfg.watch !== false, (b) => setC({ watch: b }))}
         {pref('pulse', '#16B97A', 'Analysis digest', 'A silent note every 90 s with the best setups.', !!cfg.digest, (b) => setC({ digest: b }))}
-        {pref('swap-vertical', '#2F6BFF', 'Daily high / low breaks', 'When a pair breaks the previous day’s high or low.', cfg.dayBreaks !== false, (b) => setC({ dayBreaks: b }))}
-        {pref('newspaper', '#F5A524', 'High-impact news', 'An alert 15 minutes before big economic releases.', cfg.news !== false, (b) => setC({ news: b }))}
+        {pref('swap-vertical', '#3B5B93', 'Daily high / low breaks', 'When a pair breaks the previous day’s high or low.', cfg.dayBreaks !== false, (b) => setC({ dayBreaks: b }))}
+        {pref('newspaper', '#3B5B93', 'High-impact news', 'An alert 15 minutes before big economic releases.', cfg.news !== false, (b) => setC({ news: b }))}
       </View>
     </Panel>
   );
@@ -299,32 +299,7 @@ function Latest({ w, openAll }: { w: number; openAll: () => void }) {
   );
 }
 
-// ---------- hero (dark blue, like the Analysis mockup)
-function HeroArt({ w }: { w: number }) {
-  const W = Math.min(520, w), H = 250, n = 26;
-  const cs = useMemo(() => {
-    let v = 120, seed = 7; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-    return Array.from({ length: n }, (_, i) => { const o = v, d = (rnd() - 0.38) * 20, cl = o + d; v = cl; return { o, c: cl, h: Math.max(o, cl) + rnd() * 8, l: Math.min(o, cl) - rnd() * 8, i }; });
-  }, []);
-  const lo = Math.min(...cs.map((x) => x.l)), hi = Math.max(...cs.map((x) => x.h)), y = (p: number) => H - 24 - ((p - lo) / (hi - lo)) * (H - 56), step = (W - 28) / n;
-  return (
-    <View style={{ width: W, borderRadius: 16, padding: 10, backgroundColor: '#0A1F55', borderWidth: 1, borderColor: '#2F5BD8', shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 30, shadowOffset: { width: 0, height: 16 } }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 6, paddingBottom: 6 }}>
-        <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#16B97A' }} /><Text style={{ color: '#DCE7FF', fontSize: 11, fontWeight: '700' }}>EUR/USD · M15</Text>
-      </View>
-      <Svg width={W - 20} height={H}>
-        <Defs><SvgGrad id="hg" x1="0" y1="0" x2="0" y2="1"><Stop offset="0" stopColor="#4C8DFF" stopOpacity="0.35" /><Stop offset="1" stopColor="#4C8DFF" stopOpacity="0" /></SvgGrad></Defs>
-        {[0.2, 0.4, 0.6, 0.8].map((f) => <Line key={f} x1="0" x2={W} y1={H * f} y2={H * f} stroke="#FFFFFF" strokeOpacity="0.07" />)}
-        <Path d={cs.map((x, i) => `${i ? 'L' : 'M'}${10 + x.i * step + step / 2},${y(x.c)}`).join(' ') + ` L${10 + (n - 1) * step + step / 2},${H} L${10 + step / 2},${H} Z`} fill="url(#hg)" />
-        {cs.map((x) => { const up = x.c >= x.o, col = up ? '#16C784' : '#FF4D5E', cx = 10 + x.i * step + step / 2; return (
-          <React.Fragment key={x.i}>
-            <Line x1={cx} x2={cx} y1={y(x.h)} y2={y(x.l)} stroke={col} strokeWidth="1.4" />
-            <Rect x={cx - step * 0.28} y={y(Math.max(x.o, x.c))} width={step * 0.56} height={Math.max(2, Math.abs(y(x.o) - y(x.c)))} rx="1.5" fill={col} />
-          </React.Fragment>); })}
-      </Svg>
-    </View>
-  );
-}
+
 
 function Hero({ w }: { w: number }) {
   return (
@@ -366,18 +341,18 @@ function Overview({ w, onOpenMethod, go }: { w: number; onOpenMethod: Props['onO
         <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
           {stat('wallet', th.buy, 'Total P&L', n ? money(total) : '$0.00', `${n} closed trades`, n ? col(total) : undefined)}
           {stat('calendar', th.buy, 'Today’s P&L', money(today), 'Since midnight', col(today))}
-          {stat('trophy', '#F5A524', 'Win Rate', `${rate}%`, `${wins}W / ${n - wins}L`)}
+          {stat('trophy', '#3B5B93', 'Win Rate', `${rate}%`, `${wins}W / ${n - wins}L`)}
           {stat('pulse', P.blue, 'Running Trades', String(run), run ? 'Active' : 'None open')}
           {stat('checkmark-done', P.blue, 'Closed Trades', String(n), 'Completed')}
-          {stat('speedometer', '#8B5CF6', 'Average R:R', rs.length ? `1:${Math.abs(avgR).toFixed(1)}` : '—', 'Your average')}
+          {stat('speedometer', '#3B5B93', 'Average R:R', rs.length ? `1:${Math.abs(avgR).toFixed(1)}` : '—', 'Your average')}
         </View>
         <View style={{ width: two ? 300 : '100%', gap: 12, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
           <Text style={{ color: P.head, fontSize: 14, fontWeight: '800' }}>Quick Access</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            {quick('add-circle', '#8B5CF6', 'New Analysis', () => onOpenMethod(mdef('all')!))}
-            {quick('search', '#16B97A', 'Scanner', () => onOpenMethod(mdef('scanner')!))}
-            {quick('bar-chart', '#2F6BFF', 'Chart', () => go(2))}
-            {quick('clipboard', '#F5A524', 'Trade Plan', () => onOpenMethod(mdef('planner')!))}
+            {quick('add-circle', '#3B5B93', 'New Analysis', () => onOpenMethod(mdef('all')!))}
+            {quick('search', '#3B5B93', 'Scanner', () => onOpenMethod(mdef('scanner')!))}
+            {quick('bar-chart', '#3B5B93', 'Chart', () => go(2))}
+            {quick('clipboard', '#3B5B93', 'Trade Plan', () => onOpenMethod(mdef('planner')!))}
           </View>
         </View>
       </View>
@@ -441,7 +416,7 @@ export default function AnalysisHome({ cfg, setC, probs, onOpenMethod, onPair, t
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <Hero w={w} />
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 22, paddingBottom: 30, gap: 22 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
         {top}
         {!hideNote && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
@@ -463,7 +438,7 @@ export default function AnalysisHome({ cfg, setC, probs, onOpenMethod, onPair, t
         </View>
         <Latest w={w} openAll={() => go(1, 'all')} />
         <View style={{ overflow: 'hidden', borderRadius: 14, flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 20 }}>
-          <LinearGradient colors={['#0A3FD0', '#1F6BFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+          <LinearGradient colors={['#0F1E3D', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
           <View style={{ width: 46, height: 46, borderRadius: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={22} color="#1F5FFF" /></View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '800' }}>Refine Your Setups. Trade Smarter.</Text>

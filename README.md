@@ -144,7 +144,7 @@ Settings > **Server address** (visible to the admin, or to anyone who sees a lic
 
 ## Update notes (premium update)
 - Android adaptive icon background is now white (`app.json`), logo enlarged to fill the tile.
-- Premium animated splash (`src/Splash.tsx`), shown for 6.5 s (`SPLASH_MS` in `App.tsx`; keep it between 5000 and 8000).
+- Quiet start screen (`src/Splash.web.tsx` on the website, `src/SplashPhone.tsx` on a phone), shown for 1.4 s on the web and 3.6 s on a phone (`SPLASH_MS` in `App.tsx`).
 - Scalping is now its own menu (`src/screens/Scalping.tsx`, tab 1) and replaces Analyze in the bottom bar; the screenshot Analyze screen was removed and no longer lives inside ICT Lab.
 - New Pre-Trade Checklist (`src/screens/Checklist.tsx`, tab 11): discipline score, custom rules, daily streak.
 - Top-Down is on the Home Pro Tools grid and accepts any three timeframes (M1 to D1) with Swing / Intraday / Scalp / Fast presets.

@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import { useApp } from './store';
 import { Icon } from './ui';
 import { Coin } from './MarketWidgets';
-import { useFeed, chg, symOf, SYMBOLS, toggleFav, setWatch, Sym } from './markets';
+import { useFeed, chg, SYMBOLS, toggleFav, setWatch, Sym } from './markets';
 import { useDash, setDash, groupOf } from './dash';
 
 // Every market in one panel: all pairs, a search box and tabs. Used on the home page (right column) and on every other page (right panel).

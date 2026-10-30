@@ -5,7 +5,7 @@ import { Icon } from './ui';
 import { fxClosedAt } from './session';
 import {
   FX_SESSIONS, TZ_CHOICES, sessionState, timelineDay, overlapsAround, volumeAt, fmtClock, fmtDay, fmtLeft, fmtWeekdayClock,
-  tzAbbr, utcLabel, weekOpenAfter, weekCloseAfter, axisLabel, zonedToUtc, wallParts, Level, Win,
+  tzAbbr, utcLabel, weekOpenAfter, weekCloseAfter, axisLabel, zonedToUtc, wallParts, Level,
 } from './forexHours';
 
 // Forex Market Hours: time zone converter (live session cards + 24 hour timeline), best overlaps, how to use, FAQ and a call to action.
@@ -105,7 +105,6 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
 
   const dayNow = fmtDay(t, tz);
   const range = (a: number, b: number) => { const wd = (x: number) => (fmtDay(x, tz) !== dayNow ? new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(new Date(x)) + ' ' : ''); return `${wd(a)}${fmtClock(a, tz, h24)} – ${wd(b)}${fmtClock(b, tz, h24)}`; };
-  const rangeIn = (win: Win, zone: string) => `${fmtClock(win.start, zone, h24)} – ${fmtClock(win.end, zone, h24)}`;
 
   const cols4 = w >= 1100, cols2 = w >= 640, twoCols = w >= 1000;
   const labelW = w >= 420 ? 78 : 62;

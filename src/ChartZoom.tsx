@@ -6,7 +6,7 @@ import { Icon } from './ui';
 import { useScrollLock } from './scrollLock';
 import { fmtVol } from './volume';
 import { ZF, clampZ, freeZ, windowF, zoomAroundF, pinchF, panByF, setVisF, centerAtF, indexAtF, minimapF, minVis, offRange, rubber, stepMotion, velocityOf, lerpZ, easeOutCubic } from './smoothZoom';
-import { VZ, VZ0, normV, isFit, applyV, zoomV, thumb, fromThumbTop, fromThumbCenter, panByPixels } from './vzoomMath';
+import { VZ, VZ0, normV, isFit, applyV, zoomV, fromThumbTop, fromThumbCenter, panByPixels } from './vzoomMath';
 
 export type Cross = { x: number; y: number };
 export type ZoomOpts = {
@@ -277,103 +277,9 @@ export function ChartHud({ z, top, right = 8, vol }: { z: Zoom; top: number; rig
 }
 
 // ---------------------------------------------------------------- vertical scroll bar
-export const VBAR = 26; // width of the column the bar needs on the right of a chart
 
-// Vertical scroll bar for the price scale. Thumb = the part of the price range you see: drag it to move up and down,
-// tap the track to jump, + / - zoom the price scale, double tap the track to fit the candles again.
-export function VScroll({ z, height }: { z: Zoom; height: number }) {
-  const { th } = useApp();
-  const lock = useScrollLock();
-  const BTN = 22, trackH = Math.max(40, height - 2 * BTN - 6);
-  const zr = useRef(z), tr = useRef({ y0: 0, top0: 0, last: 0, moved: false, h: trackH });
-  zr.current = z; tr.current.h = trackH;
-  const pr = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true, onMoveShouldSetPanResponder: () => true, onPanResponderTerminationRequest: () => false,
-    onPanResponderGrant: (e) => {
-      lock(true);
-      const T = tr.current, th0 = thumb(zr.current.vz), y = e.nativeEvent.locationY / Math.max(1, T.h);
-      T.moved = false; T.y0 = y; T.top0 = th0.top;
-      const hit = y >= th0.top && y <= th0.top + th0.size;
-      if (!hit) { zr.current.vCenter(y); T.top0 = thumb(zr.current.vz).top; }
-    },
-    onPanResponderMove: (_e, g) => { const T = tr.current; if (Math.abs(g.dy) > 3) T.moved = true; zr.current.vTop(T.top0 + g.dy / Math.max(1, T.h)); },
-    onPanResponderRelease: () => {
-      lock(false);
-      const T = tr.current, now = Date.now();
-      if (!T.moved) { if (now - T.last < 320) zr.current.vFit(); T.last = now; }
-    },
-    onPanResponderTerminate: () => lock(false),
-  })).current;
-  const t = thumb(z.vz);
-  const Btn = ({ icon, on, off }: { icon: string; on: () => void; off?: boolean }) => (
-    <Pressable onPress={on} disabled={off} hitSlop={4} style={({ pressed }) => ({ width: BTN, height: BTN, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg, alignItems: 'center', justifyContent: 'center', opacity: off ? 0.35 : pressed ? 0.7 : 1 })}>
-      <Icon name={icon} size={14} color={th.text} />
-    </Pressable>
-  );
-  return (
-    <View style={{ width: VBAR, height, alignItems: 'center', justifyContent: 'center', gap: 3, direction: 'ltr' }}>
-      <Btn icon="add" on={z.vIn} />
-      <View {...pr.panHandlers} style={{ width: VBAR - 4, height: trackH, alignItems: 'center' }}>
-        <View pointerEvents="none" style={{ width: 8, height: trackH, borderRadius: 4, backgroundColor: th.line.slice(0, 7) + 'AA', overflow: 'hidden' }}>
-          <View style={{ position: 'absolute', left: 0, right: 0, top: `${t.top * 100}%`, height: `${t.size * 100}%`, borderRadius: 4, backgroundColor: z.vzoomed ? th.accent : th.dim + '88' }} />
-        </View>
-      </View>
-      <Btn icon="remove" on={z.vOut} />
-    </View>
-  );
-}
 
-// ---------------------------------------------------------------- toolbar under the chart
-export function ZoomBar({ z, vol }: { z: Zoom; vol?: { on: boolean; toggle: () => void } }) {
-  const { th } = useApp();
-  const [tw, setTw] = useState(0);
-  const left = useRef(0), zr = useRef(z);
-  zr.current = z;
-  const trackRef = useRef<View>(null);
-  const pr = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true, onMoveShouldSetPanResponder: () => true, onPanResponderTerminationRequest: () => false,
-    onPanResponderGrant: (e, g) => { trackRef.current?.measure?.((_x, _y, w, _h, px) => { left.current = px; zr.current.centerAt((g.x0 - px) / Math.max(1, w)); }); },
-    onPanResponderMove: (_e, g) => zr.current.centerAt((g.moveX - left.current) / Math.max(1, tw)),
-  })).current;
 
-  const B = ({ icon, on, off, hot }: { icon: string; on: () => void; off?: boolean; hot?: boolean }) => (
-    <Pressable onPress={on} disabled={off} hitSlop={5} style={({ pressed }) => ({ width: 34, height: 30, borderRadius: 8, borderWidth: 1, borderColor: hot ? th.accent : th.line, backgroundColor: hot ? th.accent + '22' : th.bg, alignItems: 'center', justifyContent: 'center', opacity: off ? 0.35 : pressed ? 0.7 : 1 })}>
-      <Icon name={icon} size={16} color={hot ? th.accent : th.text} />
-    </Pressable>
-  );
-  const presets = [30, 60, 120].filter((n) => n < z.total - 5);
-  const Chip = ({ label, on, press }: { label: string; on: boolean; press: () => void }) => (
-    <Pressable onPress={press} hitSlop={4} style={{ height: 30, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: on ? th.onAccent : th.dim, fontSize: 11.5, fontWeight: '900' }}>{label}</Text>
-    </Pressable>
-  );
-  return (
-    <View style={{ paddingTop: 8, gap: 8, direction: 'ltr' }}>
-      {/* minimap: the thumb is the part of the history you see. Drag it or tap the track to jump. */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View ref={trackRef} onLayout={(e) => setTw(e.nativeEvent.layout.width)} {...pr.panHandlers} style={{ flex: 1, height: 22, justifyContent: 'center' }}>
-          <View style={{ height: 8, borderRadius: 4, backgroundColor: th.line.slice(0, 7) + 'AA', overflow: 'hidden' }}>
-            <View style={{ position: 'absolute', top: 0, bottom: 0, left: `${z.mm.left * 100}%`, width: `${Math.max(4, z.mm.width * 100)}%`, borderRadius: 4, backgroundColor: th.accent }} />
-          </View>
-        </View>
-        <Text style={{ color: th.dim, fontSize: 11, fontWeight: '700', minWidth: 62, textAlign: 'right' }}>{z.count} candles</Text>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 6, rowGap: 6 }}>
-        <B icon="remove" on={z.zoomOut} off={!z.canOut} />
-        <B icon="add" on={z.zoomIn} off={!z.canIn} />
-        <B icon="locate" on={() => z.setCrossMode(!z.crossMode)} hot={z.crossMode} />
-        {presets.map((n) => <Chip key={n} label={String(n)} on={z.count === n} press={() => z.setCount(n)} />)}
-        <Chip label="All" on={z.count >= z.total} press={() => z.setCount(z.total)} />
-        {z.vzoomed && <Chip label="Fit price" on={false} press={z.vFit} />}
-        {!!vol && <Chip label="Vol" on={vol.on} press={vol.toggle} />}
-        <Pressable onPress={z.latest} hitSlop={4} style={{ marginLeft: 'auto', height: 30, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: z.atLatest && z.pad < 0.5 ? th.line : th.accent, backgroundColor: z.atLatest && z.pad < 0.5 ? th.bg : th.accent }}>
-          <Icon name="play-forward" size={13} color={z.atLatest && z.pad < 0.5 ? th.dim : th.onAccent} />
-          <Text style={{ color: z.atLatest && z.pad < 0.5 ? th.dim : th.onAccent, fontSize: 11.5, fontWeight: '900' }}>Latest</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
 
 // ---------------------------------------------------------------- crosshair
 export const fmtTime = (t: number, gran?: number) => {

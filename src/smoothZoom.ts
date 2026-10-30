@@ -72,7 +72,6 @@ export const minimapF = (s: ZF, total: number) => {
 
 // ---- animation helpers
 export const easeOutCubic = (p: number) => 1 - Math.pow(1 - clamp(p, 0, 1), 3);
-export const easeInOut = (p: number) => { const x = clamp(p, 0, 1); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
 // zoom in / out evenly to the eye: the width changes geometrically, the position linearly
 export const lerpZ = (a: ZF, b: ZF, e: number): ZF => ({ vis: a.vis * Math.pow(Math.max(b.vis, 1e-9) / Math.max(a.vis, 1e-9), e), off: a.off + (b.off - a.off) * e });
 // move `cur` toward `target`, frame-rate independent (tau in ms: smaller = faster)

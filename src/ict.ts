@@ -313,7 +313,7 @@ function base(c: Candle[], P: IctParams, levelsFrom?: Candle[]): Base | { fail: 
 
 // ---- guide step 1: higher-timeframe bias (bullish, bearish or none) and the draw on liquidity
 function biasOf(B: Base, src: 'htf' | 'ltf'): IctBias {
-  const { c, n, a, price } = B, why: string[] = [];
+  const { n, a, price } = B, why: string[] = [];
   let s = 0;
   const tag = src === 'htf' ? 'Higher timeframe' : 'Chart timeframe';
   if (B.trend === 'bullish') { s += 2; why.push(`${tag} structure is bullish${B.lastBreak ? ` (last break: ${B.lastBreak.kind} ${B.lastBreak.dir})` : ''}`); }

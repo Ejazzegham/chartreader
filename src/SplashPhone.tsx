@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Animated, Easing, Image } from 'react-native';
 import { useRealWindow } from './win';
 import Svg, { Defs, LinearGradient, Stop, Path, Rect, Line, Circle, G, ClipPath, Text as SText } from 'react-native-svg';
-import { LinearGradient as Grad } from 'expo-linear-gradient';
+import { LinearGradient as Grad } from './FlatGradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import { makeLayout, frame, Vr, LOGO_W, UP, DN, BUCKETS, bucketHex } from './splashMath';

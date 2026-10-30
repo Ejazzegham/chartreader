@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Linking } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
+import { LinearGradient } from './FlatGradient';
+import Svg, { Path } from 'react-native-svg';
 import { Icon, HeroBanner } from './ui';
 import { Coin } from './MarketWidgets';
 import { SYMBOLS, Sym, chg, isBad, useFeed, setWatch, toggleFav, symOf } from './markets';
@@ -19,14 +19,14 @@ const GOLD_SILVER = ['frxXAUUSD', 'frxXAGUSD'], OIL = ['frxWTI', 'frxBRENT'];
 const FX_FIRST = ['frxEURUSD', 'frxGBPUSD', 'frxUSDJPY', 'frxAUDUSD', 'frxUSDCAD', 'frxDXY', 'frxXAUUSD', 'frxXAGUSD', 'frxWTI', 'frxBRENT', 'cryBTCUSD', 'cryETHUSD'];
 type CatKey = 'all' | 'forex' | 'crypto' | 'indices' | 'commodities' | 'metals' | 'deriv' | 'fav';
 const CATS: { k: CatKey; label: string; icon: string; color: string }[] = [
-  { k: 'all', label: 'All Markets', icon: 'globe-outline', color: '#2F6BFF' },
-  { k: 'forex', label: 'Forex', icon: 'swap-horizontal', color: '#4C8DFF' },
+  { k: 'all', label: 'All Markets', icon: 'globe-outline', color: '#3B5B93' },
+  { k: 'forex', label: 'Forex', icon: 'swap-horizontal', color: '#3B5B93' },
   { k: 'crypto', label: 'Crypto', icon: 'logo-bitcoin', color: '#F59E0B' },
-  { k: 'indices', label: 'Indices', icon: 'stats-chart', color: '#8B5CF6' },
+  { k: 'indices', label: 'Indices', icon: 'stats-chart', color: '#3B5B93' },
   { k: 'commodities', label: 'Commodities', icon: 'water', color: '#D99A1B' },
   { k: 'metals', label: 'Metals', icon: 'diamond-outline', color: '#C58A2B' },
   { k: 'deriv', label: 'Deriv', icon: 'pulse', color: '#0EA5A4' },
-  { k: 'fav', label: 'Watchlist', icon: 'star', color: '#F5A524' },
+  { k: 'fav', label: 'Watchlist', icon: 'star', color: '#3B5B93' },
 ];
 const catOf = (s: Sym): CatKey => (GOLD_SILVER.includes(s.id) ? 'metals' : OIL.includes(s.id) ? 'commodities' : s.cat === 'indices' ? 'indices' : s.cat === 'crypto' ? 'crypto' : s.cat === 'deriv' ? 'deriv' : 'forex');
 const PAGE = 14;
@@ -57,7 +57,7 @@ function Head({ icon, title, sub, right, onRight }: { icon: string; title: strin
 // ---------- hero
 function Hero({ w, setCat, live }: { w: number; setCat: (k: CatKey) => void; live: boolean }) {
   return (
-    <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24 }}>
+    <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24 }}>
       <HeroBanner icon="pulse" title="Global Markets" subtitle="Explore forex, crypto, indices, commodities and more. Live prices, real-time data and powerful tools."
         features={[{ icon: 'flash', title: 'Live Prices', sub: live ? 'Real-time data' : 'Connecting…' }, { icon: 'stats-chart', title: 'Market Analysis', sub: 'Trends & insights' }, { icon: 'star', title: 'Watchlists', sub: 'Track your favorites' }, { icon: 'construct', title: 'Advanced Tools', sub: 'Make better decisions' }]} />
     </View>
@@ -350,7 +350,7 @@ export default function MarketsHome({ active, onSelect }: Props) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <Hero w={w} setCat={(k) => setCat(k)} live={live} />
-      <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
         <CatCards w={w} cat={cat} setCat={(k) => { setCat(k); setQ(''); }} counts={counts} live={live} />
         <View style={{ flexDirection: two ? 'row' : 'column', gap: 22, alignItems: 'flex-start' }}>{left}{right}</View>
         <View style={{ flexDirection: bottom ? 'row' : 'column', gap: 22, alignItems: 'stretch' }}>
@@ -377,7 +377,7 @@ export default function MarketsHome({ active, onSelect }: Props) {
               </View>
             ))}
           </Panel>
-          <LinearGradient colors={['#0A2A8C', '#0B49D6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 22, borderRadius: 14, gap: 10, justifyContent: 'center', overflow: 'hidden' }}>
+          <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 22, borderRadius: 14, gap: 10, justifyContent: 'center', overflow: 'hidden' }}>
             <Text style={{ color: '#FFFFFF', fontSize: 19, fontWeight: '800', lineHeight: 24 }}>Trade Smarter with Our Tools</Text>
             <Text style={{ color: '#DCE6FFCC', fontSize: 12.5, lineHeight: 18 }}>Advanced charts, real-time data, market analysis and more.</Text>
             <View style={{ alignSelf: 'flex-start', marginTop: 6 }}><Btn label="Explore Tools" onPress={() => go(1)} /></View>

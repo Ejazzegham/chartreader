@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import { useWindowDimensions } from '../win';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
 import { Screen, Card, Dim, Body, Btn, Badge, SectionTitle, Icon, Segment } from '../ui';
 import { Checklist, Tile, SetupCard } from '../ProUI';

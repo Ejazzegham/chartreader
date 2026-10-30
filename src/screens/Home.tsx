@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import DesktopHome from '../DesktopHome';
 import { useDesktop } from '../Desktop';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
 import { Screen, Card, Body, Icon, IconTile, SectionHeader, Badge } from '../ui';
 import { useFeed, chg, nameOf, setWatch, symOf, Sym, SYMBOLS } from '../markets';
@@ -115,7 +115,7 @@ function PhoneHome() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 14, justifyContent: 'space-between' }}>
           {actions.map((a) => (
             <Pressable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label} style={({ pressed }) => ({ width: '23.5%', alignItems: 'center', gap: 7, opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] })}>
-              <LinearGradient colors={a.colors} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 56, height: 56, borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: a.colors[1], shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 3, direction: 'ltr' }}>
+              <LinearGradient colors={[th.accent, th.accent]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 56, height: 56, borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: a.colors[1], shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 3, direction: 'ltr' }}>
                 <Icon name={a.icon} size={26} color="#FFFFFF" />
               </LinearGradient>
               <Text style={{ color: th.text, fontSize: 11.5, fontWeight: '800' }} numberOfLines={1}>{a.label}</Text>
