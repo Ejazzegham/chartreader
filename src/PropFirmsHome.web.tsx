@@ -16,10 +16,10 @@ export default function PropFirmsHome({ active }: { active: boolean }) {
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
         <HeroBanner icon="briefcase" title="Prop Firms" subtitle="Funded trading programs in ranked order, each with a direct link to its official website."
           features={[
-            { icon: 'trophy-outline', title: 'Ranked List', sub: `${PROP_FIRMS.length} prop firms` },
-            { icon: 'link-outline', title: 'Official Links', sub: 'Open in a new tab' },
-            { icon: 'search-outline', title: 'Quick Search', sub: 'By name or website' },
-            { icon: 'shield-checkmark-outline', title: 'Choose Wisely', sub: 'Four checks first' },
+            { icon: 'star-outline', title: 'Featured', sub: 'Hand-picked firms' },
+            { icon: 'list-outline', title: 'Directory', sub: `${PROP_FIRMS.length} ranked firms` },
+            { icon: 'git-compare-outline', title: 'Compare', sub: 'Up to 4 side by side' },
+            { icon: 'book-outline', title: 'Guide', sub: 'Choose wisely' },
           ]} />
       </View>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 30, gap: 20 }}>

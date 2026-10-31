@@ -6,7 +6,7 @@ import { PropFirm, domainOf, searchFirms } from './propFirms';
 
 // One directory page for any list of companies with a website (Prop Firms, Forex Brokers): optional top-three cards, a table with a Visit website link,
 // search, sort, a "how to choose" section and a risk note. The text and lists come from the page that uses it (PropFirmsBody.tsx, BrokersBody.tsx).
-export type DirectoryCfg = { items: PropFirm[]; ranked: boolean; noun: string; nouns: string; icon: string; listTitle: string; intro: string; chooseTitle: string; chooseSub: string; checks: { icon: string; title: string; body: string }[]; disclaimer: string };
+export type DirectoryCfg = { items: PropFirm[]; ranked: boolean; noun: string; nouns: string; icon: string; listTitle: string; intro: string; chooseTitle: string; chooseSub: string; checks: { icon: string; title: string; body: string }[]; disclaimer: string; noChoose?: boolean; noPodium?: boolean };
 const WEB = Platform.OS === 'web';
 const hand: any = WEB ? { cursor: 'pointer' } : null;
 
@@ -15,17 +15,17 @@ export function usePal() {
   const d = th.dark;
   return { th, dark: d, alt: d ? th.panel2 : '#F5F8FE', card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E5EBF5', head: d ? th.text : '#0B1B3F', body: d ? th.dim : '#5A6B89', blue: th.accent, soft: th.accent + (d ? '26' : '14'), shadow: d ? '#000000' : '#1B3A7A' };
 }
-type Pal = ReturnType<typeof usePal>;
+export type Pal = ReturnType<typeof usePal>;
 
 const MEDAL = ['#F5B93A', '#B6C0D1', '#D08A52'];
 const lum = (h: string) => { const n = parseInt(h.slice(1, 7), 16); return [n >> 16, (n >> 8) & 255, n & 255].map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }).reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0); };
 const txtOn = (bg: string) => { const l = lum(bg); return 1.05 / (l + 0.05) >= (l + 0.05) / (lum('#0B1220') + 0.05) ? '#FFFFFF' : '#0B1220'; };
 const initials = (n: string) => { const w = n.split(/\s+/).filter((x) => /[A-Za-z0-9]/.test(x)); return (w.length > 1 ? w[0][0] + w[1][0] : n.slice(0, 2)).toUpperCase(); };
 
-function Panel({ P, children, style }: { P: Pal; children: React.ReactNode; style?: any }) {
+export function Panel({ P, children, style }: { P: Pal; children: React.ReactNode; style?: any }) {
   return <View style={[{ backgroundColor: P.card, borderRadius: 14, borderWidth: 1, borderColor: P.border, padding: 20, gap: 16, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
 }
-function Head({ P, icon, title, sub, right }: { P: Pal; icon: string; title: string; sub?: string; right?: React.ReactNode }) {
+export function Head({ P, icon, title, sub, right }: { P: Pal; icon: string; title: string; sub?: string; right?: React.ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1, minWidth: 200 }}>
@@ -49,11 +49,11 @@ export function Chip({ P, label, on, onPress }: { P: Pal; label: string; on: boo
 }
 
 // a real link: on the website it is an <a> that opens a new tab (so right-click and copy link work); in the app it opens the browser
-function FirmLink({ f, style, children }: { f: PropFirm; style: (hovered: boolean) => any; children: React.ReactNode }) {
+export function FirmLink({ f, style, children }: { f: PropFirm; style: (hovered: boolean) => any; children: React.ReactNode }) {
   const extra: any = WEB ? { href: f.url, hrefAttrs: { target: '_blank', rel: 'noopener noreferrer' } } : { onPress: () => { Linking.openURL(f.url).catch(() => {}); } };
   return <Pressable accessibilityRole="link" accessibilityLabel={`Visit ${f.name} website, ${domainOf(f.url)}`} {...extra} style={((s: any) => style(!!s.hovered)) as any}>{children}</Pressable>;
 }
-function VisitBtn({ P, f, compact }: { P: Pal; f: PropFirm; compact?: boolean }) {
+export function VisitBtn({ P, f, compact }: { P: Pal; f: PropFirm; compact?: boolean }) {
   return (
     <FirmLink f={f} style={(h) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: compact ? 38 : 44, paddingHorizontal: compact ? 14 : 20, borderRadius: 10, backgroundColor: h ? P.blue + '30' : P.soft, borderWidth: 1, borderColor: P.blue + '55', ...hand })}>
       <Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '800' }}>Visit website</Text>
@@ -61,11 +61,11 @@ function VisitBtn({ P, f, compact }: { P: Pal; f: PropFirm; compact?: boolean })
     </FirmLink>
   );
 }
-function Avatar({ P, f, size = 40 }: { P: Pal; f: PropFirm; size?: number }) {
+export function Avatar({ P, f, size = 40 }: { P: Pal; f: PropFirm; size?: number }) {
   const th = P.th, cols = [th.accent, th.accent2, th.buy, th.gold, '#D77CF2', '#3B5B93'], c = cols[(f.rank - 1) % cols.length];
   return <View style={{ width: size, height: size, borderRadius: size / 3, backgroundColor: c + '22', borderWidth: 1, borderColor: c + '55', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: P.dark ? c : P.head, fontSize: size * 0.34, fontWeight: '900' }}>{initials(f.name)}</Text></View>;
 }
-function Rank({ f, size = 34, medal = true }: { f: PropFirm; size?: number; medal?: boolean }) {
+export function Rank({ f, size = 34, medal = true }: { f: PropFirm; size?: number; medal?: boolean }) {
   const m = medal && f.rank <= 3 ? MEDAL[f.rank - 1] : null;
   return <View accessible accessibilityLabel={`Rank ${f.rank}`} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: m ?? 'transparent', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: m ? txtOn(m) : '#7C8AA8', fontSize: size * 0.42, fontWeight: '900', fontVariant: ['tabular-nums'] } as any}>{f.rank}</Text></View>;
 }
@@ -77,7 +77,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
   const notes = items.some((f) => !!f.note); // lists with a "Known for" line get a wider layout
   const wide = w >= 760, three = w >= 900;
   const found = useMemo(() => { const r = searchFirms(q, items); return sort === 'az' ? [...r].sort((a, b) => a.name.localeCompare(b.name)) : r; }, [q, sort, items]);
-  const podium = ranked && sort === 'rank' && !q.trim() && three;
+  const podium = ranked && sort === 'rank' && !q.trim() && three && !cfg.noPodium;
   const rows = podium ? found.filter((f) => f.rank > 3) : found;
   const top = items.slice(0, 3);
 
@@ -170,7 +170,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
         </View>
       </Panel>
 
-      <Panel P={P} style={{ backgroundColor: P.dark ? th.panel : th.accent2 + '0A' }}>
+      {!cfg.noChoose && <Panel P={P} style={{ backgroundColor: P.dark ? th.panel : th.accent2 + '0A' }}>
         <Head P={P} icon="shield-checkmark-outline" title={cfg.chooseTitle} sub={cfg.chooseSub} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
           {cfg.checks.map((c) => (
@@ -183,7 +183,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
             </View>
           ))}
         </View>
-      </Panel>
+      </Panel>}
 
       <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '14' }}>
         <Icon name="warning-outline" size={20} color={th.gold} />
