@@ -155,7 +155,7 @@ export default function ManualTradeDesk() {
         <AccountStrip acct={acct} s={stats} a={nums} w={contentW} />
 
         {/* ---- chart + market watch */}
-        <View style={{ flexDirection: stack ? 'column' : 'row', gap: 20, alignItems: 'flex-start' }}>
+        <View style={{ flexDirection: stack ? 'column' : 'row', gap: 20, alignItems: stack ? 'flex-start' : 'stretch' }}>
           <View style={{ ...cardSt, flex: 1, width: stack ? '100%' : undefined, minWidth: 0, padding: 16, zIndex: 5 } as any}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18, flexWrap: 'wrap', zIndex: 6 }}>
               <View style={{ zIndex: 7 }}>
@@ -185,7 +185,7 @@ export default function ManualTradeDesk() {
                 {TFS.filter((x) => ['60', '300', '900', '1800', '3600', '14400', '86400'].includes(x.k)).map((x) => pill(x.label, String(gran) === x.k, () => setGran(Number(x.k))))}
               </View>
             </View>
-            <View onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })} style={{ height: 460, marginTop: 14, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: border }}>
+            <View onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })} style={{ ...(stack ? { height: 460 } : { flex: 1, minHeight: 460 }), marginTop: 14, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: border } as any}>
               {active && box.w > 0 && <TerminalChart key={symId} symId={symId} name={sym.name} dec={dec} gran={gran} onGran={(k) => setGran(Number(k))} positions={positions.filter((p) => p.symId === symId)} bid={bid} ask={ask} mark={mark} width={box.w} height={box.h} onManage={(h: Hit) => setSheet({ id: h.id, focus: h.part })} />}
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
@@ -224,7 +224,7 @@ export default function ManualTradeDesk() {
               </View>
               <View style={{ flexDirection: 'row', paddingVertical: 6 }}>{th_('Symbol', 1.6)}{th_('Price', 1, true)}{th_('Change', 1, true)}<View style={{ width: 26 }} /></View>
               {watchList.length === 0 && <Text style={{ color: th.dim, fontSize: 12.5, textAlign: 'center', padding: 18 }}>{wTab === 'watch' ? 'Tap the star on any symbol to add it to your Watchlist.' : 'No symbols found.'}</Text>}
-              <ScrollView style={{ maxHeight: 520 }} nestedScrollEnabled>
+              <ScrollView style={{ maxHeight: 400 }} nestedScrollEnabled>
               {watchList.map((s) => {
                 const lq = quotes[s.id], c = chg(s.id), on = s.id === symId;
                 return (
