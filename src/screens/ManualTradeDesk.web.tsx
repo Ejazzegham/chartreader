@@ -23,6 +23,7 @@ import DemoAccountPanel, { AccountStrip } from '../DemoAccountPanel';
 // a trade panel (volume, stop loss, take profit, estimated P/L), live account stats and the feature strip.
 // Same paper-trading engine as the phone terminal: orders fill at the live price, closed trades go to the Journal and Trade history.
 // The starting balance and leverage come from the demo account settings (src/useDemoAcct.ts, edited in the Demo Account panel > Settings).
+const CHART_H = 540; // fixed chart height (the chart card never grows or shrinks with the page)
 const isMetal = (s: { id: string }) => /XAU|XAG/.test(s.id);
 const isIndex = (s: { id: string; cat: string }) => s.cat === 'indices' || s.id === 'frxDXY';
 const isForexTab = (s: { id: string; cat: string }) => s.cat === 'forex' || s.cat === 'indices' || s.id === 'frxDXY'; // metals, oil and indices live inside Forex
@@ -155,7 +156,7 @@ export default function ManualTradeDesk() {
         <AccountStrip acct={acct} s={stats} a={nums} w={contentW} />
 
         {/* ---- chart + market watch */}
-        <View style={{ flexDirection: stack ? 'column' : 'row', gap: 20, alignItems: stack ? 'flex-start' : 'stretch' }}>
+        <View style={{ flexDirection: stack ? 'column' : 'row', gap: 20, alignItems: 'flex-start' }}>
           <View style={{ ...cardSt, flex: 1, width: stack ? '100%' : undefined, minWidth: 0, padding: 16, zIndex: 5 } as any}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18, flexWrap: 'wrap', zIndex: 6 }}>
               <View style={{ zIndex: 7 }}>
@@ -185,7 +186,7 @@ export default function ManualTradeDesk() {
                 {TFS.filter((x) => ['60', '300', '900', '1800', '3600', '14400', '86400'].includes(x.k)).map((x) => pill(x.label, String(gran) === x.k, () => setGran(Number(x.k))))}
               </View>
             </View>
-            <View onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })} style={{ ...(stack ? { height: 460 } : { flex: 1, minHeight: 460 }), marginTop: 14, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: border } as any}>
+            <View onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })} style={{ height: CHART_H, marginTop: 14, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: border } as any}>
               {active && box.w > 0 && <TerminalChart key={symId} symId={symId} name={sym.name} dec={dec} gran={gran} onGran={(k) => setGran(Number(k))} positions={positions.filter((p) => p.symId === symId)} bid={bid} ask={ask} mark={mark} width={box.w} height={box.h} onManage={(h: Hit) => setSheet({ id: h.id, focus: h.part })} />}
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
@@ -224,7 +225,7 @@ export default function ManualTradeDesk() {
               </View>
               <View style={{ flexDirection: 'row', paddingVertical: 6 }}>{th_('Symbol', 1.6)}{th_('Price', 1, true)}{th_('Change', 1, true)}<View style={{ width: 26 }} /></View>
               {watchList.length === 0 && <Text style={{ color: th.dim, fontSize: 12.5, textAlign: 'center', padding: 18 }}>{wTab === 'watch' ? 'Tap the star on any symbol to add it to your Watchlist.' : 'No symbols found.'}</Text>}
-              <ScrollView style={{ maxHeight: 400 }} nestedScrollEnabled>
+              <ScrollView style={{ maxHeight: 270 }} nestedScrollEnabled>
               {watchList.map((s) => {
                 const lq = quotes[s.id], c = chg(s.id), on = s.id === symId;
                 return (
