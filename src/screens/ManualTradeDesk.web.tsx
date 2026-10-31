@@ -15,11 +15,14 @@ import { perPoint, usdPerQuote, lotUnits, lotSpec, parseLots, lotsError, fmtLots
 import { totalPnl, Position } from '../positions';
 import { sourceName } from '../trades';
 import { manualTarget, MANUAL_TAB } from '../manualTarget';
+import { useDemoAcct } from '../useDemoAcct';
+import { demoStats } from '../demoAccount';
+import DemoAccountPanel, { AccountStrip } from '../DemoAccountPanel';
 
 // DEMO TRADING dashboard for the website: hero, live chart with timeframes, market watch, open positions / recent trades,
 // a trade panel (volume, stop loss, take profit, estimated P/L), live account stats and the feature strip.
 // Same paper-trading engine as the phone terminal: orders fill at the live price, closed trades go to the Journal and Trade history.
-const START = 1000, LEVERAGE = 100;
+// The starting balance and leverage come from the demo account settings (src/useDemoAcct.ts, edited in the Demo Account panel > Settings).
 const isMetal = (s: { id: string }) => /XAU|XAG/.test(s.id);
 const isIndex = (s: { id: string; cat: string }) => s.cat === 'indices' || s.id === 'frxDXY';
 const isForexTab = (s: { id: string; cat: string }) => s.cat === 'forex' || s.cat === 'indices' || s.id === 'frxDXY'; // metals, oil and indices live inside Forex
@@ -39,6 +42,7 @@ const clean = (n: number) => Number(n.toPrecision(10));
 export default function ManualTradeDesk() {
   const { th, tab, positions, openPos, closePos, setPosLevels, journal, setHistOpen, toast } = useApp();
   const W = useRealWindow().width;
+  const { acct, setAcct } = useDemoAcct(), START = acct.start, LEVERAGE = acct.leverage;
   const active = tab === MANUAL_TAB;
   useFeed(active);
   const dark = th.dark;
@@ -106,7 +110,7 @@ export default function ManualTradeDesk() {
   }, [positions]);
 
   // ---- account numbers
-  const demoTrades = journal.filter((j) => sourceName(j.source) === 'Demo').sort((a, b) => a.date - b.date);
+  const demoTrades = journal.filter((j) => sourceName(j.source) === 'Demo' && j.date >= acct.resetAt).sort((a, b) => a.date - b.date);
   const realized = demoTrades.reduce((a, j) => a + j.pnl, 0), balance = START + realized;
   const floatTotal = positions.reduce((a, p) => { const m = mark(p); return a + (m !== undefined ? totalPnl(p, m) : p.realized); }, 0);
   const equity = balance + floatTotal;
@@ -114,6 +118,13 @@ export default function ManualTradeDesk() {
   const free = equity - used, level = used > 0 ? (equity / used) * 100 : 0;
   const curve = useMemo(() => { let b = START; const c = [b]; demoTrades.forEach((j) => { b += j.pnl; c.push(b); }); c.push(equity); return c; }, [journal, equity]);
 
+  const stats = useMemo(() => demoStats(demoTrades, START), [journal, START, acct.resetAt]);
+  const nums = { balance, equity, floatTotal, used, free, level, open: positions.length };
+  const contentW = Math.min(W, 1280) - (W < 1120 ? 32 : 64);
+  const doReset = (v: number) => {
+    if (positions.length) { toast('Close all open positions before resetting the account.', 'bad'); return; }
+    setAcct({ start: v, resetAt: Date.now() }); toast(`Demo account reset to ${money(v)}.`, 'good');
+  };
   const chgV = q ? chg(symId) : 0, up = chgV >= 0;
   const stack = W < 1180;
   const pill = (label: string, on: boolean, f: () => void, key?: string) => (
@@ -139,6 +150,9 @@ export default function ManualTradeDesk() {
         {/* ---- hero: the same banner as every other page */}
         <HeroBanner icon="swap-vertical" tag="Demo Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. No real money."
           features={[{ icon: 'stats-chart-outline', title: 'Real-time charts', sub: 'Live candles' }, { icon: 'pulse-outline', title: 'Live market data', sub: 'Forex, crypto, indices' }, { icon: 'construct-outline', title: 'Advanced tools', sub: 'For better decisions' }]} />
+
+        {/* ---- account summary: balance, equity, profit / loss, win rate */}
+        <AccountStrip acct={acct} s={stats} a={nums} w={contentW} />
 
         {/* ---- chart + market watch */}
         <View style={{ flexDirection: stack ? 'column' : 'row', gap: 20, alignItems: 'flex-start' }}>
@@ -325,7 +339,7 @@ export default function ManualTradeDesk() {
 
           <View style={{ ...cardSt, width: stack ? '100%' : 300, padding: 16 } as any}>
             {head('stats-chart', 'Live Stats', <View style={{ paddingHorizontal: 9, paddingVertical: 3, borderRadius: 6, backgroundColor: th.buy + '1F' }}><Text style={{ color: th.buy, fontSize: 11, fontWeight: '800' }}>● Live</Text></View>)}
-            {([['Balance', money(balance), ink], ['Equity', money(equity), ink], ['Free Margin', money(free), ink], ['Used Margin', money(used), ink], ['Margin Level', used > 0 ? `${level.toFixed(2)}%` : '-', used > 0 ? (level >= 100 ? th.buy : th.sell) : th.dim]] as const).map(([l, v, c]) => (
+            {([['Balance', money(balance), ink], ['Equity', money(equity), ink], ['Free Margin', money(free), ink], ['Used Margin', money(used), ink], ['Leverage', `1:${LEVERAGE}`, ink], ['Margin Level', used > 0 ? `${level.toFixed(2)}%` : '-', used > 0 ? (level >= 100 ? th.buy : th.sell) : th.dim]] as const).map(([l, v, c]) => (
               <View key={l} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 11, paddingHorizontal: 10, marginBottom: 6, borderRadius: 8, backgroundColor: soft }}>
                 <Text style={{ flex: 1, color: th.dim, fontSize: 12.5 }}>{l}</Text><Text style={{ color: c, fontSize: 13.5, fontWeight: '800' }}>{v}</Text>
               </View>
@@ -333,6 +347,9 @@ export default function ManualTradeDesk() {
             <Sparkline data={curve} color={th.accent} />
           </View>
         </View>
+
+        {/* ---- full demo account: information, performance, symbols, settings */}
+        <DemoAccountPanel acct={acct} setAcct={setAcct} s={stats} a={nums} w={contentW} onReset={doReset} />
 
         {/* ---- feature strip */}
         <View style={{ ...cardSt, flexDirection: 'row', flexWrap: 'wrap', padding: 18, gap: 18 }}>
