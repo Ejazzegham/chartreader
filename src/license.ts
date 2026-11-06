@@ -3,7 +3,7 @@ import * as SecureStore from './secureStore';
 import * as Crypto from 'expo-crypto';
 
 // Put the public URL of server/server.js here (must be https for release builds).
-export const SERVER = 'https://hardhat-unfasten-overture.ngrok-free.dev';
+export const SERVER = 'https://undercook-tribune-gratuity.ngrok-free.dev';
 export const PAY = { TRON: 'TKvEQSzioWQGZBHdrzSLGWUnmQhJsEHUhA', BSC: '0xd7065772295fb0d563c1c6b00e4464bcd4b03f81' };
 export const PLANS = { weekly: 8, monthly: 20 };
 // The address people can write to. Emails sent here reach the admin panel (see EMAIL_TO_APP.md in the server folder).
@@ -69,6 +69,17 @@ export async function setServer(raw: string): Promise<string> {
   if (!/^https?:\/\/[^\s/]+\.[^\s]+$/i.test(v) && !/^https?:\/\/localhost/i.test(v)) return 'Enter the full address, for example https://your-name.trycloudflare.com';
   base = v; await SecureStore.setItemAsync(SERVER_KEY, v).catch(() => {});
   return '';
+}
+// The numbers for the home page map: members per country and per city (counts only, nothing personal). Returns null when the server cannot be reached.
+export type SignupMapData = { total: number; located: number; countries: { cc: string; name: string; n: number }[]; places: { cc: string; city: string; lat: number; lon: number; n: number }[] };
+export async function getSignupMap(): Promise<SignupMapData | null> {
+  if (base.includes('YOUR-SERVER-URL')) return null;
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(base + '/public/signups', { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
+    const j = await r.json().catch(() => null);
+    return r.ok && j && Array.isArray(j.countries) && Array.isArray(j.places) ? j : null;
+  } catch { return null; } finally { clearTimeout(to); }
 }
 async function post(path: string, body: any, token = '', ms = 25000) {
   const net = (m: string) => Object.assign(new Error(m), { network: true }); // marks "server not reachable" so the app can carry on offline (see localTrial)

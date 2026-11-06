@@ -13,8 +13,8 @@ import { setDash, groupOf } from './dash';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const LINKS: [string, number][] = [['Home', 0], ['Analysis', 1], ['Markets', 2], ['Journal', 3], ['Risk & TP Planner', 4]];
-const TOOLS: [number, string][] = [[8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
+const LINKS: [string, number][] = [['Home', 0], ['Analysis', 1], ['Markets', 2], ['Journal', 3], ['Demo Trade', 16]]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
+const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
 // The website's top navigation: logo, main pages, a Tools menu, search, live status, alerts and the account menu.
 // Quiet and professional: a white bar with a hairline, small restrained type, a brass underline on the open page, hairline buttons (no pills, no glows).
@@ -26,7 +26,7 @@ function TopNav() {
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1120;
   const ink = th.dark ? th.text : '#0F1B33', mute = th.dark ? th.dim : '#5B6577', rule = th.dark ? th.line : '#E6E9EF';
-  const bar = th.dark ? th.panel : '#FFFFFF', toolTabs = [...TOOLS.map((x) => x[0]), 16];
+  const bar = th.dark ? th.panel : '#FFFFFF', toolTabs = TOOLS.map((x) => x[0]);
   const padX = slim ? 16 : 32;
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };
@@ -74,7 +74,6 @@ function TopNav() {
               <View style={{ ...drop, left: 0 }}>
                 {TOOLS.map(([i, icon]) => item(icon, t(NAV[i].key), () => setTab(i)))}
                 {item('receipt', 'Trade History', () => setHistOpen(true))}
-                {item('swap-vertical', 'Demo Trade', () => setTab(16))}
                 {item('chatbubbles-outline', 'Help chat', () => setHelpOpen(true), supportUnread)}
               </View>
             )}

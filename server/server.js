@@ -1,7 +1,7 @@
 // Chart Reader license server. Zero dependencies (Node 18+):  FIREBASE_PROJECT_ID=your-project ADMIN_EMAILS=you@x.com GEMINI_API_KEY=... node server.js
 // Login is done by Firebase Auth in the app; this server only verifies the Firebase ID token and then handles trials, payments, admin and the Gemini proxy.
 const http = require('http'), fs = require('fs'), crypto = require('crypto');
-const PORT = process.env.PORT || 8080, DBF = process.env.DB_FILE || './db.json';
+const PORT = process.env.PORT || 8081, DBF = process.env.DB_FILE || './db.json';
 // Admin = an email on this list AND confirmed by Firebase (the owner clicked the link in the mailbox). No passcode.
 const ADMINS = ['bahutechnology@gmail.com', ...(process.env.ADMIN_EMAILS || '').toLowerCase().split(',')].map((s) => s.trim()).filter(Boolean);
 const FB_PROJECT = process.env.FIREBASE_PROJECT_ID || '';                 // Firebase console > Project settings > Project ID
@@ -107,6 +107,8 @@ async function register(req, b) {
   if (person.uid === uid) person.email = email; // the person changed their email in the app: keep the record in step
   db.emails[email] = pid; db.devices[dev] = pid;
   person.email ||= email; person.last = Date.now();
+  // Signup map: look the member's country / city up once (in the background, it never slows or blocks the login). Older members get it the next time they log in.
+  if ((!person.geo || person.geo.lat === undefined) && !(person.geoTry > Date.now() - 864e5)) { person.geoTry = Date.now(); geo.lookup(ip, req.headers).then((g) => { if (g && (!person.geo || g.lat !== undefined)) { person.geo = g; save(); } }).catch(() => {}); }
   // Admin needs an email on the admin list that is CONFIRMED. Anyone can type an admin's address into the sign-up form; only the owner can click the link in the mailbox.
   const admin = ADMINS.includes(email) && verified;
   const token = crypto.createHmac('sha256', SECRET).update(pid + ':' + dev + ':' + admin).digest('hex');
@@ -147,6 +149,7 @@ const notifyUser = (pid, title, body) => alerts.push(pid, title, body, { type: '
 const payments = require('./payments')({ db, save, lookup: lookupTx, notify: notifyUser, notifyAdmins, DAY });
 const media = require('./media')({ db, save, dir: DBF + '.media' }); // photo / video attachments of the support chat, see media.js
 const support = require('./support')({ db, save, notifyAdmins, notifyUser, media });
+const geo = require('./geo')({ upstream }); // country / city of members for the home page map (server/geo.js)
 const proxy = require('./proxy')(); // GET /proxy?u=... for the website (browsers block most sites)
 const translator = require('./translate')({ upstream, getKey: () => db.geminiKey, getModel: () => process.env.TRANSLATE_MODEL || db.model || 'gemini-3.8-flash' }); // chat translation: its own small limits, see translate.js
 const authMail = require('./authmail')({ verifyFirebase, upstream, project: FB_PROJECT }); // branded account emails (reset / confirm / change email); off until configured, see authmail.js
@@ -156,6 +159,7 @@ http.createServer(async (req, res) => {
   const send = (c, o) => { res.writeHead(c, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type, ngrok-skip-browser-warning', 'access-control-allow-methods': 'GET, POST, OPTIONS' }); res.end(JSON.stringify(o)); };
   if (req.method === 'OPTIONS') return send(204, {});
   if (await proxy(req, res)) return; // the website's read-only proxy (server/proxy.js)
+  if (req.method === 'GET' && req.url.split('?')[0] === '/public/signups') return send(200, geo.summary(db.people, (p) => p.deleted || ADMINS.includes(String(p.email || '').toLowerCase()))); // public, counts only, cached 60 s
   if (req.method === 'GET' && req.url === '/health') return send(200, { ok: true, time: Date.now(), firebase: !!FB_PROJECT, geminiKey: !!db.geminiKey, brandedMail: authMail.ready() });
   // Attachments: the upload is raw bytes (not JSON) and a file is shown by its random link, so both are handled before the JSON body is read.
   if ((req.method === 'GET' || req.method === 'HEAD') && req.url.startsWith('/media/')) return media.serve(req, res, req.url.slice(7).split('?')[0]);

@@ -4,6 +4,7 @@ import { Icon } from './ui';
 import { HERO_BG, HERO_BRASS } from './ui';
 import { LogoMark } from './Brand';
 import { PLANS } from './license';
+import SignupMap from './SignupMap';
 
 const POINTS: { title: string; text: string }[] = [
   { title: 'TRADE or WAIT, clearly', text: 'One answer per chart. A trade is shown only when the methods and the higher timeframe agree; otherwise you see why to wait.' },
@@ -41,6 +42,7 @@ export default function Landing() {
             </View>
           ))}
         </View>
+        <View style={{ maxWidth: 540 }}><SignupMap /></View>
         <View style={{ borderTopWidth: 1, borderTopColor: '#FFFFFF1F', paddingTop: 18, gap: 6, maxWidth: 540 }}>
           <Text style={{ color: tx, fontSize: 13, fontWeight: '600' }}>{`3-day free trial  ·  Weekly $${PLANS.weekly}  ·  Monthly $${PLANS.monthly}`}</Text>
           <Text style={{ color: '#8E9BB8', fontSize: 12 }}>Educational tool, not financial advice.</Text>
