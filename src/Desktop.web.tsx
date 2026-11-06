@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, Image, TextInput } from 'react-native';
+import { View, Text, Pressable, Image, TextInput, ScrollView } from 'react-native';
 import { useApp } from './store';
 import { Icon, LiveDot, BellButton } from './ui';
 import { LogoMark } from './Brand';
 import { NAV } from './nav';
 import { Coin } from './MarketWidgets';
-import { useLayout } from './win';
+import { useLayout, useRealWindow } from './win';
 import { SYMBOLS, Sym } from './markets';
 import { setDash, groupOf } from './dash';
 
@@ -13,7 +13,7 @@ import { setDash, groupOf } from './dash';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const LINKS: [string, number][] = [['Home', 0], ['Analysis', 1], ['Markets', 2], ['Journal', 3], ['Demo Trade', 16]]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
+const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['Journal', 3, 'book-outline'], ['Demo Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
 const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
 // The website's top navigation: logo, main pages, a Tools menu, search, live status, alerts and the account menu.
@@ -22,12 +22,13 @@ export const NAV_H = 72;
 function TopNav() {
   const { th, t, tab, setTab, account, avatar, lic, setAdminOpen, setHelpOpen, setHistOpen, supportUnread, adminBadge } = useApp();
   const L = useLayout();
-  const [menu, setMenu] = useState<'' | 'tools' | 'user'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState('');
+  const compact = L.full < 900, H = useRealWindow().height, navH = compact ? 60 : NAV_H; // compact = phone / small tablet: logo, icons and a menu button
+  const [menu, setMenu] = useState<'' | 'tools' | 'user' | 'nav'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState('');
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1120;
   const ink = th.dark ? th.text : '#0F1B33', mute = th.dark ? th.dim : '#5B6577', rule = th.dark ? th.line : '#E6E9EF';
   const bar = th.dark ? th.panel : '#FFFFFF', toolTabs = TOOLS.map((x) => x[0]);
-  const padX = slim ? 16 : 32;
+  const padX = compact ? 12 : slim ? 16 : 32;
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
@@ -35,7 +36,7 @@ function TopNav() {
   const hits = q.trim().length ? SYMBOLS.filter((s) => (s.name + ' ' + s.id).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8) : [];
   const pick = (s: Sym) => { setDash({ sym: s.id, market: groupOf(s.cat) }); setTab(0); setQ(''); setSearchOpen(false); };
   const link = (label: string, on: boolean, onPress: () => void, chevron?: boolean) => (
-    <Pressable key={label} accessibilityRole="button" onPress={onPress} style={((s: any) => ({ height: NAV_H, paddingHorizontal: slim ? 9 : 14, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', cursor: 'pointer' })) as any}>
+    <Pressable key={label} accessibilityRole="button" onPress={onPress} style={((s: any) => ({ height: navH, paddingHorizontal: slim ? 9 : 14, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', cursor: 'pointer' })) as any}>
       {(s: any) => (<>
         <Text style={{ color: on || s.hovered ? ink : mute, fontSize: 13.5, fontWeight: on ? '600' : '500', letterSpacing: 0.15 }} numberOfLines={1}>{label}</Text>
         {chevron && <Icon name="chevron-down" size={13} color={on ? ink : mute} />}
@@ -43,21 +44,21 @@ function TopNav() {
       </>)}
     </Pressable>
   );
-  const item = (icon: string, label: string, onPress: () => void, badge = 0) => (
-    <Pressable key={label} accessibilityRole="button" onPress={() => { setMenu(''); onPress(); }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, height: 38, paddingHorizontal: 12, borderRadius: 6, cursor: 'pointer', backgroundColor: s.hovered ? th.panel2 : 'transparent' })) as any}>
-      <Icon name={icon} size={16} color={mute} />
-      <Text style={{ flex: 1, color: ink, fontSize: 13.5, fontWeight: '500' }} numberOfLines={1}>{label}</Text>
+  const item = (icon: string, label: string, onPress: () => void, badge = 0, on = false) => (
+    <Pressable key={label} accessibilityRole="button" onPress={() => { setMenu(''); onPress(); }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, height: compact ? 44 : 38, paddingHorizontal: 12, borderRadius: 6, cursor: 'pointer', backgroundColor: s.hovered || on ? th.panel2 : 'transparent' })) as any}>
+      <Icon name={icon} size={16} color={on ? th.accent2 : mute} />
+      <Text style={{ flex: 1, color: ink, fontSize: 13.5, fontWeight: on ? '700' : '500' }} numberOfLines={1}>{label}</Text>
       {badge > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '700' }}>{badge > 99 ? '99+' : badge}</Text></View>}
     </Pressable>
   );
-  const drop = { position: 'absolute', top: NAV_H - 8, padding: 6, minWidth: 224, borderRadius: 10, borderWidth: 1, borderColor: rule, backgroundColor: th.solid, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, zIndex: 40 } as any;
+  const drop = { position: 'absolute', top: navH - 8, padding: 6, minWidth: 224, borderRadius: 10, borderWidth: 1, borderColor: rule, backgroundColor: th.solid, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, zIndex: 40 } as any;
   const name = account?.name ?? '';
   const ghost = (s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 34, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: rule, backgroundColor: s.hovered ? th.panel2 : 'transparent', cursor: 'pointer' }) as any;
   const count = adminBadge.chats + adminBadge.pays;
   return (
     <View style={{ zIndex: 30 }}>
       {(menu !== '' || searchOpen) && <Pressable onPress={() => { setMenu(''); setSearchOpen(false); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 29 } as any} />}
-      <View style={{ height: NAV_H, backgroundColor: bar, borderBottomWidth: 1, borderBottomColor: rule, zIndex: 31 }}>
+      <View style={{ height: navH, backgroundColor: bar, borderBottomWidth: 1, borderBottomColor: rule, zIndex: 31 }}>
         <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', paddingHorizontal: padX, gap: slim ? 2 : 4 }}>
           <Pressable onPress={() => setTab(0)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11, cursor: 'pointer' } as any}>
             <LogoMark size={34} radius={8} />
@@ -66,6 +67,7 @@ function TopNav() {
               {!slim && <Text style={{ color: mute, fontSize: 9, fontWeight: '600', letterSpacing: 2 }} numberOfLines={1}>TRADING ANALYSIS</Text>}
             </View>
           </Pressable>
+          {!compact && (<>
           <View style={{ width: 1, height: 28, backgroundColor: rule, marginHorizontal: slim ? 12 : 28 }} />
           {LINKS.map(([label, i]) => link(label, tab === i, () => { setMenu(''); setTab(i); }))}
           <View>
@@ -78,11 +80,12 @@ function TopNav() {
               </View>
             )}
           </View>
+          </>)}
           <View style={{ flex: 1 }} />
           <Pressable accessibilityRole="button" accessibilityLabel="Search" onPress={() => { setSearchOpen((v) => !v); setMenu(''); setTimeout(() => ref.current?.focus(), 30); }} style={((s: any) => ({ width: 34, height: 34, borderRadius: 8, borderWidth: 1, borderColor: rule, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: s.hovered ? th.panel2 : 'transparent' })) as any}>
             <Icon name="search" size={16} color={mute} />
           </Pressable>
-          <View style={{ marginLeft: 6 }}><LiveDot /></View>
+          {L.full >= 640 && <View style={{ marginLeft: 6 }}><LiveDot /></View>}
           <BellButton />
           {lic.admin && (
             <Pressable accessibilityRole="button" onPress={() => setAdminOpen(true)} style={ghost}>
@@ -90,14 +93,14 @@ function TopNav() {
               {count > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '700' }}>{count}</Text></View>}
             </Pressable>
           )}
-          {!paid && <Pressable onPress={() => setTab(6)} style={{ height: 34, paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center', backgroundColor: th.accent, cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '600' }}>Upgrade</Text></Pressable>}
+          {!paid && L.full >= 560 && <Pressable onPress={() => setTab(6)} style={{ height: 34, paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center', backgroundColor: th.accent, cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12.5, fontWeight: '600' }}>Upgrade</Text></Pressable>}
           <View style={{ marginLeft: 8 }}>
             <Pressable accessibilityRole="button" onPress={() => setMenu(menu === 'user' ? '' : 'user')} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, cursor: 'pointer' } as any}>
               {avatar ? <Image source={{ uri: avatar }} style={{ width: 32, height: 32, borderRadius: 16 }} /> : (
                 <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 13.5, fontWeight: '600' }}>{(name || '?').trim().charAt(0).toUpperCase()}</Text></View>
               )}
               {!slim && <Text style={{ color: ink, fontSize: 13.5, fontWeight: '600', maxWidth: 110 }} numberOfLines={1}>{name}</Text>}
-              <Icon name="chevron-down" size={14} color={mute} />
+              {!compact && <Icon name="chevron-down" size={14} color={mute} />}
             </Pressable>
             {menu === 'user' && (
               <View style={{ ...drop, right: 0 }}>
@@ -112,9 +115,27 @@ function TopNav() {
               </View>
             )}
           </View>
+          {compact && (
+            <Pressable accessibilityRole="button" accessibilityLabel="Menu" onPress={() => { setMenu(menu === 'nav' ? '' : 'nav'); setSearchOpen(false); }} style={((s: any) => ({ width: 36, height: 36, marginLeft: 6, borderRadius: 8, borderWidth: 1, borderColor: rule, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: s.hovered || menu === 'nav' ? th.panel2 : 'transparent' })) as any}>
+              <Icon name={menu === 'nav' ? 'close' : 'menu'} size={19} color={ink} />
+            </Pressable>
+          )}
         </View>
+        {compact && menu === 'nav' && (
+          <View style={{ ...drop, left: 8, right: 8, minWidth: 0, padding: 6, maxHeight: Math.max(240, H - navH - 20) }}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {LINKS.map(([label, i, icon]) => item(icon, label, () => setTab(i), 0, tab === i))}
+              <View style={{ height: 1, backgroundColor: rule, marginVertical: 6 }} />
+              <Text style={{ color: mute, fontSize: 10.5, fontWeight: '700', letterSpacing: 1.4, paddingHorizontal: 12, paddingVertical: 4 }}>TOOLS</Text>
+              {TOOLS.map(([i, icon]) => item(icon, t(NAV[i].key), () => setTab(i), 0, tab === i))}
+              {item('receipt', 'Trade History', () => setHistOpen(true))}
+              {item('chatbubbles-outline', 'Help chat', () => setHelpOpen(true), supportUnread)}
+              {!paid && item('sparkles-outline', 'Upgrade', () => setTab(6))}
+            </ScrollView>
+          </View>
+        )}
         {searchOpen && (
-          <View style={{ position: 'absolute', top: NAV_H - 12, right: padX, width: 420, zIndex: 41 }}>
+          <View style={{ position: 'absolute', top: navH - 12, right: padX, width: Math.min(420, L.full - 2 * padX), zIndex: 41 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: th.accent, backgroundColor: th.solid, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } }}>
               <Icon name="search" size={16} color={mute} />
               <TextInput ref={ref} value={q} onChangeText={setQ} placeholder="Search symbols, pairs or instruments" placeholderTextColor={mute} style={{ flex: 1, color: ink, fontSize: 13.5, outlineStyle: 'none' } as any} />

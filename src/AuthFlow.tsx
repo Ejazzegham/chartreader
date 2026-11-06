@@ -7,12 +7,25 @@ import PinScreen from './PinScreen';
 import { LogoFull } from './Brand';
 import { useDesktop } from './Desktop';
 import Landing from './Landing';
+import { useLayout } from './win';
 
 const Logo = () => <LogoFull width={150} radius={8} />;
 
 const Page = ({ h = 230, title, children }: { h?: number; title: string; children: React.ReactNode }) => {
   const { th } = useApp();
-  const desk = useDesktop();
+  const desk = useDesktop(), narrow = useLayout().full < 900;
+  if (desk && narrow) return ( // website on a phone: logo, the form, then the front-page sections under it (one scrolling page)
+    <ScrollView style={{ flex: 1, backgroundColor: th.bg }} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <View style={{ padding: 16, paddingTop: 28, paddingBottom: 32, alignItems: 'center' }}>
+        <Logo />
+        <View style={{ width: '100%', maxWidth: 440 }}>
+          <Text accessibilityRole="header" style={{ color: th.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.6, textAlign: 'center', marginVertical: 16 }}>{title}</Text>
+          <Card style={{ padding: 18 }}>{children}</Card>
+        </View>
+      </View>
+      <Landing stacked />
+    </ScrollView>
+  );
   if (desk) return ( // website on a wide screen: the front page on the left, the form on the right
     <View style={{ flex: 1, flexDirection: 'row', backgroundColor: th.bg }}>
       <Landing />
