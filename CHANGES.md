@@ -1,3 +1,11 @@
+# Login / sign up redesign, readability and Google sign-in messages
+
+- **Log in / Sign up (website, wide screens):** a short brand panel (logo + a few lines) on one half, the form on the other. Log in = brand left, form right. Sign up = the halves swap sides and slide in. New file `src/AuthBrand.tsx`; layout in `src/AuthFlow.tsx` (`Page`, `Slide`). Phones and narrow windows keep the stacked layout.
+- **Sign up:** required "I agree to the Terms of Service and Privacy Policy" checkbox (also checked before Continue with Google on the Sign up screen), password hint.
+- **Analysis method cards** (`src/MethodPage.web.tsx`) and **timeframe bar** (`src/Timeframe.tsx`): near-opaque backgrounds, solid highlight for the open method, higher-contrast text.
+- **Google sign-in on the website** (`src/google.web.ts`, `src/store.tsx`): real reasons are shown (domain not authorized, Google not enabled, browser problem, or the Firebase error code) instead of always "error 10". Fix on the Firebase side: Authentication > Settings > Authorized domains (add the live site address) and Sign-in method > Google > Enable.
+- Then: `npm run build:web`
+
 # Hero backgrounds: one animation per page
 
 - Every hero now has its own animated background that matches the page, instead of one effect on all of them. New file `src/heroScenes.ts` holds all 19 scenes (palette + canvas drawing); `src/HeroFx.web.tsx` still owns the canvas and the single shared animation loop (only heroes on screen are drawn; still for reduced-motion users).
