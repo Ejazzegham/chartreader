@@ -149,6 +149,13 @@ const notifyUser = (pid, title, body) => alerts.push(pid, title, body, { type: '
 const payments = require('./payments')({ db, save, lookup: lookupTx, notify: notifyUser, notifyAdmins, DAY });
 const media = require('./media')({ db, save, dir: DBF + '.media' }); // photo / video attachments of the support chat, see media.js
 const support = require('./support')({ db, save, notifyAdmins, notifyUser, media });
+// Community (server/community.js): posts, trade ideas, comments, likes, reports. Own file, so it never slows the main database down.
+const community = require('./community')({
+  file: DBF + '.community.json',
+  people: new Proxy({}, { get: (_, pid) => db.people[pid] }),
+  isAdmin: (pid) => ADMINS.includes(String((db.people[pid] || {}).email || '').toLowerCase()),
+  notify: (pid, title, body, data) => alerts.push(pid, title, body, data).catch(() => {}),
+});
 const visits = require('./visits')({ file: DBF + '.visits.json' }); // visitor counter of the home page (server/visits.js)
 const geo = require('./geo')({ upstream }); // country / city of members for the home page map (server/geo.js)
 const proxy = require('./proxy')(); // GET /proxy?u=... for the website (browsers block most sites)
@@ -160,7 +167,7 @@ http.createServer(async (req, res) => {
   const send = (c, o) => { res.writeHead(c, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type, ngrok-skip-browser-warning', 'access-control-allow-methods': 'GET, POST, OPTIONS' }); res.end(JSON.stringify(o)); };
   if (req.method === 'OPTIONS') return send(204, {});
   if (await proxy(req, res)) return; // the website's read-only proxy (server/proxy.js)
-  if (req.method === 'GET' && req.url.split('?')[0] === '/public/signups') { const q = new URL(req.url, 'http://x').searchParams; return send(200, { ...geo.summary(db.people, (p) => p.deleted || ADMINS.includes(String(p.email || '').toLowerCase()), { from: q.get('from'), to: q.get('to') }), ...visits.counts() }); } // public: counts, first names and countries only. The member part is cached 60 s
+  if (req.method === 'GET' && req.url.split('?')[0] === '/public/signups') return send(200, { ...geo.summary(db.people, (p) => p.deleted || ADMINS.includes(String(p.email || '').toLowerCase())), ...visits.counts() }); // public: counts, first names and countries only. The member part is cached 60 s
   if (req.method === 'GET' && req.url === '/health') return send(200, { ok: true, time: Date.now(), firebase: !!FB_PROJECT, geminiKey: !!db.geminiKey, brandedMail: authMail.ready() });
   // Attachments: the upload is raw bytes (not JSON) and a file is shown by its random link, so both are handled before the JSON body is read.
   if ((req.method === 'GET' || req.method === 'HEAD') && req.url.startsWith('/media/')) return media.serve(req, res, req.url.slice(7).split('?')[0]);
@@ -185,6 +192,7 @@ http.createServer(async (req, res) => {
     if (u === '/status') return send(200, lic(s.pid, s.admin, s.token, s.email));
     if (u === '/pay') return send(200, await payments.submit(s, b));   // a CLAIM: the admin approves it, nothing is added here
     if (u === '/pay/mine') return send(200, { pays: payments.mine(s.pid) });
+    if (u.startsWith('/community/')) { if (!lic(s.pid, s.admin, s.token).entitled) return send(402, { error: 'Your trial or plan has ended. Renew to use the community.' }); const r = await community.handle(u, b, s); return send(r.status, r.body); } // members only: needs a live trial or plan like the rest of the app
     if (u === '/support/send') return send(200, support.userSend(s, b.text, b.media));  // open to everybody who is logged in, also after the trial ended
     if (u === '/support/pull') return send(200, support.userPull(s, b.since));
     if (u === '/support/read') return send(200, support.userRead(s));

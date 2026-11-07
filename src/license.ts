@@ -77,7 +77,6 @@ export type SignupMapData = {
   places: { cc: string; city: string; lat: number; lon: number; n: number }[];
   recent?: { t: number; name: string; cc: string }[]; // newest members: first name + last initial, and country
   visitors?: number; visits?: number; online?: number; // visitor counter (older servers do not send these)
-  growth?: { members: number; countries: number }; // % change in the last 30 days (older servers do not send this)
 };
 export type VisitCounts = { visitors: number; visits: number; online: number };
 // Visitor counter: a random id kept in this browser tells visitors apart (the server stores only a one-way hash of it, no IP, nothing personal).
@@ -102,12 +101,11 @@ export async function pingVisit(): Promise<VisitCounts | null> {
 
 let signupDiag = 'not asked yet';
 export const getSignupMapDiag = () => signupDiag; // for the ?mapdebug switch on the website: why the map has no numbers
-export async function getSignupMap(range: { from?: number; to?: number } = {}): Promise<SignupMapData | null> { // range: only members who joined between from and to (ms)
+export async function getSignupMap(): Promise<SignupMapData | null> {
   if (base.includes('YOUR-SERVER-URL')) { signupDiag = 'no server address set'; return null; }
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
-    const qs = [range.from ? 'from=' + Math.round(range.from) : '', range.to ? 'to=' + Math.round(range.to) : ''].filter(Boolean).join('&');
-    const r = await fetch(base + '/public/signups' + (qs ? '?' + qs : ''), { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
+    const r = await fetch(base + '/public/signups', { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
     const txt = await r.text(); let j: any = null; try { j = JSON.parse(txt); } catch {}
     if (!r.ok) { signupDiag = `${base}/public/signups answered HTTP ${r.status}: ${txt.replace(/\s+/g, ' ').slice(0, 90)}`; return null; }
     if (!j || !Array.isArray(j.countries) || !Array.isArray(j.places)) { signupDiag = 'the answer is not the signup numbers (is the server on the new server.js?): ' + txt.replace(/\s+/g, ' ').slice(0, 90); return null; }
@@ -208,6 +206,8 @@ export const saveServerKey = (token: string, key: string, model = '') => post('/
 
 // ---- cloud backup + profile (stored on the server, tied to the person, so it survives an uninstall) ----
 export type CloudGet = { data: any | null; updatedAt: number; profile: { name: string; phone: string } };
+// Community (server/community.js): every call needs the logged-in session token. Errors carry the server's message ("You are posting very fast...").
+export const communityCall = (token: string, path: string, body: any = {}): Promise<any> => post('/community/' + path, body, token);
 export const cloudGet = (token: string): Promise<CloudGet> => post('/sync/get', {}, token);
 export const cloudPut = (token: string, data: any): Promise<{ ok: boolean; updatedAt: number }> => post('/sync/put', { data }, token);
 export const profilePut = (token: string, name: string, phone: string): Promise<{ ok: boolean; name: string; phone: string }> => post('/profile/put', { name, phone }, token);
