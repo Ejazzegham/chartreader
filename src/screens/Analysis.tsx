@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, Switch, BackHandler } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, Switch, BackHandler, Animated, Easing, Platform, AccessibilityInfo } from 'react-native';
 import { useWindowDimensions } from '../win';
 import { LinearGradient } from '../FlatGradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -32,13 +32,41 @@ type ScanCfg = { auto: boolean; alarm: boolean; minProb: number; watch?: boolean
 const CFG0: ScanCfg = { auto: true, alarm: true, minProb: 75 };
 const groupOf = (cat: string) => (cat === 'indices' ? 'forex' : cat);
 
-// A quiet standing reminder at the top of the Analysis page (it used to be a red scrolling ticker).
+// Standing warning at the top of the Analysis page: a fresh red bar with white text that scrolls continuously.
+const ALERT_TEXT = "Don't anti-trade on any Boom, Crash, or Spike pairs.";
+const ALERT_RED = '#E5192B';
 function RunningAlert(_: { active: boolean }) {
-  const { th } = useApp();
+  const [boxW, setBoxW] = useState(0);
+  const [itemW, setItemW] = useState(0);
+  const [still, setStill] = useState(false);
+  const x = React.useRef(new Animated.Value(0)).current;
+
+  // people who turned motion off get the same warning, standing still
+  useEffect(() => { AccessibilityInfo.isReduceMotionEnabled?.().then(setStill).catch(() => {}); }, []);
+
+  // one full item (message + gap) per loop, so the restart is invisible
+  useEffect(() => {
+    if (!itemW || still) { x.setValue(0); return; }
+    x.setValue(0);
+    const loop = Animated.loop(Animated.timing(x, { toValue: -itemW, duration: Math.max(6000, itemW * 22), easing: Easing.linear, useNativeDriver: Platform.OS !== 'web' }));
+    loop.start();
+    return () => loop.stop();
+  }, [itemW, still]);
+
+  const item = (k: number, measure?: boolean) => (
+    <View key={k} onLayout={measure ? (e) => setItemW(Math.round(e.nativeEvent.layout.width)) : undefined} style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0, paddingRight: 56 }}>
+      <Icon name="warning" size={15} color="#FFFFFF" />
+      <Text numberOfLines={1} style={{ marginLeft: 8, color: '#FFFFFF', fontSize: 13.5, fontWeight: '700', letterSpacing: 0.2, flexShrink: 0 }}>{ALERT_TEXT}</Text>
+    </View>
+  );
+  const copies = itemW ? Math.ceil(boxW / itemW) + 1 : 1;
+
   return (
-    <View accessible accessibilityRole="alert" accessibilityLabel="Do not anti trade on Boom and Crash" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 40, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: th.line, borderLeftWidth: 3, borderLeftColor: th.gold, backgroundColor: th.panel }}>
-      <Icon name="information-circle-outline" size={17} color={th.gold} />
-      <Text style={{ flex: 1, color: th.text, fontSize: 13, fontWeight: '500' }}>{"Reminder: don't anti-trade on Boom & Crash."}</Text>
+    <View accessible accessibilityRole="alert" accessibilityLabel="Do not anti-trade on any Boom, Crash, or Spike pairs" onLayout={(e) => setBoxW(e.nativeEvent.layout.width)}
+      style={{ height: 42, borderRadius: 8, overflow: 'hidden', justifyContent: 'center', backgroundColor: ALERT_RED, borderWidth: 1, borderColor: '#FF5A68', paddingHorizontal: still ? 14 : 0 }}>
+      <Animated.View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', transform: [{ translateX: x }] }}>
+        {Array.from({ length: still ? 1 : copies }).map((_, i) => item(i, i === 0))}
+      </Animated.View>
     </View>
   );
 }
