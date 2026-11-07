@@ -34,7 +34,7 @@ export default function TradeChart({ s, price, width: fullW, height = 300 }: { s
   const z = useZoom(data.length, width - 66, height, { initial: SHOW, shift: 0.1 });
   if (data.length < 5) {
     return (
-      <View style={{ height, alignItems: 'center', justifyContent: 'center', backgroundColor: th.bg, borderRadius: 10, borderWidth: 1, borderColor: th.line, gap: 8, padding: 16 }}>
+      <View style={{ height, alignItems: 'center', justifyContent: 'center', backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, gap: 8, padding: 16 }}>
         {err ? <Text style={{ color: th.dim, textAlign: 'center', fontSize: 12.5, lineHeight: 18 }}>Candles are not available for this timeframe. The levels are listed below.</Text> : <ActivityIndicator color={th.accent} />}
       </View>
     );
@@ -70,7 +70,7 @@ export default function TradeChart({ s, price, width: fullW, height = 300 }: { s
 
   return (
     <View style={{ direction: 'ltr' }}>
-     <View style={{ flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg, overflow: 'hidden' }}>
+     <View style={{ flexDirection: 'row', borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg, overflow: 'hidden' }}>
       <View {...z.handlers} style={{ width }}>
       <Svg width={width} height={height} style={{ overflow: 'hidden' }}>
         <Defs><ClipPath id="plotClipT"><Rect x={0} y={0} width={W} height={height} /></ClipPath></Defs>

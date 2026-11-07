@@ -154,7 +154,7 @@ export default function Analysis() {
   // Background scanner card: the server scans while the app is closed and pushes a notification. One master switch, four optional alert types.
   const optRow = (icon: string, tint: string, title: string, sub: string, value: boolean, onChange: (b: boolean) => void, last?: boolean) => (
     <View key={title} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderBottomWidth: last ? 0 : 1, borderBottomColor: th.hair }}>
-      <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: tint + '22', borderWidth: 1, borderColor: tint + '55', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: tint + '22', borderWidth: 1, borderColor: tint + '55', alignItems: 'center', justifyContent: 'center' }}>
         <Icon name={icon} size={17} color={tint} />
       </View>
       <View style={{ flex: 1 }}>
@@ -165,16 +165,16 @@ export default function Analysis() {
     </View>
   );
   const bgCard = (
-    <View style={{ borderRadius: 14, borderWidth: 1, borderColor: bgOn ? th.accent + '99' : th.line, backgroundColor: th.panel, overflow: 'hidden', shadowColor: th.accent, shadowOpacity: bgOn ? (th.dark ? 0.32 : 0.14) : 0, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: bgOn ? 4 : 1 }}>
+    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: bgOn ? th.accent + '99' : th.line, backgroundColor: th.panel, overflow: 'hidden', shadowColor: th.accent, shadowOpacity: bgOn ? (th.dark ? 0.32 : 0.14) : 0, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: bgOn ? 4 : 1 }}>
       <LinearGradient colors={[th.accent + (bgOn ? '30' : '12'), th.accent2 + (bgOn ? '10' : '06'), th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 14, gap: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <LinearGradient colors={bgOn ? [th.accent, th.accent2] : [th.line, th.line]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 46, height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
+          <LinearGradient colors={bgOn ? [th.accent, th.accent2] : [th.line, th.line]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 46, height: 46, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name={bgOn ? 'radio' : 'notifications-off-outline'} size={23} color={bgOn ? '#FFFFFF' : th.dim} />
           </LinearGradient>
           <View style={{ flex: 1 }}>
             <Text style={{ color: th.text, fontSize: 15.5, fontWeight: '900', letterSpacing: -0.2 }} numberOfLines={1}>Smart Alert Scanner</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, height: 20, borderRadius: 10, backgroundColor: (bgOn ? th.buy : th.dim) + '22', borderWidth: 1, borderColor: (bgOn ? th.buy : th.dim) + '66' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, height: 20, borderRadius: 8, backgroundColor: (bgOn ? th.buy : th.dim) + '22', borderWidth: 1, borderColor: (bgOn ? th.buy : th.dim) + '66' }}>
                 <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: bgOn ? th.buy : th.dim }} />
                 <Text style={{ color: bgOn ? th.buy : th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 1 }}>{bgOn ? 'ACTIVE' : 'OFF'}</Text>
               </View>
@@ -346,7 +346,7 @@ export default function Analysis() {
   );
 
   // Website: market and pair pickers inside the method header (the method itself is chosen in the card grid above).
-  const chip = (on: boolean) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 32, borderRadius: 16, borderWidth: 1, borderColor: on ? th.accent + '88' : th.line, backgroundColor: on ? th.accent + '1A' : th.panel, cursor: 'pointer' } as any);
+  const chip = (on: boolean) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 32, borderRadius: 8, borderWidth: 1, borderColor: on ? th.accent + '88' : th.line, backgroundColor: on ? th.accent + '1A' : th.panel, cursor: 'pointer' } as any);
   const deskControls = (
     <View style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
@@ -360,7 +360,7 @@ export default function Analysis() {
           );
         })}
         {m && m.host !== 'scanner' && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, minWidth: 220, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel2, marginLeft: 'auto' } as any}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, minWidth: 220, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel2, marginLeft: 'auto' } as any}>
             <Icon name="search" size={14} color={th.dim} />
             <TextInput value={q} onChangeText={setQ} placeholder="Search any pair" placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, fontSize: 12.5, outlineStyle: 'none' } as any} />
             {!!q && <Pressable onPress={() => setQ('')} hitSlop={8}><Icon name="close-circle" size={14} color={th.dim} /></Pressable>}

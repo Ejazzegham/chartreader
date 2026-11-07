@@ -926,3 +926,12 @@ and running the logic tests. The server fixes were tested against the original w
 - **Trade history:** Timeframe now shows M5 / H1 / D1 instead of the raw seconds (300).
 - Tests: `tests/authgold.test.ts`. `server/analysis/fallback.js` rebuilt; restart the server.
 - Old trades in the journal that were closed by this problem stay as they are: delete them with "Delete this trade".
+
+## Premium glass redesign (Light + Dark, animated backdrop)
+- Two themes only: Light and Dark (src/theme.ts). Old saved themes map to the closest one.
+- Animated "Premium" backdrop (aurora + flowing waves) that runs with scrolling: src/LiveBackdrop.web.tsx (website) and src/LiveBackdrop.tsx (phone: flat). Light theme = dark backdrop under light glass content; Dark theme = light backdrop under dark glass content. Paused when the tab is hidden; still for reduced-motion users.
+- Glass panels, top bar and page sheet: src/sheet.ts, Panel + usePal in src/DesktopHome.web.tsx, src/Desktop.web.tsx, App.tsx.
+- One 8 px corner radius everywhere (only circles/avatars/pills stay round).
+- Analysis method tiles: icon, concept tag, name and "Open analysis" only (src/AnalysisHome.web.tsx).
+- Chart box and the Sentiment / Key Levels boxes always end at the same height (FillChart in src/DesktopHome.web.tsx).
+Then: npm run build:web

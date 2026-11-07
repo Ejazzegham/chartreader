@@ -28,7 +28,7 @@ function Field({ label, icon, glyph, value, onChange, placeholder, onSubmit }: {
   return (
     <View style={{ gap: 8, flex: 1, minWidth: 150 }}>
       <Label>{label}</Label>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, paddingHorizontal: 8, borderRadius: 10, borderWidth: on ? 1.6 : 1, borderColor: on ? P.blue : P.border, backgroundColor: P.dark ? P.alt : '#FBFCFF' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, paddingHorizontal: 8, borderRadius: 8, borderWidth: on ? 1.6 : 1, borderColor: on ? P.blue : P.border, backgroundColor: P.dark ? P.alt : '#FBFCFF' }}>
         <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}>
           {glyph ? <Text style={{ color: P.blue, fontSize: 15, fontWeight: '800' }}>{glyph}</Text> : <Icon name={icon ?? 'ellipse'} size={16} color={P.blue} />}
         </View>
@@ -46,12 +46,12 @@ function Select({ label, value, options, onPick, flex = 1, maxH = 240 }: { label
       {!!label && <Label>{label}</Label>}
       <View>
         {open && <Pressable onPress={() => setOpen(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 59 } as any} />}
-        <Pressable accessibilityRole="button" onPress={() => setOpen(!open)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', height: 48, paddingHorizontal: 14, borderRadius: 10, borderWidth: open ? 1.6 : 1, borderColor: open || s.hovered ? P.blue : P.border, backgroundColor: P.dark ? P.alt : '#FBFCFF', cursor: 'pointer' })) as any}>
+        <Pressable accessibilityRole="button" onPress={() => setOpen(!open)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', height: 48, paddingHorizontal: 14, borderRadius: 8, borderWidth: open ? 1.6 : 1, borderColor: open || s.hovered ? P.blue : P.border, backgroundColor: P.dark ? P.alt : '#FBFCFF', cursor: 'pointer' })) as any}>
           <Text style={{ flex: 1, color: P.head, fontSize: 14, fontWeight: '600' }} numberOfLines={1}>{options.find((o) => o.k === value)?.label ?? value}</Text>
           <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} color={P.body} />
         </Pressable>
         {open && (
-          <View style={{ position: 'absolute', top: 52, left: 0, right: 0, zIndex: 61, maxHeight: maxH, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid, shadowColor: P.shadow, shadowOpacity: 0.2, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, overflow: 'hidden' }}>
+          <View style={{ position: 'absolute', top: 52, left: 0, right: 0, zIndex: 61, maxHeight: maxH, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid, shadowColor: P.shadow, shadowOpacity: 0.2, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, overflow: 'hidden' }}>
             <ScrollView style={{ padding: 4 }}>
               {options.map((o) => (
                 <Pressable key={o.k} onPress={() => { onPick(o.k); setOpen(false); }} style={((s: any) => ({ height: 38, justifyContent: 'center', paddingHorizontal: 12, borderRadius: 8, cursor: 'pointer', backgroundColor: o.k === value ? P.soft : s.hovered ? P.alt : 'transparent' })) as any}>
@@ -70,7 +70,7 @@ function CardHead({ n, title, icon }: { n?: number; title: string; icon: string 
   const P = usePal();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: P.blue + (P.dark ? '33' : '1F'), alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={17} color={P.blue} /></View>
+      <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: P.blue + (P.dark ? '33' : '1F'), alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={17} color={P.blue} /></View>
       <Text style={{ color: P.head, fontSize: 16.5, fontWeight: '800', letterSpacing: -0.2 }}>{n ? `${n}. ` : ''}{title}</Text>
     </View>
   );
@@ -167,14 +167,14 @@ export default function RiskHome() {
 
   const wide = w >= 1060, pad = w >= 700 ? 32 : 16;
   const tile = (icon: string, c: string, k: string, v: string, vc: string) => (
-    <View key={k} style={{ flexGrow: 1, flexBasis: 170, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? P.alt : '#FBFCFF' }}>
+    <View key={k} style={{ flexGrow: 1, flexBasis: 170, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? P.alt : '#FBFCFF' }}>
       <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: c + '24', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color={c} /></View>
       <View style={{ flex: 1, minWidth: 0 }}><Text style={{ color: P.body, fontSize: 12 }}>{k}</Text><Text style={{ color: vc, fontSize: 17, fontWeight: '800', fontVariant: ['tabular-nums'] }} numberOfLines={1}>{v}</Text></View>
     </View>
   );
   const dd = out?.dec ?? 4, slN = num(sl), tpN = num(tp[0]);
   const rrStat = (k: string, big: string, small: string, c: string) => (
-    <View style={{ flex: 1, padding: 14, gap: 2, borderRadius: 12, borderWidth: 1, borderColor: P.border }}>
+    <View style={{ flex: 1, padding: 14, gap: 2, borderRadius: 8, borderWidth: 1, borderColor: P.border }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ color: P.body, fontSize: 12.5 }}>{k}</Text><Text style={{ color: c, fontSize: 12.5, fontWeight: '700' }}>{small.split('|')[0]}</Text></View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}><Text style={{ color: c, fontSize: 26, fontWeight: '800' }}>{big}</Text><Text style={{ color: P.body, fontSize: 12.5 }}>{small.split('|')[1]}</Text></View>
     </View>
@@ -195,11 +195,11 @@ export default function RiskHome() {
 
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 40, gap: 22 }}>
         <Notices flush />
-        {!!from && <View style={{ padding: 12, borderRadius: 10, borderWidth: 1, borderColor: P.blue, backgroundColor: P.soft }}><Text style={{ color: P.head, fontSize: 13 }}>{t('prefilled')} {from}</Text></View>}
+        {!!from && <View style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.blue, backgroundColor: P.soft }}><Text style={{ color: P.head, fontSize: 13 }}>{t('prefilled')} {from}</Text></View>}
 
         <View style={{ flexDirection: wide ? 'row' : 'column', gap: 20, alignItems: 'stretch' }}>
           {/* left rail */}
-          <View style={{ width: wide ? 330 : '100%', gap: 16, padding: 20, borderRadius: 16, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? P.card : '#F3F7FF' }}>
+          <View style={{ width: wide ? 330 : '100%', gap: 16, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? P.card : '#F3F7FF' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="construct" size={16} color={P.blue} /></View><Text style={{ color: P.head, fontSize: 15, fontWeight: '700' }}>Trading Tools</Text></View>
             <Text style={{ color: P.head, fontSize: 32, fontWeight: '800', letterSpacing: -0.8 }}>Risk & TP Planner</Text>
             <Text style={{ color: P.body, fontSize: 14.5, lineHeight: 23 }}>Use our advanced risk management tools to calculate position size, set stop loss and take profit levels, and plan your trades with precision.</Text>
@@ -208,7 +208,7 @@ export default function RiskHome() {
                 <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={i} size={15} color={P.blue} /></View><View><Text style={{ color: P.head, fontSize: 11.5, fontWeight: '700' }}>{a}</Text><Text style={{ color: P.body, fontSize: 10.5 }}>{b}</Text></View></View>
               ))}
             </View>
-            <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
+            <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
               <Icon name="bulb" size={22} color={P.blue} />
               <View style={{ flex: 1, gap: 8 }}>
                 <Text style={{ color: P.head, fontSize: 15, lineHeight: 22 }}>The key to long-term success in trading is not to be right all the time, but to manage your risk when you are wrong.</Text>
@@ -256,17 +256,17 @@ export default function RiskHome() {
                 </View>
                 <View style={{ flex: 1, minWidth: 150, gap: 8 }}>
                   <Label>Risk Amount (USD)</Label>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
                     <Icon name="ellipse-outline" size={14} color={P.body} /><Text style={{ color: P.body, fontSize: 14, fontWeight: '600' }}>{isFinite(num(bal) * num(risk)) && num(bal) * num(risk) > 0 ? f((num(bal) * num(risk)) / 100) : '0.00'}</Text>
                   </View>
                 </View>
               </View>
               <Pressable accessibilityRole="button" onPress={calc} style={((s: any) => ({ cursor: 'pointer', opacity: s.hovered ? 0.93 : 1 })) as any}>
-                <LinearGradient colors={['#3B5B93', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 52, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <LinearGradient colors={['#3B5B93', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 52, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <Icon name="calculator" size={19} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '700' }}>Calculate</Text>
                 </LinearGradient>
               </Pressable>
-              {!!err && <View style={{ flexDirection: 'row', gap: 10, padding: 12, borderRadius: 10, backgroundColor: th.sell + '14', borderWidth: 1, borderColor: th.sell + '44' }}><Icon name="alert-circle" size={18} color={th.sell} /><Text style={{ flex: 1, color: th.sell, fontSize: 13, lineHeight: 19 }}>{err}</Text></View>}
+              {!!err && <View style={{ flexDirection: 'row', gap: 10, padding: 12, borderRadius: 8, backgroundColor: th.sell + '14', borderWidth: 1, borderColor: th.sell + '44' }}><Icon name="alert-circle" size={18} color={th.sell} /><Text style={{ flex: 1, color: th.sell, fontSize: 13, lineHeight: 19 }}>{err}</Text></View>}
             </Panel>
 
             <Panel style={{ padding: 22, gap: 16, zIndex: 10 }}>
@@ -282,12 +282,12 @@ export default function RiskHome() {
                 <View style={{ gap: 12 }}>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                     {[['Direction', out.side === 'buy' ? 'Buy (Long)' : 'Sell (Short)', out.side === 'buy' ? th.buy : th.sell], ['Stop distance', f(out.dist, out.dec + 1), P.head], ['Units', f(out.units, 2), P.head], ['Blended reward', `1 : ${f(out.blended)}`, P.blue], ['All targets', `+$${f(out.total)}`, th.buy], ['After TP1 (break-even)', `+$${f(out.be)}`, th.gold], ['Worst case', `−$${f(out.risk)}`, th.sell]].map(([k, v, c]) => (
-                      <View key={k} style={{ flexGrow: 1, flexBasis: 140, padding: 10, borderRadius: 10, backgroundColor: P.alt }}><Text style={{ color: P.body, fontSize: 11.5 }}>{k}</Text><Text style={{ color: c, fontSize: 14, fontWeight: '800', marginTop: 2 }}>{v}</Text></View>
+                      <View key={k} style={{ flexGrow: 1, flexBasis: 140, padding: 10, borderRadius: 8, backgroundColor: P.alt }}><Text style={{ color: P.body, fontSize: 11.5 }}>{k}</Text><Text style={{ color: c, fontSize: 14, fontWeight: '800', marginTop: 2 }}>{v}</Text></View>
                     ))}
                   </View>
                   {out.rows.map((x) => (
-                    <View key={x.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: P.border }}>
-                      <View style={{ paddingHorizontal: 9, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: th.buy + '1F' }}><Text style={{ color: th.buy, fontSize: 12, fontWeight: '800' }}>{x.label}</Text></View>
+                    <View key={x.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border }}>
+                      <View style={{ paddingHorizontal: 9, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: th.buy + '1F' }}><Text style={{ color: th.buy, fontSize: 12, fontWeight: '800' }}>{x.label}</Text></View>
                       <Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{x.price.toFixed(dd)}</Text>
                       <Text style={{ color: P.body, fontSize: 12 }}>{x.pct}% · {fmtLots(x.lots)} lots</Text>
                       <Text style={{ color: th.buy, fontSize: 13, fontWeight: '800', minWidth: 110, textAlign: 'right' }}>{f(x.r)}R · +${f(x.profit)}</Text>
@@ -311,21 +311,21 @@ export default function RiskHome() {
                 <Label>Trade Direction</Label>
                 <View style={{ flexDirection: 'row', gap: 10 }}>
                   {[[true, 'Buy (Long)'], [false, 'Sell (Short)']].map(([v, l]) => (
-                    <Pressable key={String(l)} accessibilityRole="button" onPress={() => setBuy(v as boolean)} style={((s: any) => ({ flex: 1, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: buy === v ? P.blue : s.hovered ? P.soft : P.alt, borderWidth: 1, borderColor: buy === v ? P.blue : P.border })) as any}>
+                    <Pressable key={String(l)} accessibilityRole="button" onPress={() => setBuy(v as boolean)} style={((s: any) => ({ flex: 1, height: 44, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: buy === v ? P.blue : s.hovered ? P.soft : P.alt, borderWidth: 1, borderColor: buy === v ? P.blue : P.border })) as any}>
                       <Text style={{ color: buy === v ? P.th.onAccent : P.head, fontSize: 13, fontWeight: '700' }}>{l as string}</Text>
                     </Pressable>
                   ))}
                 </View>
               </View>
-              <Pressable onPress={apply} style={((s: any) => ({ height: 42, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: P.blue + '66', backgroundColor: s.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}><Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '700' }}>Apply to my plan</Text></Pressable>
+              <Pressable onPress={apply} style={((s: any) => ({ height: 42, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: P.blue + '66', backgroundColor: s.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}><Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '700' }}>Apply to my plan</Text></Pressable>
             </View>
-            <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ flex: 1, minWidth: 0, borderRadius: 12, borderWidth: 1, borderColor: P.border, padding: 12, minHeight: 224 }}>
+            <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ flex: 1, minWidth: 0, borderRadius: 8, borderWidth: 1, borderColor: P.border, padding: 12, minHeight: 224 }}>
               {cw > 0 && <RRChart w={Math.max(240, cw - 24)} rr={rr} rp={rp} buy={buy} />}
             </View>
             <View style={{ width: wide ? 300 : '100%', gap: 12 }}>
               {rrStat('Potential Profit', `+${f(reward)}%`, `+${f(reward)}%|$${f((base * reward) / 100)}`, th.buy)}
               {rrStat('Potential Loss', `−${f(rp)}%`, `−${f(rp)}%|$${f((base * rp) / 100)}`, th.sell)}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border }}>
                 <Icon name="shield-checkmark" size={20} color={P.blue} /><Text style={{ flex: 1, color: P.head, fontSize: 13, fontWeight: '700' }}>Risk : Reward</Text><Text style={{ color: P.blue, fontSize: 15, fontWeight: '800' }}>1 : {rr}</Text>
               </View>
               {!(num(bal) > 0) && <Text style={{ color: P.body, fontSize: 11 }}>Amounts use a $10,000 example account until you enter your balance.</Text>}
@@ -333,7 +333,7 @@ export default function RiskHome() {
           </View>
         </Panel>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: P.blue + '26', backgroundColor: P.soft }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: P.blue + '26', backgroundColor: P.soft }}>
           <Icon name="bulb" size={26} color={P.blue} />
           <View style={{ flex: 1 }}>
             <Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '800' }}>Pro Trading Tips</Text>

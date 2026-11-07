@@ -19,14 +19,14 @@ function usePalette() {
   return { th, card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E8EDF6', soft: d ? th.panel2 : '#F5F8FE', ink: d ? th.text : '#0B1B3F', dim: th.dim, up: th.buy, down: th.sell };
 }
 type Pal = ReturnType<typeof usePalette>;
-const cardSt = (P: Pal) => ({ backgroundColor: P.card, borderRadius: 16, borderWidth: 1, borderColor: P.border, shadowColor: '#0B1B3F', shadowOpacity: 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } } as any);
+const cardSt = (P: Pal) => ({ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, shadowColor: '#0B1B3F', shadowOpacity: 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } } as any);
 const tone = (P: Pal, n: number) => (n > 0 ? P.up : n < 0 ? P.down : P.ink);
 
 function Tile({ P, icon, label, value, sub, color, w }: { P: Pal; icon: string; label: string; value: string; sub?: string; color?: string; w: string }) {
   return (
     <View style={{ ...cardSt(P), flexGrow: 1, flexBasis: w, minWidth: 0, padding: 16, gap: 6 } as any}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: P.th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={15} color={P.th.accent} /></View>
+        <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: P.th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={15} color={P.th.accent} /></View>
         <Text style={{ color: P.dim, fontSize: 12, fontWeight: '700', flex: 1 }} numberOfLines={1}>{label}</Text>
       </View>
       <Text style={{ color: color ?? P.ink, fontSize: 21, fontWeight: '900', letterSpacing: -0.4 }} numberOfLines={1}>{value}</Text>
@@ -63,7 +63,7 @@ function Row({ P, k, v, c, last }: { P: Pal; k: string; v: string; c?: string; l
 }
 function Group({ P, title, children, flex = 1 }: { P: Pal; title: string; children: React.ReactNode; flex?: number }) {
   return (
-    <View style={{ flexGrow: flex, flexBasis: 300, minWidth: 0, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, padding: 14 }}>
+    <View style={{ flexGrow: flex, flexBasis: 300, minWidth: 0, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, padding: 14 }}>
       <Text style={{ color: P.ink, fontSize: 13.5, fontWeight: '900', marginBottom: 4 }}>{title}</Text>{children}
     </View>
   );
@@ -112,12 +112,12 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
   const apply = (v: number) => confirmAction('Reset paper account', `The balance goes back to ${money(v)} and the statistics start from zero. Your old trades stay in the Journal and Trade history.`, () => { onReset(v); setCustom(''); }, 'Reset');
 
   const chip = (label: string, on: boolean, f: () => void, key?: string) => (
-    <Pressable key={key ?? label} onPress={f} accessibilityRole="button" accessibilityState={{ selected: on }} style={((x: any) => ({ height: 36, paddingHorizontal: 14, borderRadius: 10, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : P.border, backgroundColor: on ? th.accent : x.hovered ? th.accent + '14' : P.soft, ...hand })) as any}>
+    <Pressable key={key ?? label} onPress={f} accessibilityRole="button" accessibilityState={{ selected: on }} style={((x: any) => ({ height: 36, paddingHorizontal: 14, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : P.border, backgroundColor: on ? th.accent : x.hovered ? th.accent + '14' : P.soft, ...hand })) as any}>
       <Text style={{ color: on ? th.onAccent : P.ink, fontSize: 13, fontWeight: on ? '800' : '600' }}>{label}</Text>
     </Pressable>
   );
   const bigStat = (label: string, value: string, c?: string, sub?: string) => (
-    <View key={label} style={{ flexGrow: 1, flexBasis: w >= 900 ? '23%' : w >= 560 ? '31%' : '47%', minWidth: 0, padding: 14, borderRadius: 12, backgroundColor: P.soft, gap: 3 }}>
+    <View key={label} style={{ flexGrow: 1, flexBasis: w >= 900 ? '23%' : w >= 560 ? '31%' : '47%', minWidth: 0, padding: 14, borderRadius: 8, backgroundColor: P.soft, gap: 3 }}>
       <Text style={{ color: P.dim, fontSize: 11.5, fontWeight: '700' }} numberOfLines={1}>{label}</Text>
       <Text style={{ color: c ?? P.ink, fontSize: 17, fontWeight: '900' }} numberOfLines={1}>{value}</Text>
       {!!sub && <Text style={{ color: P.dim, fontSize: 11 }} numberOfLines={1}>{sub}</Text>}
@@ -128,13 +128,13 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
   return (
     <View style={{ ...cardSt(P), padding: 16, gap: 16 } as any}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name="person-circle-outline" size={22} color={th.accent} /></View>
+        <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name="person-circle-outline" size={22} color={th.accent} /></View>
         <View style={{ flex: 1, minWidth: 180 }}><Text accessibilityRole="header" style={{ color: P.ink, fontSize: 16, fontWeight: '900' }}>{acct.name}</Text><Text style={{ color: P.dim, fontSize: 12 }}>Virtual money · Account #{acct.id} · 1:{acct.leverage}</Text></View>
-        <View style={{ paddingHorizontal: 10, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: th.gold + '22' }}><Text style={{ color: th.gold, fontSize: 11.5, fontWeight: '900' }}>PAPER</Text></View>
+        <View style={{ paddingHorizontal: 10, height: 26, borderRadius: 8, justifyContent: 'center', backgroundColor: th.gold + '22' }}><Text style={{ color: th.gold, fontSize: 11.5, fontWeight: '900' }}>PAPER</Text></View>
       </View>
-      <View style={{ flexDirection: 'row', gap: 4, padding: 4, borderRadius: 12, backgroundColor: P.soft, alignSelf: 'stretch', flexWrap: 'wrap' }} accessibilityRole={'tablist' as any}>
+      <View style={{ flexDirection: 'row', gap: 4, padding: 4, borderRadius: 8, backgroundColor: P.soft, alignSelf: 'stretch', flexWrap: 'wrap' }} accessibilityRole={'tablist' as any}>
         {TABS.map((x) => { const on = tab === x.k; return (
-          <Pressable key={x.k} onPress={() => setTab(x.k)} accessibilityRole={'tab' as any} accessibilityState={{ selected: on }} style={((h: any) => ({ flexGrow: 1, minWidth: 110, height: 38, borderRadius: 9, flexDirection: 'row', gap: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : h.hovered ? th.accent + '14' : 'transparent', ...hand })) as any}>
+          <Pressable key={x.k} onPress={() => setTab(x.k)} accessibilityRole={'tab' as any} accessibilityState={{ selected: on }} style={((h: any) => ({ flexGrow: 1, minWidth: 110, height: 38, borderRadius: 8, flexDirection: 'row', gap: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : h.hovered ? th.accent + '14' : 'transparent', ...hand })) as any}>
             <Icon name={x.i} size={15} color={on ? th.onAccent : P.dim} /><Text style={{ color: on ? th.onAccent : P.dim, fontSize: 13, fontWeight: '800' }}>{x.l}</Text>
           </Pressable>); })}
       </View>
@@ -154,12 +154,12 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
             </Group>
           </View>
           <View style={{ flexDirection: two ? 'row' : 'column', gap: 14 }}>
-            <View style={{ flex: two ? 2 : undefined, minWidth: 0, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, padding: 14, gap: 8 }}>
+            <View style={{ flex: two ? 2 : undefined, minWidth: 0, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, padding: 14, gap: 8 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><Text style={{ color: P.ink, fontSize: 13.5, fontWeight: '900' }}>Equity Curve</Text><Text style={{ color: tone(P, total), fontSize: 13, fontWeight: '800' }}>{usd(total)} ({pct((total / acct.start) * 100, true)})</Text></View>
               <View onLayout={(e) => setChartW(Math.round(e.nativeEvent.layout.width))}><EquityChart P={P} data={[...s.curve.slice(0, -1), a.equity]} start={acct.start} w={chartW} /></View>
               <Text style={{ color: P.dim, fontSize: 11.5 }}>Dashed line = starting balance. Each point is a closed trade; the last point is your equity now.</Text>
             </View>
-            <View style={{ flex: two ? 1 : undefined, minWidth: 0, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, padding: 14, gap: 12, alignItems: 'center' }}>
+            <View style={{ flex: two ? 1 : undefined, minWidth: 0, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, padding: 14, gap: 12, alignItems: 'center' }}>
               <Text style={{ color: P.ink, fontSize: 13.5, fontWeight: '900', alignSelf: 'flex-start' }}>Win / Loss</Text>
               <Ring P={P} s={s} />
               <View style={{ alignSelf: 'stretch', gap: 6 }}><Dot c={P.up} t="Winning trades" v={String(s.wins)} /><Dot c={P.down} t="Losing trades" v={String(s.losses)} /><Dot c="#7C8AA8" t="Break-even" v={String(s.even)} /></View>
@@ -186,7 +186,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
       )}
 
       {tab === 'sym' && (
-        <View style={{ borderRadius: 12, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }}>
+        <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }}>
           <View style={{ flexDirection: 'row', backgroundColor: P.soft, paddingVertical: 10, paddingHorizontal: 14 }}>
             {['Symbol', 'Trades', 'Win rate', 'Net P/L'].map((h, i) => <Text key={h} style={{ flex: i === 0 ? 1.4 : 1, color: P.dim, fontSize: 11.5, fontWeight: '800', textAlign: i === 0 ? 'left' : 'right' }}>{h}</Text>)}
           </View>
@@ -206,7 +206,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
         <View style={{ gap: 14 }}>
           <Group P={P} title="Account name">
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 8, alignItems: 'center' }}>
-              <TextInput value={name} onChangeText={(v) => setName(v.slice(0, 30))} onBlur={() => setAcct({ name })} placeholder="Paper Account" placeholderTextColor={P.dim} accessibilityLabel="Account name" style={{ flex: 1, height: 42, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: P.border, color: P.ink, fontSize: 14, outlineStyle: 'none' } as any} />
+              <TextInput value={name} onChangeText={(v) => setName(v.slice(0, 30))} onBlur={() => setAcct({ name })} placeholder="Paper Account" placeholderTextColor={P.dim} accessibilityLabel="Account name" style={{ flex: 1, height: 42, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, color: P.ink, fontSize: 14, outlineStyle: 'none' } as any} />
               {chip('Save', false, () => setAcct({ name }), 'save-name')}
             </View>
           </Group>
@@ -218,11 +218,11 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
             <Text style={{ color: P.dim, fontSize: 12.5, lineHeight: 18, marginVertical: 6 }}>Pick a new starting balance and reset. Statistics start again from zero; your old trades stay in the Journal and Trade history. Close open positions first.</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{START_PRESETS.map((v) => chip(money(v).replace('.00', ''), false, () => apply(v)))}</View>
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-              <TextInput value={custom} onChangeText={(v) => setCustom(v.replace(/[^0-9.,]/g, '').slice(0, 10))} placeholder={`Custom ($${MIN_START.toLocaleString('en-US')} to $${MAX_START.toLocaleString('en-US')})`} placeholderTextColor={P.dim} accessibilityLabel="Custom starting balance" style={{ flex: 1, minWidth: 200, height: 42, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: custom && !customV ? P.down : P.border, color: P.ink, fontSize: 14, outlineStyle: 'none' } as any} />
-              <Pressable disabled={!customV} onPress={() => customV && apply(customV)} accessibilityRole="button" style={((x: any) => ({ height: 42, paddingHorizontal: 18, borderRadius: 10, justifyContent: 'center', backgroundColor: customV ? P.down : P.border, opacity: x.hovered && customV ? 0.9 : 1, ...hand })) as any}><Text style={{ color: customV ? '#FFFFFF' : P.dim, fontSize: 13.5, fontWeight: '800' }}>Reset account</Text></Pressable>
+              <TextInput value={custom} onChangeText={(v) => setCustom(v.replace(/[^0-9.,]/g, '').slice(0, 10))} placeholder={`Custom ($${MIN_START.toLocaleString('en-US')} to $${MAX_START.toLocaleString('en-US')})`} placeholderTextColor={P.dim} accessibilityLabel="Custom starting balance" style={{ flex: 1, minWidth: 200, height: 42, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: custom && !customV ? P.down : P.border, color: P.ink, fontSize: 14, outlineStyle: 'none' } as any} />
+              <Pressable disabled={!customV} onPress={() => customV && apply(customV)} accessibilityRole="button" style={((x: any) => ({ height: 42, paddingHorizontal: 18, borderRadius: 8, justifyContent: 'center', backgroundColor: customV ? P.down : P.border, opacity: x.hovered && customV ? 0.9 : 1, ...hand })) as any}><Text style={{ color: customV ? '#FFFFFF' : P.dim, fontSize: 13.5, fontWeight: '800' }}>Reset account</Text></Pressable>
             </View>
           </Group>
-          <View style={{ flexDirection: 'row', gap: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '14' }}>
+          <View style={{ flexDirection: 'row', gap: 12, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '14' }}>
             <Icon name="information-circle-outline" size={20} color={th.gold} />
             <Text style={{ flex: 1, color: P.ink, fontSize: 12.5, lineHeight: 19 }}>This is a practice account with virtual money. Orders fill at the live price and no broker is involved, so real trading can differ (spreads, slippage, rejected orders). The account settings are saved on this device.</Text>
           </View>

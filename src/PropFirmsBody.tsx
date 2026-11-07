@@ -28,10 +28,10 @@ export default function PropFirmsBody({ w }: { w: number }) {
   return (
     <View style={{ gap: 20 }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-        <View accessibilityRole={'tablist' as any} style={{ flexDirection: 'row', gap: 8, padding: 6, borderRadius: 14, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, flexGrow: 1 }}>
+        <View accessibilityRole={'tablist' as any} style={{ flexDirection: 'row', gap: 8, padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, flexGrow: 1 }}>
           {TABS.map((t) => { const on = tab === t.id; return (
             <Pressable key={t.id} onPress={() => setTab(t.id)} accessibilityRole={'tab' as any} accessibilityState={{ selected: on }}
-              style={((s: any) => ({ flex: 1, minWidth: 96, height: 42, borderRadius: 10, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? P.blue : s.hovered ? P.soft : 'transparent', ...hand })) as any}>
+              style={((s: any) => ({ flex: 1, minWidth: 96, height: 42, borderRadius: 8, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? P.blue : s.hovered ? P.soft : 'transparent', ...hand })) as any}>
               <Icon name={t.icon} size={16} color={on ? P.th.onAccent : P.head} />
               <Text style={{ color: on ? P.th.onAccent : P.head, fontSize: 14, fontWeight: '800' }}>{t.label}</Text>
             </Pressable>); })}
@@ -42,7 +42,7 @@ export default function PropFirmsBody({ w }: { w: number }) {
       {tab === 'compare' && <CompareTab P={P} w={w} sel={sel} setSel={setSel} />}
       {tab === 'guide' && <GuideTab P={P} w={w} />}
       {tab !== 'directory' && (
-        <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: P.th.gold + '66', backgroundColor: P.th.gold + '14' }}>
+        <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: P.th.gold + '66', backgroundColor: P.th.gold + '14' }}>
           <Icon name="warning-outline" size={20} color={P.th.gold} />
           <Text style={{ flex: 1, color: P.head, fontSize: 12.5, lineHeight: 19 }}>{CFG.disclaimer}</Text>
         </View>

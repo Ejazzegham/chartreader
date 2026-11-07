@@ -97,7 +97,7 @@ export function LangPicker({ visible, value, title, onPick, onClose }: { visible
           <Text accessibilityRole="header" style={{ flex: 1, color: th.text, fontSize: 17, fontWeight: '900' }} numberOfLines={1}>{title}</Text>
         </View>
         <TextInput value={q} onChangeText={setQ} placeholder={t('trSearch')} placeholderTextColor={th.dim} autoCorrect={false}
-          style={{ marginHorizontal: 14, marginBottom: 8, height: 44, backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 10, color: th.text, paddingHorizontal: 12, fontSize: 15 }} />
+          style={{ marginHorizontal: 14, marginBottom: 8, height: 44, backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, color: th.text, paddingHorizontal: 12, fontSize: 15 }} />
         <FlatList data={list} keyExtractor={(l) => l[0]} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: Math.max(insets.bottom, 14) + 10 }}
           renderItem={({ item }) => {
             const on = item[0] === value;
@@ -188,7 +188,7 @@ export function TrCompose({ token, text, setText, out, setOut }: { token: string
     } catch (e: any) { setErr(e?.message ?? 'Error'); }
     setBusy(false);
   };
-  const chip = { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 5, paddingHorizontal: 10, height: 32, borderRadius: 16, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg };
+  const chip = { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 5, paddingHorizontal: 10, height: 32, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg };
   return (
     <View style={{ paddingHorizontal: 10, paddingTop: 8, gap: 4 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

@@ -39,7 +39,7 @@ function MethodGrid({ w, cur, onOpen }: { w: number; cur?: string; onOpen: (d: M
         const on = d.k === cur;
         return (
           <Pressable key={d.k} accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={`${d.label}. ${d.desc}`} onPress={() => onOpen(d)}
-            style={((s: any) => ({ width: cw, minHeight: 148, padding: 14, gap: 10, borderRadius: 14, borderWidth: on ? 1.6 : 1, borderColor: on ? P.blue : s.hovered ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: on || s.hovered ? 0.14 : 0.05, shadowRadius: 14, shadowOffset: { width: 0, height: 5 } })) as any}>
+            style={((s: any) => ({ width: cw, minHeight: 148, padding: 14, gap: 10, borderRadius: 8, borderWidth: on ? 1.6 : 1, borderColor: on ? P.blue : s.hovered ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: on || s.hovered ? 0.14 : 0.05, shadowRadius: 14, shadowOffset: { width: 0, height: 5 } })) as any}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <MethodIcon def={d} size={42} />
               <Icon name="chevron-forward" size={15} color={on ? P.blue : P.body} />
@@ -78,7 +78,7 @@ function Checklist({ symId }: { symId: string }) {
 function ActionBtn({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
   const P = usePal();
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 36, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: s.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 36, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: s.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
       <Icon name={icon} size={15} color={P.blue} />
       <Text style={{ color: P.head, fontSize: 12.5, fontWeight: '600' }}>{label}</Text>
     </Pressable>
@@ -148,7 +148,7 @@ export default function MethodPage({ m, visible, symId, sym, onOpenMethod, onPai
         <View style={{ flex: 1, minWidth: 220 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Text style={{ color: P.head, fontSize: 20, fontWeight: '800', letterSpacing: -0.3 }}>{m?.label}</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 22, borderRadius: 11, backgroundColor: th.buy + '1F' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 22, borderRadius: 8, backgroundColor: th.buy + '1F' }}>
               <Icon name="star" size={10} color={th.buy} /><Text style={{ color: th.buy, fontSize: 11.5, fontWeight: '700' }}>Active</Text>
             </View>
           </View>
@@ -176,7 +176,7 @@ export default function MethodPage({ m, visible, symId, sym, onOpenMethod, onPai
 
   return (
     <ScrollView ref={scroller} style={{ flex: 1, backgroundColor: P.alt, display: visible ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <LinearGradient pointerEvents="none" colors={P.dark ? [P.bg, P.bg] : ['#E7F0FF', '#F5F8FE']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 330 }} />
+      <LinearGradient pointerEvents="none" colors={['transparent', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 330 }} />
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
         {top}
         <Hero w={w} />

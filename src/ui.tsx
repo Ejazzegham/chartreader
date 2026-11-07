@@ -75,7 +75,7 @@ export const BellButton = () => {
     <Pressable accessibilityRole="button" accessibilityLabel={t('tabNotifications')} onPress={() => setNotesOpen(true)} hitSlop={8} style={({ pressed }) => ({ width: 38, height: 38, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.7 : 1 })}>
       <Icon name={unread ? 'notifications' : 'notifications-outline'} size={24} color={th.text} />
       {unread > 0 && (
-        <View style={{ position: 'absolute', top: 2, right: 0, minWidth: 17, height: 17, borderRadius: 9, paddingHorizontal: 4, backgroundColor: th.sell, borderWidth: 1.5, borderColor: th.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ position: 'absolute', top: 2, right: 0, minWidth: 17, height: 17, borderRadius: 8, paddingHorizontal: 4, backgroundColor: th.sell, borderWidth: 1.5, borderColor: th.bg, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: '#fff', fontSize: 9.5, fontWeight: '900' }}>{unread > 9 ? '9+' : unread}</Text>
         </View>
       )}
@@ -128,7 +128,7 @@ export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { ti
     </View>
   );
   return (
-    <View style={{ borderRadius: 14, overflow: 'hidden', direction: 'ltr', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', ...(wide ? { height: HERO_H } : null) }}>
+    <View style={{ borderRadius: 8, overflow: 'hidden', direction: 'ltr', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', ...(wide ? { height: HERO_H } : null) }}>
       <View style={{ padding: wide ? 32 : 20, paddingVertical: wide ? 26 : 20, gap: 14, ...(wide ? { height: HERO_H, justifyContent: 'center' } : null) }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24, direction: rtl ? 'rtl' : 'ltr' }}>
           <View style={{ flex: 1, minWidth: 0, gap: 8 }}>
@@ -251,7 +251,7 @@ export const SectionTitle = ({ icon, children }: { icon?: string; children: Reac
   const desk = useLayout().mode === 'desktop';
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
-      {!!icon && <View style={{ width: 28, height: 28, borderRadius: 9, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={15} color={th.accent} /></View>}
+      {!!icon && <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={15} color={th.accent} /></View>}
       <Text style={{ color: th.text, fontSize: desk ? 16 : 15, fontWeight: desk ? '900' : '800', letterSpacing: desk ? 0 : 0.2, flexShrink: 1 }}>{children}</Text>
     </View>
   );
@@ -302,9 +302,9 @@ export const Btn = ({ label, onPress, ghost, busy, disabled, icon, danger, tone 
     </View>
   );
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!(busy || disabled), busy: !!busy }} onPress={onPress} disabled={busy || disabled} style={({ pressed }) => ({ borderRadius: 10, overflow: flat ? 'hidden' : 'visible', opacity: busy || disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }], borderWidth: flat ? 1 : 0, borderColor: warn ? th.gold + '88' : danger ? th.sell + '66' : th.line, shadowColor: base, shadowOpacity: flat || disabled ? 0 : th.dark ? 0.4 : 0.25, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: flat || disabled ? 0 : 5 })}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!(busy || disabled), busy: !!busy }} onPress={onPress} disabled={busy || disabled} style={({ pressed }) => ({ borderRadius: 8, overflow: flat ? 'hidden' : 'visible', opacity: busy || disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }], borderWidth: flat ? 1 : 0, borderColor: warn ? th.gold + '88' : danger ? th.sell + '66' : th.line, shadowColor: base, shadowOpacity: flat || disabled ? 0 : th.dark ? 0.4 : 0.25, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: flat || disabled ? 0 : 5 })}>
       {flat ? <View style={{ minHeight: 50, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: warn ? th.gold + '16' : th.panel2 }}>{inner}</View> : (
-        <LinearGradient colors={solid ? [base, base + 'CC'] : [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ minHeight: 52, borderRadius: 10, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <LinearGradient colors={solid ? [base, base + 'CC'] : [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ minHeight: 52, borderRadius: 8, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           {inner}
         </LinearGradient>
       )}
@@ -326,7 +326,7 @@ export const ActionBtn = ({ label, icon, onPress, tone = 'neutral', disabled, fl
   );
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled }} onPress={onPress} disabled={disabled}
-      style={({ pressed }) => ({ flex, borderRadius: 12, overflow: 'hidden', opacity: disabled && tone !== 'done' ? 0.45 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }], borderWidth: solid ? 0 : 1, borderColor: tone === 'neutral' ? th.line : c + '77', shadowColor: c, shadowOpacity: solid && !disabled ? 0.4 : 0, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: solid && !disabled ? 5 : 0 })}>
+      style={({ pressed }) => ({ flex, borderRadius: 8, overflow: 'hidden', opacity: disabled && tone !== 'done' ? 0.45 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }], borderWidth: solid ? 0 : 1, borderColor: tone === 'neutral' ? th.line : c + '77', shadowColor: c, shadowOpacity: solid && !disabled ? 0.4 : 0, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: solid && !disabled ? 5 : 0 })}>
       {solid ? (
         <LinearGradient colors={[c, c + 'D0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
           {inner}
@@ -362,7 +362,7 @@ export const Segment = ({ value, options, onChange }: { value: string; options: 
   return (
     <View onLayout={(e) => setW(e.nativeEvent.layout.width)} style={{ flexDirection: 'row', borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 4, backgroundColor: th.bg, gap: 4, direction: 'ltr' }}>
       {w > 0 && options.length > 1 && (
-        <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 4, bottom: 4, left: 4, width: cw, borderRadius: 9, backgroundColor: th.accent, shadowColor: th.accent, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3, transform: [{ translateX: x.interpolate({ inputRange: options.map((_, k) => k), outputRange: options.map((_, k) => k * (cw + 4)) }) }] }} />
+        <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 4, bottom: 4, left: 4, width: cw, borderRadius: 8, backgroundColor: th.accent, shadowColor: th.accent, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3, transform: [{ translateX: x.interpolate({ inputRange: options.map((_, k) => k), outputRange: options.map((_, k) => k * (cw + 4)) }) }] }} />
       )}
       {options.map((o) => {
         const on = value === o.k;

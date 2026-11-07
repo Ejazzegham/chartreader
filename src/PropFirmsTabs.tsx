@@ -21,7 +21,7 @@ export function FeaturedTab({ P, w, onCompare }: { P: Pal; w: number; onCompare:
               <Panel P={P} style={{ gap: 14 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Avatar P={P} f={f} size={52} />
-                  <View style={{ paddingHorizontal: 10, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: P.soft }}><Text style={{ color: P.blue, fontSize: 12, fontWeight: '800' }}>{d.badge ?? `Rank #${f.rank}`}</Text></View>
+                  <View style={{ paddingHorizontal: 10, height: 26, borderRadius: 8, justifyContent: 'center', backgroundColor: P.soft }}><Text style={{ color: P.blue, fontSize: 12, fontWeight: '800' }}>{d.badge ?? `Rank #${f.rank}`}</Text></View>
                 </View>
                 <View style={{ gap: 2 }}>
                   <Text style={{ color: P.head, fontSize: 20, fontWeight: '900' }} numberOfLines={1}>{f.name}</Text>
@@ -30,7 +30,7 @@ export function FeaturedTab({ P, w, onCompare }: { P: Pal; w: number; onCompare:
                 <Text style={{ color: P.body, fontSize: 13, lineHeight: 19 }}>{d.tagline ?? f.note ?? 'Funded trading program. Read the current rules, fees and payout terms on the official website.'}</Text>
                 <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                   <View style={{ flex: 1 }}><VisitBtn P={P} f={f} /></View>
-                  <Pressable onPress={() => onCompare(f.name)} accessibilityRole="button" accessibilityLabel={`Compare ${f.name}`} style={((s: any) => ({ height: 44, paddingHorizontal: 16, borderRadius: 10, justifyContent: 'center', borderWidth: 1, borderColor: P.border, backgroundColor: s.hovered ? P.soft : P.alt, ...hand })) as any}>
+                  <Pressable onPress={() => onCompare(f.name)} accessibilityRole="button" accessibilityLabel={`Compare ${f.name}`} style={((s: any) => ({ height: 44, paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: P.border, backgroundColor: s.hovered ? P.soft : P.alt, ...hand })) as any}>
                     <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>Compare</Text>
                   </Pressable>
                 </View>
@@ -55,7 +55,7 @@ export function CompareTab({ P, w, sel, setSel }: { P: Pal; w: number; sel: stri
       <Panel P={P}>
         <Head P={P} icon="git-compare-outline" title="Compare Prop Firms" sub={`Pick up to ${MAX_COMPARE} firms to see them side by side. ${sel.length} / ${MAX_COMPARE} selected.`}
           right={sel.length > 0 ? <Chip P={P} label="Clear" on={false} onPress={() => setSel([])} /> : undefined} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 46, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 46, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
           <Icon name="search" size={18} color={P.body} />
           <TextInput value={q} onChangeText={setQ} placeholder="Search a prop firm to add" placeholderTextColor={P.body} accessibilityLabel="Search prop firms to compare" autoCapitalize="none" autoCorrect={false} style={{ flex: 1, color: P.head, fontSize: 14, outlineStyle: 'none' } as any} />
         </View>
@@ -116,7 +116,7 @@ export function GuideTab({ P, w }: { P: Pal; w: number }) {
             </View>
           ))}
           {firms.map((f) => (
-            <View key={f.name} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+            <View key={f.name} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
               <Rank f={f} /><Avatar P={P} f={f} />
               <View style={{ flex: 1, minWidth: 0 }}><Text style={{ color: P.head, fontSize: 14.5, fontWeight: '800' }} numberOfLines={1}>{f.name}</Text><Text style={{ color: P.body, fontSize: 12.5 }} numberOfLines={1}>{domainOf(f.url)}</Text></View>
               <VisitBtn P={P} f={f} compact />
@@ -135,8 +135,8 @@ export function GuideTab({ P, w }: { P: Pal; w: number }) {
           <Pressable key={x.id} onPress={() => setOpen(x.id)} accessibilityRole="button" accessibilityLabel={x.title} style={{ flexGrow: 1, flexBasis: `${Math.floor(100 / cols) - 3}%`, minWidth: 0, ...hand }}>
             <Panel P={P} style={{ gap: 10, height: '100%' as any }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={x.icon} size={20} color={P.blue} /></View>
-                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: P.alt, borderWidth: 1, borderColor: P.border }}><Text style={{ color: P.body, fontSize: 11.5, fontWeight: '800' }}>{x.tag}</Text></View>
+                <View style={{ width: 42, height: 42, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={x.icon} size={20} color={P.blue} /></View>
+                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: P.alt, borderWidth: 1, borderColor: P.border }}><Text style={{ color: P.body, fontSize: 11.5, fontWeight: '800' }}>{x.tag}</Text></View>
               </View>
               <Text style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>{x.title}</Text>
               <Text style={{ color: P.body, fontSize: 13, lineHeight: 19 }}>{x.sub}</Text>

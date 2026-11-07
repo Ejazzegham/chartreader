@@ -25,7 +25,7 @@ export default function Modal({ visible = true, transparent, animationType = 'no
     <Animated.View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, direction: rtl ? 'rtl' : 'ltr', backgroundColor: desk ? 'rgba(4,8,20,0.55)' : transparent ? 'transparent' : th.bg, opacity: v, transform: animationType === 'slide' ? [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [28, 0] }) }] : undefined }}>
       {desk ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <View style={{ width, maxWidth: '100%', height: '100%', maxHeight: 920, borderRadius: 16, overflow: 'hidden', backgroundColor: transparent ? 'transparent' : th.bg, borderWidth: 1, borderColor: th.line }}>{children}</View>
+          <View style={{ width, maxWidth: '100%', height: '100%', maxHeight: 920, borderRadius: 8, overflow: 'hidden', backgroundColor: transparent ? 'transparent' : th.bg, borderWidth: 1, borderColor: th.line }}>{children}</View>
         </View>
       ) : <View style={{ flex: 1 }}>{children}</View>}
     </Animated.View>,

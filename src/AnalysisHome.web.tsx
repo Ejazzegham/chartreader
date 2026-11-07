@@ -8,7 +8,7 @@ import { Coin } from './MarketWidgets';
 import { MDEFS, MDef, MethodIcon, mdef } from './MethodArt';
 import { SYMBOLS, symOf, chg, setWatch, useFeed, SESSIONS, sessionOpen, fxWeekendClosed, isBad } from './markets';
 import { useRealWindow } from './win';
-import { usePal, useSetup, Panel, Spark, SentimentCard, LevelsCard, TfTabs, ChartHeader, ChartBody, Footer, useGo } from './DesktopHome.web';
+import { usePal, useSetup, Panel, Spark, SentimentCard, LevelsCard, TfTabs, ChartHeader, ChartBody, FillChart, Footer, useGo } from './DesktopHome.web';
 
 // The website's Analysis page (when no method is open), designed like the "Analysis" mockup: alert scanner with notification preferences,
 // the analysis methods, market watchlist, forex sessions, latest market analysis, learning banner and footer. The method workspaces
@@ -51,8 +51,8 @@ function Scanner({ w, cfg, setC, probs }: { w: number; cfg: Cfg; setC: Props['se
     </View>
   );
   const pref = (icon: string, color: string, title: string, sub: string, value: boolean, onChange: (b: boolean) => void) => (
-    <View key={title} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, opacity: on ? 1 : 0.55 }}>
-      <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={18} color="#FFFFFF" /></View>
+    <View key={title} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, opacity: on ? 1 : 0.55 }}>
+      <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={18} color="#FFFFFF" /></View>
       <View style={{ flex: 1 }}>
         <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700' }} numberOfLines={1}>{title}</Text>
         <Text style={{ color: P.body, fontSize: 11.5, lineHeight: 15 }} numberOfLines={2}>{sub}</Text>
@@ -70,7 +70,7 @@ function Scanner({ w, cfg, setC, probs }: { w: number; cfg: Cfg; setC: Props['se
           </View>
           <View style={{ flex: 1, gap: 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 12, backgroundColor: (on ? th.buy : P.body) + '22' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 8, backgroundColor: (on ? th.buy : P.body) + '22' }}>
                 <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: on ? th.buy : P.body }} />
                 <Text style={{ color: on ? th.buy : P.body, fontSize: 12, fontWeight: '700' }}>{on ? 'Active' : 'Off'}</Text>
               </View>
@@ -121,15 +121,15 @@ const TAG: Record<string, string> = { all: 'All-in-one', cr: 'Chart Reader', ict
 function MethodCard({ d, cols, onOpen }: { d: MDef; cols: number; onOpen: () => void }) {
   const P = usePal();
   return (
-    <Pressable accessibilityRole="button" onPress={onOpen} style={((st: any) => ({ flexGrow: 1, flexBasis: 0, minWidth: cols === 5 ? 190 : 220, minHeight: 176, padding: 16, gap: 10, borderRadius: 14, borderWidth: 1, borderColor: st.hovered ? d.colors[0] + '99' : P.border, backgroundColor: st.hovered ? (P.dark ? P.th.panel2 : '#F8FAFF') : P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.14 : 0.04, shadowRadius: st.hovered ? 20 : 10, shadowOffset: { width: 0, height: st.hovered ? 8 : 3 } })) as any}>
+    <Pressable accessibilityRole="button" onPress={onOpen} style={((st: any) => ({ flexGrow: 1, flexBasis: 0, minWidth: cols === 5 ? 190 : 220, minHeight: 148, padding: 16, gap: 12, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? d.colors[0] + '99' : P.border, backgroundColor: st.hovered ? (P.dark ? P.th.panel2 : '#F8FAFF') : P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.14 : 0.04, shadowRadius: st.hovered ? 20 : 10, shadowOffset: { width: 0, height: st.hovered ? 8 : 3 } })) as any}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <MethodIcon def={d} size={46} />
-        <View style={{ paddingHorizontal: 9, height: 22, borderRadius: 11, justifyContent: 'center', backgroundColor: d.colors[0] + '1A' }}><Text style={{ color: d.colors[1], fontSize: 10.5, fontWeight: '700' }}>{TAG[d.k] ?? 'Analysis'}</Text></View>
+        <View style={{ paddingHorizontal: 9, height: 22, borderRadius: 8, justifyContent: 'center', backgroundColor: d.colors[0] + '1A' }}><Text style={{ color: d.colors[1], fontSize: 10.5, fontWeight: '700' }}>{TAG[d.k] ?? 'Analysis'}</Text></View>
       </View>
-      <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '800', letterSpacing: -0.2 }} numberOfLines={2}>{d.label}</Text>
-      <Text style={{ color: P.body, fontSize: 11.5, lineHeight: 16.5, flex: 1 }} numberOfLines={3}>{d.desc}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-        <Text style={{ color: P.blue, fontSize: 12, fontWeight: '700' }}>Open analysis</Text><Icon name="arrow-forward" size={12} color={P.blue} />
+      <Text style={{ color: P.head, fontSize: 16, fontWeight: '800', letterSpacing: -0.2 }} numberOfLines={2}>{d.label}</Text>
+      <View style={{ flex: 1 }} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: P.border, paddingTop: 12 }}>
+        <Text style={{ color: P.blue, fontSize: 13, fontWeight: '700' }}>Open analysis</Text><Icon name="arrow-forward" size={14} color={P.brass} />
       </View>
     </Pressable>
   );
@@ -145,7 +145,7 @@ function Methods({ w, onOpenMethod, go }: { w: number; onOpenMethod: Props['onOp
     <Panel style={{ padding: 24, gap: 20 }}>
       <View style={{ flexDirection: head ? 'row' : 'column', alignItems: head ? 'center' : 'stretch', gap: 14 }}>
         <View style={{ flex: 1 }}><SectionHead icon="git-network" title="Analysis Methods" sub="Professional analysis methods in one place. Pick the approach that fits your trading style." /></View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, width: head ? 320 : '100%', paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? P.th.panel2 : '#FFFFFF' } as any}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, width: head ? 320 : '100%', paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? P.th.panel2 : '#FFFFFF' } as any}>
           <Icon name="search" size={17} color={P.blue} />
           <TextInput value={mq} onChangeText={setMq} placeholder="Search analysis methods..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 13.5, outlineStyle: 'none' } as any} />
           {!!mq && <Pressable onPress={() => setMq('')} hitSlop={8}><Icon name="close-circle" size={17} color={P.body} /></Pressable>}
@@ -167,8 +167,8 @@ function Methods({ w, onOpenMethod, go }: { w: number; onOpenMethod: Props['onOp
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
               {items.map((d) => <MethodCard key={d.k} d={d} cols={cols} onOpen={() => onOpenMethod(d)} />)}
               {fill > 0 && (
-                <Pressable onPress={() => go(14)} style={((st: any) => ({ flexGrow: fill, flexBasis: 0, minWidth: cols === 5 ? 190 : 220, minHeight: 176, padding: 18, gap: 10, justifyContent: 'center', borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', borderColor: P.blue + '66', backgroundColor: st.hovered ? P.soft : P.alt, cursor: 'pointer' })) as any}>
-                  <View style={{ width: 46, height: 46, borderRadius: 12, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="school" size={22} color={P.th.onAccent} /></View>
+                <Pressable onPress={() => go(14)} style={((st: any) => ({ flexGrow: fill, flexBasis: 0, minWidth: cols === 5 ? 190 : 220, minHeight: 176, padding: 18, gap: 10, justifyContent: 'center', borderRadius: 8, borderWidth: 1, borderStyle: 'dashed', borderColor: P.blue + '66', backgroundColor: st.hovered ? P.soft : P.alt, cursor: 'pointer' })) as any}>
+                  <View style={{ width: 46, height: 46, borderRadius: 8, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="school" size={22} color={P.th.onAccent} /></View>
                   <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '800' }}>New to these methods?</Text>
                   <Text style={{ color: P.body, fontSize: 11.5, lineHeight: 16.5 }}>Learn how each method works, step by step, in the Learning Center.</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><Text style={{ color: P.blue, fontSize: 12, fontWeight: '700' }}>Explore Learning Center</Text><Icon name="arrow-forward" size={12} color={P.blue} /></View>
@@ -201,13 +201,13 @@ function Watchlist({ onPair, go }: { onPair: (id: string) => void; go: (t: numbe
   return (
     <Panel style={{ flex: 1.15, minWidth: 'min(320px, 100%)' as any, padding: 22, gap: 14 }}>
       <SectionHead icon="trending-up" title="Market Watchlist" right="View All Markets" onRight={() => go(2)} />
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 42, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#FAFBFE' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 42, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#FAFBFE' }}>
         <Icon name="search" size={16} color={P.body} />
         <TextInput value={q} onChangeText={setQ} placeholder="Search pair, symbol or asset..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 13, outlineStyle: 'none' } as any} />
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {WL_TABS.map((k) => (
-          <Pressable key={k} onPress={() => { setTab(k); setQ(''); }} style={((s: any) => ({ minWidth: 60, paddingHorizontal: 14, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderWidth: 1, borderColor: tab === k && !term ? P.blue + '88' : P.border, backgroundColor: tab === k && !term ? P.soft : s.hovered ? P.alt : P.card })) as any}>
+          <Pressable key={k} onPress={() => { setTab(k); setQ(''); }} style={((s: any) => ({ minWidth: 60, paddingHorizontal: 14, height: 30, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderWidth: 1, borderColor: tab === k && !term ? P.blue + '88' : P.border, backgroundColor: tab === k && !term ? P.soft : s.hovered ? P.alt : P.card })) as any}>
             <Text style={{ color: tab === k && !term ? P.blue : P.body, fontSize: 12.5, fontWeight: tab === k && !term ? '700' : '500' }}>{k}</Text>
           </Pressable>
         ))}
@@ -219,7 +219,7 @@ function Watchlist({ onPair, go }: { onPair: (id: string) => void; go: (t: numbe
       {rows.map((s) => {
         const qt = quotes[s.id], c = chg(s.id), col = c >= 0 ? th.buy : th.sell, abs = qt ? qt.price - qt.open : 0;
         return (
-          <Pressable key={s.id} onPress={() => onPair(s.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 9, borderRadius: 10, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : 'transparent' })) as any}>
+          <Pressable key={s.id} onPress={() => onPair(s.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 9, borderRadius: 8, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : 'transparent' })) as any}>
             <View style={{ flex: 2.2, flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 0 }}>
               <Coin s={s} size={34} />
               <View style={{ flex: 1, minWidth: 0 }}>
@@ -256,14 +256,14 @@ export function Sessions({ go, style }: { go: (t: number) => void; style?: any }
       {SESSIONS.map((s, i) => {
         const on = !closed && sessionOpen(h, s.s, s.e), tone = on ? th.buy : closed ? P.body : P.blue;
         return (
-          <Pressable key={s.n} onPress={() => go(13)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
+          <Pressable key={s.n} onPress={() => go(13)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
             <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: S_COL[i] + '1F', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: S_COL[i], fontSize: 13, fontWeight: '800' }}>{S_ABBR[i]}</Text></View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '700' }}>{s.n}</Text>
               <Text style={{ color: P.body, fontSize: 11.5 }}>{hh(s.s)} - {hh(s.e)} ({gmt})</Text>
               <Text style={{ color: P.body, fontSize: 11.5, marginTop: 2 }} numberOfLines={1}>{S_TEXT[i]}</Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 12, backgroundColor: tone + '1F' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 8, backgroundColor: tone + '1F' }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: tone }} />
               <Text style={{ color: tone, fontSize: 12, fontWeight: '700' }}>{on ? 'Active' : closed ? 'Closed' : 'Upcoming'}</Text>
             </View>
@@ -279,21 +279,19 @@ export function Sessions({ go, style }: { go: (t: number) => void; style?: any }
 // ---------- 5. latest market analysis
 function Latest({ w, openAll }: { w: number; openAll: () => void }) {
   const P = usePal();
-  const [tf, setTf] = useState('3600'), [cw, setCw] = useState(0);
+  const [tf, setTf] = useState('3600');
   const s = useSetup('frxXAUUSD', tf, 'an-gold');
   const row = w >= 980;
   return (
     <Panel style={{ padding: 22, gap: 16 }}>
       <SectionHead icon="bar-chart" title="Latest Market Analysis" sub="In-depth analysis, key levels and actionable trade ideas from our expert tools." right="View All Analysis" onRight={openAll} />
-      <View style={{ flexDirection: row ? 'row' : 'column', gap: 18, alignItems: 'flex-start' }}>
-        <View style={{ flex: row ? 1 : undefined, width: row ? undefined : '100%', minWidth: 0, gap: 10, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+      <View style={{ flexDirection: row ? 'row' : 'column', gap: 18, alignItems: 'stretch' }}>
+        <View style={{ flex: row ? 1 : undefined, width: row ? undefined : '100%', minWidth: 0, gap: 10, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
           <ChartHeader s={s} sub="Gold / US Dollar" />
           <TfTabs tf={tf} set={setTf} />
-          <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ borderRadius: 10, overflow: 'hidden' }}>
-            <ChartBody s={s} tf={tf} width={cw} height={300} />
-          </View>
+          <FillChart s={s} tf={tf} min={300} />
         </View>
-        <View style={{ width: row ? 300 : '100%', gap: 16 }}><SentimentCard s={s} /><LevelsCard s={s} /></View>
+        <View style={{ width: row ? 300 : '100%', gap: 16 }}><SentimentCard s={s} fill /><LevelsCard s={s} fill /></View>
       </View>
     </Panel>
   );
@@ -321,15 +319,15 @@ function Overview({ w, onOpenMethod, go }: { w: number; onOpenMethod: Props['onO
   const money = (v: number) => `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const col = (v: number) => (v > 0 ? th.buy : v < 0 ? th.sell : P.head);
   const stat = (icon: string, tint: string, label: string, value: string, sub: string, vc?: string) => (
-    <View key={label} style={{ flexGrow: 1, flexBasis: 150, minWidth: 140, padding: 16, gap: 6, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+    <View key={label} style={{ flexGrow: 1, flexBasis: 150, minWidth: 140, padding: 16, gap: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name={icon} size={15} color={tint} /><Text style={{ color: P.body, fontSize: 11.5, fontWeight: '600' }}>{label}</Text></View>
       <Text style={{ color: vc ?? P.head, fontSize: 24, fontWeight: '800', letterSpacing: -0.5 }}>{value}</Text>
       <Text style={{ color: P.body, fontSize: 11.5 }}>{sub}</Text>
     </View>
   );
   const quick = (icon: string, color: string, label: string, onPress: () => void) => (
-    <Pressable key={label} onPress={onPress} style={((s: any) => ({ flexBasis: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: s.hovered ? P.blue + '66' : P.border, backgroundColor: s.hovered ? P.soft : P.alt, cursor: 'pointer' })) as any}>
-      <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={17} color="#FFFFFF" /></View>
+    <Pressable key={label} onPress={onPress} style={((s: any) => ({ flexBasis: '47%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: s.hovered ? P.blue + '66' : P.border, backgroundColor: s.hovered ? P.soft : P.alt, cursor: 'pointer' })) as any}>
+      <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={17} color="#FFFFFF" /></View>
       <Text style={{ color: P.head, fontSize: 12.5, fontWeight: '700', flex: 1 }} numberOfLines={2}>{label}</Text>
     </Pressable>
   );
@@ -346,7 +344,7 @@ function Overview({ w, onOpenMethod, go }: { w: number; onOpenMethod: Props['onO
           {stat('checkmark-done', P.blue, 'Closed Trades', String(n), 'Completed')}
           {stat('speedometer', '#3B5B93', 'Average R:R', rs.length ? `1:${Math.abs(avgR).toFixed(1)}` : '—', 'Your average')}
         </View>
-        <View style={{ width: two ? 300 : '100%', gap: 12, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+        <View style={{ width: two ? 300 : '100%', gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
           <Text style={{ color: P.head, fontSize: 14, fontWeight: '800' }}>Quick Access</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
             {quick('add-circle', '#3B5B93', 'New Analysis', () => onOpenMethod(mdef('all')!))}
@@ -376,7 +374,7 @@ function Signals({ onPair, go }: { onPair: (id: string) => void; go: (t: number,
       <SectionHead icon="pulse" title="Live Market Signals" sub="Live prices with today’s momentum. Open a pair to see its full analysis." right="View All Markets" onRight={() => go(2)} />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {WL_TABS.map((k) => (
-          <Pressable key={k} onPress={() => setTab(k)} style={((s: any) => ({ minWidth: 60, paddingHorizontal: 16, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderWidth: 1, borderColor: tab === k ? P.blue : P.border, backgroundColor: tab === k ? P.blue : s.hovered ? P.alt : P.card })) as any}>
+          <Pressable key={k} onPress={() => setTab(k)} style={((s: any) => ({ minWidth: 60, paddingHorizontal: 16, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderWidth: 1, borderColor: tab === k ? P.blue : P.border, backgroundColor: tab === k ? P.blue : s.hovered ? P.alt : P.card })) as any}>
             <Text style={{ color: tab === k ? th.onAccent : P.body, fontSize: 12.5, fontWeight: '700' }}>{k}</Text>
           </Pressable>
         ))}
@@ -385,7 +383,7 @@ function Signals({ onPair, go }: { onPair: (id: string) => void; go: (t: number,
         {rows.map((s) => {
           const qt = quotes[s.id], c = chg(s.id), up = c >= 0, col = up ? th.buy : th.sell;
           return (
-            <Pressable key={s.id} onPress={() => onPair(s.id)} style={((st: any) => ({ flexGrow: 1, flexBasis: 170, minWidth: 170, padding: 14, gap: 8, borderRadius: 12, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
+            <Pressable key={s.id} onPress={() => onPair(s.id)} style={((st: any) => ({ flexGrow: 1, flexBasis: 170, minWidth: 170, padding: 14, gap: 8, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9 }}>
                 <Coin s={s} size={30} />
                 <View style={{ flex: 1, minWidth: 0 }}>
@@ -395,7 +393,7 @@ function Signals({ onPair, go }: { onPair: (id: string) => void; go: (t: number,
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <View>
-                  <View style={{ alignSelf: 'flex-start', paddingHorizontal: 8, height: 20, borderRadius: 10, justifyContent: 'center', backgroundColor: col + '1F' }}><Text style={{ color: col, fontSize: 10.5, fontWeight: '800' }}>{qt ? (up ? 'BULLISH' : 'BEARISH') : '—'}</Text></View>
+                  <View style={{ alignSelf: 'flex-start', paddingHorizontal: 8, height: 20, borderRadius: 8, justifyContent: 'center', backgroundColor: col + '1F' }}><Text style={{ color: col, fontSize: 10.5, fontWeight: '800' }}>{qt ? (up ? 'BULLISH' : 'BEARISH') : '—'}</Text></View>
                   <Text style={{ color: col, fontSize: 13, fontWeight: '800', marginTop: 4 }}>{qt ? `${up ? '+' : '−'}${Math.abs(c).toFixed(2)}%` : '—'}</Text>
                 </View>
                 <Spark pts={qt?.pts ?? []} color={col} w={70} h={28} />
@@ -419,7 +417,7 @@ export default function AnalysisHome({ cfg, setC, probs, onOpenMethod, onPair, t
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
         {top}
         {!hideNote && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
             <Icon name={bgOn ? 'notifications' : 'notifications-outline'} size={18} color={P.blue} />
             <Text style={{ flex: 1, color: P.head, fontSize: 13.5 }}>{bgOn ? 'Stay informed! Smart alerts are on: setups, news and level breaks reach you as they happen.' : 'Stay informed! Turn on Smart Alerts to get trading opportunities and market news the moment they appear.'}</Text>
             {!bgOn && (
@@ -437,14 +435,14 @@ export default function AnalysisHome({ cfg, setC, probs, onOpenMethod, onPair, t
           <Sessions go={go} />
         </View>
         <Latest w={w} openAll={() => go(1, 'all')} />
-        <View style={{ overflow: 'hidden', borderRadius: 14, flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 20 }}>
+        <View style={{ overflow: 'hidden', borderRadius: 8, flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 20 }}>
           <LinearGradient colors={['#0F1E3D', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
-          <View style={{ width: 46, height: 46, borderRadius: 12, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={22} color="#1F5FFF" /></View>
+          <View style={{ width: 46, height: 46, borderRadius: 8, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={22} color="#1F5FFF" /></View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '800' }}>Refine Your Setups. Trade Smarter.</Text>
             <Text style={{ color: '#DCE7FF', fontSize: 12.5, marginTop: 2 }}>Use your market insights to improve your strategy, reduce mistakes and grow consistently.</Text>
           </View>
-          <Pressable onPress={() => onOpenMethod(mdef('all')!)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 42, paddingHorizontal: 20, borderRadius: 9, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: s.hovered ? 0.92 : 1 })) as any}>
+          <Pressable onPress={() => onOpenMethod(mdef('all')!)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 42, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: s.hovered ? 0.92 : 1 })) as any}>
             <Text style={{ color: '#1F5FFF', fontSize: 13.5, fontWeight: '800' }}>Open Analysis</Text><Icon name="arrow-forward" size={14} color="#1F5FFF" />
           </Pressable>
         </View>

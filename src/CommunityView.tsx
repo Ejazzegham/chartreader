@@ -15,12 +15,12 @@ function usePalC() {
   const { th } = useApp();
   const d = th.dark;
   return {
-    th, dark: d, bg: d ? th.bg : '#F6F7F9', card: d ? th.panel : '#FFFFFF', alt: d ? th.panel2 : '#F6F8FB', border: d ? th.line : '#E2E5EB',
-    head: d ? th.text : '#0F1B33', body: d ? th.dim : '#5B6577', blue: th.accent, brass: th.accent2, buy: th.buy, sell: th.sell,
+    th, dark: d, bg: th.bg, card: th.panel, alt: th.panel2, border: th.line,
+    head: th.text, body: th.dim, blue: th.accent, brass: th.accent2, buy: th.buy, sell: th.sell,
     soft: th.accent + (d ? '26' : '14'), shadow: d ? '#000000' : '#0F1B33',
   };
 }
-const card = (P: ReturnType<typeof usePalC>, extra?: any) => ({ backgroundColor: P.card, borderRadius: 12, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, ...extra });
+const card = (P: ReturnType<typeof usePalC>, extra?: any) => ({ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, ...extra });
 const ptr: any = { cursor: 'pointer' };
 const noOutline: any = Platform.OS === 'web' ? { outlineStyle: 'none' } : {};
 
@@ -68,7 +68,7 @@ function AnalysisCard({ a, symbol }: { a: C.CAnalysis; symbol: C.CSymbol | null 
   const P = usePalC(), buy = a.side === 'buy', col = buy ? P.buy : P.sell;
   const rows: { k: string; v: number; c: string; r?: number }[] = [{ k: 'Entry', v: a.entry, c: P.head }, { k: 'Stop loss', v: a.sl, c: P.sell }, ...a.tps.map((t, i) => ({ k: 'Take profit ' + (i + 1), v: t, c: P.buy, r: C.rr(a, t) }))];
   return (
-    <View style={{ borderWidth: 1, borderColor: P.border, borderRadius: 12, backgroundColor: P.alt, overflow: 'hidden' }}>
+    <View style={{ borderWidth: 1, borderColor: P.border, borderRadius: 8, backgroundColor: P.alt, overflow: 'hidden' }}>
       <View style={{ height: 3, backgroundColor: col }} />
       <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: 12, paddingBottom: 8 }}>
         <Icon name="stats-chart" size={16} color={P.blue} />
@@ -118,7 +118,7 @@ function Thread({ post, token, me, onCount, flash }: { post: C.CPost; token: str
         <View key={c.id} style={{ flexDirection: 'row', gap: 10, opacity: c.hidden ? 0.55 : 1 }}>
           <Avatar name={c.author.name} size={30} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={{ backgroundColor: P.alt, borderRadius: 10, paddingVertical: 8, paddingHorizontal: 12 }}>
+            <View style={{ backgroundColor: P.alt, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
                 <Text style={{ color: P.head, fontSize: 13, fontWeight: '700' }}>{c.author.name}</Text>
                 <Flag cc={c.author.cc} />
@@ -294,7 +294,7 @@ function Composer({ token, me, onPosted, flash, startKind, onClose }: { token: s
       </View>
       <SymbolPicker value={sym} onChange={setSym} />
       {kind === 'analysis' ? (
-        <View style={{ gap: 12, borderWidth: 1, borderColor: P.border, borderRadius: 12, padding: 12, backgroundColor: P.alt }}>
+        <View style={{ gap: 12, borderWidth: 1, borderColor: P.border, borderRadius: 8, padding: 12, backgroundColor: P.alt }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="trending-up" size={16} color={P.blue} /><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>Trade levels</Text><Text style={{ color: P.body, fontSize: 12 }}>(recommended)</Text></View>
           {mine.length ? (
             <View style={{ gap: 6 }}>
@@ -375,7 +375,7 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
 
   const feedCol = (
     <View style={{ flex: wide ? 1 : undefined, minWidth: 0, width: wide ? undefined : '100%', gap: 14 }}>
-      {note ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9, padding: 12, borderRadius: 10, backgroundColor: note.k === 'ok' ? P.buy + '1A' : P.sell + '16', borderWidth: 1, borderColor: note.k === 'ok' ? P.buy + '55' : P.sell + '55' }}><Icon name={note.k === 'ok' ? 'checkmark-circle' : 'alert-circle'} size={18} color={note.k === 'ok' ? P.buy : P.sell} /><Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '600' }}>{note.m}</Text></View> : null}
+      {note ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9, padding: 12, borderRadius: 8, backgroundColor: note.k === 'ok' ? P.buy + '1A' : P.sell + '16', borderWidth: 1, borderColor: note.k === 'ok' ? P.buy + '55' : P.sell + '55' }}><Icon name={note.k === 'ok' ? 'checkmark-circle' : 'alert-circle'} size={18} color={note.k === 'ok' ? P.buy : P.sell} /><Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '600' }}>{note.m}</Text></View> : null}
 
       {composer ? <Composer token={token} me={me} onPosted={posted} flash={flash} startKind={composer} onClose={() => setComposer(null)} /> : (
         <View style={card(P, { padding: 14, gap: 12 })}>
@@ -430,7 +430,7 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
     </View>
   );
 
-  const stat = (icon: string, color: string, v: number, l: string) => <View key={l} style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 10, borderRadius: 10, backgroundColor: color + '14' }}><Icon name={icon} size={16} color={color} /><Text style={{ color: P.head, fontSize: 18, fontWeight: '800' }}>{v.toLocaleString('en-US')}</Text><Text style={{ color: P.body, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.4 }}>{l}</Text></View>;
+  const stat = (icon: string, color: string, v: number, l: string) => <View key={l} style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 10, borderRadius: 8, backgroundColor: color + '14' }}><Icon name={icon} size={16} color={color} /><Text style={{ color: P.head, fontSize: 18, fontWeight: '800' }}>{v.toLocaleString('en-US')}</Text><Text style={{ color: P.body, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.4 }}>{l}</Text></View>;
   const sideCol = (
     <View style={{ width: 320, gap: 14 }}>
       <View style={card(P, { padding: 16, gap: 12 })}>

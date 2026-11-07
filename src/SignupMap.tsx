@@ -102,7 +102,7 @@ function RoundBtn({ n, onPress, label }: { n: string; onPress: () => void; label
   );
 }
 
-const inputCss: any = { padding: '9px 11px', borderRadius: 10, border: '1px solid ' + LINE, fontSize: 14, color: INK, fontFamily: 'inherit', width: '100%', boxSizing: 'border-box', background: '#fff' };
+const inputCss: any = { padding: '9px 11px', borderRadius: 8, border: '1px solid ' + LINE, fontSize: 14, color: INK, fontFamily: 'inherit', width: '100%', boxSizing: 'border-box', background: '#fff' };
 
 function Inner() {
   const [map, setMap] = useState<MapData | null>(mapCache);
@@ -175,7 +175,7 @@ function Inner() {
   }), []);
 
   const dbg = DEBUG ? <Text style={{ color: '#B4235A', fontSize: 11, fontFamily: 'monospace' as any }}>{`map debug: map file: ${mapDiag} | numbers: ${getSignupMapDiag()}`}</Text> : null;
-  if (!map || !data) return dbg ? <View style={{ gap: 6, backgroundColor: '#FFF', padding: 14, borderRadius: 14 }}><Text style={{ color: INK, fontSize: 15, fontWeight: '700' }}>Our community around the world</Text>{dbg}</View> : null; // server or map file not reachable: show nothing rather than a broken box (add ?mapdebug to the address to see why)
+  if (!map || !data) return dbg ? <View style={{ gap: 6, backgroundColor: '#FFF', padding: 14, borderRadius: 8 }}><Text style={{ color: INK, fontSize: 15, fontWeight: '700' }}>Our community around the world</Text>{dbg}</View> : null; // server or map file not reachable: show nothing rather than a broken box (add ?mapdebug to the address to see why)
 
   const v = vb || target, unit = v[2] / 1000; // one on-screen pixel stays the same size at every zoom
   zoomed.current = v[2] < full[2] * 0.96;
@@ -243,7 +243,7 @@ function Inner() {
         </Pressable>
       </View>
       {picker ? (
-        <View style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 260, padding: 14, gap: 8, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: LINE, boxShadow: '0 18px 44px rgba(20,40,110,0.28)', zIndex: 40 } as any}>
+        <View style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 260, padding: 14, gap: 8, borderRadius: 8, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: LINE, boxShadow: '0 18px 44px rgba(20,40,110,0.28)', zIndex: 40 } as any}>
           <Text style={{ color: INK, fontSize: 13, fontWeight: '800' }}>From</Text>
           <input type="date" value={draft.from} max={draft.to || undefined} onChange={(e: any) => setDraft({ ...draft, from: e.target.value })} style={inputCss} />
           <Text style={{ color: INK, fontSize: 13, fontWeight: '800', marginTop: 4 }}>To</Text>

@@ -128,7 +128,7 @@ export default function About() {
 
   // ---------- 5. please note ----------
   const note = (
-    <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', padding: 20, borderRadius: 14, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + (th.dark ? '18' : '14') }}>
+    <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', padding: 20, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + (th.dark ? '18' : '14') }}>
       {circle('alert', 48, th.gold + '33', th.gold)}
       <View style={{ flex: 1, gap: 4 }}>
         <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>{c.discTitle}</Text>

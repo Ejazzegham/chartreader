@@ -189,7 +189,7 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
                     <Text style={{ color: th.text, fontWeight: '800', fontSize: 14 }}>{t(title)}</Text>
                     <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16, marginTop: 1 }}>{t(sub)}</Text>
                   </View>
-                  <View style={{ width: 46, height: 26, borderRadius: 13, backgroundColor: on ? th.accent : th.line, padding: 3, alignItems: on ? 'flex-end' : 'flex-start' }}>
+                  <View style={{ width: 46, height: 26, borderRadius: 8, backgroundColor: on ? th.accent : th.line, padding: 3, alignItems: on ? 'flex-end' : 'flex-start' }}>
                     <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: on ? th.onAccent : th.dim }} />
                   </View>
                 </Pressable>

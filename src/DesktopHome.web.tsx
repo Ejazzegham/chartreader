@@ -12,6 +12,7 @@ import { useRealWindow } from './win';
 import { Footer, useGo } from './SiteFooter';
 export { Footer, useGo };
 import { useDash, setDash } from './dash';
+import { glassWeb } from './sheet';
 
 // The website's home page, designed like the "Fintech Analytics Homepage" mockup: hero with a live chart, market overview,
 // multi-timeframe analysis, why-choose cards, call-to-action and footer. All numbers are live (same engine as the phone app).
@@ -25,11 +26,11 @@ export function usePal() {
   const d = th.dark;
   return {
     th, dark: d,
-    bg: d ? th.bg : '#F6F7F9', section: d ? th.bg : '#FFFFFF', alt: d ? th.panel2 : '#F6F7F9',
-    card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E2E5EB',
-    head: d ? th.text : '#0F1B33', body: d ? th.dim : '#5B6577',
-    blue: th.accent, brass: th.accent2, soft: th.accent + (d ? '26' : '12'),
-    shadow: d ? '#000000' : '#0F1B33',
+    bg: 'transparent', section: 'transparent', alt: th.panel2, // pages sit on the frosted sheet (src/sheet.ts) over the animated backdrop
+    card: th.panel, border: th.line,
+    head: th.text, body: th.dim,
+    blue: th.accent, brass: th.accent2, soft: th.accent + (d ? '26' : '14'),
+    shadow: d ? '#000000' : '#0B1B3F',
   };
 }
 
@@ -53,7 +54,8 @@ type Setup = ReturnType<typeof useSetup>;
 // ---------- small building blocks
 export function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
   const P = usePal();
-  return <View style={[{ backgroundColor: P.card, borderRadius: 12, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } }, style]}>{children}</View>;
+  // Glass panel: frosted blur, a hairline edge, a soft lift and a thin blue-violet-pink strip along the top edge.
+  return <View style={[{ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, boxShadow: P.dark ? '0 18px 40px -22px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)' : '0 18px 40px -22px rgba(11,27,63,0.35), inset 0 1px 0 rgba(255,255,255,0.9)', backgroundImage: 'linear-gradient(90deg,#3B82F6,#A855F7,#EC4899)', backgroundSize: '100% 3px', backgroundRepeat: 'no-repeat', ...glassWeb } as any, style]}>{children}</View>;
 }
 export const Pill = ({ text, tone }: { text: string; tone?: string }) => {
   const P = usePal(), c = tone ?? P.brass;
@@ -91,11 +93,11 @@ function Gauge({ pct, color, track }: { pct: number; color: string; track: strin
     </Svg>
   );
 }
-export function SentimentCard({ s }: { s: Setup }) {
+export function SentimentCard({ s, fill }: { s: Setup; fill?: boolean }) {
   const P = usePal(), th = P.th;
   const senti = s.bull >= 60 ? { l: 'Bullish', c: th.buy } : s.bull <= 40 ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
   return (
-    <Panel style={{ padding: 16, gap: 6 }}>
+    <Panel style={{ padding: 16, gap: 6, ...(fill ? { flexGrow: 1, justifyContent: 'center' } : null) }}>
       <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700' }}>Market Sentiment</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <View style={{ width: 110, height: 64, alignItems: 'center' }}>
@@ -110,7 +112,7 @@ export function SentimentCard({ s }: { s: Setup }) {
     </Panel>
   );
 }
-export function LevelsCard({ s }: { s: Setup }) {
+export function LevelsCard({ s, fill }: { s: Setup; fill?: boolean }) {
   const P = usePal(), th = P.th, cb = s.cb, fx = (v?: number) => (v == null ? '—' : v.toFixed(s.dec));
   const row = (label: string, v?: number, color?: string) => (
     <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 }}>
@@ -119,9 +121,11 @@ export function LevelsCard({ s }: { s: Setup }) {
     </View>
   );
   return (
-    <Panel style={{ padding: 16 }}>
+    <Panel style={{ padding: 16, ...(fill ? { flexGrow: 1 } : null) }}>
       <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700', marginBottom: 4 }}>Key Levels</Text>
-      {row('Entry', cb?.entry)}{row('Stop Loss', cb?.sl, th.sell)}{row('TP1', cb?.tps[0])}{row('TP2', cb?.tps[1])}{row('TP3', cb?.tps[2])}
+      <View style={{ flexGrow: 1, justifyContent: 'space-evenly' }}>
+        {row('Entry', cb?.entry)}{row('Stop Loss', cb?.sl, th.sell)}{row('TP1', cb?.tps[0])}{row('TP2', cb?.tps[1])}{row('TP3', cb?.tps[2])}
+      </View>
     </Panel>
   );
 }
@@ -167,11 +171,21 @@ export function ChartBody({ s, tf, width, height }: { s: Setup; tf: string; widt
     : <View style={{ height, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: P.body, fontSize: 13 }}>{s.err || 'Loading candles...'}</Text></View>;
 }
 
+// A chart that fills whatever height its row gives it (never less than `min`), so the chart box and the boxes beside it always end on the same line.
+export function FillChart({ s, tf, min }: { s: Setup; tf: string; min: number }) {
+  const [sz, setSz] = useState({ w: 0, h: min });
+  return (
+    <View onLayout={(e) => { const { width, height } = e.nativeEvent.layout, h = Math.max(min, Math.round(height)); setSz((o) => (Math.abs(o.w - width) < 1 && o.h === h ? o : { w: width, h })); }} style={{ flexGrow: 1, flexBasis: 0, minHeight: min, borderRadius: 8, overflow: 'hidden' }}>
+      <ChartBody s={s} tf={tf} width={sz.w} height={sz.h} />
+    </View>
+  );
+}
+
 // ---------- sections
 function Hero({ w, go }: { w: number; go: (t: number) => void }) {
   const P = usePal(), th = P.th, d = useDash();
   const s = useSetup(d.sym, d.tf, 'dash');
-  const two = w >= 1020, [cw, setCw] = useState(0);
+  const two = w >= 1020;
   const c = chg(s.sym.id);
   const cta = (label: string, onPress: () => void, solid?: boolean) => (
     <Pressable key={label} accessibilityRole="button" onPress={onPress} style={((st: any) => ({ height: 42, paddingHorizontal: 20, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: solid ? '#FFFFFF' : 'transparent', borderWidth: 1, borderColor: solid ? '#FFFFFF' : '#FFFFFF4D', opacity: st.hovered ? 0.9 : 1 })) as any}>
@@ -184,13 +198,11 @@ function Hero({ w, go }: { w: number; go: (t: number) => void }) {
         <HeroBanner tag="Smarter analysis. Better decisions." title="Trading Analysis Platform" subtitle="Real-time market insights, powerful analysis tools and personalized trading plans, all in one place."
           right={<>{cta('Go to Analysis', () => go(1), true)}{cta('Explore Markets', () => go(2))}</>}
           features={[{ icon: 'flash-outline', title: 'Real-time insights', sub: 'Live prices and signals' }, { icon: 'shield-checkmark-outline', title: 'Risk management', sub: 'Position size and limits' }, { icon: 'locate-outline', title: 'Detailed trade plans', sub: 'Entry, stop loss, 3 targets' }]} />
-        <View style={{ flexDirection: two ? 'row' : 'column', gap: 20, alignItems: 'flex-start' }}>
+        <View style={{ flexDirection: two ? 'row' : 'column', gap: 20, alignItems: 'stretch' }}>
           <Panel style={{ flex: 1, minWidth: 0, width: two ? undefined : '100%', padding: 16, gap: 10 }}>
             <ChartHeader s={s} sub={d.tf === '60' ? '1 minute' : TFB.find((x) => x[0] === d.tf)?.[1]} />
             <TfTabs tf={d.tf} set={(k) => setDash({ tf: k })} />
-            <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ borderRadius: 8, overflow: 'hidden' }}>
-              <ChartBody s={s} tf={d.tf} width={cw} height={280} />
-            </View>
+            <FillChart s={s} tf={d.tf} min={280} />
             <Pressable onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
               <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={17} color={P.blue} /></View>
               <View style={{ flex: 1 }}>
@@ -209,8 +221,8 @@ function Hero({ w, go }: { w: number; go: (t: number) => void }) {
               </View>
               <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{s.quote ? s.quote.price.toFixed(s.dec) : '—'}</Text>
             </Panel>
-            <SentimentCard s={s} />
-            <LevelsCard s={s} />
+            <SentimentCard s={s} fill />
+            <LevelsCard s={s} fill />
           </View>
         </View>
       </View>
@@ -232,7 +244,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
   const cdlSide = cdl?.side === 'buy' ? { l: 'Buy', c: th.buy } : cdl?.side === 'sell' ? { l: 'Sell', c: th.sell } : { l: 'Neutral', c: th.gold };
   const td = s.land?.ict.trend === 'bullish' ? { l: 'Bullish', c: th.buy } : s.land?.ict.trend === 'bearish' ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
   const cardBase = (onPress: () => void, children: React.ReactNode, key: string) => (
-    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 12, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
+    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
   );
   const head = (icon: string, name: string) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -274,7 +286,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="bar-chart" size={19} color={P.blue} /></View>
                 <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Candles</Text>
-                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
+                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
               </View>
               <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 8 }}>{cdl?.text ?? 'Hammer, engulfing, confirmation candle'}</Text>
             </>
@@ -284,7 +296,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="layers" size={19} color={P.blue} /></View>
                 <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Top-Down</Text>
-                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 12, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
+                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
               </View>
               <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 8 }}>H4 → H1 → M15{'\n'}multi-timeframe</Text>
             </>
@@ -297,7 +309,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
 
 function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
   const P = usePal();
-  const [tf, setTf] = useState('3600'), [cw, setCw] = useState(0);
+  const [tf, setTf] = useState('3600');
   const s = useSetup('frxXAUUSD', tf, 'dash-gold');
   const three = w >= 1080, stat = (a: string, b: string) => (
     <View key={a} style={{ gap: 2, paddingRight: 18, marginRight: 4, borderRightWidth: 1, borderRightColor: P.border }}>
@@ -306,7 +318,7 @@ function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
   );
   return (
     <View style={{ backgroundColor: P.alt }}>
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: three ? 'center' : 'stretch', gap: 30 }}>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: 'stretch', gap: 30 }}>
         <View style={{ width: three ? 300 : '100%', gap: 16 }}>
           <Pill text="Powerful Analysis Tools" />
           <Text style={{ color: P.head, fontSize: 38, lineHeight: 38, fontWeight: '700', letterSpacing: -0.9 }}>Multi-Timeframe{'\n'}Analysis</Text>
@@ -320,13 +332,11 @@ function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
         <Panel style={{ flex: 1, minWidth: 0, width: three ? undefined : '100%', padding: 16, gap: 10 }}>
           <ChartHeader s={s} sub="Gold / US Dollar" />
           <TfTabs tf={tf} set={setTf} />
-          <View onLayout={(e) => setCw(e.nativeEvent.layout.width)} style={{ borderRadius: 10, overflow: 'hidden' }}>
-            <ChartBody s={s} tf={tf} width={cw} height={310} />
-          </View>
+          <FillChart s={s} tf={tf} min={310} />
         </Panel>
         <View style={{ width: three ? 230 : '100%', gap: 16 }}>
-          <SentimentCard s={s} />
-          <LevelsCard s={s} />
+          <SentimentCard s={s} fill />
+          <LevelsCard s={s} fill />
         </View>
       </View>
     </View>
@@ -351,8 +361,8 @@ function Why({ w }: { w: number }) {
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
           {WHY.map(([icon, title, text]) => (
-            <View key={title} style={{ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 260, minWidth: 190, padding: 20, gap: 10, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.04, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }}>
-              <View style={{ width: 46, height: 46, borderRadius: 10, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={22} color={P.blue} /></View>
+            <View key={title} style={{ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 260, minWidth: 190, padding: 20, gap: 10, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.04, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }}>
+              <View style={{ width: 46, height: 46, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={22} color={P.blue} /></View>
               <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', marginTop: 4 }}>{title}</Text>
               <Text style={{ color: P.body, fontSize: 13, lineHeight: 19 }}>{text}</Text>
             </View>
@@ -377,7 +387,7 @@ function Cta({ w, go }: { w: number; go: (t: number) => void }) {
   return (
     <View style={{ backgroundColor: P.section }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingBottom: 48 }}>
-        <View style={{ borderRadius: 14, backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 32, paddingHorizontal: 32 }}>
+        <View style={{ borderRadius: 8, backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 32, paddingHorizontal: 32 }}>
           <View style={{ flex: 1, gap: 8 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '700', letterSpacing: -0.3 }}>Ready to trade with a plan?</Text>
             <Text style={{ color: '#B4C0D8', fontSize: 14.5, lineHeight: 22, maxWidth: 560 }}>Real-time analysis, risk tools and a trading journal in one place.</Text>

@@ -22,8 +22,8 @@ function useFxPal() {
   const d = th.dark;
   return {
     th, dark: d,
-    alt: d ? th.panel2 : '#F5F8FE', card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E5EBF5',
-    head: d ? th.text : '#0B1B3F', body: d ? th.dim : '#5A6B89',
+    alt: th.panel2, card: th.panel, border: th.line,
+    head: th.text, body: th.dim,
     blue: th.accent, soft: th.accent + (d ? '26' : '14'), shadow: d ? '#000000' : '#1B3A7A',
   };
 }
@@ -36,13 +36,13 @@ const LEVEL_TEXT: Record<Level, string> = { closed: 'The market is closed for th
 const LEVEL_NAME: Record<Level, string> = { closed: 'Closed', low: 'Low', medium: 'Moderate', high: 'High' };
 
 function Box({ P, children, style }: { P: Pal; children: React.ReactNode; style?: any }) {
-  return <View style={[{ backgroundColor: P.card, borderRadius: 14, borderWidth: 1, borderColor: P.border, padding: 20, gap: 16, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, padding: 20, gap: 16, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
 }
 function Head({ P, icon, title, sub, right }: { P: Pal; icon: string; title: string; sub?: string; right?: React.ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1, minWidth: 220 }}>
-        <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>
+        <View style={{ width: 42, height: 42, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>
         <View style={{ flexShrink: 1 }}>
           <Text accessibilityRole="header" style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>{title}</Text>
           {!!sub && <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 1 }}>{sub}</Text>}
@@ -62,7 +62,7 @@ function Chip({ P, label, on, onPress, kind = 'radio' }: { P: Pal; label: string
 }
 function Status({ color, text }: { color: string; text: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 12, backgroundColor: color + '1F', borderWidth: 1, borderColor: color + '55' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 8, backgroundColor: color + '1F', borderWidth: 1, borderColor: color + '55' }}>
       <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color }} />
       <Text style={{ color, fontSize: 11.5, fontWeight: '800' }}>{text}</Text>
     </View>
@@ -86,7 +86,7 @@ const OVERLAP_INFO: Record<string, { name: string; tag: string; body: string }> 
 type Col = { t: string; flex: number; align?: 'left' | 'right' | 'center' };
 function Table({ P, cols, rows, min = 560 }: { P: Pal; cols: Col[]; rows: React.ReactNode[][]; min?: number }) {
   return (
-    <View style={{ borderRadius: 12, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }}>
+    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
         <View style={{ flexGrow: 1, minWidth: min }}>
           <View style={{ flexDirection: 'row', backgroundColor: P.alt, borderBottomWidth: 1, borderBottomColor: P.border }}>
@@ -181,7 +181,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
   return (
     <View style={{ gap: sectionGap }}>
       {/* intro */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 12, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
         <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="information" size={20} color={th.onAccent} /></View>
         <Text style={{ color: P.head, fontSize: 13, lineHeight: 20, flex: 1 }}>When does the forex market open? Use the converter below to see when the four main sessions open and close in your own time zone. Retail forex trades from Sunday evening to Friday evening, New York time.</Text>
       </View>
@@ -197,7 +197,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
         </View>
 
         {/* session table: one row per city, with its own 24 hour bar */}
-        <View style={{ borderRadius: 12, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }} accessible accessibilityLabel={`Forex sessions today in ${where}. Open now: ${openNames.join(', ') || 'none'}.`}>
+        <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }} accessible accessibilityLabel={`Forex sessions today in ${where}. Open now: ${openNames.join(', ') || 'none'}.`}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', backgroundColor: P.alt, borderBottomWidth: 1, borderBottomColor: P.border, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 8, gap: 14 }}>
             {wide && <><Text style={[hd(P), { width: 160 - 14 }]}>Session</Text><Text style={[hd(P), { width: 200 - 14 }]}>Local time</Text><Text style={[hd(P), { width: 150 - 14 }]}>Status</Text></>}
             <View style={{ flex: 1, minWidth: 0 }}><Text style={hd(P)}>{wide ? '' : 'Sessions · '}24 hour timeline in {where}</Text>{axis()}</View>
@@ -269,7 +269,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
             right={onGuide ? <Pressable onPress={onGuide} accessibilityRole="link" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, opacity: s.hovered ? 0.8 : 1, ...hand })) as any}><Text style={{ color: P.blue, fontSize: 13, fontWeight: '700' }}>View Full Guide</Text><Icon name="arrow-forward" size={14} color={P.blue} /></Pressable> : undefined} />
           <View style={{ gap: 10 }}>
             {STEPS.map((s, i) => (
-              <View key={s.title} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+              <View key={s.title} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
                 <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: th.accent2 + '1A', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.accent2, fontSize: 14, fontWeight: '900' }}>{i + 1}</Text></View>
                 <View style={{ flex: 1, minWidth: 0, gap: 2 }}><Text style={{ color: P.head, fontSize: 14, fontWeight: '800' }}>{s.title}</Text><Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>{s.body}</Text></View>
               </View>
@@ -303,7 +303,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
           {faq.map((f, i) => {
             const on = open === i;
             return (
-              <View key={f.q} style={{ borderRadius: 12, borderWidth: 1, borderColor: on ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, overflow: 'hidden' }}>
+              <View key={f.q} style={{ borderRadius: 8, borderWidth: 1, borderColor: on ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, overflow: 'hidden' }}>
                 <Pressable onPress={() => setOpen(on ? -1 : i)} accessibilityRole="button" accessibilityState={{ expanded: on }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: 14, opacity: s.hovered ? 0.9 : 1, ...hand })) as any}>
                   <Text style={{ color: P.head, fontSize: 14, fontWeight: '700', flex: 1 }}>{f.q}</Text>
                   <Icon name={on ? 'chevron-up' : 'chevron-down'} size={18} color={P.blue} />
@@ -316,16 +316,16 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
       </Box>
 
       {/* call to action */}
-      <View style={{ borderRadius: 14, borderWidth: 1, borderColor: P.blue + '22', backgroundColor: P.blue + (P.dark ? '26' : '14'), padding: 22, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 18 }}>
+      <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.blue + '22', backgroundColor: P.blue + (P.dark ? '26' : '14'), padding: 22, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 18 }}>
         <View style={{ flex: 1, minWidth: 240, gap: 4 }}>
           <Text style={{ color: P.head, fontSize: 20, fontWeight: '900' }}>Trade when the market is moving</Text>
           <Text style={{ color: P.body, fontSize: 13.5, lineHeight: 20, maxWidth: 560 }}>Pick the hours that suit you, then analyze a pair from a session that is open. Looking for ICT killzones? They are part of the ICT analysis.</Text>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-          <Pressable accessibilityRole="button" onPress={() => onAnalysis()} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 24, borderRadius: 10, backgroundColor: P.blue, opacity: s.hovered ? 0.92 : 1, ...hand })) as any}>
+          <Pressable accessibilityRole="button" onPress={() => onAnalysis()} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 24, borderRadius: 8, backgroundColor: P.blue, opacity: s.hovered ? 0.92 : 1, ...hand })) as any}>
             <Icon name="stats-chart" size={16} color={th.onAccent} /><Text style={{ color: th.onAccent, fontSize: 14.5, fontWeight: '700' }}>Open Analysis</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => onAnalysis('ict')} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 22, borderRadius: 10, borderWidth: 1.5, borderColor: P.blue + '66', backgroundColor: s.hovered ? P.soft : 'transparent', ...hand })) as any}>
+          <Pressable accessibilityRole="button" onPress={() => onAnalysis('ict')} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 22, borderRadius: 8, borderWidth: 1.5, borderColor: P.blue + '66', backgroundColor: s.hovered ? P.soft : 'transparent', ...hand })) as any}>
             <Text style={{ color: P.blue, fontSize: 14.5, fontWeight: '700' }}>ICT Killzones</Text><Icon name="arrow-forward" size={16} color={P.blue} />
           </Pressable>
         </View>

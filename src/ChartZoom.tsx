@@ -263,7 +263,7 @@ export function ChartHud({ z, top, right = 8, vol }: { z: Zoom; top: number; rig
   return (
     <View onTouchStart={stop} onTouchEnd={stop} style={{ position: 'absolute', top, right, flexDirection: 'row', alignItems: 'center', gap: 6, direction: 'ltr' }}>
       {!!vol && (
-        <Pressable onPress={vol.toggle} hitSlop={6} accessibilityRole="button" accessibilityLabel="Volume" style={{ height: 28, paddingHorizontal: 9, borderRadius: 14, borderWidth: 1, borderColor: vol.on ? th.accent : th.line, backgroundColor: vol.on ? th.accent : th.solid + 'E6', alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable onPress={vol.toggle} hitSlop={6} accessibilityRole="button" accessibilityLabel="Volume" style={{ height: 28, paddingHorizontal: 9, borderRadius: 8, borderWidth: 1, borderColor: vol.on ? th.accent : th.line, backgroundColor: vol.on ? th.accent : th.solid + 'E6', alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: vol.on ? th.onAccent : th.dim, fontSize: 11, fontWeight: '900' }}>Vol</Text>
         </Pressable>
       )}

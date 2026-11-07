@@ -8,6 +8,7 @@ import { Coin } from './MarketWidgets';
 import { useLayout, useRealWindow } from './win';
 import { SYMBOLS, Sym } from './markets';
 import { setDash, groupOf } from './dash';
+import { glassWeb, sheet } from './sheet';
 
 // The desktop website: [ sidebar ] [ top bar over ( page | market watch ) ]. The pages are the same screens as on the phone;
 // Home is a dashboard (DesktopHome.web.tsx).
@@ -29,8 +30,8 @@ function TopNav() {
   const [menu, setMenu] = useState<'' | 'tools' | 'user' | 'nav'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState('');
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1120;
-  const ink = th.dark ? th.text : '#0F1B33', mute = th.dark ? th.dim : '#5B6577', rule = th.dark ? th.line : '#E6E9EF';
-  const bar = th.dark ? th.panel : '#FFFFFF', toolTabs = TOOLS.map((x) => x[0]);
+  const ink = th.text, mute = th.dim, rule = th.line;
+  const bar = th.panel, toolTabs = TOOLS.map((x) => x[0]);
   const padX = compact ? 12 : slim ? 16 : 32;
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };
@@ -54,14 +55,14 @@ function TopNav() {
       {badge > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '700' }}>{badge > 99 ? '99+' : badge}</Text></View>}
     </Pressable>
   );
-  const drop = { position: 'absolute', top: navH - 8, padding: 6, minWidth: 224, borderRadius: 10, borderWidth: 1, borderColor: rule, backgroundColor: th.solid, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, zIndex: 40 } as any;
+  const drop = { position: 'absolute', top: navH - 8, padding: 6, minWidth: 224, borderRadius: 8, borderWidth: 1, borderColor: rule, backgroundColor: th.solid, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, zIndex: 40 } as any;
   const name = account?.name ?? '';
   const ghost = (s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 34, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: rule, backgroundColor: s.hovered ? th.panel2 : 'transparent', cursor: 'pointer' }) as any;
   const count = adminBadge.chats + adminBadge.pays;
   return (
     <View style={{ zIndex: 30 }}>
       {(menu !== '' || searchOpen) && <Pressable onPress={() => { setMenu(''); setSearchOpen(false); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 29 } as any} />}
-      <View style={{ height: navH, backgroundColor: bar, borderBottomWidth: 1, borderBottomColor: rule, zIndex: 31 }}>
+      <View style={{ height: navH, backgroundColor: bar, ...glassWeb, borderBottomWidth: 1, borderBottomColor: rule, zIndex: 31 }}>
         <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', paddingHorizontal: padX, gap: slim ? 2 : 4 }}>
           <Pressable onPress={() => setTab(0)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11, cursor: 'pointer' } as any}>
             <LogoMark size={34} radius={8} />
@@ -76,7 +77,7 @@ function TopNav() {
           <View>
             {link('Tools', menu === 'tools' || toolTabs.includes(tab), () => setMenu(menu === 'tools' ? '' : 'tools'), true)}
             {menu === 'tools' && (
-              <View style={{ ...drop, left: 0, width: slim ? 440 : 484, padding: 14, borderRadius: 12 }}>
+              <View style={{ ...drop, left: 0, width: slim ? 440 : 484, padding: 14, borderRadius: 8 }}>
                 {TOOL_GROUPS.map(([title, ids], gi) => (
                   <View key={title} style={{ marginTop: gi ? 10 : 0 }}>
                     <Text style={{ color: th.accent2, fontSize: 10.5, fontWeight: '700', letterSpacing: 1.6, paddingHorizontal: 4, paddingBottom: 8 }}>{title}</Text>
@@ -87,9 +88,9 @@ function TopNav() {
                         const on = !special && tab === id, badge = id === 'help' ? supportUnread : 0;
                         const go = () => { setMenu(''); if (id === 'hist') setHistOpen(true); else if (id === 'help') setHelpOpen(true); else setTab(id as number); };
                         return (
-                          <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={go} style={((s: any) => ({ width: 'calc(25% - 6px)', alignItems: 'center', gap: 8, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 10, borderWidth: 1, borderColor: on || s.hovered ? th.accent2 : rule, backgroundColor: s.hovered ? th.panel2 : 'transparent', cursor: 'pointer', transform: [{ translateY: s.hovered ? -2 : 0 }] })) as any}>
+                          <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={go} style={((s: any) => ({ width: 'calc(25% - 6px)', alignItems: 'center', gap: 8, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 8, borderWidth: 1, borderColor: on || s.hovered ? th.accent2 : rule, backgroundColor: s.hovered ? th.panel2 : 'transparent', cursor: 'pointer', transform: [{ translateY: s.hovered ? -2 : 0 }] })) as any}>
                             {(s: any) => (<>
-                              <View style={{ width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: s.hovered || on ? th.accent : th.accent + '14' }}>
+                              <View style={{ width: 40, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: s.hovered || on ? th.accent : th.accent + '14' }}>
                                 <Icon name={icon} size={19} color={s.hovered || on ? th.onAccent : th.accent} />
                                 {badge > 0 && <View style={{ position: 'absolute', top: -5, right: -5, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 9.5, fontWeight: '700' }}>{badge > 99 ? '99+' : badge}</Text></View>}
                               </View>
@@ -160,13 +161,13 @@ function TopNav() {
         )}
         {searchOpen && (
           <View style={{ position: 'absolute', top: navH - 12, right: padX, width: Math.min(420, L.full - 2 * padX), zIndex: 41 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: th.accent, backgroundColor: th.solid, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: th.accent, backgroundColor: th.solid, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } }}>
               <Icon name="search" size={16} color={mute} />
               <TextInput ref={ref} value={q} onChangeText={setQ} placeholder="Search symbols, pairs or instruments" placeholderTextColor={mute} style={{ flex: 1, color: ink, fontSize: 13.5, outlineStyle: 'none' } as any} />
               <View style={{ paddingHorizontal: 7, paddingVertical: 3, borderRadius: 5, borderWidth: 1, borderColor: rule }}><Text style={{ color: mute, fontSize: 10.5, fontWeight: '600' }}>Esc</Text></View>
             </View>
             {hits.length > 0 && (
-              <View style={{ marginTop: 6, borderRadius: 10, borderWidth: 1, borderColor: rule, backgroundColor: th.solid, padding: 6, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } }}>
+              <View style={{ marginTop: 6, borderRadius: 8, borderWidth: 1, borderColor: rule, backgroundColor: th.solid, padding: 6, shadowColor: '#0F1B33', shadowOpacity: 0.1, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } }}>
                 {hits.map((s) => (
                   <Pressable key={s.id} onPress={() => pick(s)} style={((x: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, borderRadius: 6, cursor: 'pointer', backgroundColor: x.hovered ? th.panel2 : 'transparent' })) as any}>
                     <Coin s={s} size={28} />
@@ -195,11 +196,11 @@ export function Notices({ flush }: { flush?: boolean }) {
   return (
     <View style={{ gap: 8, paddingHorizontal: flush ? 0 : 20, paddingTop: flush ? 0 : 10 }}>
       {rows.map((r) => (
-        <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: r.tone + '55', backgroundColor: r.tone + '14' }}>
+        <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: r.tone + '55', backgroundColor: r.tone + '14' }}>
           <Icon name={r.icon} size={19} color={r.tone} />
           <Text style={{ flex: 1, color: th.text, fontSize: 13, lineHeight: 18 }}>{r.text}</Text>
           {r.btns.map(([l, f]) => (
-            <Pressable key={l} onPress={f} style={((st: any) => ({ height: 32, paddingHorizontal: 14, borderRadius: 9, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: r.tone, opacity: st.hovered ? 0.9 : 1 })) as any}><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>{l}</Text></Pressable>
+            <Pressable key={l} onPress={f} style={((st: any) => ({ height: 32, paddingHorizontal: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: r.tone, opacity: st.hovered ? 0.9 : 1 })) as any}><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>{l}</Text></Pressable>
           ))}
         </View>
       ))}
@@ -208,12 +209,12 @@ export function Notices({ flush }: { flush?: boolean }) {
 }
 
 export function DesktopShell({ children }: { children: React.ReactNode }) {
-  const { tab } = useApp(); // no side panels on any page: every page uses the full width under the top bar
+  const { tab, th } = useApp(); // no side panels on any page: every page uses the full width under the top bar
   return (
     <View style={{ flex: 1 }}>
       <TopNav />
       <View style={{ flex: 1, flexDirection: 'row' }}>
-        <View style={{ flex: 1, minWidth: 0 }}>{tab !== 13 && tab !== 4 && <Notices />}{children}</View>
+        <View style={{ flex: 1, minWidth: 0, ...sheet(th) }}>{tab !== 13 && tab !== 4 && <Notices />}{children}</View>
       </View>
     </View>
   );

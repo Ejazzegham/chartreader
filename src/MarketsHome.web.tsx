@@ -76,7 +76,7 @@ function CatCards({ w, cat, setCat, counts, live }: { w: number; cat: CatKey; se
         const on = cat === c.k;
         return (
           <Pressable key={c.k} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => setCat(c.k)}
-            style={((s: any) => ({ width: cw, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 12, borderWidth: on ? 1.6 : 1, borderColor: on ? P.blue : s.hovered ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: on ? 0.14 : 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } })) as any}>
+            style={((s: any) => ({ width: cw, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 8, borderWidth: on ? 1.6 : 1, borderColor: on ? P.blue : s.hovered ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: on ? 0.14 : 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } })) as any}>
             <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: c.color + '24', alignItems: 'center', justifyContent: 'center' }}><Icon name={c.icon} size={18} color={c.color} /></View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={{ color: P.head, fontSize: 12.5, fontWeight: '700' }} numberOfLines={1}>{c.label}</Text>
@@ -95,7 +95,7 @@ function Row({ s, onSelect }: { s: Sym; onSelect: (s: Sym) => void }) {
   const P = usePal(), th = P.th, { quotes, db } = useFeed(true);
   const x = quotes[s.id], c = chg(s.id), col = c >= 0 ? th.buy : th.sell, fav = db.favs.includes(s.id);
   return (
-    <Pressable onPress={() => onSelect(s)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 11, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
+    <Pressable onPress={() => onSelect(s)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 11, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
       <Coin s={s} size={38} />
       <View style={{ flex: 1.3, minWidth: 0 }}>
         <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700' }} numberOfLines={1}>{s.name}</Text>
@@ -115,7 +115,7 @@ function WatchCard({ s, onSelect }: { s: Sym; onSelect: (s: Sym) => void }) {
   const P = usePal(), th = P.th, { quotes } = useFeed(true);
   const x = quotes[s.id], c = chg(s.id), col = c >= 0 ? th.buy : th.sell;
   return (
-    <Pressable onPress={() => onSelect(s)} style={((st: any) => ({ width: 168, padding: 12, gap: 4, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
+    <Pressable onPress={() => onSelect(s)} style={((st: any) => ({ width: 168, padding: 12, gap: 4, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}><Coin s={s} size={22} /><Text style={{ color: P.head, fontSize: 12, fontWeight: '700', flex: 1 }} numberOfLines={1}>{s.name}</Text></View>
       <Text style={{ color: col, fontSize: 19, fontWeight: '800', fontVariant: ['tabular-nums'] }} numberOfLines={1}>{x ? x.price.toFixed(x.dec) : '—'}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -188,10 +188,10 @@ export default function MarketsHome({ active, onSelect }: Props) {
   const trend = s.land?.ict.trend, tc = trend === 'bullish' ? th.buy : trend === 'bearish' ? th.sell : th.gold;
   const pairs = [...new Set([chartSym, ...db.favs, 'frxEURUSD', 'frxGBPUSD', 'frxUSDJPY', 'frxXAUUSD', 'cryBTCUSD'])].filter((id) => !isBad(id)).slice(0, 9);
   const mini = (icon: string, t: string, pill: string, pc: string, body: React.ReactNode) => (
-    <View style={{ flex: 1, minWidth: 240, flexDirection: 'row', gap: 12, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+    <View style={{ flex: 1, minWidth: 240, flexDirection: 'row', gap: 12, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
       <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={17} color={P.blue} /></View>
       <View style={{ flex: 1, gap: 3 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700', flex: 1 }}>{t}</Text><View style={{ paddingHorizontal: 10, height: 22, borderRadius: 11, justifyContent: 'center', backgroundColor: pc + '1F' }}><Text style={{ color: pc, fontSize: 11, fontWeight: '700' }}>{pill}</Text></View></View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700', flex: 1 }}>{t}</Text><View style={{ paddingHorizontal: 10, height: 22, borderRadius: 8, justifyContent: 'center', backgroundColor: pc + '1F' }}><Text style={{ color: pc, fontSize: 11, fontWeight: '700' }}>{pill}</Text></View></View>
         {body}
       </View>
     </View>
@@ -206,7 +206,7 @@ export default function MarketsHome({ active, onSelect }: Props) {
         {favs.length === 0 ? <Text style={{ color: P.body, fontSize: 12.5 }}>Tap the star on any market to keep it here.</Text> : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>{favs.map((f) => <WatchCard key={f.id} s={f} onSelect={onSelect} />)}</ScrollView>
         )}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#FAFBFE' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#FAFBFE' }}>
           <Icon name="search" size={16} color={P.body} />
           <TextInput value={q} onChangeText={setQ} placeholder="Search markets (symbol, name, or keyword)..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 13, outlineStyle: 'none' } as any} />
           {!!q && <Pressable onPress={() => setQ('')} hitSlop={8}><Icon name="close-circle" size={16} color={P.body} /></Pressable>}
@@ -215,7 +215,7 @@ export default function MarketsHome({ active, onSelect }: Props) {
           {CATS.filter((c) => c.k !== 'fav' && (c.k === 'all' || counts[c.k] > 0)).map((c) => {
             const on = cat === c.k && !term;
             return (
-              <Pressable key={c.k} onPress={() => { setCat(c.k); setQ(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 34, borderRadius: 10, borderWidth: 1, borderColor: on ? P.blue : P.border, backgroundColor: on ? P.blue : st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
+              <Pressable key={c.k} onPress={() => { setCat(c.k); setQ(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 34, borderRadius: 8, borderWidth: 1, borderColor: on ? P.blue : P.border, backgroundColor: on ? P.blue : st.hovered ? P.alt : P.card, cursor: 'pointer' })) as any}>
                 {c.k !== 'all' && <Icon name={c.icon} size={13} color={on ? th.onAccent : P.blue} />}
                 <Text style={{ color: on ? th.onAccent : P.head, fontSize: 12.5, fontWeight: '600' }}>{c.label}</Text>
               </Pressable>
@@ -232,12 +232,12 @@ export default function MarketsHome({ active, onSelect }: Props) {
           <Text style={{ color: P.body, fontSize: 11.5, marginLeft: 6 }}>Showing {Math.min(limit, rows.length)} of {rows.length} markets</Text>
           <View style={{ flex: 1 }} />
           <View>
-            <Pressable onPress={() => setSortOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer' } as any}>
+            <Pressable onPress={() => setSortOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer' } as any}>
               <Text style={{ color: P.body, fontSize: 12 }}>Sort by: <Text style={{ color: P.head, fontWeight: '700' }}>{({ pop: 'Popular', up: 'Top gainers', down: 'Top losers', az: 'A to Z' } as const)[sort]}</Text></Text>
               <Icon name="chevron-down" size={13} color={P.body} />
             </Pressable>
             {sortOpen && (
-              <View style={{ position: 'absolute', top: 38, right: 0, minWidth: 160, padding: 6, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 20, shadowColor: P.shadow, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
+              <View style={{ position: 'absolute', top: 38, right: 0, minWidth: 160, padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 20, shadowColor: P.shadow, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
                 {([['pop', 'Popular'], ['up', 'Top gainers'], ['down', 'Top losers'], ['az', 'A to Z']] as const).map(([k, l]) => (
                   <Pressable key={k} onPress={() => { setSort(k); setSortOpen(false); }} style={((st: any) => ({ height: 34, paddingHorizontal: 10, borderRadius: 8, justifyContent: 'center', cursor: 'pointer', backgroundColor: sort === k ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}><Text style={{ color: sort === k ? P.blue : P.head, fontSize: 12.5, fontWeight: sort === k ? '700' : '500' }}>{l}</Text></Pressable>
                 ))}
@@ -257,11 +257,11 @@ export default function MarketsHome({ active, onSelect }: Props) {
         <Head icon="analytics" title="Live Market Chart" />
         <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 12, zIndex: 6 }}>
           <View>
-            <Pressable onPress={() => setPairOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 10, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer' } as any}>
+            <Pressable onPress={() => setPairOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer' } as any}>
               <Coin s={s.sym} size={22} /><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '700' }}>{s.sym.name}</Text><Icon name="chevron-down" size={13} color={P.body} />
             </Pressable>
             {pairOpen && (
-              <View style={{ position: 'absolute', top: 40, left: 0, minWidth: 200, padding: 6, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 30, shadowColor: P.shadow, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
+              <View style={{ position: 'absolute', top: 40, left: 0, minWidth: 200, padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 30, shadowColor: P.shadow, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
                 {pairs.map((id) => (
                   <Pressable key={id} onPress={() => { setChartSym(id); setPairOpen(false); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: id === chartSym ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
                     <Coin s={symOf(id)} size={20} /><Text style={{ color: P.head, fontSize: 12.5, fontWeight: '600' }}>{symOf(id).name}</Text>
@@ -272,7 +272,7 @@ export default function MarketsHome({ active, onSelect }: Props) {
           </View>
           <TfTabs tf={tf} set={setTf} />
         </View>
-        <View onLayout={(e) => setCw(Math.round(e.nativeEvent.layout.width))} style={{ borderRadius: 10, overflow: 'hidden' }}>
+        <View onLayout={(e) => setCw(Math.round(e.nativeEvent.layout.width))} style={{ borderRadius: 8, overflow: 'hidden' }}>
           <ChartBody s={s} tf={tf} width={cw} height={340} />
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
@@ -377,7 +377,7 @@ export default function MarketsHome({ active, onSelect }: Props) {
               </View>
             ))}
           </Panel>
-          <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 22, borderRadius: 14, gap: 10, justifyContent: 'center', overflow: 'hidden' }}>
+          <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 22, borderRadius: 8, gap: 10, justifyContent: 'center', overflow: 'hidden' }}>
             <Text style={{ color: '#FFFFFF', fontSize: 19, fontWeight: '800', lineHeight: 24 }}>Trade Smarter with Our Tools</Text>
             <Text style={{ color: '#DCE6FFCC', fontSize: 12.5, lineHeight: 18 }}>Advanced charts, real-time data, market analysis and more.</Text>
             <View style={{ alignSelf: 'flex-start', marginTop: 6 }}><Btn label="Explore Tools" onPress={() => go(1)} /></View>

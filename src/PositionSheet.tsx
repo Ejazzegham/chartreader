@@ -86,7 +86,7 @@ export default function PositionSheet({ posId, focus, onClose }: { posId: string
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A', direction: rtl ? 'rtl' : 'ltr' }}>
           <Pressable style={{ flex: 1 }} onPress={onClose} />
-          <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 12, borderTopRightRadius: 12, borderWidth: 1, borderColor: th.line, paddingHorizontal: 16, paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 10, maxHeight: '92%' }}>
+          <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: th.line, paddingHorizontal: 16, paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 10, maxHeight: '92%' }}>
             <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 2, backgroundColor: th.line, marginBottom: 12 }} />
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 14, paddingBottom: 6 }}>
               {/* the trade */}
@@ -104,12 +104,12 @@ export default function PositionSheet({ posId, focus, onClose }: { posId: string
 
               {levelBlock('sl')}
               {levelBlock('tp')}
-              <Pressable onPress={apply} accessibilityRole="button" style={({ pressed }) => ({ height: 48, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent, opacity: pressed ? 0.85 : 1 })}>
+              <Pressable onPress={apply} accessibilityRole="button" style={({ pressed }) => ({ height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent, opacity: pressed ? 0.85 : 1 })}>
                 <Text style={{ color: th.onAccent, fontWeight: '900', fontSize: 15 }}>Save stop loss / take profit</Text>
               </Pressable>
 
               {/* break-even */}
-              <Pressable onPress={be} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: beReady ? th.gold : th.line, backgroundColor: beReady ? th.gold + '1A' : th.panel, opacity: pressed ? 0.85 : 1 })}>
+              <Pressable onPress={be} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: beReady ? th.gold : th.line, backgroundColor: beReady ? th.gold + '1A' : th.panel, opacity: pressed ? 0.85 : 1 })}>
                 <Icon name="shield-checkmark" size={20} color={beReady ? th.gold : th.dim} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: th.text, fontWeight: '900', fontSize: 14 }}>Break-even</Text>
@@ -119,7 +119,7 @@ export default function PositionSheet({ posId, focus, onClose }: { posId: string
               </Pressable>
 
               {/* cut by percentage */}
-              <View style={{ gap: 8, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel }}>
+              <View style={{ gap: 8, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel }}>
                 {lab('CUT THE TRADE BY PERCENTAGE')}
                 <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                   {CUT.map((c) => chip(`c${c}`, `${c}%`, num(cut) === c, () => setCut(String(c))))}
@@ -131,12 +131,12 @@ export default function PositionSheet({ posId, focus, onClose }: { posId: string
                 <Text style={{ color: cl.lots > 0 ? th.text : th.gold, fontSize: 12.5, lineHeight: 18 }}>
                   {!isFinite(pct) || pct <= 0 ? 'Enter a percentage from 1 to 100.' : cl.lots <= 0 ? `${pct}% of ${fmtLots(p.lots)} lots is below the minimum lot (${fmtLots(spec.min)}). Pick a bigger share.` : cl.all ? `Closes the whole trade (${fmtLots(p.lots)} lots)${spec.min > 0 && pct < 99.9 ? ', what would stay is below the minimum lot' : ''}${prev ? `, result ${usd(prev.closed!.pnl)}` : ''}.` : `Closes ${fmtLots(cl.lots)} lots${prev ? ` (${usd(prev.booked)})` : ''} and keeps ${fmtLots(stay)} lots running.`}
                 </Text>
-                <Pressable onPress={doCut} disabled={cl.lots <= 0} accessibilityRole="button" style={({ pressed }) => ({ height: 46, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: th.gold, opacity: cl.lots <= 0 ? 0.4 : pressed ? 0.85 : 1 })}>
+                <Pressable onPress={doCut} disabled={cl.lots <= 0} accessibilityRole="button" style={({ pressed }) => ({ height: 46, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.gold, opacity: cl.lots <= 0 ? 0.4 : pressed ? 0.85 : 1 })}>
                   <Text style={{ color: ink(th.gold), fontWeight: '900', fontSize: 14.5 }}>{cl.all ? 'Close trade' : `Close ${isFinite(pct) ? pct : ''}% now`}</Text>
                 </Pressable>
               </View>
 
-              <Pressable onPress={doAll} accessibilityRole="button" style={({ pressed }) => ({ height: 50, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, backgroundColor: th.sell, opacity: pressed ? 0.85 : 1 })}>
+              <Pressable onPress={doAll} accessibilityRole="button" style={({ pressed }) => ({ height: 50, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, backgroundColor: th.sell, opacity: pressed ? 0.85 : 1 })}>
                 <Icon name="close-circle" size={20} color={ink(th.sell)} />
                 <Text style={{ color: ink(th.sell), fontWeight: '900', fontSize: 15 }}>Close position · {usd(pnl)}</Text>
               </Pressable>

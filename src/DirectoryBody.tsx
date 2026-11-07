@@ -13,7 +13,7 @@ const hand: any = WEB ? { cursor: 'pointer' } : null;
 export function usePal() {
   const { th } = useApp();
   const d = th.dark;
-  return { th, dark: d, alt: d ? th.panel2 : '#F5F8FE', card: d ? th.panel : '#FFFFFF', border: d ? th.line : '#E5EBF5', head: d ? th.text : '#0B1B3F', body: d ? th.dim : '#5A6B89', blue: th.accent, soft: th.accent + (d ? '26' : '14'), shadow: d ? '#000000' : '#1B3A7A' };
+  return { th, dark: d, alt: th.panel2, card: th.panel, border: th.line, head: th.text, body: th.dim, blue: th.accent, soft: th.accent + (d ? '26' : '14'), shadow: d ? '#000000' : '#1B3A7A' };
 }
 export type Pal = ReturnType<typeof usePal>;
 
@@ -23,13 +23,13 @@ const txtOn = (bg: string) => { const l = lum(bg); return 1.05 / (l + 0.05) >= (
 const initials = (n: string) => { const w = n.split(/\s+/).filter((x) => /[A-Za-z0-9]/.test(x)); return (w.length > 1 ? w[0][0] + w[1][0] : n.slice(0, 2)).toUpperCase(); };
 
 export function Panel({ P, children, style }: { P: Pal; children: React.ReactNode; style?: any }) {
-  return <View style={[{ backgroundColor: P.card, borderRadius: 14, borderWidth: 1, borderColor: P.border, padding: 20, gap: 16, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, padding: 20, gap: 16, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
 }
 export function Head({ P, icon, title, sub, right }: { P: Pal; icon: string; title: string; sub?: string; right?: React.ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1, minWidth: 200 }}>
-        <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>
+        <View style={{ width: 42, height: 42, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>
         <View style={{ flexShrink: 1 }}>
           <Text accessibilityRole="header" style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>{title}</Text>
           {!!sub && <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 1 }}>{sub}</Text>}
@@ -55,7 +55,7 @@ export function FirmLink({ f, style, children }: { f: PropFirm; style: (hovered:
 }
 export function VisitBtn({ P, f, compact }: { P: Pal; f: PropFirm; compact?: boolean }) {
   return (
-    <FirmLink f={f} style={(h) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: compact ? 38 : 44, paddingHorizontal: compact ? 14 : 20, borderRadius: 10, backgroundColor: h ? P.blue + '30' : P.soft, borderWidth: 1, borderColor: P.blue + '55', ...hand })}>
+    <FirmLink f={f} style={(h) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: compact ? 38 : 44, paddingHorizontal: compact ? 14 : 20, borderRadius: 8, backgroundColor: h ? P.blue + '30' : P.soft, borderWidth: 1, borderColor: P.blue + '55', ...hand })}>
       <Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '800' }}>Visit website</Text>
       <Icon name="open-outline" size={compact ? 14 : 15} color={P.blue} />
     </FirmLink>
@@ -83,7 +83,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
 
   return (
     <View style={{ gap: 20 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 12, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
         <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="information" size={20} color={th.onAccent} /></View>
         <Text style={{ color: P.head, fontSize: 13, lineHeight: 20, flex: 1 }}>{cfg.intro}</Text>
       </View>
@@ -91,7 +91,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
       {podium && (
         <View style={{ flexDirection: 'row', gap: 16 }}>
           {top.map((f) => (
-            <View key={f.name} style={{ flex: 1, minWidth: 0, borderRadius: 14, borderWidth: 1, borderColor: MEDAL[f.rank - 1] + '88', backgroundColor: P.card, padding: 20, gap: 14, overflow: 'hidden', shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }}>
+            <View key={f.name} style={{ flex: 1, minWidth: 0, borderRadius: 8, borderWidth: 1, borderColor: MEDAL[f.rank - 1] + '88', backgroundColor: P.card, padding: 20, gap: 14, overflow: 'hidden', shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }}>
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: MEDAL[f.rank - 1] }} />
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Avatar P={P} f={f} size={52} />
@@ -110,7 +110,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
       <Panel P={P}>
         <Head P={P} icon={cfg.icon} title={podium ? `More ${cfg.listTitle}` : `All ${cfg.listTitle}`} sub={`${found.length} of ${items.length} ${cfg.nouns}${q.trim() ? ` match “${q.trim()}”` : ranked ? ', ranked' : ''}`}
           right={<View style={{ flexDirection: 'row', gap: 8 }}><Chip P={P} label={ranked ? 'By rank' : 'Listed order'} on={sort === 'rank'} onPress={() => setSort('rank')} /><Chip P={P} label="A to Z" on={sort === 'az'} onPress={() => setSort('az')} /></View>} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 46, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 46, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
           <Icon name="search" size={18} color={P.body} />
           <TextInput value={q} onChangeText={setQ} placeholder={`Search a ${cfg.noun} or website`} placeholderTextColor={P.body} accessibilityLabel={`Search ${cfg.nouns}`} autoCapitalize="none" autoCorrect={false}
             style={{ flex: 1, color: P.head, fontSize: 14, outlineStyle: 'none' } as any} />
@@ -127,7 +127,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
         )}
         <View style={{ gap: 8 }}>
           {rows.map((f) => (
-            <View key={f.name} style={{ flexDirection: 'row', alignItems: 'center', gap: wide ? 16 : 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: ranked && f.rank <= 3 ? MEDAL[f.rank - 1] + '88' : P.border, backgroundColor: P.card }}>
+            <View key={f.name} style={{ flexDirection: 'row', alignItems: 'center', gap: wide ? 16 : 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: ranked && f.rank <= 3 ? MEDAL[f.rank - 1] + '88' : P.border, backgroundColor: P.card }}>
               <Rank f={f} medal={ranked} />
               <Avatar P={P} f={f} />
               {wide ? (
@@ -155,7 +155,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
                     <Text style={{ color: P.body, fontSize: 12.5 }} numberOfLines={1}>{domainOf(f.url)}</Text>
                     {!!f.note && <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 17, marginTop: 2 }} numberOfLines={3}>{f.note}</Text>}
                   </View>
-                  <FirmLink f={f} style={(h) => ({ width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: h ? P.blue + '30' : P.soft, ...hand })}><Icon name="open-outline" size={18} color={P.blue} /></FirmLink>
+                  <FirmLink f={f} style={(h) => ({ width: 40, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: h ? P.blue + '30' : P.soft, ...hand })}><Icon name="open-outline" size={18} color={P.blue} /></FirmLink>
                 </>
               )}
             </View>
@@ -164,7 +164,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
             <View style={{ alignItems: 'center', gap: 8, padding: 28 }}>
               <Text style={{ color: P.head, fontSize: 15, fontWeight: '800' }}>No {cfg.noun} matches “{q.trim()}”</Text>
               <Text style={{ color: P.body, fontSize: 13 }}>Check the spelling or search by part of the website name.</Text>
-              <Pressable onPress={() => setQ('')} accessibilityRole="button" style={((s: any) => ({ height: 40, paddingHorizontal: 18, borderRadius: 10, justifyContent: 'center', backgroundColor: s.hovered ? P.blue + '30' : P.soft, ...hand })) as any}><Text style={{ color: P.blue, fontWeight: '800', fontSize: 13.5 }}>Clear search</Text></Pressable>
+              <Pressable onPress={() => setQ('')} accessibilityRole="button" style={((s: any) => ({ height: 40, paddingHorizontal: 18, borderRadius: 8, justifyContent: 'center', backgroundColor: s.hovered ? P.blue + '30' : P.soft, ...hand })) as any}><Text style={{ color: P.blue, fontWeight: '800', fontSize: 13.5 }}>Clear search</Text></Pressable>
             </View>
           )}
         </View>
@@ -174,7 +174,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
         <Head P={P} icon="shield-checkmark-outline" title={cfg.chooseTitle} sub={cfg.chooseSub} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
           {cfg.checks.map((c) => (
-            <View key={c.title} style={{ flexGrow: 1, flexBasis: w >= 1000 ? '23%' : w >= 640 ? '47%' : '100%', minWidth: 0, flexDirection: 'row', gap: 14, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+            <View key={c.title} style={{ flexGrow: 1, flexBasis: w >= 1000 ? '23%' : w >= 640 ? '47%' : '100%', minWidth: 0, flexDirection: 'row', gap: 14, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
               <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: th.accent2 + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={c.icon} size={22} color={th.accent2} /></View>
               <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
                 <Text style={{ color: P.head, fontSize: 14, fontWeight: '800' }}>{c.title}</Text>
@@ -185,7 +185,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
         </View>
       </Panel>}
 
-      <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '14' }}>
+      <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '14' }}>
         <Icon name="warning-outline" size={20} color={th.gold} />
         <Text style={{ flex: 1, color: P.head, fontSize: 12.5, lineHeight: 19 }}>{cfg.disclaimer}</Text>
       </View>

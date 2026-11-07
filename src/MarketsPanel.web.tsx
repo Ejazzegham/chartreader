@@ -31,13 +31,13 @@ export default function MarketsPanel({ height, goHome = false, onPick, selected 
   useEffect(() => { setWatch('panel', rows.slice(0, 70).map((s) => s.id)); return () => setWatch('panel', []); }, [rows.map((s) => s.id).join(',')]);
 
   return (
-    <View style={{ height, borderRadius: 14, borderWidth: 1, borderColor: th.line, backgroundColor: th.dark ? th.panel : '#FFFFFF', overflow: 'hidden', shadowColor: '#101828', shadowOpacity: 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } }}>
+    <View style={{ height, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.dark ? th.panel : '#FFFFFF', overflow: 'hidden', shadowColor: '#101828', shadowOpacity: 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } }}>
       <View style={{ padding: 16, paddingBottom: 10, gap: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={{ flex: 1, color: th.text, fontSize: 15, fontWeight: '700', letterSpacing: 0.2 }}>Markets</Text>
           <Text style={{ color: th.dim, fontSize: 11.5 }}>{rows.length} pairs</Text>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 11, borderRadius: 10, borderWidth: 1, borderColor: th.line, backgroundColor: th.dark ? th.panel2 : '#FAFAF8' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 11, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.dark ? th.panel2 : '#FAFAF8' }}>
           <Icon name="search" size={15} color={th.dim} />
           <TextInput value={q} onChangeText={setQ} placeholder="Search a pair" placeholderTextColor={th.dim} style={{ flex: 1, color: th.text, fontSize: 13, outlineStyle: 'none' } as any} />
           {!!q && <Pressable onPress={() => setQ('')} hitSlop={6} style={{ cursor: 'pointer' } as any}><Icon name="close-circle" size={15} color={th.dim} /></Pressable>}

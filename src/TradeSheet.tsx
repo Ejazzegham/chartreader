@@ -94,7 +94,7 @@ function WhyPanel({ s }: { s: Signal }) {
   const lines = (s.why ?? []).filter(Boolean);
   const f = (n: number) => n.toFixed(s.dec);
   return (
-    <View style={{ backgroundColor: th.bg, borderRadius: 10, borderWidth: 1, borderColor: th.line, padding: 12, gap: 8 }}>
+    <View style={{ backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12, gap: 8 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Icon name="bulb-outline" size={17} color={th.accent} />
         <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 0.8 }}>WHY THIS ENTRY</Text>
@@ -131,7 +131,7 @@ export function TradeSheet({ s, price, onClose }: { s: Signal; price?: number; o
     <Modal transparent animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A', direction: rtl ? 'rtl' : 'ltr' }}>
         <Pressable style={{ flex: 1 }} onPress={onClose} />
-        <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 16, borderTopRightRadius: 16, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: Math.max(insets.bottom, 12) + 16, maxHeight: '94%' }}>
+        <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: Math.max(insets.bottom, 12) + 16, maxHeight: '94%' }}>
           <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 2, backgroundColor: th.line, marginBottom: 14 }} />
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>

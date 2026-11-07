@@ -210,7 +210,7 @@ function PairPicker({ onClose, onPick }: { onClose: () => void; onPick: (id: str
     <Modal transparent animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A', direction: rtl ? 'rtl' : 'ltr' }}>
         <Pressable style={{ flex: 0.08 }} onPress={onClose} />
-        <View style={{ flex: 0.92, backgroundColor: th.solid, borderTopLeftRadius: 12, borderTopRightRadius: 12, borderWidth: 1, borderColor: th.line, padding: 14, paddingBottom: Math.max(insets.bottom, 12) + 8, gap: 10 }}>
+        <View style={{ flex: 0.92, backgroundColor: th.solid, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: th.line, padding: 14, paddingBottom: Math.max(insets.bottom, 12) + 8, gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ flex: 1, color: th.text, fontSize: 18, fontWeight: '900' }}>Choose a pair</Text>
             <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close"><Icon name="close" size={24} color={th.dim} /></Pressable>

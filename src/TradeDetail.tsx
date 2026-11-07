@@ -99,7 +99,7 @@ export default function TradeDetail({ j, onClose }: { j: Trade; onClose: () => v
 
         <ScrollView contentContainerStyle={{ padding: 14, gap: 14, paddingBottom: insets.bottom + 32 }}>
           {/* result banner */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: c + '66', backgroundColor: c + '14' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: c + '66', backgroundColor: c + '14' }}>
             <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: c, alignItems: 'center', justifyContent: 'center' }}>
               <Icon name={j.pnl > 0 ? 'trending-up' : j.pnl < 0 ? 'trending-down' : 'remove'} size={20} color={ink(c)} />
             </View>
@@ -110,10 +110,10 @@ export default function TradeDetail({ j, onClose }: { j: Trade; onClose: () => v
           </View>
 
           {/* ---------- trade method ---------- */}
-          <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 10, padding: 14, gap: 10 }}>
+          <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 14, gap: 10 }}>
             <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '800', letterSpacing: 0.8 }}>TRADE METHOD</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 46, height: 46, borderRadius: 12, backgroundColor: def ? def.colors[0] : th.accent, alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ width: 46, height: 46, borderRadius: 8, backgroundColor: def ? def.colors[0] : th.accent, alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name={buy ? 'trending-up' : 'trending-down'} size={22} color="#FFFFFF" />
               </View>
               <View style={{ flex: 1 }}>
@@ -148,14 +148,14 @@ export default function TradeDetail({ j, onClose }: { j: Trade; onClose: () => v
               <Text style={{ color: th.dim, fontSize: 11 }}>Pinch · tap for wheel · hold for crosshair</Text>
             </View>
             {!symId || err ? (
-              <View style={{ height: 150, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel, borderRadius: 10, borderWidth: 1, borderColor: th.line, padding: 18, gap: 6 }}>
+              <View style={{ height: 150, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 18, gap: 6 }}>
                 <Icon name="analytics-outline" size={26} color={th.dim} />
                 <Text style={{ color: th.dim, textAlign: 'center', fontSize: 12.5, lineHeight: 18 }}>{!symId ? 'This market is not in the chart list, so no candles can be drawn. The levels are listed below.' : 'Candles for this trade are not available (the data source could not be reached or the trade is older than its history). The levels are listed below.'}</Text>
               </View>
             ) : data.length < 5 ? (
-              <View style={{ height: 150, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel, borderRadius: 10, borderWidth: 1, borderColor: th.line }}><ActivityIndicator color={th.accent} /></View>
+              <View style={{ height: 150, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel, borderRadius: 8, borderWidth: 1, borderColor: th.line }}><ActivityIndicator color={th.accent} /></View>
             ) : (
-              <View style={{ backgroundColor: th.panel, borderRadius: 10, borderWidth: 1, borderColor: th.line, paddingVertical: 8, alignItems: 'center' }}>
+              <View style={{ backgroundColor: th.panel, borderRadius: 8, borderWidth: 1, borderColor: th.line, paddingVertical: 8, alignItems: 'center' }}>
                 <ReplayChart data={data} width={chartW} height={height} dec={d} gran={gran} j={j} eI={eI} xI={xI} onGran={(k) => setGran(Number(k))} />
               </View>
             )}
@@ -166,7 +166,7 @@ export default function TradeDetail({ j, onClose }: { j: Trade; onClose: () => v
           </View>
 
           {/* ---------- trade plan ---------- */}
-          <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 10, padding: 14, gap: 2 }}>
+          <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 14, gap: 2 }}>
             <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '800', letterSpacing: 0.8, marginBottom: 6 }}>TRADE PLAN</Text>
             {planRow('Entry', f(j.entry), th.accent, 'filled')}
             {hasPlan && planRow('Stop loss', f(sl as number), th.sell, `-1R${moved ? ' · moved' : ''}`)}
@@ -189,7 +189,7 @@ export default function TradeDetail({ j, onClose }: { j: Trade; onClose: () => v
 
           {!!j.tag && <Text style={{ color: th.dim, fontSize: 13 }}>{t('thReview')}: <Text style={{ color: th.text, fontWeight: '800' }}>{j.tag}</Text></Text>}
           {!!j.note && (
-            <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 10, padding: 14 }}>
+            <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 14 }}>
               <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '800', letterSpacing: 0.8, marginBottom: 4 }}>NOTE</Text>
               <Text style={{ color: th.text, fontSize: 13.5, lineHeight: 20 }}>{j.note}</Text>
             </View>

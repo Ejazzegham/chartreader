@@ -30,13 +30,13 @@ function Select({ value, options, onChange }: { value: string; options: [string,
   return (
     <View style={{ zIndex: open ? 50 : 1 }}>
       {open && <Pressable onPress={() => setOpen(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 49 } as any} />}
-      <Pressable accessibilityRole="button" onPress={() => setOpen(!open)} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, height: 44, minWidth: 170, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer', zIndex: 51 } as any}>
+      <Pressable accessibilityRole="button" onPress={() => setOpen(!open)} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, height: 44, minWidth: 170, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer', zIndex: 51 } as any}>
         <Icon name="calendar-outline" size={17} color={P.blue} />
         <Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '500' }}>{options.find((o) => o[0] === value)?.[1]}</Text>
         <Icon name="chevron-down" size={14} color={P.body} />
       </Pressable>
       {open && (
-        <View style={{ position: 'absolute', top: 48, right: 0, minWidth: 190, padding: 6, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid, zIndex: 52, shadowColor: P.shadow, shadowOpacity: 0.18, shadowRadius: 22, shadowOffset: { width: 0, height: 10 } }}>
+        <View style={{ position: 'absolute', top: 48, right: 0, minWidth: 190, padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid, zIndex: 52, shadowColor: P.shadow, shadowOpacity: 0.18, shadowRadius: 22, shadowOffset: { width: 0, height: 10 } }}>
           {options.map(([k, l]) => (
             <Pressable key={k} onPress={() => { onChange(k); setOpen(false); }} style={((s: any) => ({ height: 36, paddingHorizontal: 11, borderRadius: 8, justifyContent: 'center', cursor: 'pointer', backgroundColor: k === value ? P.soft : s.hovered ? P.alt : 'transparent' })) as any}>
               <Text style={{ color: k === value ? P.blue : P.head, fontSize: 13, fontWeight: k === value ? '700' : '500' }}>{l}</Text>
@@ -160,7 +160,7 @@ export default function PerformanceHome() {
   })();
 
   const kpi = (icon: string, c: string, k: string, v: string, sub: string, vc?: string) => (
-    <View key={k} style={{ flexGrow: 1, flexBasis: 220, flexDirection: 'row', gap: 16, padding: 20, borderRadius: 14, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.25 : 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } }}>
+    <View key={k} style={{ flexGrow: 1, flexBasis: 220, flexDirection: 'row', gap: 16, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.25 : 0.05, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } }}>
       <Chip icon={icon} color={c} size={44} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={{ color: P.head, fontSize: 15, fontWeight: '700' }}>{k}</Text>
@@ -177,7 +177,7 @@ export default function PerformanceHome() {
     </View>
   );
   const sideCard = (label: string, icon: string, c: string, v: { n: number; rate: number; pnl: number }) => (
-    <View key={label} style={{ flex: 1, minWidth: 200, padding: 18, gap: 10, borderRadius: 14, borderWidth: 1, borderColor: c + '33', backgroundColor: c + (P.dark ? '14' : '0F') }}>
+    <View key={label} style={{ flex: 1, minWidth: 200, padding: 18, gap: 10, borderRadius: 8, borderWidth: 1, borderColor: c + '33', backgroundColor: c + (P.dark ? '14' : '0F') }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: c + '26', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color={c} /></View>
         <View><Text style={{ color: c, fontSize: 15, fontWeight: '800' }}>{label} Trades</Text><Text style={{ color: P.head, fontSize: 24, fontWeight: '800' }}>{v.n}</Text><Text style={{ color: P.body, fontSize: 12 }}>Total Trades</Text></View>
@@ -234,7 +234,7 @@ export default function PerformanceHome() {
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 {CHART_R.map(([k]) => {
                   const on = cr === k;
-                  return <Pressable key={k} onPress={() => setCr(k)} style={((s: any) => ({ minWidth: 40, height: 30, paddingHorizontal: 11, borderRadius: 15, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? '#3B5B93' : s.hovered ? P.soft : P.soft, borderWidth: on ? 0 : 1, borderColor: P.blue + '33' })) as any}><Text style={{ color: on ? '#FFFFFF' : P.blue, fontSize: 12.5, fontWeight: '800' }}>{k}</Text></Pressable>;
+                  return <Pressable key={k} onPress={() => setCr(k)} style={((s: any) => ({ minWidth: 40, height: 30, paddingHorizontal: 11, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? '#3B5B93' : s.hovered ? P.soft : P.soft, borderWidth: on ? 0 : 1, borderColor: P.blue + '33' })) as any}><Text style={{ color: on ? '#FFFFFF' : P.blue, fontSize: 12.5, fontWeight: '800' }}>{k}</Text></Pressable>;
                 })}
               </View>
             </View>
@@ -290,7 +290,7 @@ export default function PerformanceHome() {
               <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '800' }}>Improve Your Performance</Text>
               <Text style={{ color: '#E3ECFF', fontSize: 13.5, marginTop: 3 }}>Use your trading journal, analyze your trades, and follow your plan to achieve better results.</Text>
             </View>
-            <Pressable accessibilityRole="button" onPress={() => go(3)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 46, paddingHorizontal: 22, borderRadius: 10, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: s.hovered ? 0.92 : 1 })) as any}>
+            <Pressable accessibilityRole="button" onPress={() => go(3)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 46, paddingHorizontal: 22, borderRadius: 8, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: s.hovered ? 0.92 : 1 })) as any}>
               <Text style={{ color: '#0F1E3D', fontSize: 14, fontWeight: '700' }}>View Journal</Text><Icon name="arrow-forward" size={16} color="#2F4FE0" />
             </Pressable>
           </View>

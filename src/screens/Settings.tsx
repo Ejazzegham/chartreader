@@ -46,9 +46,9 @@ const Pill = ({ text, color }: { text: string; color: string }) => (
 const Section = ({ icon, title, sub, right, children }: { icon: string; title: string; sub?: string; right?: React.ReactNode; children: React.ReactNode }) => {
   const { th } = useApp();
   return (
-    <View style={{ backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 16, padding: 18, gap: 16, shadowColor: '#0B2A8F', shadowOpacity: th.dark ? 0.2 : 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 5 }, elevation: th.glass ? 0 : 1 }}>
+    <View style={{ backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, padding: 18, gap: 16, shadowColor: '#0B2A8F', shadowOpacity: th.dark ? 0.2 : 0.06, shadowRadius: 14, shadowOffset: { width: 0, height: 5 }, elevation: th.glass ? 0 : 1 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={th.accent} /></View>
+        <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={th.accent} /></View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text accessibilityRole="header" style={{ color: th.text, fontSize: 17, fontWeight: '900', letterSpacing: -0.2 }} numberOfLines={1}>{title}</Text>
           {!!sub && <Text style={{ color: th.dim, fontSize: 12.5, marginTop: 1 }} numberOfLines={2}>{sub}</Text>}
@@ -72,8 +72,8 @@ const Grid = ({ wide, cols = 3, children }: { wide: boolean; cols?: 2 | 3 | 4; c
 const Tile = ({ icon, label, children, row }: { icon: string; label: string; children: React.ReactNode; row?: boolean }) => {
   const { th } = useApp();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: th.line, borderRadius: 12, backgroundColor: th.panel2, padding: 12, minHeight: 72 }}>
-      <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={th.accent} /></View>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: th.line, borderRadius: 8, backgroundColor: th.panel2, padding: 12, minHeight: 72 }}>
+      <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={th.accent} /></View>
       <View style={{ flex: 1, minWidth: 0, flexDirection: row ? 'row' : 'column', alignItems: row ? 'center' : 'stretch', justifyContent: 'space-between', gap: 4 }}>
         <Text style={{ color: th.dim, fontSize: 12, fontWeight: '700' }} numberOfLines={1}>{label}</Text>
         {children}
@@ -94,7 +94,7 @@ const Pick = ({ value, options, onChange }: { value: string; options: { k: strin
         <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} color={th.dim} />
       </Pressable>
       {open && (
-        <View style={{ marginTop: 6, borderWidth: 1, borderColor: th.line, borderRadius: 10, backgroundColor: th.solid, overflow: 'hidden' }}>
+        <View style={{ marginTop: 6, borderWidth: 1, borderColor: th.line, borderRadius: 8, backgroundColor: th.solid, overflow: 'hidden' }}>
           {options.map((o) => (
             <Pressable key={o.k} onPress={() => { onChange(o.k); setOpen(false); }} style={({ pressed }) => ({ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: o.k === value ? th.accent + '1A' : pressed ? th.panel2 : 'transparent', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' })}>
               <Text style={{ color: th.text, fontWeight: o.k === value ? '900' : '600', fontSize: 14 }}>{o.label}</Text>
@@ -123,7 +123,7 @@ const Flat = ({ label, icon, onPress, color, busy }: { label: string; icon?: str
   const { th } = useApp();
   const c = color ?? th.accent;
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} disabled={busy} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, height: 40, paddingHorizontal: 16, borderRadius: 10, borderWidth: 1, borderColor: c + '66', backgroundColor: c + '12', opacity: pressed || busy ? 0.75 : 1 })}>
+    <Pressable accessibilityRole="button" onPress={onPress} disabled={busy} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, height: 40, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: c + '66', backgroundColor: c + '12', opacity: pressed || busy ? 0.75 : 1 })}>
       {!!icon && <Icon name={icon} size={16} color={c} />}
       <Text style={{ color: c, fontWeight: '800', fontSize: 13.5 }}>{label}</Text>
     </Pressable>
@@ -228,7 +228,7 @@ export default function Settings() {
         {/* ---------- Account profile ---------- */}
         <Section icon="person-outline" title="Account profile" sub="Manage your personal information and account details."
           right={wide ? <Flat icon="create-outline" label="Edit profile" onPress={() => setEditOpen(true)} /> : undefined}>
-          <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: wide ? 24 : 14, borderWidth: 1, borderColor: th.line, borderRadius: 14, backgroundColor: th.panel2, padding: 16 }}>
+          <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: wide ? 24 : 14, borderWidth: 1, borderColor: th.line, borderRadius: 8, backgroundColor: th.panel2, padding: 16 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, flexShrink: 0 }}>
               <Pressable onPress={() => setSheet(true)} disabled={picBusy} accessibilityRole="button" accessibilityLabel={avatar ? 'Edit photo' : 'Add photo'}>
                 <Avatar size={72} name={account?.name || account?.email} ring={th.accent} />
@@ -252,7 +252,7 @@ export default function Settings() {
           {!wide && <Btn icon="create-outline" label="Edit profile" onPress={() => setEditOpen(true)} />}
           {!!picErr && <Text style={{ color: th.sell, lineHeight: 20 }}>{picErr}</Text>}
           {!emailVerified && (
-            <View style={{ borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '12', borderRadius: 12, padding: 14, gap: 8 }}>
+            <View style={{ borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '12', borderRadius: 8, padding: 14, gap: 8 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Icon name="mail-unread-outline" size={20} color={th.gold} /><Text style={{ color: th.text, fontWeight: '900', fontSize: 15 }}>Confirm your email</Text></View>
               <Dim>{lic.adminEmail ? 'Admin tools stay locked until this email address is confirmed.' : 'Confirming your email protects your subscription: nobody else can sign up with your address and take it over.'}</Dim>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
@@ -267,22 +267,22 @@ export default function Settings() {
         {/* ---------- Subscription & billing ---------- */}
         <Section icon="diamond-outline" title="Subscription & billing" sub="View your current plan and manage your subscription.">
           {!lic.token && !!licErr && (
-            <View style={{ borderWidth: 1, borderColor: th.sell + '66', backgroundColor: th.sell + '10', borderRadius: 12, padding: 14, gap: 6 }}>
+            <View style={{ borderWidth: 1, borderColor: th.sell + '66', backgroundColor: th.sell + '10', borderRadius: 8, padding: 14, gap: 6 }}>
               <Text style={{ color: th.sell, fontWeight: '800' }}>License server problem</Text>
               <Dim>{licErr}</Dim>
               <View style={{ alignSelf: 'flex-start' }}><Btn ghost label="Try again" onPress={() => refreshLic()} /></View>
             </View>
           )}
           <View style={{ flexDirection: wide ? 'row' : 'column', gap: 12 }}>
-            <View style={{ flex: wide ? 2 : undefined, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: th.line, borderRadius: 14, backgroundColor: th.panel2, padding: 16 }}>
-              <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: statusCol + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="diamond-outline" size={24} color={statusCol} /></View>
+            <View style={{ flex: wide ? 2 : undefined, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: th.line, borderRadius: 8, backgroundColor: th.panel2, padding: 16 }}>
+              <View style={{ width: 48, height: 48, borderRadius: 8, backgroundColor: statusCol + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="diamond-outline" size={24} color={statusCol} /></View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }} numberOfLines={2}>{statusText}</Text>
                 <Text style={{ color: th.dim, fontSize: 12.5, marginTop: 2 }}>{lic.status === 'paid' ? 'Thank you for being a Pro member.' : lic.status === 'admin' ? 'Admin accounts never expire.' : 'Upgrade to unlock live data, more features and remove restrictions.'}</Text>
               </View>
               {lic.status !== 'admin' && <View style={{ flexShrink: 0 }}><Btn icon="diamond-outline" label={payOpen ? 'Hide plans' : lic.status === 'paid' ? 'Extend plan' : 'Upgrade plan'} onPress={() => setPayOpen(!payOpen)} /></View>}
             </View>
-            <View style={{ flex: wide ? 1 : undefined, borderWidth: 1, borderColor: th.line, borderRadius: 14, backgroundColor: th.panel2, padding: 16, gap: 4, justifyContent: 'center' }}>
+            <View style={{ flex: wide ? 1 : undefined, borderWidth: 1, borderColor: th.line, borderRadius: 8, backgroundColor: th.panel2, padding: 16, gap: 4, justifyContent: 'center' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="wallet-outline" size={18} color={th.accent} /><Text style={{ color: th.text, fontWeight: '900', fontSize: 14.5 }}>Payment method</Text></View>
               <Text style={{ color: th.dim, fontSize: 12.5 }}>USDT on TRON (TRC20) or BSC (BEP20)</Text>
             </View>
@@ -291,12 +291,12 @@ export default function Settings() {
             <View style={{ gap: 10, borderTopWidth: 1, borderTopColor: th.hair, paddingTop: 14 }}>
               <Segment value={plan} onChange={(k) => setPlan(k as any)} options={[{ k: 'weekly', label: `${t('weekly')} $${PLANS.weekly}` }, { k: 'monthly', label: `${t('monthly')} $${PLANS['monthly']}` }]} />
               <Segment value={net} onChange={(k) => setNet(k as any)} options={[{ k: 'TRON', label: 'TRON (TRC20)' }, { k: 'BSC', label: 'BSC (BEP20)' }]} />
-              <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 12, padding: 14, backgroundColor: th.panel2, alignItems: 'center' }}>
+              <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 14, backgroundColor: th.panel2, alignItems: 'center' }}>
                 <Text style={{ color: th.dim, fontSize: 11.5, fontWeight: '800' }}>{t('amountLabel')}</Text>
                 <Text style={{ color: th.accent, fontSize: 30, fontWeight: '900', marginTop: 2 }}>${PLANS[plan]} <Text style={{ fontSize: 15 }}>USDT</Text></Text>
               </View>
               <Dim>{t('sendUsdt')}</Dim>
-              <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 12, padding: 12, backgroundColor: th.panel2 }}>
+              <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 12, backgroundColor: th.panel2 }}>
                 <Text selectable style={{ color: th.text, fontWeight: '700', fontSize: 13, lineHeight: 20, textAlign: 'center' }}>{PAY[net]}</Text>
               </View>
               <Dim>{t('addrTap')}</Dim>
@@ -328,8 +328,8 @@ export default function Settings() {
             {Object.entries(THEMES).map(([id, tm]) => {
               const on = themeId(settings.theme) === id;
               return (
-                <Pressable key={id} onPress={() => setSettings({ theme: id })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '13%' : '47%', flexGrow: 1, minWidth: 110, borderRadius: 12, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel2, padding: 8, gap: 8, opacity: pressed ? 0.85 : 1 })}>
-                  <LinearGradient colors={[tm.bg, tm.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 52, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
+                <Pressable key={id} onPress={() => setSettings({ theme: id })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '13%' : '47%', flexGrow: 1, minWidth: 110, borderRadius: 8, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel2, padding: 8, gap: 8, opacity: pressed ? 0.85 : 1 })}>
+                  <LinearGradient colors={[tm.back, tm.back]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 52, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
                     {[tm.panel, tm.accent, tm.accent2].map((c, i) => <View key={i} style={{ width: i ? 14 : 26, height: 16, borderRadius: 6, backgroundColor: c, borderWidth: i ? 0 : 1, borderColor: tm.line }} />)}
                   </LinearGradient>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -348,7 +348,7 @@ export default function Settings() {
             {LANGS.map((l) => {
               const on = settings.lang === l.code;
               return (
-                <Pressable key={l.code} onPress={() => setSettings({ lang: l.code })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '15%' : '30%', flexGrow: 1, minWidth: 96, alignItems: 'center', gap: 6, paddingVertical: 14, borderRadius: 12, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '12' : th.panel2, opacity: pressed ? 0.85 : 1 })}>
+                <Pressable key={l.code} onPress={() => setSettings({ lang: l.code })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '15%' : '30%', flexGrow: 1, minWidth: 96, alignItems: 'center', gap: 6, paddingVertical: 14, borderRadius: 8, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '12' : th.panel2, opacity: pressed ? 0.85 : 1 })}>
                   <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.accent, fontWeight: '900', fontSize: 13 }}>{l.code.toUpperCase()}</Text></View>
                   <Text style={{ color: th.text, fontWeight: on ? '900' : '700', fontSize: 14 }}>{l.name}</Text>
                   {on && <View style={{ position: 'absolute', top: 6, right: 6 }}><Icon name="checkmark-circle" size={16} color={th.accent} /></View>}
@@ -389,7 +389,7 @@ export default function Settings() {
             </View>
             {!!bioMsg && <Text style={{ color: th.sell, lineHeight: 20 }}>{bioMsg}</Text>}
             {pwOpen && (
-              <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 12, backgroundColor: th.panel2, padding: 14 }}>
+              <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 8, backgroundColor: th.panel2, padding: 14 }}>
                 <Field label="Current password" value={pw.cur} onChangeText={(v) => setPw({ ...pw, cur: v })} secureTextEntry={!pw.show} autoCapitalize="none" autoCorrect={false}
                   right={<Pressable onPress={() => setPw({ ...pw, show: !pw.show })}><Icon name={pw.show ? 'eye-off-outline' : 'eye-outline'} color={th.dim} /></Pressable>} />
                 <Field label="New password (6+ characters)" value={pw.nw} onChangeText={(v) => setPw({ ...pw, nw: v })} secureTextEntry={!pw.show} autoCapitalize="none" autoCorrect={false} />

@@ -48,7 +48,7 @@ export default function ManualTradeDesk() {
   useFeed(active);
   const dark = th.dark;
   const card = dark ? th.panel : '#FFFFFF', border = dark ? th.line : '#E8EDF6', soft = dark ? th.panel2 : '#F5F8FE', ink = dark ? th.text : '#0B1B3F';
-  const cardSt = { backgroundColor: card, borderRadius: 16, borderWidth: 1, borderColor: border, shadowColor: '#0B1B3F', shadowOpacity: 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } } as any;
+  const cardSt = { backgroundColor: card, borderRadius: 8, borderWidth: 1, borderColor: border, shadowColor: '#0B1B3F', shadowOpacity: 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } } as any;
 
   const [symId, setSymId] = useState(manualTarget.sym || db.favs[0] || 'frxEURUSD');
   const [gran, setGran] = useState(60);
@@ -135,7 +135,7 @@ export default function ManualTradeDesk() {
   );
   const head = (icon: string, title: string, right?: React.ReactNode) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={17} color={th.accent} /></View>
+      <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={17} color={th.accent} /></View>
       <Text style={{ flex: 1, color: ink, fontSize: 15, fontWeight: '800' }}>{title}</Text>{right}
     </View>
   );
@@ -160,14 +160,14 @@ export default function ManualTradeDesk() {
           <View style={{ ...cardSt, flex: 1, width: stack ? '100%' : undefined, minWidth: 0, padding: 16, zIndex: 5 } as any}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18, flexWrap: 'wrap', zIndex: 6 }}>
               <View style={{ zIndex: 7 }}>
-                <Pressable onPress={() => setPicker((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, borderColor: border, backgroundColor: soft, cursor: 'pointer', minWidth: 230 } as any}>
+                <Pressable onPress={() => setPicker((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: border, backgroundColor: soft, cursor: 'pointer', minWidth: 230 } as any}>
                   <Coin s={sym} size={36} />
                   <View style={{ flex: 1 }}><Text style={{ color: ink, fontSize: 16, fontWeight: '800' }}>{sym.name}</Text><Text style={{ color: th.dim, fontSize: 11.5 }} numberOfLines={1}>{sym.sub ?? sym.cat}</Text></View>
                   {q && <Text style={{ color: up ? th.buy : th.sell, fontSize: 12, fontWeight: '800' }}>{up ? '+' : ''}{chgV.toFixed(2)}%</Text>}
                   <Icon name="chevron-down" size={16} color={th.dim} />
                 </Pressable>
                 {picker && (
-                  <View style={{ position: 'absolute', top: 62, left: 0, width: 300, maxWidth: '92%', padding: 8, borderRadius: 12, borderWidth: 1, borderColor: border, backgroundColor: th.solid, zIndex: 50, shadowColor: '#0B1B3F', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } } as any}>
+                  <View style={{ position: 'absolute', top: 62, left: 0, width: 300, maxWidth: '92%', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: border, backgroundColor: th.solid, zIndex: 50, shadowColor: '#0B1B3F', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } } as any}>
                     <TextInput autoFocus value={pq} onChangeText={setPq} placeholder="Search any pair…" placeholderTextColor={th.dim} style={{ height: 38, paddingHorizontal: 10, color: th.text, fontSize: 13.5, borderRadius: 8, borderWidth: 1, borderColor: border, outlineStyle: 'none' } as any} />
                     {hits.map((s) => (
                       <Pressable key={s.id} onPress={() => { setSymId(s.id); setPicker(false); setPq(''); }} style={((x: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, marginTop: 4, borderRadius: 8, cursor: 'pointer', backgroundColor: x.hovered ? th.accent + '14' : 'transparent' })) as any}>
@@ -182,11 +182,11 @@ export default function ManualTradeDesk() {
                 <Text style={{ color: up ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700' }}>{q ? `${up ? '+' : ''}${(q.price - q.open).toFixed(dec)} (${up ? '+' : ''}${chgV.toFixed(2)}%)` : ''}</Text>
               </View>
               <View style={{ flex: 1 }} />
-              <View style={{ flexDirection: 'row', gap: 2, padding: 3, borderRadius: 10, backgroundColor: soft }}>
+              <View style={{ flexDirection: 'row', gap: 2, padding: 3, borderRadius: 8, backgroundColor: soft }}>
                 {TFS.filter((x) => ['60', '300', '900', '1800', '3600', '14400', '86400'].includes(x.k)).map((x) => pill(x.label, String(gran) === x.k, () => setGran(Number(x.k))))}
               </View>
             </View>
-            <View onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })} style={{ height: CHART_H, marginTop: 14, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: border } as any}>
+            <View onLayout={(e) => setBox({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })} style={{ height: CHART_H, marginTop: 14, borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: border } as any}>
               {active && box.w > 0 && <TerminalChart key={symId} symId={symId} name={sym.name} dec={dec} gran={gran} onGran={(k) => setGran(Number(k))} positions={positions.filter((p) => p.symId === symId)} bid={bid} ask={ask} mark={mark} width={box.w} height={box.h} onManage={(h: Hit) => setSheet({ id: h.id, focus: h.part })} />}
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
@@ -219,7 +219,7 @@ export default function ManualTradeDesk() {
                   ))}
                 </View>
               )}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 10, borderRadius: 10, borderWidth: 1, borderColor: border, backgroundColor: soft, marginBottom: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: border, backgroundColor: soft, marginBottom: 6 }}>
                 <Icon name="search" size={14} color={th.dim} />
                 <TextInput value={wq} onChangeText={setWq} placeholder="Search symbol..." placeholderTextColor={th.dim} style={{ flex: 1, color: ink, fontSize: 12.5, outlineStyle: 'none' } as any} />
               </View>
@@ -239,7 +239,7 @@ export default function ManualTradeDesk() {
               })}
               </ScrollView>
             </View>
-            <View style={{ borderRadius: 16, overflow: 'hidden', padding: 20, minHeight: 170, justifyContent: 'center' }}>
+            <View style={{ borderRadius: 8, overflow: 'hidden', padding: 20, minHeight: 170, justifyContent: 'center' }}>
               <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
               <Text style={{ color: '#fff', fontSize: 17, fontWeight: '900' }}>Trade Smarter, Not Harder</Text>
               <Text style={{ color: '#DDE3FF', fontSize: 12.5, lineHeight: 18, marginTop: 8, maxWidth: 230 }}>Use our advanced tools, real-time data and expert analysis to stay ahead in the markets.</Text>
@@ -303,7 +303,7 @@ export default function ManualTradeDesk() {
               {(['buy', 'sell'] as const).map((s) => {
                 const on = side === s, c = s === 'buy' ? th.buy : th.sell;
                 return (
-                  <Pressable key={s} onPress={() => { setSide(s); place(s); }} accessibilityRole="button" accessibilityLabel={`${s} ${sym.name}`} style={((x: any) => ({ flex: 1, height: 62, borderRadius: 10, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? c : c + '1A', borderWidth: 1, borderColor: c, opacity: x.hovered ? 0.92 : 1 })) as any}>
+                  <Pressable key={s} onPress={() => { setSide(s); place(s); }} accessibilityRole="button" accessibilityLabel={`${s} ${sym.name}`} style={((x: any) => ({ flex: 1, height: 62, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? c : c + '1A', borderWidth: 1, borderColor: c, opacity: x.hovered ? 0.92 : 1 })) as any}>
                     <Text style={{ color: on ? '#fff' : c, fontSize: 14, fontWeight: '900' }}>{s.toUpperCase()}</Text>
                     <Text style={{ color: on ? '#fff' : c, fontSize: 14, fontWeight: '700' }}>{(s === 'buy' ? ask : bid)?.toFixed(dec) ?? '…'}</Text>
                   </Pressable>
@@ -311,7 +311,7 @@ export default function ManualTradeDesk() {
               })}
             </View>
             <Text style={{ color: th.dim, fontSize: 12, marginTop: 14, marginBottom: 6 }}>Volume (Lots)</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', height: 42, borderRadius: 10, borderWidth: 1, borderColor: lotsErr ? th.sell : border }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: 42, borderRadius: 8, borderWidth: 1, borderColor: lotsErr ? th.sell : border }}>
               <Pressable onPress={() => bump(-1)} style={{ width: 42, alignItems: 'center', cursor: 'pointer' } as any}><Icon name="remove-circle-outline" size={20} color={th.dim} /></Pressable>
               <TextInput value={lotsTxt} onChangeText={(v) => setLots(v.replace(/[^0-9.,]/g, '').slice(0, 8))} style={{ flex: 1, textAlign: 'center', color: ink, fontSize: 15, fontWeight: '700', outlineStyle: 'none' } as any} />
               <Pressable onPress={() => bump(1)} style={{ width: 42, alignItems: 'center', cursor: 'pointer' } as any}><Icon name="add" size={20} color={th.dim} /></Pressable>
@@ -323,7 +323,7 @@ export default function ManualTradeDesk() {
               {([['Stop Loss (Price)', slTxt, setSlTxt], ['Take Profit (Price)', tpTxt, setTpTxt]] as const).map(([l, v, f]) => (
                 <View key={l} style={{ flex: 1 }}>
                   <Text style={{ color: th.dim, fontSize: 12, marginBottom: 6 }}>{l}</Text>
-                  <TextInput value={v} onChangeText={(x) => f(x.replace(/[^0-9.,]/g, ''))} placeholder={px ? px.toFixed(dec) : ''} placeholderTextColor={th.dim + '99'} style={{ height: 40, borderRadius: 10, borderWidth: 1, borderColor: border, textAlign: 'center', color: ink, fontSize: 13.5, outlineStyle: 'none' } as any} />
+                  <TextInput value={v} onChangeText={(x) => f(x.replace(/[^0-9.,]/g, ''))} placeholder={px ? px.toFixed(dec) : ''} placeholderTextColor={th.dim + '99'} style={{ height: 40, borderRadius: 8, borderWidth: 1, borderColor: border, textAlign: 'center', color: ink, fontSize: 13.5, outlineStyle: 'none' } as any} />
                 </View>
               ))}
             </View>
@@ -332,8 +332,8 @@ export default function ManualTradeDesk() {
               <Text style={{ color: estPnl === undefined ? th.dim : estPnl >= 0 ? th.buy : th.sell, fontSize: 14, fontWeight: '800' }}>{estPnl === undefined ? '-' : usd(estPnl)}</Text>
               {estPnl !== undefined && <Text style={{ color: th.dim, fontSize: 11, marginLeft: 4 }}>at take profit</Text>}
             </View>
-            <Pressable onPress={() => place(side)} accessibilityRole="button" style={((x: any) => ({ marginTop: 16, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
-              <LinearGradient colors={['#0F1E3D', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 12 }} />
+            <Pressable onPress={() => place(side)} accessibilityRole="button" style={((x: any) => ({ marginTop: 16, height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
+              <LinearGradient colors={['#0F1E3D', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 8 }} />
               <Icon name="flash" size={17} color="#fff" /><Text style={{ color: '#fff', fontSize: 14.5, fontWeight: '800' }}>Place {side === 'buy' ? 'Buy' : 'Sell'} Order</Text>
             </Pressable>
           </View>
@@ -356,7 +356,7 @@ export default function ManualTradeDesk() {
         <View style={{ ...cardSt, flexDirection: 'row', flexWrap: 'wrap', padding: 18, gap: 18 }}>
           {[['flash-outline', 'Real-Time Execution', 'Ultra-fast trade execution with low slippage.'], ['bar-chart-outline', 'Advanced Charts', 'Professional tools for technical analysis.'], ['layers-outline', 'Multi-Asset Access', 'Forex, Crypto, Indices, Metals and more.'], ['shield-checkmark-outline', 'Secure & Reliable', 'Your data and funds are always protected.']].map(([ic, t1, t2]) => (
             <View key={t1} style={{ flex: 1, minWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={ic} size={20} color={th.accent} /></View>
+              <View style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={ic} size={20} color={th.accent} /></View>
               <View style={{ flex: 1 }}><Text style={{ color: ink, fontSize: 13, fontWeight: '800' }}>{t1}</Text><Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>{t2}</Text></View>
             </View>
           ))}
@@ -371,7 +371,7 @@ export default function ManualTradeDesk() {
 function ExploreBtn() {
   const { setTab } = useApp();
   return (
-    <Pressable onPress={() => setTab(1)} style={((x: any) => ({ alignSelf: 'flex-start', marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 8, height: 38, paddingHorizontal: 16, borderRadius: 9, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
+    <Pressable onPress={() => setTab(1)} style={((x: any) => ({ alignSelf: 'flex-start', marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 8, height: 38, paddingHorizontal: 16, borderRadius: 8, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: x.hovered ? 0.92 : 1 })) as any}>
       <Text style={{ color: '#3B5B93', fontSize: 13, fontWeight: '800' }}>Explore Analysis</Text><Icon name="arrow-forward" size={14} color="#3A2FB8" />
     </Pressable>
   );

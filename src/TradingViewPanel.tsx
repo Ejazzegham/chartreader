@@ -33,7 +33,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
       {/* header */}
       <Card style={{ padding: 12, gap: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 38, height: 38, borderRadius: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22', borderWidth: 1, borderColor: th.accent + '66' }}>
+          <View style={{ width: 38, height: 38, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22', borderWidth: 1, borderColor: th.accent + '66' }}>
             <Icon name="stats-chart" size={20} color={th.accent} />
           </View>
           <View style={{ flex: 1 }}>

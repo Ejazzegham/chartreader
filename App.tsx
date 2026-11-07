@@ -34,7 +34,8 @@ import { Tracker, Toasts } from './src/Tracker';
 import { NAV } from './src/nav';
 import AnimatedSplash from './src/Splash';
 import ErrorBoundary from './src/ErrorBoundary';
-import GlassBackdrop from './src/Glass';
+import LiveBackdrop from './src/LiveBackdrop';
+import { sheet } from './src/sheet';
 import Frame from './src/Frame';
 import { useDesktop, DesktopShell } from './src/Desktop';
 import * as SplashScreen from 'expo-splash-screen';
@@ -68,9 +69,9 @@ function Root() {
 
   // One stable tree: the splash stays mounted on top (same position) while the app underneath finishes loading.
   return (
-    <View style={{ flex: 1, backgroundColor: ready ? th.bg : '#FFFFFF', direction: rtl ? 'rtl' : 'ltr' }}>
+    <View style={{ flex: 1, backgroundColor: ready ? (Platform.OS === 'web' ? 'transparent' : th.bg) : '#FFFFFF', direction: rtl ? 'rtl' : 'ltr' }}>
       <StatusBar style={gone ? (th.dark ? 'light' : 'dark') : 'dark'} />
-      {ready && <GlassBackdrop />}
+      {ready && <LiveBackdrop />}
       {ready && (!loggedIn ? (
         <AuthFlow />
       ) : locked ? (
@@ -88,7 +89,7 @@ function Root() {
             </DesktopShell>
           ) : (
             <>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, ...sheet(th) }}>
                 {TABS.map(({ key, Comp }, i) => (
                   <Page key={key} active={tab === i}><Comp /></Page>
                 ))}

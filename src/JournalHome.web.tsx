@@ -38,13 +38,13 @@ function Select({ value, options, onChange, icon, width = 150 }: { value: string
   const cur = options.find((o) => o[0] === value)?.[1] ?? value;
   return (
     <View style={{ zIndex: open ? 50 : 1 }}>
-      <Pressable onPress={() => setOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, height: 36, minWidth: width, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer' } as any}>
+      <Pressable onPress={() => setOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, height: 36, minWidth: width, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer' } as any}>
         {!!icon && <Icon name={icon} size={14} color={P.blue} />}
         <Text style={{ flex: 1, color: P.head, fontSize: 12.5 }} numberOfLines={1}>{cur}</Text>
         <Icon name="chevron-down" size={13} color={P.body} />
       </Pressable>
       {open && (
-        <View style={{ position: 'absolute', top: 40, left: 0, minWidth: Math.max(width, 160), padding: 6, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 60, shadowColor: P.shadow, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
+        <View style={{ position: 'absolute', top: 40, left: 0, minWidth: Math.max(width, 160), padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 60, shadowColor: P.shadow, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
           {options.map(([k, l]) => (
             <Pressable key={k} onPress={() => { onChange(k); setOpen(false); }} style={((st: any) => ({ height: 34, paddingHorizontal: 10, borderRadius: 8, justifyContent: 'center', cursor: 'pointer', backgroundColor: k === value ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
               <Text style={{ color: k === value ? P.blue : P.head, fontSize: 12.5, fontWeight: k === value ? '700' : '500' }}>{l}</Text>
@@ -61,7 +61,7 @@ function SideChip({ side }: { side: 'buy' | 'sell' }) {
   return <View style={{ alignSelf: 'flex-start', paddingHorizontal: 9, height: 22, borderRadius: 6, justifyContent: 'center', backgroundColor: c + '22' }}><Text style={{ color: c, fontSize: 11, fontWeight: '800' }}>{side.toUpperCase()}</Text></View>;
 }
 function StatusChip({ text, color }: { text: string; color: string }) {
-  return <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 22, borderRadius: 11, backgroundColor: color + '1F' }}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color }} /><Text style={{ color, fontSize: 11, fontWeight: '700' }}>{text}</Text></View>;
+  return <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 22, borderRadius: 8, backgroundColor: color + '1F' }}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color }} /><Text style={{ color, fontSize: 11, fontWeight: '700' }}>{text}</Text></View>;
 }
 function Btn2({ label, onPress, solid, tone, icon, disabled }: { label: string; onPress: () => void; solid?: boolean; tone?: string; icon?: string; disabled?: boolean }) {
   const P = usePal(), c = tone ?? P.blue;
@@ -97,7 +97,7 @@ const Cell = ({ flex, children, align }: { flex: number; children: React.ReactNo
 function Empty({ icon, title, text, children }: { icon: string; title: string; text: string; children?: React.ReactNode }) {
   const P = usePal();
   return (
-    <View style={{ alignItems: 'center', gap: 8, paddingVertical: 34, paddingHorizontal: 20, borderRadius: 12, backgroundColor: P.alt }}>
+    <View style={{ alignItems: 'center', gap: 8, paddingVertical: 34, paddingHorizontal: 20, borderRadius: 8, backgroundColor: P.alt }}>
       <Icon name={icon} size={28} color={P.blue} />
       <Text style={{ color: P.head, fontSize: 15, fontWeight: '800' }}>{title}</Text>
       <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, textAlign: 'center', maxWidth: 480 }}>{text}</Text>
@@ -174,7 +174,7 @@ function Insights({ journal, desk, running, today }: { journal: Trade[]; desk: a
     [desk.maxOpen > 0 ? `${running} of ${desk.maxOpen} trades running` : 'Set a limit for trades at once', desk.maxOpen > 0 ? running <= desk.maxOpen : null],
     [desk.autoLog ? 'Auto-log of setups is on' : 'Auto-log of setups is off', !!desk.autoLog],
   ];
-  const card = (title: string, body: React.ReactNode, flex = 1, minWidth = 260) => <View style={{ flex, minWidth, padding: 16, gap: 10, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>{title}</Text>{body}</View>;
+  const card = (title: string, body: React.ReactNode, flex = 1, minWidth = 260) => <View style={{ flex, minWidth, padding: 16, gap: 10, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>{title}</Text>{body}</View>;
   const dn = 2 * Math.PI * 52;
   return (
     <View style={{ gap: 14 }}>
@@ -291,7 +291,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
 
   // ---- tiles
   const tile = (label: string, value: string, sub: string, color: string) => (
-    <View key={label} style={{ flex: 1, minWidth: 130, padding: 14, gap: 3, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+    <View key={label} style={{ flex: 1, minWidth: 130, padding: 14, gap: 3, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
       <Text style={{ color: P.body, fontSize: 11.5 }}>{label}</Text>
       <Text style={{ color, fontSize: 23, fontWeight: '800', letterSpacing: -0.5 }} numberOfLines={1}>{value}</Text>
       <Text style={{ color: sub.startsWith('▲') ? th.buy : sub.startsWith('▼') ? th.sell : P.body, fontSize: 11 }} numberOfLines={1}>{sub || ' '}</Text>
@@ -318,10 +318,10 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
       {TABS.map(([k, l, ic, c]) => {
         const on = view === k;
         return (
-          <Pressable key={k} onPress={() => setView(k)} accessibilityRole="tab" accessibilityState={{ selected: on }} style={((st: any) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 44, borderRadius: 10, backgroundColor: on ? P.blue : st.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+          <Pressable key={k} onPress={() => setView(k)} accessibilityRole="tab" accessibilityState={{ selected: on }} style={((st: any) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 44, borderRadius: 8, backgroundColor: on ? P.blue : st.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
             <Icon name={ic} size={16} color={on ? th.onAccent : P.body} />
             <Text style={{ color: on ? th.onAccent : P.body, fontSize: 13.5, fontWeight: on ? '800' : '600' }}>{l}</Text>
-            {c > 0 && <View style={{ minWidth: 20, height: 18, borderRadius: 9, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? '#FFFFFF33' : P.soft }}><Text style={{ color: on ? th.onAccent : P.blue, fontSize: 10.5, fontWeight: '800' }}>{c}</Text></View>}
+            {c > 0 && <View style={{ minWidth: 20, height: 18, borderRadius: 8, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? '#FFFFFF33' : P.soft }}><Text style={{ color: on ? th.onAccent : P.blue, fontSize: 10.5, fontWeight: '800' }}>{c}</Text></View>}
           </Pressable>
         );
       })}
@@ -335,7 +335,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
           return <Pressable key={k} onPress={() => setSide(k)} style={{ height: 34, minWidth: 48, paddingHorizontal: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? c : P.alt, cursor: 'pointer' } as any}><Text style={{ color: on ? '#FFFFFF' : P.body, fontSize: 12.5, fontWeight: '700' }}>{k === 'all' ? 'All' : k === 'buy' ? 'Buy' : 'Sell'}</Text></Pressable>;
         })}
       </View>
-      <View style={{ flex: 1, minWidth: 180, flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+      <View style={{ flex: 1, minWidth: 180, flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
         <Icon name="search" size={14} color={P.body} />
         <TextInput value={q} onChangeText={setQ} placeholder="Search symbol or strategy..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
       </View>
@@ -351,7 +351,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
     const f = (v: number) => v.toFixed(s.dec), price = px(s.symId), sc = s.score >= 70 ? th.buy : s.score >= 50 ? th.gold : th.sell;
     const lv = (label: string, v: string, c: string) => <View style={{ flex: 1, minWidth: 0 }}><Text style={{ color: P.body, fontSize: 11 }}>{label}</Text><Text style={{ color: c, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] }} numberOfLines={1}>{v}</Text></View>;
     return (
-      <View key={s.id} style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 14, padding: 14, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+      <View key={s.id} style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 14, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, width: 200 }}>
           <Coin s={symOf(s.symId)} size={38} />
           <View style={{ gap: 3, flex: 1, minWidth: 0 }}>
@@ -439,7 +439,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
       {filters}
       {view === 'signals' && (
         <View style={{ gap: 10 }}>
-          {!desk.autoLog && <View style={{ padding: 12, borderRadius: 10, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '14' }}><Text style={{ color: P.head, fontSize: 12.5 }}>Auto-log is off. Turn it on in the settings on the right to receive setups.</Text></View>}
+          {!desk.autoLog && <View style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '14' }}><Text style={{ color: P.head, fontSize: 12.5 }}>Auto-log is off. Turn it on in the settings on the right to receive setups.</Text></View>}
           {shownSigs.length === 0 && <Empty icon="radio-outline" title={sigs.length ? 'No signals match your filters' : 'Waiting for setups'} text={sigs.length ? 'Change or clear a filter to see them.' : `Open Analysis (Scanner, Top-Down, ICT, SMC, VSA, candlesticks, scalping). Any setup scoring ${desk.minScore}+ is saved here with its entry, stop and targets.`}>
             {!sigs.length && <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}><Btn2 label="Open Analysis" solid onPress={() => setTab(1)} /><Btn2 label="Open Scanner" onPress={() => setTab(12)} /></View>}
           </Empty>}
@@ -518,7 +518,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
           <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 20 }}>{overview}{tabs}{main}</View>
           {right}
         </View>
-        <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 18, borderRadius: 14 }}>
+        <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 18, borderRadius: 8 }}>
           <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: '#FFFFFF2A', alignItems: 'center', justifyContent: 'center' }}><Icon name="book" size={22} color="#FFFFFF" /></View>
           <View style={{ flex: 1 }}><Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800' }}>Refine Your Setups. Trade Smarter.</Text><Text style={{ color: '#EAF2FFDD', fontSize: 12.5, marginTop: 2 }}>Use your journal insights to improve your strategy, reduce mistakes and grow consistently.</Text></View>
           <Btn label="Open Analysis" onPress={() => setTab(1)} />
