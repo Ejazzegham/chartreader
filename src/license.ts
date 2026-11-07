@@ -72,14 +72,18 @@ export async function setServer(raw: string): Promise<string> {
 }
 // The numbers for the home page map: members per country and per city (counts only, nothing personal). Returns null when the server cannot be reached.
 export type SignupMapData = { total: number; located: number; countries: { cc: string; name: string; n: number }[]; places: { cc: string; city: string; lat: number; lon: number; n: number }[] };
+let signupDiag = 'not asked yet';
+export const getSignupMapDiag = () => signupDiag; // for the ?mapdebug switch on the website: why the map has no numbers
 export async function getSignupMap(): Promise<SignupMapData | null> {
-  if (base.includes('YOUR-SERVER-URL')) return null;
+  if (base.includes('YOUR-SERVER-URL')) { signupDiag = 'no server address set'; return null; }
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
     const r = await fetch(base + '/public/signups', { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
-    const j = await r.json().catch(() => null);
-    return r.ok && j && Array.isArray(j.countries) && Array.isArray(j.places) ? j : null;
-  } catch { return null; } finally { clearTimeout(to); }
+    const txt = await r.text(); let j: any = null; try { j = JSON.parse(txt); } catch {}
+    if (!r.ok) { signupDiag = `${base}/public/signups answered HTTP ${r.status}: ${txt.replace(/\s+/g, ' ').slice(0, 90)}`; return null; }
+    if (!j || !Array.isArray(j.countries) || !Array.isArray(j.places)) { signupDiag = 'the answer is not the signup numbers (is the server on the new server.js?): ' + txt.replace(/\s+/g, ' ').slice(0, 90); return null; }
+    signupDiag = `ok, ${j.total} members, ${j.countries.length} countries`; return j;
+  } catch (e: any) { signupDiag = 'request failed: ' + String(e?.message || e).slice(0, 90); return null; } finally { clearTimeout(to); }
 }
 async function post(path: string, body: any, token = '', ms = 25000) {
   const net = (m: string) => Object.assign(new Error(m), { network: true }); // marks "server not reachable" so the app can carry on offline (see localTrial)

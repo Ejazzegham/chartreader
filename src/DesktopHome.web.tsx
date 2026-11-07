@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
+import SignupMap from './SignupMap';
 import Svg, { Path, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HeroBanner, HERO_BG } from './ui';
@@ -363,6 +364,15 @@ function Why({ w }: { w: number }) {
   );
 }
 
+// "Traders joining from around the world": the signup map (SignupMap.tsx) in a dark card, so the logged-in Home shows it too.
+function Members({ w }: { w: number }) {
+  return (
+    <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingVertical: 24 }}>
+      <View style={{ width: '100%', maxWidth: 760, alignSelf: 'center', backgroundColor: '#0F1E3D', borderRadius: 16, padding: w >= 700 ? 26 : 16 }}><SignupMap /></View>
+    </View>
+  );
+}
+
 function Cta({ w, go }: { w: number; go: (t: number) => void }) {
   const P = usePal(), wide = w >= 800;
   return (
@@ -392,6 +402,7 @@ export default function DesktopHome() {
       <Overview w={w} go={go} />
       <MultiTf w={w} go={go} />
       <Why w={w} />
+      <Members w={w} />
       <Cta w={w} go={go} />
       <Footer w={w} go={go} />
     </ScrollView>

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, Platform } from 'react-native';
 import Svg, { Path, Circle, G, Rect, Text as SvgText } from 'react-native-svg';
 import { HERO_BG, HERO_BRASS } from './ui';
-import { getSignupMap, SignupMapData } from './license';
+import { getSignupMap, getSignupMapDiag, SignupMapData } from './license';
 import { MapData, VB, project, zoomBox } from './mapMath';
 
 // "Traders joining from around the world": a world map shaded by country, with a dot for every city members joined from.
@@ -13,25 +13,28 @@ const BASE = '#1A2B52', LOW = '#2A4A86', HIGH = '#6F98E6', PANEL = '#0B1731', ED
 const hex = (c: string) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
 const mix = (a: string, b: string, t: number) => { const x = hex(a), y = hex(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
 
-let mapCache: MapData | null = null;
+let mapCache: MapData | null = null, mapDiag = 'not asked yet';
 async function loadMap(): Promise<MapData | null> {
   if (mapCache) return mapCache;
-  try { const r = await fetch('/world-map.json'); if (!r.ok) return null; const j = await r.json(); if (j && j.c && j.p) mapCache = j; } catch {}
+  try { const r = await fetch('/world-map.json'); if (!r.ok) { mapDiag = '/world-map.json answered HTTP ' + r.status + ' (the file is missing from the deployed site)'; return null; } const j = await r.json(); if (j && j.c && j.p) { mapCache = j; mapDiag = 'ok'; } else mapDiag = '/world-map.json is not the map file'; } catch (e: any) { mapDiag = '/world-map.json failed: ' + String(e?.message || e).slice(0, 80); }
   return mapCache;
 }
+// Open the website with ?mapdebug at the end of the address to see why the map is not showing.
+const DEBUG = typeof location !== 'undefined' && /mapdebug/.test(location.search + location.hash);
 
 function Inner() {
   const [map, setMap] = useState<MapData | null>(mapCache);
   const [data, setData] = useState<SignupMapData | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [W, setW] = useState(0);
+  const [, bump] = useState(0); // re-draw when a request ends, so the debug line is current
   const [vb, setVb] = useState<VB | null>(null);
   const cur = useRef<VB | null>(null);
 
-  useEffect(() => { let on = true; loadMap().then((m) => on && m && setMap(m)); return () => { on = false; }; }, []);
+  useEffect(() => { let on = true; loadMap().then((m) => { if (on) { bump((n) => n + 1); if (m) setMap(m); } }); return () => { on = false; }; }, []);
   useEffect(() => { // live numbers: load now, then refresh every minute
     let on = true;
-    const go = () => getSignupMap().then((d) => on && d && setData(d));
+    const go = () => getSignupMap().then((d) => { if (on) { bump((n) => n + 1); if (d) setData(d); } });
     go(); const t = setInterval(go, 60000);
     return () => { on = false; clearInterval(t); };
   }, []);
@@ -54,7 +57,8 @@ function Inner() {
     return () => cancelAnimationFrame(raf);
   }, [map, tKey]);
 
-  if (!map || !data) return null; // the server or the map file is not reachable: show nothing rather than a broken box
+  const dbg = DEBUG ? <Text style={{ color: '#FFD98A', fontSize: 11, fontFamily: 'monospace' as any }}>{`map debug: map file: ${mapDiag} | numbers: ${getSignupMapDiag()}`}</Text> : null;
+  if (!map || !data) return dbg ? <View style={{ gap: 6 }}><Text style={{ color: '#FFFFFF', fontSize: 14.5, fontWeight: '600' }}>Traders joining from around the world</Text>{dbg}</View> : null; // the server or the map file is not reachable: show nothing rather than a broken box (add ?mapdebug to the address to see why)
 
   const v = vb || target, unit = v[2] / 1000; // one on-screen pixel stays the same size at every zoom
   const counts: Record<string, number> = {};
@@ -127,6 +131,7 @@ function Inner() {
         ) : null}
       </View>
 
+      {dbg}
       {sel ? (
         cities.length ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
