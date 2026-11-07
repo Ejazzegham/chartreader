@@ -32,6 +32,7 @@ export function usePal() {
     head: th.text, body: th.dim,
     blue: th.accent, brass: th.accent2, soft: th.accent + (d ? '26' : '14'),
     shadow: d ? '#000000' : '#0B1B3F',
+    onBack: d ? '#0A1022' : '#F5F8FF', onBackDim: d ? '#2B364D' : '#C7D0EA', onBackAccent: d ? '#7C3AED' : '#F472B6', onBackLine: d ? '#0A102233' : '#FFFFFF33', // text on the bare backdrop
   };
 }
 
@@ -259,12 +260,12 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 44, gap: 24 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 16 }}>
           <View style={{ flex: 1, gap: 8 }}>
-            <Pill text="Live Market Data" />
-            <Text style={{ color: P.head, fontSize: 30, fontWeight: '700', letterSpacing: -0.8 }}>Market Overview</Text>
-            <Text style={{ color: P.body, fontSize: 15, lineHeight: 22, maxWidth: 460 }}>Explore major markets at a glance. Track trends, compare assets and stay ahead with real-time data.</Text>
+            <Pill text="Live Market Data" tone={P.onBackAccent} />
+            <Text style={{ color: P.onBack, fontSize: 30, fontWeight: '700', letterSpacing: -0.8 }}>Market Overview</Text>
+            <Text style={{ color: P.onBackDim, fontSize: 15, lineHeight: 22, maxWidth: 460 }}>Explore major markets at a glance. Track trends, compare assets and stay ahead with real-time data.</Text>
           </View>
           <Pressable onPress={() => go(2)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, cursor: 'pointer', paddingBottom: 6 } as any}>
-            <Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '600' }}>View All Markets</Text><Icon name="arrow-forward" size={14} color={P.blue} />
+            <Text style={{ color: P.onBack, fontSize: 13.5, fontWeight: '700' }}>View All Markets</Text><Icon name="arrow-forward" size={14} color={P.onBack} />
           </Pressable>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
@@ -313,21 +314,21 @@ function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
   const [tf, setTf] = useState('3600');
   const s = useSetup('frxXAUUSD', tf, 'dash-gold');
   const three = w >= 1080, stat = (a: string, b: string) => (
-    <View key={a} style={{ gap: 2, paddingRight: 18, marginRight: 4, borderRightWidth: 1, borderRightColor: P.border }}>
-      <Text style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>{a}</Text><Text style={{ color: P.body, fontSize: 11.5 }}>{b}</Text>
+    <View key={a} style={{ gap: 2, paddingRight: 18, marginRight: 4, borderRightWidth: 1, borderRightColor: P.onBackLine }}>
+      <Text style={{ color: P.onBack, fontSize: 16, fontWeight: '800' }}>{a}</Text><Text style={{ color: P.onBackDim, fontSize: 11.5 }}>{b}</Text>
     </View>
   );
   return (
     <View style={{ backgroundColor: P.alt }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: 'stretch', gap: 30 }}>
         <View style={{ width: three ? 300 : '100%', gap: 16 }}>
-          <Pill text="Powerful Analysis Tools" />
-          <Text style={{ color: P.head, fontSize: 38, lineHeight: 38, fontWeight: '700', letterSpacing: -0.9 }}>Multi-Timeframe{'\n'}Analysis</Text>
-          <Text style={{ color: P.body, fontSize: 15, lineHeight: 23 }}>Analyze multiple timeframes, spot key levels, track trade ideas — all in real time.</Text>
+          <Pill text="Powerful Analysis Tools" tone={P.onBackAccent} />
+          <Text style={{ color: P.onBack, fontSize: 38, lineHeight: 38, fontWeight: '700', letterSpacing: -0.9 }}>Multi-Timeframe{'\n'}Analysis</Text>
+          <Text style={{ color: P.onBackDim, fontSize: 15, lineHeight: 23 }}>Analyze multiple timeframes, spot key levels, track trade ideas — all in real time.</Text>
           <View style={{ flexDirection: 'row' }}><Btn label="Explore Analysis" onPress={() => go(1)} /></View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 12, marginTop: 14 }}>
             {stat(`${SYMBOLS.length}+`, 'Symbols')}{stat('Multiple', 'Timeframes')}{stat('Real-time', 'Market Data')}
-            <View style={{ gap: 2 }}><Text style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>Advanced</Text><Text style={{ color: P.body, fontSize: 11.5 }}>Tools</Text></View>
+            <View style={{ gap: 2 }}><Text style={{ color: P.onBack, fontSize: 16, fontWeight: '800' }}>Advanced</Text><Text style={{ color: P.onBackDim, fontSize: 11.5 }}>Tools</Text></View>
           </View>
         </View>
         <Panel style={{ flex: 1, minWidth: 0, width: three ? undefined : '100%', padding: 16, gap: 10 }}>
@@ -357,8 +358,8 @@ function Why({ w }: { w: number }) {
     <View style={{ backgroundColor: P.section }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 52, paddingBottom: 28, gap: 28 }}>
         <View style={{ alignItems: 'center', gap: 8 }}>
-          <Text style={{ color: P.head, fontSize: 28, fontWeight: '700', letterSpacing: -0.7, textAlign: 'center' }}>Why Choose Chart Reader?</Text>
-          <Text style={{ color: P.body, fontSize: 15.5, textAlign: 'center' }}>Everything you need for smarter, more confident trading.</Text>
+          <Text style={{ color: P.onBack, fontSize: 28, fontWeight: '700', letterSpacing: -0.7, textAlign: 'center' }}>Why Choose Chart Reader?</Text>
+          <Text style={{ color: P.onBackDim, fontSize: 15.5, textAlign: 'center' }}>Everything you need for smarter, more confident trading.</Text>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
           {WHY.map(([icon, title, text]) => (

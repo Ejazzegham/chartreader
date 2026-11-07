@@ -196,7 +196,7 @@ export function Notices({ flush }: { flush?: boolean }) {
   return (
     <View style={{ gap: 8, paddingHorizontal: flush ? 0 : 20, paddingTop: flush ? 0 : 10 }}>
       {rows.map((r) => (
-        <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: r.tone + '55', backgroundColor: r.tone + '14' }}>
+        <View key={r.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: r.tone + '88', backgroundColor: th.solid }}>
           <Icon name={r.icon} size={19} color={r.tone} />
           <Text style={{ flex: 1, color: th.text, fontSize: 13, lineHeight: 18 }}>{r.text}</Text>
           {r.btns.map(([l, f]) => (

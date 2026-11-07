@@ -939,3 +939,7 @@ Then: npm run build:web
 ## Animated heroes + visible page backdrop
 - Every hero (HeroBanner on all pages, the home call-to-action band, the sign-in panel) now has an animated background: src/HeroFx.web.tsx (phones: src/HeroFx.tsx, none). One shared loop; only heroes on screen are drawn.
 - Page backdrop is now visible: the frosted page sheet is see-through (src/sheet.ts), glass panels are lighter (src/theme.ts), the aurora and waves are stronger and the canvas always sizes itself (src/LiveBackdrop.web.tsx).
+
+## Sheet removed
+- The big frosted page sheet is gone (src/sheet.ts): pages sit directly on the animated backdrop and only the boxes stay glass.
+- Text that sits directly on the backdrop (home page section headings) uses onBack colours from usePal() so it stays readable in both themes. Notice strips got a solid fill.
