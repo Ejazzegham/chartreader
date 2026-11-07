@@ -16,6 +16,9 @@ export const useDesktop = () => useLayout().mode === 'desktop';
 const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Demo Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
 const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
+const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 11, 9, 5, 'hist']], ['MARKETS', [8, 13, 19, 18, 17]], ['SUPPORT', [14, 15, 6, 'help']]]; // tab numbers from NAV; 'hist' opens Trade History, 'help' opens Help chat
+const toolIcon: Record<number, string> = Object.fromEntries(TOOLS);
+
 // The website's top navigation: logo, main pages, a Tools menu, search, live status, alerts and the account menu.
 // Quiet and professional: a white bar with a hairline, small restrained type, a brass underline on the open page, hairline buttons (no pills, no glows).
 export const NAV_H = 72;
@@ -73,10 +76,31 @@ function TopNav() {
           <View>
             {link('Tools', menu === 'tools' || toolTabs.includes(tab), () => setMenu(menu === 'tools' ? '' : 'tools'), true)}
             {menu === 'tools' && (
-              <View style={{ ...drop, left: 0 }}>
-                {TOOLS.map(([i, icon]) => item(icon, t(NAV[i].key), () => setTab(i)))}
-                {item('receipt', 'Trade History', () => setHistOpen(true))}
-                {item('chatbubbles-outline', 'Help chat', () => setHelpOpen(true), supportUnread)}
+              <View style={{ ...drop, left: 0, width: slim ? 440 : 484, padding: 14, borderRadius: 12 }}>
+                {TOOL_GROUPS.map(([title, ids], gi) => (
+                  <View key={title} style={{ marginTop: gi ? 10 : 0 }}>
+                    <Text style={{ color: th.accent2, fontSize: 10.5, fontWeight: '700', letterSpacing: 1.6, paddingHorizontal: 4, paddingBottom: 8 }}>{title}</Text>
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                      {ids.map((id) => {
+                        const special = typeof id === 'string', icon = id === 'hist' ? 'receipt' : id === 'help' ? 'chatbubbles-outline' : toolIcon[id as number];
+                        const label = id === 'hist' ? 'Trade History' : id === 'help' ? 'Help chat' : t(NAV[id as number].key);
+                        const on = !special && tab === id, badge = id === 'help' ? supportUnread : 0;
+                        const go = () => { setMenu(''); if (id === 'hist') setHistOpen(true); else if (id === 'help') setHelpOpen(true); else setTab(id as number); };
+                        return (
+                          <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={go} style={((s: any) => ({ width: 'calc(25% - 6px)', alignItems: 'center', gap: 8, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 10, borderWidth: 1, borderColor: on || s.hovered ? th.accent2 : rule, backgroundColor: s.hovered ? th.panel2 : 'transparent', cursor: 'pointer', transform: [{ translateY: s.hovered ? -2 : 0 }] })) as any}>
+                            {(s: any) => (<>
+                              <View style={{ width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: s.hovered || on ? th.accent : th.accent + '14' }}>
+                                <Icon name={icon} size={19} color={s.hovered || on ? th.onAccent : th.accent} />
+                                {badge > 0 && <View style={{ position: 'absolute', top: -5, right: -5, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 9.5, fontWeight: '700' }}>{badge > 99 ? '99+' : badge}</Text></View>}
+                              </View>
+                              <Text style={{ color: ink, fontSize: 11.5, fontWeight: on ? '700' : '600', textAlign: 'center', lineHeight: 14 }} numberOfLines={2}>{label}</Text>
+                            </>)}
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ))}
               </View>
             )}
           </View>
