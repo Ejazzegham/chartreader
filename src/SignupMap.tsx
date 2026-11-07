@@ -10,7 +10,7 @@ import { MapData, VB, project, zoomBox } from './mapMath';
 // Numbers come from the server (GET /public/signups?from=&to=, POST /public/visit); country shapes from public/world-map.json; flags from public/flags/xx.svg.
 // Website only. To use the real background picture from the mockup, put it in public/community-bg.jpg and set HERO_BG below to '/community-bg.jpg'.
 
-const HERO_BG = ''; // '' = a drawn blue background with a globe; '/community-bg.jpg' = your own picture
+const HERO_BG = '/community-bg.jpg'; // '' = a drawn blue background with a globe; '/community-bg.jpg' = your own picture
 const INK = '#0B1B4D', MUTED = '#5B6B8C', LINE = '#E6ECF8', BLUE = '#1F4BFF', NAVY = '#071A45', DOT = '#FF4D6D';
 const VIVID = ['#FF9F43', '#FFD93D', '#4CD97B', '#2FD3E0', '#5B9BFF', '#9B7BFF', '#E86BF0', '#FF6B8B'];
 const tone = (cc: string) => (cc.charCodeAt(0) * 31 + cc.charCodeAt(1)) % 8;
@@ -74,20 +74,20 @@ function Flag({ cc, w = 40 }: { cc: string; w?: number }) {
 function StatCard({ kind, value, label, pct, wide }: { kind: 'members' | 'countries'; value: string; label: string; pct?: number; wide: boolean }) {
   const m = kind === 'members';
   const col = m ? '#5B3FD6' : '#E85D00', bg = m ? 'linear-gradient(115deg,rgba(255,255,255,0.92) 0%,#E6DEFF 100%)' : 'linear-gradient(115deg,rgba(255,255,255,0.92) 0%,#FFE2C8 100%)';
-  const up = (pct ?? 0) >= 0;
+  const up = (pct ?? 0) >= 0, ic = wide ? 44 : 34;
   return (
-    <View style={{ flexGrow: 1, flexBasis: wide ? 330 : 150, maxWidth: wide ? 420 : undefined, flexDirection: 'row', alignItems: 'center', gap: wide ? 16 : 10, paddingVertical: wide ? 14 : 10, paddingHorizontal: wide ? 18 : 12, borderRadius: 22, backgroundImage: bg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', boxShadow: '0 10px 28px rgba(60,70,170,0.16)' } as any}>
-      <View style={{ width: wide ? 66 : 44, height: wide ? 66 : 44, borderRadius: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: m ? '#DDD3FF' : '#FF9A3D' }}>
-        <Ico n={m ? 'people' : 'globe'} s={wide ? 32 : 22} c={m ? col : '#FFFFFF'} />
+    <View style={{ flexGrow: 1, flexBasis: wide ? 230 : 0, minWidth: 0, maxWidth: wide ? 270 : undefined, flexDirection: 'row', alignItems: 'center', gap: wide ? 12 : 8, paddingVertical: wide ? 9 : 8, paddingHorizontal: wide ? 13 : 10, borderRadius: 18, backgroundImage: bg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', boxShadow: '0 8px 22px rgba(60,70,170,0.16)' } as any}>
+      <View style={{ width: ic, height: ic, borderRadius: ic / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: m ? '#DDD3FF' : '#FF9A3D' }}>
+        <Ico n={m ? 'people' : 'globe'} s={wide ? 22 : 18} c={m ? col : '#FFFFFF'} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={{ color: INK, fontSize: wide ? 38 : 26, fontWeight: '800', lineHeight: wide ? 42 : 30, letterSpacing: -0.5 }}>{value}</Text>
-        <Text numberOfLines={1} style={{ color: INK, fontSize: wide ? 17 : 13, fontWeight: '500' }}>{label}</Text>
+        <Text style={{ color: INK, fontSize: wide ? 26 : 21, fontWeight: '800', lineHeight: wide ? 29 : 24, letterSpacing: -0.4 }}>{value}</Text>
+        <Text numberOfLines={1} style={{ color: INK, fontSize: wide ? 13 : 11.5, fontWeight: '500' }}>{label}</Text>
       </View>
-      {typeof pct === 'number' ? (
-        <View accessibilityLabel={'Change in the last 30 days'} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6, paddingHorizontal: 11, borderRadius: 999, backgroundColor: m ? '#E7E0FF' : '#FFE4D0' }}>
-          <Ico n={up ? 'up' : 'down'} s={14} c={col} w={2.4} />
-          <Text style={{ color: col, fontSize: wide ? 16 : 13, fontWeight: '800' }}>{(up ? '+' : '') + pct + '%'}</Text>
+      {wide && typeof pct === 'number' ? (
+        <View accessibilityLabel={'Change in the last 30 days'} style={{ flexDirection: 'row', alignItems: 'center', gap: 3, paddingVertical: 4, paddingHorizontal: 8, borderRadius: 999, backgroundColor: m ? '#E7E0FF' : '#FFE4D0' }}>
+          <Ico n={up ? 'up' : 'down'} s={12} c={col} w={2.4} />
+          <Text style={{ color: col, fontSize: 12.5, fontWeight: '800' }}>{(up ? '+' : '') + pct + '%'}</Text>
         </View>
       ) : null}
     </View>
@@ -207,13 +207,13 @@ function Inner() {
   // ── Header ──
   const header = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: wide ? 20 : 12 }}>
-      <View style={{ width: wide ? 78 : 52, height: wide ? 78 : 52, borderRadius: 40, alignItems: 'center', justifyContent: 'center', backgroundImage: 'linear-gradient(145deg,#5B93FF 0%,#1F3FD8 100%)', boxShadow: '0 10px 26px rgba(31,75,255,0.45), inset 0 1px 0 rgba(255,255,255,0.5)' } as any}>
-        <Ico n="people" s={wide ? 38 : 26} />
+      <View style={{ width: wide ? 58 : 44, height: wide ? 58 : 44, borderRadius: 40, alignItems: 'center', justifyContent: 'center', backgroundImage: 'linear-gradient(145deg,#5B93FF 0%,#1F3FD8 100%)', boxShadow: '0 10px 26px rgba(31,75,255,0.45), inset 0 1px 0 rgba(255,255,255,0.5)' } as any}>
+        <Ico n="people" s={wide ? 28 : 22} />
       </View>
-      {wide ? <View style={{ width: 2, height: 66, backgroundColor: '#9FB3E6', opacity: 0.7 }} /> : null}
+      {wide ? <View style={{ width: 2, height: 48, backgroundColor: '#9FB3E6', opacity: 0.7 }} /> : null}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={{ color: INK, fontSize: wide ? 38 : 22, fontWeight: '800', letterSpacing: -0.8, lineHeight: wide ? 44 : 27 }}>{sel ? nameOf(sel) : 'Our community around the world'}</Text>
-        <Text style={{ color: '#34457A', fontSize: wide ? 18 : 13, marginTop: 4 }}>
+        <Text style={{ color: INK, fontSize: wide ? 28 : 19, fontWeight: '800', letterSpacing: -0.5, lineHeight: wide ? 34 : 24 }}>{sel ? nameOf(sel) : 'Our community around the world'}</Text>
+        <Text style={{ color: '#34457A', fontSize: wide ? 14.5 : 12, marginTop: 2 }}>
           {sel ? `${selN} ${selN === 1 ? 'member' : 'members'}${cities.length ? ` in ${cities.length} ${cities.length === 1 ? 'city' : 'cities'}` : ''}` : "Together, we're part of a global community, connected across countries and continents."}
         </Text>
       </View>
@@ -258,8 +258,8 @@ function Inner() {
   );
 
   const statsRow = (
-    <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'stretch', justifyContent: 'space-between', gap: 16, zIndex: 30 }}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: wide ? 22 : 10, flexShrink: 1 }}>
+    <View style={{ flexDirection: wide ? 'row' : 'column', flexWrap: wide ? 'wrap' : 'nowrap', alignItems: wide ? 'center' : 'stretch', justifyContent: 'space-between', gap: 14, zIndex: 30 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'nowrap', gap: wide ? 14 : 10 }}>
         <StatCard kind="members" value={fmt(data.total)} label={data.total === 1 ? 'Total Member' : 'Total Members'} pct={data.growth?.members} wide={wide} />
         <StatCard kind="countries" value={fmt(data.countries.length)} label={data.countries.length === 1 ? 'Country' : 'Countries'} pct={data.growth?.countries} wide={wide} />
       </View>
@@ -377,7 +377,7 @@ function Inner() {
     <View
       onLayout={(e) => setW0(Math.round(e.nativeEvent.layout.width))}
       accessibilityLabel={`${data.total} members in ${data.countries.length} countries`}
-      style={{ borderRadius: 30, overflow: 'hidden', padding: wide ? 28 : 14, gap: wide ? 22 : 14, borderWidth: 1, borderColor: '#C9DBFF', backgroundColor: '#D6E5FF', backgroundImage: HERO_BG ? `url(${HERO_BG})` : 'linear-gradient(135deg,#EAF2FF 0%,#D3E3FF 45%,#B5CFFF 100%)', backgroundSize: 'cover', backgroundPosition: 'center' } as any}
+      style={{ borderRadius: 30, overflow: 'hidden', padding: wide ? 28 : 14, gap: wide ? 22 : 14, borderWidth: 1, borderColor: '#C9DBFF', backgroundColor: '#D6E5FF', backgroundImage: HERO_BG ? `linear-gradient(90deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0) 70%), url(${HERO_BG})` : 'linear-gradient(135deg,#EAF2FF 0%,#D3E3FF 45%,#B5CFFF 100%)', backgroundSize: 'cover', backgroundPosition: 'center' } as any}
     >
       {!HERO_BG ? (
         <>
