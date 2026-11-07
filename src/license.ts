@@ -77,6 +77,7 @@ export type SignupMapData = {
   places: { cc: string; city: string; lat: number; lon: number; n: number }[];
   recent?: { t: number; name: string; cc: string }[]; // newest members: first name + last initial, and country
   visitors?: number; visits?: number; online?: number; // visitor counter (older servers do not send these)
+  growth?: { members: number; countries: number }; // % change in the last 30 days (older servers do not send this)
 };
 export type VisitCounts = { visitors: number; visits: number; online: number };
 // Visitor counter: a random id kept in this browser tells visitors apart (the server stores only a one-way hash of it, no IP, nothing personal).
@@ -101,11 +102,12 @@ export async function pingVisit(): Promise<VisitCounts | null> {
 
 let signupDiag = 'not asked yet';
 export const getSignupMapDiag = () => signupDiag; // for the ?mapdebug switch on the website: why the map has no numbers
-export async function getSignupMap(): Promise<SignupMapData | null> {
+export async function getSignupMap(range: { from?: number; to?: number } = {}): Promise<SignupMapData | null> { // range: only members who joined between from and to (ms)
   if (base.includes('YOUR-SERVER-URL')) { signupDiag = 'no server address set'; return null; }
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
-    const r = await fetch(base + '/public/signups', { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
+    const qs = [range.from ? 'from=' + Math.round(range.from) : '', range.to ? 'to=' + Math.round(range.to) : ''].filter(Boolean).join('&');
+    const r = await fetch(base + '/public/signups' + (qs ? '?' + qs : ''), { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
     const txt = await r.text(); let j: any = null; try { j = JSON.parse(txt); } catch {}
     if (!r.ok) { signupDiag = `${base}/public/signups answered HTTP ${r.status}: ${txt.replace(/\s+/g, ' ').slice(0, 90)}`; return null; }
     if (!j || !Array.isArray(j.countries) || !Array.isArray(j.places)) { signupDiag = 'the answer is not the signup numbers (is the server on the new server.js?): ' + txt.replace(/\s+/g, ' ').slice(0, 90); return null; }

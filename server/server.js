@@ -160,7 +160,7 @@ http.createServer(async (req, res) => {
   const send = (c, o) => { res.writeHead(c, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type, ngrok-skip-browser-warning', 'access-control-allow-methods': 'GET, POST, OPTIONS' }); res.end(JSON.stringify(o)); };
   if (req.method === 'OPTIONS') return send(204, {});
   if (await proxy(req, res)) return; // the website's read-only proxy (server/proxy.js)
-  if (req.method === 'GET' && req.url.split('?')[0] === '/public/signups') return send(200, { ...geo.summary(db.people, (p) => p.deleted || ADMINS.includes(String(p.email || '').toLowerCase())), ...visits.counts() }); // public: counts, first names and countries only. The member part is cached 60 s
+  if (req.method === 'GET' && req.url.split('?')[0] === '/public/signups') { const q = new URL(req.url, 'http://x').searchParams; return send(200, { ...geo.summary(db.people, (p) => p.deleted || ADMINS.includes(String(p.email || '').toLowerCase()), { from: q.get('from'), to: q.get('to') }), ...visits.counts() }); } // public: counts, first names and countries only. The member part is cached 60 s
   if (req.method === 'GET' && req.url === '/health') return send(200, { ok: true, time: Date.now(), firebase: !!FB_PROJECT, geminiKey: !!db.geminiKey, brandedMail: authMail.ready() });
   // Attachments: the upload is raw bytes (not JSON) and a file is shown by its random link, so both are handled before the JSON body is read.
   if ((req.method === 'GET' || req.method === 'HEAD') && req.url.startsWith('/media/')) return media.serve(req, res, req.url.slice(7).split('?')[0]);
