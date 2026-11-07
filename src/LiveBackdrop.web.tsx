@@ -39,15 +39,15 @@ export default function LiveBackdrop() {
           const y = base + Math.sin(x * f + t * 0.0006 * (1 + i * 0.2) + sy * 0.003 * (1 + i * 0.15)) * amp + Math.sin(x * f * 2.3 - t * 0.0004 + i) * amp * 0.4;
           x ? cx.lineTo(x, y) : cx.moveTo(x, y);
         }
-        cx.strokeStyle = `rgba(${i % 3 === 2 ? b : a},${0.16 + i * 0.03})`; cx.lineWidth = 1.4; cx.stroke();
+        cx.strokeStyle = `rgba(${i % 3 === 2 ? b : a},${0.3 + i * 0.05})`; cx.lineWidth = 1.8; cx.stroke();
       }
     };
     const aurora = (t: number, a: string, b: string, dk: boolean) => {
       [a, b, '34,211,238', '168,85,247'].forEach((c, i) => {
         const x = W * (0.5 + 0.4 * Math.sin(t * 0.0002 * (i + 1) + i * 2 + sy * 0.0006));
         const y = ((H * (0.2 + 0.2 * i) + sy * 0.25 * (1 + i * 0.2) + Math.cos(t * 0.00025 * (i + 1)) * 80) % (H * 1.4)) - H * 0.2;
-        const r = Math.max(W, H) * 0.42, g = cx.createRadialGradient(x, y, 0, x, y, r);
-        g.addColorStop(0, `rgba(${c},${dk ? 0.55 : 0.45})`); g.addColorStop(1, `rgba(${c},0)`);
+        const r = Math.max(W, H) * 0.5, g = cx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, `rgba(${c},${dk ? 0.8 : 0.62})`); g.addColorStop(1, `rgba(${c},0)`);
         cx.fillStyle = g; cx.fillRect(0, 0, W, H);
       });
     };
@@ -59,15 +59,18 @@ export default function LiveBackdrop() {
     }
     const loop = (t: number) => {
       sy += (target - sy) * 0.12;
-      if (!document.hidden) draw(t);
+      if (!W) fit();
+      if (!document.hidden && W) draw(t);
       raf = requestAnimationFrame(loop);
     };
 
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null;
+    ro?.observe(cv);
     fit();
     window.addEventListener('resize', fit);
     window.addEventListener('scroll', onScroll, true);
     if (still) draw(0); else raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', fit); window.removeEventListener('scroll', onScroll, true); };
+    return () => { ro?.disconnect(); cancelAnimationFrame(raf); window.removeEventListener('resize', fit); window.removeEventListener('scroll', onScroll, true); };
   }, []);
 
   useEffect(() => { // the theme changed: repaint at once (the loop picks it up on its own when animating)
@@ -76,7 +79,7 @@ export default function LiveBackdrop() {
   }, [th.back]);
 
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, backgroundColor: th.back }}>
       {React.createElement('canvas', { ref, style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' } })}
     </View>
   );

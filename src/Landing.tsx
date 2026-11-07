@@ -5,6 +5,7 @@ import { HERO_BG, HERO_BRASS } from './ui';
 import { LogoMark } from './Brand';
 import { PLANS } from './license';
 import SignupMap from './SignupMap';
+import HeroFx from './HeroFx';
 
 const POINTS: { title: string; text: string }[] = [
   { title: 'TRADE or WAIT, clearly', text: 'One answer per chart. A trade is shown only when the methods and the higher timeframe agree; otherwise you see why to wait.' },
@@ -19,7 +20,8 @@ export default function Landing({ stacked = false }: { stacked?: boolean }) {
   const tx = '#FFFFFF', soft = '#B4C0D8';
   const Wrap: any = stacked ? View : ScrollView, wrapProps = stacked ? { style: { paddingHorizontal: 24, paddingVertical: 36, gap: 28 } } : { contentContainerStyle: { flexGrow: 1, paddingHorizontal: 64, paddingVertical: 48, justifyContent: 'center', gap: 36 }, showsVerticalScrollIndicator: false };
   return (
-    <View style={stacked ? { backgroundColor: HERO_BG } : { flex: 1.1, minWidth: 0, backgroundColor: HERO_BG }}>
+    <View style={stacked ? { backgroundColor: HERO_BG, overflow: 'hidden' } : { flex: 1.1, minWidth: 0, backgroundColor: HERO_BG, overflow: 'hidden' }}>
+      <HeroFx />
       <Wrap {...wrapProps}>
         {!stacked && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
           <LogoMark size={44} radius={10} />

@@ -1,3 +1,4 @@
+import HeroFx from './HeroFx';
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View, Pressable, ActivityIndicator, TextInput, TextInputProps, ViewStyle, TextStyle, Animated } from 'react-native';
 import { showAlert } from './dialog';
@@ -129,6 +130,7 @@ export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { ti
   );
   return (
     <View style={{ borderRadius: 8, overflow: 'hidden', direction: 'ltr', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', ...(wide ? { height: HERO_H } : null) }}>
+      <HeroFx />
       <View style={{ padding: wide ? 32 : 20, paddingVertical: wide ? 26 : 20, gap: 14, ...(wide ? { height: HERO_H, justifyContent: 'center' } : null) }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24, direction: rtl ? 'rtl' : 'ltr' }}>
           <View style={{ flex: 1, minWidth: 0, gap: 8 }}>

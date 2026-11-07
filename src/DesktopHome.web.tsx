@@ -13,6 +13,7 @@ import { Footer, useGo } from './SiteFooter';
 export { Footer, useGo };
 import { useDash, setDash } from './dash';
 import { glassWeb } from './sheet';
+import HeroFx from './HeroFx';
 
 // The website's home page, designed like the "Fintech Analytics Homepage" mockup: hero with a live chart, market overview,
 // multi-timeframe analysis, why-choose cards, call-to-action and footer. All numbers are live (same engine as the phone app).
@@ -387,7 +388,8 @@ function Cta({ w, go }: { w: number; go: (t: number) => void }) {
   return (
     <View style={{ backgroundColor: P.section }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingBottom: 48 }}>
-        <View style={{ borderRadius: 8, backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 32, paddingHorizontal: 32 }}>
+        <View style={{ borderRadius: 8, overflow: 'hidden', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 32, paddingHorizontal: 32 }}>
+          <HeroFx />
           <View style={{ flex: 1, gap: 8 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '700', letterSpacing: -0.3 }}>Ready to trade with a plan?</Text>
             <Text style={{ color: '#B4C0D8', fontSize: 14.5, lineHeight: 22, maxWidth: 560 }}>Real-time analysis, risk tools and a trading journal in one place.</Text>

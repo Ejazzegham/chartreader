@@ -31,7 +31,7 @@ function TopNav() {
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1120;
   const ink = th.text, mute = th.dim, rule = th.line;
-  const bar = th.panel, toolTabs = TOOLS.map((x) => x[0]);
+  const bar = th.dark ? 'rgba(18,22,52,0.72)' : 'rgba(255,255,255,0.74)', toolTabs = TOOLS.map((x) => x[0]);
   const padX = compact ? 12 : slim ? 16 : 32;
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };

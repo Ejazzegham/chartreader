@@ -935,3 +935,7 @@ and running the logic tests. The server fixes were tested against the original w
 - Analysis method tiles: icon, concept tag, name and "Open analysis" only (src/AnalysisHome.web.tsx).
 - Chart box and the Sentiment / Key Levels boxes always end at the same height (FillChart in src/DesktopHome.web.tsx).
 Then: npm run build:web
+
+## Animated heroes + visible page backdrop
+- Every hero (HeroBanner on all pages, the home call-to-action band, the sign-in panel) now has an animated background: src/HeroFx.web.tsx (phones: src/HeroFx.tsx, none). One shared loop; only heroes on screen are drawn.
+- Page backdrop is now visible: the frosted page sheet is see-through (src/sheet.ts), glass panels are lighter (src/theme.ts), the aurora and waves are stronger and the canvas always sizes itself (src/LiveBackdrop.web.tsx).
