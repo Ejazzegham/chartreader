@@ -118,7 +118,7 @@ export default function KillzonesHome({ active }: Props) {
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       {/* hero */}
       <View style={{ width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: pad32, paddingTop: 24 }}>
-        <HeroBanner icon="alarm" title="Killzones" subtitle="London, New York and Silver Bullet windows with a live clock."
+        <HeroBanner fx="killzones" icon="alarm" title="Killzones" subtitle="London, New York and Silver Bullet windows with a live clock."
           features={[
             { icon: 'earth-outline', title: 'Precise Time Zones', sub: 'London, New York, Asia & more' },
             { icon: 'time-outline', title: 'Live Session Clock', sub: 'Real-time countdown' },

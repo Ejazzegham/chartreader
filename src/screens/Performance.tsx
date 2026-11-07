@@ -34,7 +34,7 @@ export default function Performance() {
   if (desk) return <PerformanceHome />; // website: the Performance page (src/PerformanceHome.web.tsx); the phone keeps the screen below
 
   return (
-    <Screen icon="stats-chart" title={t('tabPerf')} subtitle={t('navDescPerf')}>
+    <Screen fx="performance" icon="stats-chart" title={t('tabPerf')} subtitle={t('navDescPerf')}>
       <Cols>
         {n === 0 && <Card><Body color={th.dim}>{t('perfEmpty')}</Body></Card>}
         <View style={{ flexDirection: 'row', gap: 10 }}>

@@ -379,5 +379,5 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
         <Dim>The scanner checks every pair of the selected market (crypto: the 60 most traded). It skips closed markets and stale data, then runs only the methods you ticked above (ICT, SMC, chart pattern, Top-Down, VSA, candlestick) on each pair. Any ticked method that finds a setup scoring 70+ is listed with its entry, stop and targets, and the same trade found by several methods is merged. A notification only rings for the combined setup (all five engine methods ticked) when 3+ methods agree, none is against, and price is in the entry zone or within 1 ATR of it. Educational tool, not financial advice.</Dim>
       </View>
   );
-  return embedded ? body : <Screen icon="radio" title={t('tabScanner')} subtitle={t('navDescScanner')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
+  return embedded ? body : <Screen fx="analysis" icon="radio" title={t('tabScanner')} subtitle={t('navDescScanner')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
 }

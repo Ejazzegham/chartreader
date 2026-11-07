@@ -61,7 +61,7 @@ export default function Risk() {
 
   if (desk) return <RiskHome />; // website: the Risk & TP Planner page (src/RiskHome.web.tsx); the phone keeps the screen below
   return (
-    <Screen icon="calculator" title={t('calcTitle')} subtitle={t('navDescRisk')}>
+    <Screen fx="risk" icon="calculator" title={t('calcTitle')} subtitle={t('navDescRisk')}>
       <Cols>
         {!!from && <Card style={{ borderColor: th.accent }}><Dim>{t('prefilled')} {from}</Dim></Card>}
         <Card>

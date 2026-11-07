@@ -58,7 +58,7 @@ function Head({ icon, title, sub, right, onRight }: { icon: string; title: strin
 function Hero({ w, setCat, live }: { w: number; setCat: (k: CatKey) => void; live: boolean }) {
   return (
     <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24 }}>
-      <HeroBanner icon="pulse" title="Global Markets" subtitle="Explore forex, crypto, indices, commodities and more. Live prices, real-time data and powerful tools."
+      <HeroBanner fx="markets" icon="pulse" title="Global Markets" subtitle="Explore forex, crypto, indices, commodities and more. Live prices, real-time data and powerful tools."
         features={[{ icon: 'flash', title: 'Live Prices', sub: live ? 'Real-time data' : 'Connecting…' }, { icon: 'stats-chart', title: 'Market Analysis', sub: 'Trends & insights' }, { icon: 'star', title: 'Watchlists', sub: 'Track your favorites' }, { icon: 'construct', title: 'Advanced Tools', sub: 'Make better decisions' }]} />
     </View>
   );

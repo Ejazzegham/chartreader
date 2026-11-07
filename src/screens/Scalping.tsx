@@ -360,5 +360,5 @@ export default function Scalping({ embedded, on, symId: symProp, setSymId: setSy
         <Dim>Educational tool, not financial advice. Test on a demo account first.</Dim>
       </View>
   );
-  return embedded ? body : <Screen icon="speedometer" title={t('tabScalp')} subtitle={t('navDescScalp')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
+  return embedded ? body : <Screen fx="methods" icon="speedometer" title={t('tabScalp')} subtitle={t('navDescScalp')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
 }

@@ -93,7 +93,7 @@ function PhoneHome() {
   );
 
   return (
-    <Screen icon="home" title={`${t('hello')}, ${account?.name.split(' ')[0] ?? ''}`} subtitle={today}>
+    <Screen fx="brand" icon="home" title={`${t('hello')}, ${account?.name.split(' ')[0] ?? ''}`} subtitle={today}>
       <View style={{ gap: 16 }}>
         <NewsBanner active={tab === 0} />
         <AdminAccess />

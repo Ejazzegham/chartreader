@@ -47,7 +47,7 @@ export default function About() {
 
   // ---------- 1. hero ----------
   const hero = (
-    <HeroBanner icon="information-circle" title={`${x.title1} ${x.title2}`.replace(/\s+/g, ' ').trim()} subtitle={x.lead}
+    <HeroBanner fx="about" icon="information-circle" title={`${x.title1} ${x.title2}`.replace(/\s+/g, ' ').trim()} subtitle={x.lead}
       features={x.chips.slice(0, 4).map((ch) => ({ icon: ch.icon, title: ch.label, sub: '' }))} />
   );
 

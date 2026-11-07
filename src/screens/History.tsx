@@ -13,7 +13,7 @@ export default function History() {
   const row = (k: string, v: string, c?: string) => <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 3 }}><Text style={{ flex: 1, minWidth: 0, color: th.dim, fontSize: 13 }}>{k}</Text><Text style={{ flexShrink: 1, maxWidth: '62%', textAlign: 'right', color: c ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{v}</Text></View>;
 
   return (
-    <Screen icon="time" title={t('tabHistory')} subtitle={history.length ? `${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : undefined}>
+    <Screen fx="journal" icon="time" title={t('tabHistory')} subtitle={history.length ? `${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : undefined}>
       {history.length === 0 && <EmptyState icon="time-outline" title={t('tabHistory')} body="Open a pair in Markets and tap the analysis button. Every result is saved here." action={t('tabMarkets')} onAction={() => setTab(2)} />}
       <View style={{ gap: 12 }}>
         {history.map((i) => {

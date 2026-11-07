@@ -15,7 +15,7 @@ export default function Guide() {
   const gradeColor: Record<string, string> = { 'A+': th.buy, A: th.accent, B: th.gold, C: th.sell };
 
   return (
-    <Screen icon="help-circle" title={t('tabGuide')} subtitle={t('navDescGuide')}>
+    <Screen fx="guide" icon="help-circle" title={t('tabGuide')} subtitle={t('navDescGuide')}>
       <Cols>
         <Card glow><Body>{c.intro}</Body></Card>
 

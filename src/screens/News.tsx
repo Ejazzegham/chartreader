@@ -200,7 +200,7 @@ export default function News() {
   // website: the Market News & Updates page (src/NewsHome.web.tsx); the phone keeps the layout below
   if (desk) return <NewsHome active={active} />;
   return (
-    <Screen icon="newspaper" title="News" subtitle="Calendar, forex, crypto and Deriv headlines" right={<Badge label="PRO" color={th.gold} />}>
+    <Screen fx="news" icon="newspaper" title="News" subtitle="Calendar, forex, crypto and Deriv headlines" right={<Badge label="PRO" color={th.gold} />}>
       <View style={{ gap: 14 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {TABS.map((x) => <Chip key={x.k} label={x.label} on={sub === x.k} onPress={() => setSub(x.k)} />)}

@@ -512,7 +512,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
-        <HeroBanner icon="book" tag="Journal / Trading Tools" title="Trading Journal" subtitle="Track every setup from scanner to outcome. Improve your strategy, find strengths, fix mistakes and grow consistently." />
+        <HeroBanner fx="journal" icon="book" tag="Journal / Trading Tools" title="Trading Journal" subtitle="Track every setup from scanner to outcome. Improve your strategy, find strengths, fix mistakes and grow consistently." />
         <GuardBanner />
         <View style={{ flexDirection: two ? 'row' : 'column', gap: 22, alignItems: 'flex-start' }}>
           <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 20 }}>{overview}{tabs}{main}</View>

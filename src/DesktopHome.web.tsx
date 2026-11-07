@@ -197,7 +197,7 @@ function Hero({ w, go }: { w: number; go: (t: number) => void }) {
   return (
     <View style={{ backgroundColor: P.bg }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingTop: 24, paddingBottom: 40, gap: 24 }}>
-        <HeroBanner tag="Smarter analysis. Better decisions." title="Trading Analysis Platform" subtitle="Real-time market insights, powerful analysis tools and personalized trading plans, all in one place."
+        <HeroBanner fx="brand" tag="Smarter analysis. Better decisions." title="Trading Analysis Platform" subtitle="Real-time market insights, powerful analysis tools and personalized trading plans, all in one place."
           right={<>{cta('Go to Analysis', () => go(1), true)}{cta('Explore Markets', () => go(2))}</>}
           features={[{ icon: 'flash-outline', title: 'Real-time insights', sub: 'Live prices and signals' }, { icon: 'shield-checkmark-outline', title: 'Risk management', sub: 'Position size and limits' }, { icon: 'locate-outline', title: 'Detailed trade plans', sub: 'Entry, stop loss, 3 targets' }]} />
         <View style={{ flexDirection: two ? 'row' : 'column', gap: 20, alignItems: 'stretch' }}>

@@ -216,7 +216,7 @@ export default function GuideHome({ active }: Props) {
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       {/* hero: same banner as every other page */}
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
-        <HeroBanner icon="book-outline" tag="Guide & Tutorials" title="How to Use Chart Reader" subtitle="Follow this step-by-step guide to learn how to use the platform, find the right tools, and make the most of your trading experience."
+        <HeroBanner fx="guide" icon="book-outline" tag="Guide & Tutorials" title="How to Use Chart Reader" subtitle="Follow this step-by-step guide to learn how to use the platform, find the right tools, and make the most of your trading experience."
           features={hero.map((h) => ({ icon: h.icon, title: h.t, sub: h.s }))} />
       </View>
 

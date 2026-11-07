@@ -14,7 +14,7 @@ export default function PropFirmsHome({ active }: { active: boolean }) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
-        <HeroBanner icon="briefcase" title="Prop Firms" subtitle="Funded trading programs in ranked order, each with a direct link to its official website."
+        <HeroBanner fx="prop" icon="briefcase" title="Prop Firms" subtitle="Funded trading programs in ranked order, each with a direct link to its official website."
           features={[
             { icon: 'star-outline', title: 'Featured', sub: 'Hand-picked firms' },
             { icon: 'list-outline', title: 'Directory', sub: `${PROP_FIRMS.length} ranked firms` },

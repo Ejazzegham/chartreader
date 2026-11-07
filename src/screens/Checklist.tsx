@@ -356,7 +356,7 @@ export default function Checklist() {
     <Screen bare>
       <View style={{ gap: 14, marginBottom: 16 }}>
         <AppHeader />
-        {isDesk ? <HeroBanner icon="checkbox" tag="Trading Tools" title="Trade Checklist" subtitle="Follow a step-by-step trading checklist to stay disciplined, reduce emotional trades, and increase your chances of success." /> : hero}
+        {isDesk ? <HeroBanner fx="checklist" icon="checkbox" tag="Trading Tools" title="Trade Checklist" subtitle="Follow a step-by-step trading checklist to stay disciplined, reduce emotional trades, and increase your chances of success." /> : hero}
       </View>
       {wide ? (
         <View style={{ flexDirection: 'row', gap: 18, alignItems: 'flex-start' }}>

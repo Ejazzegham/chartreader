@@ -223,7 +223,7 @@ export default function Settings() {
         <AppHeader />
 
         {/* ---------- Hero ---------- */}
-        <HeroBanner icon="settings" title={t('tabSettings')} subtitle="Manage your account, subscription, security, appearance and preferences in one place." features={FEATURES} />
+        <HeroBanner fx="settings" icon="settings" title={t('tabSettings')} subtitle="Manage your account, subscription, security, appearance and preferences in one place." features={FEATURES} />
 
         {/* ---------- Account profile ---------- */}
         <Section icon="person-outline" title="Account profile" sub="Manage your personal information and account details."

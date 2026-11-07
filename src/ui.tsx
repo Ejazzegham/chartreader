@@ -111,7 +111,7 @@ export const AppHeader = () => {
 export const HERO_H = 232;
 export const HERO_BG = '#0F1E3D', HERO_BRASS = '#C8A96A';
 export type HeroFeature = { icon: string; title: string; sub: string; onPress?: () => void };
-export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { title: string; subtitle?: string; icon?: string; features?: HeroFeature[]; right?: React.ReactNode; tag?: string }) => {
+export const HeroBanner = ({ title, subtitle, icon, features, right, tag, fx }: { title: string; subtitle?: string; icon?: string; features?: HeroFeature[]; right?: React.ReactNode; tag?: string; fx?: string }) => {
   const { rtl } = useApp();
   const { width } = useWindowDimensions();
   const wide = width >= 640;
@@ -130,7 +130,7 @@ export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { ti
   );
   return (
     <View style={{ borderRadius: 8, overflow: 'hidden', direction: 'ltr', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', ...(wide ? { height: HERO_H } : null) }}>
-      <HeroFx />
+      <HeroFx kind={fx} />
       <View style={{ padding: wide ? 32 : 20, paddingVertical: wide ? 26 : 20, gap: 14, ...(wide ? { height: HERO_H, justifyContent: 'center' } : null) }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24, direction: rtl ? 'rtl' : 'ltr' }}>
           <View style={{ flex: 1, minWidth: 0, gap: 8 }}>
@@ -151,10 +151,10 @@ export const HeroBanner = ({ title, subtitle, icon, features, right, tag }: { ti
 };
 
 // Phone and tablet: a quiet header card (the website uses the HeroBanner above).
-export const PageHero = ({ title, subtitle, icon, right, tag }: { title: string; subtitle?: string; icon?: string; right?: React.ReactNode; tag?: string }) => {
+export const PageHero = ({ title, subtitle, icon, right, tag, fx }: { title: string; subtitle?: string; icon?: string; right?: React.ReactNode; tag?: string; fx?: string }) => {
   const { th, rtl } = useApp();
   const desk = useLayout().mode === 'desktop';
-  if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />;
+  if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} fx={fx} />;
   return (
     <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, padding: 16, gap: 10, direction: rtl ? 'rtl' : 'ltr' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -172,7 +172,7 @@ export const PageHero = ({ title, subtitle, icon, right, tag }: { title: string;
 
 // bare: the page draws its own header (the Analysis page does). scrollKey: when it changes the page jumps back to the top.
 // Every other page gets the same header row and hero banner as the Analysis page.
-export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey, icon, tag }: { title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string }) => {
+export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey, icon, tag, fx }: { title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string; fx?: string }) => {
   const L = useLayout();
   const insets = useSafeAreaInsets();
   const scroller = useRef<ScrollView>(null);
@@ -186,7 +186,7 @@ export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey,
         <View style={L.mode === 'desktop' ? { flexGrow: 1, padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36, width: '100%', maxWidth: L.content, alignSelf: 'center' } : undefined}>
           {!bare && <View style={{ gap: 14, marginBottom: 16 }}>
             <AppHeader />
-            <PageHero title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} />
+            <PageHero title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} fx={fx} />
           </View>}
           {children}
         </View>

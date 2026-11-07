@@ -9,5 +9,5 @@ import CommunityView from '../CommunityView';
 export default function Community() {
   const { t } = useApp();
   if (useLayout().mode === 'desktop') return <CommunityHome />;
-  return <Screen icon="people" title={t('tabCommunity')} subtitle={t('navDescCommunity')}><CommunityView /></Screen>;
+  return <Screen fx="community" icon="people" title={t('tabCommunity')} subtitle={t('navDescCommunity')}><CommunityView /></Screen>;
 }

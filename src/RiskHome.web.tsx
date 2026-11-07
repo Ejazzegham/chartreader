@@ -184,7 +184,7 @@ export default function RiskHome() {
     <ScrollView style={{ flex: 1, backgroundColor: P.bg }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       {/* hero: same banner as every other page */}
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
-        <HeroBanner icon="calculator" tag="Risk & TP Planner" title="Plan Your Trades with Confidence" subtitle="Calculate your position size, set stop loss and take profit levels, and manage your risk with precision."
+        <HeroBanner fx="risk" icon="calculator" tag="Risk & TP Planner" title="Plan Your Trades with Confidence" subtitle="Calculate your position size, set stop loss and take profit levels, and manage your risk with precision."
           features={[
             { icon: 'calculator', title: 'Position Size', sub: 'Trade with the right size' },
             { icon: 'shield-checkmark', title: 'Risk Management', sub: 'Protect your capital' },

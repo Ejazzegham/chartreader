@@ -296,5 +296,5 @@ export default function TopDown({ embedded, on, symId: symProp, setSymId: setSym
         <Dim>Top-down means the big timeframe decides the side, the middle one finds the zone and the small one times the entry. Educational tool, not financial advice. Test on a demo account first.</Dim>
       </View>
   );
-  return embedded ? body : <Screen icon="layers" title={t('tabTopDown')} subtitle={t('navDescTopDown')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
+  return embedded ? body : <Screen fx="methods" icon="layers" title={t('tabTopDown')} subtitle={t('navDescTopDown')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
 }

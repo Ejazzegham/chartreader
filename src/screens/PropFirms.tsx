@@ -12,7 +12,7 @@ export default function PropFirms() {
   const { width } = useWindowDimensions();
   if (useLayout().mode === 'desktop') return <PropFirmsHome active={tab === 17} />;
   return (
-    <Screen icon="briefcase" title={t('tabPropFirms')} subtitle={t('navDescPropFirms')}>
+    <Screen fx="prop" icon="briefcase" title={t('tabPropFirms')} subtitle={t('navDescPropFirms')}>
       <PropFirmsBody w={width - 32} />
     </Screen>
   );

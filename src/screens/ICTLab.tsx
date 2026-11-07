@@ -456,5 +456,5 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
         <Dim>{t('ictDisclaimer')}</Dim>
       </View>
   );
-  return embedded ? body : <Screen icon="git-network" title={t('tabIct')} subtitle={t('navDescIct')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
+  return embedded ? body : <Screen fx="methods" icon="git-network" title={t('tabIct')} subtitle={t('navDescIct')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;
 }

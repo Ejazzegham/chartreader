@@ -12,7 +12,7 @@ export default function ForexHours() {
   const { width } = useWindowDimensions();
   if (useLayout().mode === 'desktop') return <ForexHoursHome active={tab === 8} />;
   return (
-    <Screen icon="globe" title={t('tabKillzones')} subtitle={t('navDescKz')}>
+    <Screen fx="sessions" icon="globe" title={t('tabKillzones')} subtitle={t('navDescKz')}>
       <ForexHoursBody active={tab === 8} w={width - 32} onAnalysis={(m) => { setAmethod(m ?? ''); setTab(1); }} />
     </Screen>
   );

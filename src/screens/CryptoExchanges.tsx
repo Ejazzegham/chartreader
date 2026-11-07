@@ -12,7 +12,7 @@ export default function CryptoExchanges() {
   const { width } = useWindowDimensions();
   if (useLayout().mode === 'desktop') return <CryptoHome active={tab === 19} />;
   return (
-    <Screen icon="logo-bitcoin" title={t('tabCrypto')} subtitle={t('navDescCrypto')}>
+    <Screen fx="crypto" icon="logo-bitcoin" title={t('tabCrypto')} subtitle={t('navDescCrypto')}>
       <CryptoBody w={width - 32} />
     </Screen>
   );

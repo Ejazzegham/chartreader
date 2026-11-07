@@ -586,7 +586,7 @@ export default function Journal() {
   }
 
   return (
-    <Screen icon="book" title={t('tabJournal')} subtitle="Every A and A+ setup from the scanner lands here. Take it or skip it, the app tracks the rest.">
+    <Screen fx="journal" icon="book" title={t('tabJournal')} subtitle="Every A and A+ setup from the scanner lands here. Take it or skip it, the app tracks the rest.">
       <View style={{ gap: 12 }}>
         {hero}
         <GuardBanner />

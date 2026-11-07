@@ -78,7 +78,7 @@ export default function Markets() {
   if (desk) return <><MarketsHome active={tab === 2} onSelect={setSel} /><SymbolSheet sym={sel} onClose={() => setSel(null)} /></>;
 
   return (
-    <Screen icon="pulse" title={t('tabMarkets')} subtitle={`${catalog.loaded ? catalog.count : 0} Deriv · ${bnState.loaded ? bnState.count : 0} crypto pairs`}>
+    <Screen fx="markets" icon="pulse" title={t('tabMarkets')} subtitle={`${catalog.loaded ? catalog.count : 0} Deriv · ${bnState.loaded ? bnState.count : 0} crypto pairs`}>
       <Pressable onPress={() => setDiag(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, alignSelf: 'flex-start', backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7 }}>
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: live ? th.buy : status === 'connecting' ? th.gold : th.sell }} />
         <Text style={{ color: live ? th.buy : th.dim, fontWeight: '800', fontSize: 12 }}>{live ? t('live') : status === 'connecting' ? t('connecting') : t('offline')}</Text>

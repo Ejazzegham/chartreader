@@ -149,7 +149,7 @@ export default function ManualTradeDesk() {
       <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: W < 1120 ? 16 : 32, paddingVertical: 24, gap: 20 }}>
 
         {/* ---- hero: the same banner as every other page */}
-        <HeroBanner icon="swap-vertical" tag="Paper Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. No real money."
+        <HeroBanner fx="paper" icon="swap-vertical" tag="Paper Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. No real money."
           features={[{ icon: 'stats-chart-outline', title: 'Real-time charts', sub: 'Live candles' }, { icon: 'pulse-outline', title: 'Live market data', sub: 'Forex, crypto, indices' }, { icon: 'construct-outline', title: 'Advanced tools', sub: 'For better decisions' }]} />
 
         {/* ---- account summary: balance, equity, profit / loss, win rate */}

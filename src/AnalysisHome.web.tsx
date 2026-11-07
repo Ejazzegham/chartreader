@@ -302,7 +302,7 @@ function Latest({ w, openAll }: { w: number; openAll: () => void }) {
 function Hero({ w }: { w: number }) {
   return (
     <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24 }}>
-      <HeroBanner icon="analytics" title="Trading Analysis" subtitle="Get in-depth market analysis, real-time insights and professional trading tools to make better decisions."
+      <HeroBanner fx="analysis" icon="analytics" title="Trading Analysis" subtitle="Get in-depth market analysis, real-time insights and professional trading tools to make better decisions."
         features={[{ icon: 'stats-chart', title: 'Live Market Data', sub: 'Real-time price & charts' }, { icon: 'git-network', title: 'Technical Analysis', sub: 'Indicators & patterns' }, { icon: 'pulse', title: 'Market Sentiment', sub: 'Bullish / Bearish' }, { icon: 'shield-checkmark', title: 'Risk Management', sub: 'Plan & protect' }]} />
     </View>
   );

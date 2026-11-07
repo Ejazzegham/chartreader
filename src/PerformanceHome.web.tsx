@@ -203,7 +203,7 @@ export default function PerformanceHome() {
         <Notices flush />
 
         {/* hero: same banner as every other page */}
-        <HeroBanner icon="stats-chart" tag="Trading Analytics" title="Performance" subtitle="Track your trading progress with detailed performance metrics, win rate, and key statistics." />
+        <HeroBanner fx="performance" icon="stats-chart" tag="Trading Analytics" title="Performance" subtitle="Track your trading progress with detailed performance metrics, win rate, and key statistics." />
 
         {/* range bar */}
         <Panel style={{ padding: 18, flexDirection: 'row', alignItems: 'center', gap: 16, flexWrap: 'wrap', zIndex: 20 }}>

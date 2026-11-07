@@ -25,7 +25,7 @@ const GAP = 14;
 
 
 function Hero({ w }: { w: number }) {
-  return <HeroBanner icon="analytics" title="Choose Your Analysis Method" subtitle={`Explore ${MDEFS.length} powerful analysis methods to get deeper market insights and identify high-probability setups.`} />;
+  return <HeroBanner fx="methods" icon="analytics" title="Choose Your Analysis Method" subtitle={`Explore ${MDEFS.length} powerful analysis methods to get deeper market insights and identify high-probability setups.`} />;
 }
 
 function MethodGrid({ w, cur, onOpen }: { w: number; cur?: string; onOpen: (d: MDef) => void }) {

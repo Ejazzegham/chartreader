@@ -12,7 +12,7 @@ export default function Brokers() {
   const { width } = useWindowDimensions();
   if (useLayout().mode === 'desktop') return <BrokersHome active={tab === 18} />;
   return (
-    <Screen icon="business" title={t('tabBrokers')} subtitle={t('navDescBrokers')}>
+    <Screen fx="brokers" icon="business" title={t('tabBrokers')} subtitle={t('navDescBrokers')}>
       <BrokersBody w={width - 32} />
     </Screen>
   );

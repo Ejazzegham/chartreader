@@ -244,7 +244,7 @@ export default function NewsHome({ active }: Props) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.bg, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 28, gap: 14 }}>
-        <HeroBanner icon="newspaper" tag="Market News" title="News" subtitle={`Market headlines and the economic calendar${stamp ? ` · updated ${localTime(stamp)}` : ''}`} />
+        <HeroBanner fx="news" icon="newspaper" tag="Market News" title="News" subtitle={`Market headlines and the economic calendar${stamp ? ` · updated ${localTime(stamp)}` : ''}`} />
         <Notices flush />
         {/* tabs and search */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', flexWrap: 'wrap', gap: 14, borderBottomWidth: 1, borderBottomColor: P.border }}>

@@ -25,7 +25,7 @@ export default function Killzones() {
   const colors = [th.dim, th.accent2, th.buy, th.accent, th.poi, th.gold, th.gold, th.gold]; // same order as KILLZONES in src/ict.ts: Asia, London, NY AM, London Close, NY PM, three Silver Bullets
 
   return (
-    <Screen icon="alarm" title={t('tabKillzones')} subtitle={t('navDescKz')}>
+    <Screen fx="killzones" icon="alarm" title={t('tabKillzones')} subtitle={t('navDescKz')}>
       <Cols>
         <Card style={{ borderColor: cur ? th.buy : th.line }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

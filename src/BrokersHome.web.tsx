@@ -14,7 +14,7 @@ export default function BrokersHome({ active }: { active: boolean }) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
-        <HeroBanner icon="business" title="Forex Brokers" subtitle="Major forex brokers in one list, each with a direct link to its official website."
+        <HeroBanner fx="brokers" icon="business" title="Forex Brokers" subtitle="Major forex brokers in one list, each with a direct link to its official website."
           features={[
             { icon: 'business-outline', title: 'Major Brokers', sub: `${BROKERS.length} brokers` },
             { icon: 'link-outline', title: 'Official Links', sub: 'Open in a new tab' },

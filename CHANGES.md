@@ -1,3 +1,11 @@
+# Hero backgrounds: one animation per page
+
+- Every hero now has its own animated background that matches the page, instead of one effect on all of them. New file `src/heroScenes.ts` holds all 19 scenes (palette + canvas drawing); `src/HeroFx.web.tsx` still owns the canvas and the single shared animation loop (only heroes on screen are drawn; still for reduced-motion users).
+- Scenes: Home / sign-in / call-to-action = brand aurora, Analysis = live candles + moving averages + crosshair, Analysis methods = strategy node network, Markets = rippling price map with hub arcs, Crypto = hex lattice + spinning coins, Forex Hours = sliding session bars with a "now" line, Brokers = glass skyline, Prop Firms = equity curve through funding phases, Community = avatar network + chat bubbles, Killzones = radar sweep over the London / New York / Silver Bullet windows, News = streaming headlines + live dot, Performance = monthly bars + win-rate ring, Risk & TP = entry / TP / SL position tool, Journal = scrolling trade log, Guide = numbered step path, Checklist = ticking rows, Settings = meshed gears, About = constellation, Paper Trading = fast candle stream with BUY / SELL markers.
+- To give a page its own scene pass `fx`: `<HeroBanner fx="killzones" ... />` (or `<Screen fx="..." />`, `<PageHero fx="..." />`). Kinds are the keys of `PAL` in `src/heroScenes.ts`; no `fx` = brand aurora. Phone apps are unchanged (flat hero).
+- Analysis page reminder bar: now a red bar with white, continuously scrolling text: "Don't anti-trade on any Boom, Crash, or Spike pairs." (`RunningAlert` in `src/screens/Analysis.tsx`).
+- Then: `npm run build:web`
+
 # Clean-up and calm redesign
 
 - Removed dead files: `server/analysis/realvol.js` (nothing used it), the three unwired email templates (`invite`, `magic-link`, `reauthentication`) with their entries and test lines, `src/LiveCandles.tsx`, a stray `__pycache__`, and the unused `expo-linear-gradient` dependency.
