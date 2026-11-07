@@ -339,7 +339,6 @@ const WHY: [string, string, string][] = [
   ['shield-checkmark', 'Risk Management', 'Plan your trades with built-in risk & TP tools.'],
   ['book', 'Trading Journal', 'Track your progress and improve with journaling tools.'],
   ['flash', 'Real-time Data', 'Up-to-date market data and instant alerts.'],
-  ['person', 'Easy to Use', 'Clean, modern interface designed for traders.'],
 ];
 function Why({ w }: { w: number }) {
   const P = usePal();
@@ -364,11 +363,11 @@ function Why({ w }: { w: number }) {
   );
 }
 
-// "Traders joining from around the world": the signup map (SignupMap.tsx) in a dark card, so the logged-in Home shows it too.
+// "Our community around the world": the signup map + visitor counter (SignupMap.tsx), so the logged-in Home shows it too.
 function Members({ w }: { w: number }) {
   return (
     <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingVertical: 24 }}>
-      <View style={{ width: '100%', maxWidth: 760, alignSelf: 'center', backgroundColor: '#0F1E3D', borderRadius: 16, padding: w >= 700 ? 26 : 16 }}><SignupMap /></View>
+      <SignupMap />
     </View>
   );
 }

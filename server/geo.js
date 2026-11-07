@@ -36,19 +36,28 @@ module.exports = function makeGeo({ upstream }) {
 
   // The public numbers for the home page. `people` is db.people; `skip(person)` returns true for accounts that must not be counted (deleted, admins).
   let memo = { at: 0, v: null };
+  // "Anna K.": first name and the initial of the last name only. MAP_NAMES=0 hides names completely ("A trader").
+  const initial = (w) => (Array.from(w)[0] || '').toUpperCase();
+  const shortName = (full) => {
+    if (process.env.MAP_NAMES === '0') return 'A trader';
+    const w = String(full || '').replace(/[<>]/g, '').trim().split(/\s+/).filter(Boolean); if (!w.length) return 'New trader';
+    const first = initial(w[0]) + Array.from(w[0]).slice(1).join('').toLowerCase();
+    return (Array.from(first).slice(0, 14).join('')) + (w.length > 1 ? ' ' + initial(w[w.length - 1]) + '.' : '');
+  };
   function summary(people, skip) {
     if (memo.v && Date.now() - memo.at < 60e3) return memo.v;
-    const countries = {}, places = {}; let total = 0;
+    const countries = {}, places = {}, recent = []; let total = 0;
     for (const p of Object.values(people)) {
       if (skip(p)) continue;
       total++;
       const g = p.geo; if (!g || !g.cc) continue;
+      recent.push({ t: p.created || 0, name: shortName(p.name), cc: g.cc });
       const c = (countries[g.cc] ||= { cc: g.cc, name: g.country || g.cc, n: 0 }); c.n++;
       if (typeof g.lat === 'number' && typeof g.lon === 'number') {
         const k = g.cc + '|' + g.lat + '|' + g.lon, pl = (places[k] ||= { cc: g.cc, city: g.city || '', lat: g.lat, lon: g.lon, n: 0 }); pl.n++;
       }
     }
-    const v = { total, located: Object.values(countries).reduce((a, c) => a + c.n, 0), countries: Object.values(countries).sort((a, b) => b.n - a.n), places: Object.values(places).sort((a, b) => b.n - a.n), at: Date.now() };
+    const v = { total, located: Object.values(countries).reduce((a, c) => a + c.n, 0), countries: Object.values(countries).sort((a, b) => b.n - a.n), places: Object.values(places).sort((a, b) => b.n - a.n), recent: recent.sort((a, b) => b.t - a.t).slice(0, 12), at: Date.now() };
     memo = { at: Date.now(), v };
     return v;
   }

@@ -149,6 +149,7 @@ const notifyUser = (pid, title, body) => alerts.push(pid, title, body, { type: '
 const payments = require('./payments')({ db, save, lookup: lookupTx, notify: notifyUser, notifyAdmins, DAY });
 const media = require('./media')({ db, save, dir: DBF + '.media' }); // photo / video attachments of the support chat, see media.js
 const support = require('./support')({ db, save, notifyAdmins, notifyUser, media });
+const visits = require('./visits')({ file: DBF + '.visits.json' }); // visitor counter of the home page (server/visits.js)
 const geo = require('./geo')({ upstream }); // country / city of members for the home page map (server/geo.js)
 const proxy = require('./proxy')(); // GET /proxy?u=... for the website (browsers block most sites)
 const translator = require('./translate')({ upstream, getKey: () => db.geminiKey, getModel: () => process.env.TRANSLATE_MODEL || db.model || 'gemini-3.8-flash' }); // chat translation: its own small limits, see translate.js
@@ -159,7 +160,7 @@ http.createServer(async (req, res) => {
   const send = (c, o) => { res.writeHead(c, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': 'authorization, content-type, ngrok-skip-browser-warning', 'access-control-allow-methods': 'GET, POST, OPTIONS' }); res.end(JSON.stringify(o)); };
   if (req.method === 'OPTIONS') return send(204, {});
   if (await proxy(req, res)) return; // the website's read-only proxy (server/proxy.js)
-  if (req.method === 'GET' && req.url.split('?')[0] === '/public/signups') return send(200, geo.summary(db.people, (p) => p.deleted || ADMINS.includes(String(p.email || '').toLowerCase()))); // public, counts only, cached 60 s
+  if (req.method === 'GET' && req.url.split('?')[0] === '/public/signups') return send(200, { ...geo.summary(db.people, (p) => p.deleted || ADMINS.includes(String(p.email || '').toLowerCase())), ...visits.counts() }); // public: counts, first names and countries only. The member part is cached 60 s
   if (req.method === 'GET' && req.url === '/health') return send(200, { ok: true, time: Date.now(), firebase: !!FB_PROJECT, geminiKey: !!db.geminiKey, brandedMail: authMail.ready() });
   // Attachments: the upload is raw bytes (not JSON) and a file is shown by its random link, so both are handled before the JSON body is read.
   if ((req.method === 'GET' || req.method === 'HEAD') && req.url.startsWith('/media/')) return media.serve(req, res, req.url.slice(7).split('?')[0]);
@@ -173,6 +174,7 @@ http.createServer(async (req, res) => {
   try {
     const b = raw ? JSON.parse(raw) : {}, s = session(req, b), u = req.url;
     if (u === '/register') { try { return send(200, await register(req, b)); } catch (e) { if (e.code === 'replaced') return send(401, { error: e.message, code: 'replaced' }); throw e; } }
+    if (u === '/public/visit') return send(200, visits.hit(b.vid, !!b.beat, ipOf(req))); // visitor counter, no login needed
     if (u.startsWith('/auth/')) { const r = await authMail.handle(u, b, ipOf(req)); return send(r.status, r.body); } // public: used before / without a license session
     if (u === '/inbound/email') {
       if (!INBOUND_SECRET) return send(503, { error: 'Email to app is not set up' });

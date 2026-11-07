@@ -71,7 +71,34 @@ export async function setServer(raw: string): Promise<string> {
   return '';
 }
 // The numbers for the home page map: members per country and per city (counts only, nothing personal). Returns null when the server cannot be reached.
-export type SignupMapData = { total: number; located: number; countries: { cc: string; name: string; n: number }[]; places: { cc: string; city: string; lat: number; lon: number; n: number }[] };
+export type SignupMapData = {
+  total: number; located: number;
+  countries: { cc: string; name: string; n: number }[];
+  places: { cc: string; city: string; lat: number; lon: number; n: number }[];
+  recent?: { t: number; name: string; cc: string }[]; // newest members: first name + last initial, and country
+  visitors?: number; visits?: number; online?: number; // visitor counter (older servers do not send these)
+};
+export type VisitCounts = { visitors: number; visits: number; online: number };
+// Visitor counter: a random id kept in this browser tells visitors apart (the server stores only a one-way hash of it, no IP, nothing personal).
+// The first call of a browser session counts a visit; later calls are only a heartbeat that keeps "online now" fresh. Returns null if the server cannot be reached.
+let visitSent = false;
+export async function pingVisit(): Promise<VisitCounts | null> {
+  if (base.includes('YOUR-SERVER-URL')) return null;
+  let vid = '', seen = false;
+  try {
+    vid = localStorage.getItem('cr_vid') || '';
+    if (!vid) { vid = (globalThis as any).crypto?.randomUUID?.() || Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2); localStorage.setItem('cr_vid', vid); }
+    seen = visitSent || sessionStorage.getItem('cr_seen') === '1'; sessionStorage.setItem('cr_seen', '1');
+  } catch { vid = vid || Math.random().toString(36).slice(2) + Date.now().toString(36) + Math.random().toString(36).slice(2); seen = visitSent; }
+  visitSent = true;
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(base + '/public/visit', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' }, body: JSON.stringify({ vid, beat: seen }) });
+    const j = await r.json().catch(() => null);
+    return r.ok && j && typeof j.visitors === 'number' ? j : null;
+  } catch { return null; } finally { clearTimeout(to); }
+}
+
 let signupDiag = 'not asked yet';
 export const getSignupMapDiag = () => signupDiag; // for the ?mapdebug switch on the website: why the map has no numbers
 export async function getSignupMap(): Promise<SignupMapData | null> {
