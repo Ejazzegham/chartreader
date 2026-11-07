@@ -149,7 +149,7 @@ export const ICT_LESSONS: IctLesson[] = [
         '1. Learn the terms (about 2 weeks).',
         '2. Mark charts in replay mode daily (about 4 weeks).',
         '3. Backtest at least 100 trades in a spreadsheet.',
-        '4. Demo trade for 1 to 3 months with the full rules.',
+        '4. Paper trade for 1 to 3 months with the full rules.',
         '5. Go live at the smallest size.',
         '6. Scale slowly, only after consistent results.',
         'Pick one market (for example EURUSD, NQ or ES) and one model first. Use a fixed top-down: 4H / 1H for bias, 15m for zones, 5m / 1m for entry.',

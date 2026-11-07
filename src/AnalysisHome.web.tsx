@@ -199,7 +199,7 @@ function Watchlist({ onPair, go }: { onPair: (id: string) => void; go: (t: numbe
   useEffect(() => { setWatch('an-list', rows.map((r) => r.id)); return () => setWatch('an-list', []); }, [key]);
   const colH = (t: string, extra?: any) => <Text style={{ color: P.body, fontSize: 11.5, fontWeight: '600', ...extra }}>{t}</Text>;
   return (
-    <Panel style={{ flex: 1.15, minWidth: 320, padding: 22, gap: 14 }}>
+    <Panel style={{ flex: 1.15, minWidth: 'min(320px, 100%)' as any, padding: 22, gap: 14 }}>
       <SectionHead icon="trending-up" title="Market Watchlist" right="View All Markets" onRight={() => go(2)} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 42, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#FAFBFE' }}>
         <Icon name="search" size={16} color={P.body} />
@@ -251,7 +251,7 @@ export function Sessions({ go, style }: { go: (t: number) => void; style?: any }
   const hh = (x: number) => String((((x + tzo) % 24) + 24) % 24).padStart(2, '0') + ':00';
   const gmt = `GMT${tzo >= 0 ? '+' : '−'}${Math.abs(tzo)}`;
   return (
-    <Panel style={{ flex: 1, minWidth: 300, padding: 22, gap: 12, ...style }}>
+    <Panel style={{ flex: 1, minWidth: 'min(300px, 100%)' as any, padding: 22, gap: 12, ...style }}>
       <SectionHead icon="globe-outline" title="Forex Sessions" right="View All" onRight={() => go(13)} />
       {SESSIONS.map((s, i) => {
         const on = !closed && sessionOpen(h, s.s, s.e), tone = on ? th.buy : closed ? P.body : P.blue;

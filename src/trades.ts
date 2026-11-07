@@ -266,5 +266,5 @@ export function guard(closed: { date: number; pnl: number }[], desk: Desk, runni
   return { level: 'ok', title: '', text: '' };
 }
 
-// The name of a trade's source. Trades taken on the Demo Trade screen used to be saved as "Manual"; both are shown (and grouped) as "Demo".
-export const sourceName = (s?: string): string => (!s || s === 'Manual' || s === 'Demo' ? 'Demo' : s);
+// The name of a trade's source. Trades taken on the Paper Trade screen are saved as "Demo" (older ones as "Manual"); all of them are shown (and grouped) as "Paper".
+export const sourceName = (s?: string): string => (!s || s === 'Manual' || s === 'Demo' || s === 'Paper' ? 'Paper' : s);

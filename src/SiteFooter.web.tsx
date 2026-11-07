@@ -36,7 +36,7 @@ export function Footer({ w, go }: { w: number; go: (t: number, market?: string) 
           </View>
           {col('Quick Links', [['Home', () => go(0)], ['Analysis', () => go(1)], ['Markets', () => go(2)], ['Journal', () => go(3)], ['Risk & TP Planner', () => go(4)], ['Tools', () => go(9)]])}
           {col('Markets', [['Forex', () => go(2, 'forex')], ['Crypto', () => go(2, 'crypto')], ['Metals', () => go(2, 'metals')], ['Deriv', () => go(2, 'deriv')], ['Candles', () => go(1, 'candle')], ['Top-Down', () => go(1, 'topdown')]])}
-          {col('Support', [['Help Center', () => setHelpOpen(true)], ['Contact Us', () => setHelpOpen(true)], ['Terms of Service', () => go(15)], ['Privacy Policy', () => go(15)], ['Disclaimer', () => go(15)]])}
+          {col('Support', [['Help Center', () => setHelpOpen(true)], ['Contact Us', () => setHelpOpen(true)], ['Terms of Service', () => Linking.openURL('/terms.html')], ['Privacy Policy', () => Linking.openURL('/privacy.html')], ['Disclaimer', () => Linking.openURL('/disclaimer.html')]])}
           <View style={{ width: w >= 900 ? 230 : '100%', gap: 10 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>Stay Updated</Text>
             <Text style={{ color: '#DCE6FFCC', fontSize: 12.5, lineHeight: 18 }}>Get the latest market insights and updates.</Text>

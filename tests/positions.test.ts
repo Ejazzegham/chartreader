@@ -46,10 +46,10 @@ st = stepPosition(sp, 96.9); ok(st.closed?.reason === 'tp' && near(st.closed!.pn
 ok(near(totalPnl(c1.pos!, 101), 10 + 5), 'total = booked + floating');
 console.log(fails ? `\n${fails} FAILED` : '\nall passed'); process.exit(fails ? 1 : 0);
 
-// ---- the Demo Trade name: new trades say Demo, older saved ones that say Manual are shown as Demo too
+// ---- the Paper Trade name: new trades are saved as Demo, older ones as Manual; all are shown as Paper
 import { sourceName } from '../src/trades';
 {
   const chk = (n: string, c: boolean) => { console.log((c ? 'PASS ' : 'FAIL ') + n); if (!c) process.exitCode = 1; };
-  chk('Demo and the old Manual name show as Demo', sourceName('Manual') === 'Demo' && sourceName('Demo') === 'Demo' && sourceName(undefined) === 'Demo' && sourceName('') === 'Demo');
+  chk('Demo and the old Manual name show as Paper', sourceName('Manual') === 'Paper' && sourceName('Demo') === 'Paper' && sourceName('Paper') === 'Paper' && sourceName(undefined) === 'Paper' && sourceName('') === 'Paper');
   chk('other sources keep their name', sourceName('ICT') === 'ICT');
 }

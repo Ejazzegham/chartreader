@@ -5,7 +5,7 @@ import { useApp } from './store';
 import { Icon, confirmAction } from './ui';
 import { DemoAcct, DemoStats, LEVERAGES, START_PRESETS, MIN_START, MAX_START, parseStart, fmtPF, fmtHold } from './demoAccount';
 
-// DEMO ACCOUNT section of the Demo Trade page: a KPI strip (AccountStrip) and a tabbed panel (DemoAccountPanel):
+// PAPER ACCOUNT section of the Paper Trade page: a KPI strip (AccountStrip) and a tabbed panel (DemoAccountPanel):
 // Overview (account information, equity curve, win / loss ring), Performance (every statistic), By Symbol, Settings (name, size, leverage, reset).
 // All numbers are passed in from ManualTradeDesk.web.tsx; the maths lives in src/demoAccount.ts.
 export type AccountNums = { balance: number; equity: number; floatTotal: number; used: number; free: number; level: number; open: number };
@@ -109,7 +109,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
   const stop = a.used > 0 && a.level < 100;
   const status = a.used === 0 ? { t: 'No open risk', c: P.dim } : a.level >= 200 ? { t: 'Healthy', c: P.up } : a.level >= 100 ? { t: 'Caution', c: th.gold } : { t: 'Margin call', c: P.down };
   const customV = parseStart(custom);
-  const apply = (v: number) => confirmAction('Reset demo account', `The balance goes back to ${money(v)} and the statistics start from zero. Your old trades stay in the Journal and Trade history.`, () => { onReset(v); setCustom(''); }, 'Reset');
+  const apply = (v: number) => confirmAction('Reset paper account', `The balance goes back to ${money(v)} and the statistics start from zero. Your old trades stay in the Journal and Trade history.`, () => { onReset(v); setCustom(''); }, 'Reset');
 
   const chip = (label: string, on: boolean, f: () => void, key?: string) => (
     <Pressable key={key ?? label} onPress={f} accessibilityRole="button" accessibilityState={{ selected: on }} style={((x: any) => ({ height: 36, paddingHorizontal: 14, borderRadius: 10, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : P.border, backgroundColor: on ? th.accent : x.hovered ? th.accent + '14' : P.soft, ...hand })) as any}>
@@ -130,7 +130,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name="person-circle-outline" size={22} color={th.accent} /></View>
         <View style={{ flex: 1, minWidth: 180 }}><Text accessibilityRole="header" style={{ color: P.ink, fontSize: 16, fontWeight: '900' }}>{acct.name}</Text><Text style={{ color: P.dim, fontSize: 12 }}>Virtual money · Account #{acct.id} · 1:{acct.leverage}</Text></View>
-        <View style={{ paddingHorizontal: 10, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: th.gold + '22' }}><Text style={{ color: th.gold, fontSize: 11.5, fontWeight: '900' }}>DEMO</Text></View>
+        <View style={{ paddingHorizontal: 10, height: 26, borderRadius: 13, justifyContent: 'center', backgroundColor: th.gold + '22' }}><Text style={{ color: th.gold, fontSize: 11.5, fontWeight: '900' }}>PAPER</Text></View>
       </View>
       <View style={{ flexDirection: 'row', gap: 4, padding: 4, borderRadius: 12, backgroundColor: P.soft, alignSelf: 'stretch', flexWrap: 'wrap' }} accessibilityRole={'tablist' as any}>
         {TABS.map((x) => { const on = tab === x.k; return (
@@ -143,7 +143,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
         <View style={{ gap: 14 }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, alignItems: 'stretch' }}>
             <Group P={P} title="Account Information">
-              <Row P={P} k="Account type" v="Demo (paper money)" /><Row P={P} k="Account number" v={`#${acct.id}`} /><Row P={P} k="Currency" v="USD" />
+              <Row P={P} k="Account type" v="Paper (virtual money)" /><Row P={P} k="Account number" v={`#${acct.id}`} /><Row P={P} k="Currency" v="USD" />
               <Row P={P} k="Leverage" v={`1:${acct.leverage}`} /><Row P={P} k="Opened" v={day(new Date(acct.createdAt))} /><Row P={P} k="Statistics since" v={day(since)} />
               <Row P={P} k="Starting balance" v={money(acct.start)} last />
             </Group>
@@ -170,7 +170,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
 
       {tab === 'perf' && (
         <View style={{ gap: 14 }}>
-          {s.n === 0 && <Text style={{ color: P.dim, fontSize: 13, textAlign: 'center', paddingVertical: 10 }}>No closed demo trades since {day(since)}. Statistics appear after your first closed trade.</Text>}
+          {s.n === 0 && <Text style={{ color: P.dim, fontSize: 13, textAlign: 'center', paddingVertical: 10 }}>No closed paper trades since {day(since)}. Statistics appear after your first closed trade.</Text>}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
             {bigStat('Total trades', String(s.n))}{bigStat('Win rate', s.n ? pct(s.winRate) : '-', s.n ? (s.winRate >= 50 ? P.up : P.down) : undefined, `${s.wins} winners`)}{bigStat('Loss rate', s.n ? pct(s.lossRate) : '-', undefined, `${s.losses} losers`)}{bigStat('Win : Loss', s.n ? `${s.wins} : ${s.losses}` : '-', undefined, s.losses ? `${(s.wins / s.losses).toFixed(2)} wins per loss` : undefined)}
             {bigStat('Net profit', usd(s.net), tone(P, s.net), pct(s.returnPct, true))}{bigStat('Gross profit', usd(s.grossWin), s.grossWin ? P.up : undefined)}{bigStat('Gross loss', s.grossLoss ? usd(-s.grossLoss) : '$0.00', s.grossLoss ? P.down : undefined)}{bigStat('Profit factor', fmtPF(s.profitFactor, s.n), s.n ? (s.profitFactor >= 1 ? P.up : P.down) : undefined, 'Gross win ÷ gross loss')}
@@ -206,7 +206,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
         <View style={{ gap: 14 }}>
           <Group P={P} title="Account name">
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 8, alignItems: 'center' }}>
-              <TextInput value={name} onChangeText={(v) => setName(v.slice(0, 30))} onBlur={() => setAcct({ name })} placeholder="Demo Account" placeholderTextColor={P.dim} accessibilityLabel="Account name" style={{ flex: 1, height: 42, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: P.border, color: P.ink, fontSize: 14, outlineStyle: 'none' } as any} />
+              <TextInput value={name} onChangeText={(v) => setName(v.slice(0, 30))} onBlur={() => setAcct({ name })} placeholder="Paper Account" placeholderTextColor={P.dim} accessibilityLabel="Account name" style={{ flex: 1, height: 42, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: P.border, color: P.ink, fontSize: 14, outlineStyle: 'none' } as any} />
               {chip('Save', false, () => setAcct({ name }), 'save-name')}
             </View>
           </Group>

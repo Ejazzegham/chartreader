@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
     <title>%WEB_TITLE%</title>
 
     <!-- One sans-serif typeface for the whole website: Inter, with clean sans-serif fallbacks if the font cannot load. -->
@@ -50,6 +50,18 @@
       /* Prices, lots and times line up in neat columns. */
       #root { font-variant-numeric: tabular-nums; }
       ::selection { background: rgba(37, 99, 235, 0.22); }
+    </style>
+
+    <style id="cr-mobile">
+      /* Phone and tablet browsers: real viewport height (iOS Safari address bar), notch / home-bar safe areas, no sideways scroll,
+         no pull-to-refresh bounce, no 300 ms tap delay, and no zoom-in when a field is focused (iOS zooms any field under 16 px). */
+      html, body { height: 100%; max-width: 100%; overflow-x: hidden; overscroll-behavior: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+      @supports (height: 100dvh) { html, body, #root { height: 100dvh; } }
+      #root { box-sizing: border-box; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+      img, svg, video, canvas { max-width: 100%; }
+      @media (max-width: 1024px) {
+        input, textarea, select { font-size: 16px !important; }
+      }
     </style>
   </head>
 

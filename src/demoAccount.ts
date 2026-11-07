@@ -5,7 +5,7 @@ export type DemoAcct = { id: string; name: string; start: number; leverage: numb
 export const LEVERAGES = [30, 50, 100, 200, 500];
 export const START_PRESETS = [1000, 5000, 10000, 50000, 100000];
 export const MIN_START = 100, MAX_START = 10_000_000;
-export const newAcct = (now = Date.now()): DemoAcct => ({ id: String(10_000_000 + Math.floor(Math.random() * 89_999_999)), name: 'Demo Account', start: 1000, leverage: 100, createdAt: now, resetAt: 0 });
+export const newAcct = (now = Date.now()): DemoAcct => ({ id: String(10_000_000 + Math.floor(Math.random() * 89_999_999)), name: 'Paper Account', start: 1000, leverage: 100, createdAt: now, resetAt: 0 });
 /** make a saved value safe to use (old or damaged data falls back to the defaults) */
 export const cleanAcct = (x: Partial<DemoAcct> | null | undefined, now = Date.now()): DemoAcct => {
   const d = newAcct(now), o = x && typeof x === 'object' ? x : {};

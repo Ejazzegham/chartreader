@@ -19,7 +19,7 @@ import { useDemoAcct } from '../useDemoAcct';
 import { demoStats } from '../demoAccount';
 import DemoAccountPanel, { AccountStrip } from '../DemoAccountPanel';
 
-// DEMO TRADING dashboard for the website: hero, live chart with timeframes, market watch, open positions / recent trades,
+// PAPER TRADING dashboard for the website: hero, live chart with timeframes, market watch, open positions / recent trades,
 // a trade panel (volume, stop loss, take profit, estimated P/L), live account stats and the feature strip.
 // Same paper-trading engine as the phone terminal: orders fill at the live price, closed trades go to the Journal and Trade history.
 // The starting balance and leverage come from the demo account settings (src/useDemoAcct.ts, edited in the Demo Account panel > Settings).
@@ -111,7 +111,7 @@ export default function ManualTradeDesk() {
   }, [positions]);
 
   // ---- account numbers
-  const demoTrades = journal.filter((j) => sourceName(j.source) === 'Demo' && j.date >= acct.resetAt).sort((a, b) => a.date - b.date);
+  const demoTrades = journal.filter((j) => sourceName(j.source) === 'Paper' && j.date >= acct.resetAt).sort((a, b) => a.date - b.date);
   const realized = demoTrades.reduce((a, j) => a + j.pnl, 0), balance = START + realized;
   const floatTotal = positions.reduce((a, p) => { const m = mark(p); return a + (m !== undefined ? totalPnl(p, m) : p.realized); }, 0);
   const equity = balance + floatTotal;
@@ -124,7 +124,7 @@ export default function ManualTradeDesk() {
   const contentW = Math.min(W, 1280) - (W < 1120 ? 32 : 64);
   const doReset = (v: number) => {
     if (positions.length) { toast('Close all open positions before resetting the account.', 'bad'); return; }
-    setAcct({ start: v, resetAt: Date.now() }); toast(`Demo account reset to ${money(v)}.`, 'good');
+    setAcct({ start: v, resetAt: Date.now() }); toast(`Paper account reset to ${money(v)}.`, 'good');
   };
   const chgV = q ? chg(symId) : 0, up = chgV >= 0;
   const stack = W < 1180;
@@ -149,7 +149,7 @@ export default function ManualTradeDesk() {
       <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: W < 1120 ? 16 : 32, paddingVertical: 24, gap: 20 }}>
 
         {/* ---- hero: the same banner as every other page */}
-        <HeroBanner icon="swap-vertical" tag="Demo Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. No real money."
+        <HeroBanner icon="swap-vertical" tag="Paper Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. No real money."
           features={[{ icon: 'stats-chart-outline', title: 'Real-time charts', sub: 'Live candles' }, { icon: 'pulse-outline', title: 'Live market data', sub: 'Forex, crypto, indices' }, { icon: 'construct-outline', title: 'Advanced tools', sub: 'For better decisions' }]} />
 
         {/* ---- account summary: balance, equity, profit / loss, win rate */}
@@ -167,7 +167,7 @@ export default function ManualTradeDesk() {
                   <Icon name="chevron-down" size={16} color={th.dim} />
                 </Pressable>
                 {picker && (
-                  <View style={{ position: 'absolute', top: 62, left: 0, width: 300, padding: 8, borderRadius: 12, borderWidth: 1, borderColor: border, backgroundColor: th.solid, zIndex: 50, shadowColor: '#0B1B3F', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } } as any}>
+                  <View style={{ position: 'absolute', top: 62, left: 0, width: 300, maxWidth: '92%', padding: 8, borderRadius: 12, borderWidth: 1, borderColor: border, backgroundColor: th.solid, zIndex: 50, shadowColor: '#0B1B3F', shadowOpacity: 0.16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 } } as any}>
                     <TextInput autoFocus value={pq} onChangeText={setPq} placeholder="Search any pair…" placeholderTextColor={th.dim} style={{ height: 38, paddingHorizontal: 10, color: th.text, fontSize: 13.5, borderRadius: 8, borderWidth: 1, borderColor: border, outlineStyle: 'none' } as any} />
                     {hits.map((s) => (
                       <Pressable key={s.id} onPress={() => { setSymId(s.id); setPicker(false); setPq(''); }} style={((x: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 8, marginTop: 4, borderRadius: 8, cursor: 'pointer', backgroundColor: x.hovered ? th.accent + '14' : 'transparent' })) as any}>
@@ -273,7 +273,7 @@ export default function ManualTradeDesk() {
             <View style={{ ...cardSt, padding: 16 } as any}>
               {head('receipt-outline', 'Recent Trades', <Pressable onPress={() => setHistOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, cursor: 'pointer' } as any}><Text style={{ color: th.accent, fontSize: 12, fontWeight: '800' }}>View All</Text><Icon name="arrow-forward" size={12} color={th.accent} /></Pressable>)}
               <View style={{ flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8, backgroundColor: soft }}>{th_('Symbol', 1.3)}{th_('Type')}{th_('Lots')}{th_('Open Price')}{th_('Close Price')}{th_('P/L', 1, true)}</View>
-              {demoTrades.length === 0 && <Text style={{ color: th.dim, fontSize: 13, textAlign: 'center', padding: 22 }}>Closed demo trades appear here.</Text>}
+              {demoTrades.length === 0 && <Text style={{ color: th.dim, fontSize: 13, textAlign: 'center', padding: 22 }}>Closed paper trades appear here.</Text>}
               {[...demoTrades].reverse().slice(0, 4).map((j) => {
                 const s = SYMBOLS.find((x) => x.name === j.symbol) ?? symOf(j.symbol), c = j.pnl >= 0 ? th.buy : th.sell, d = Math.max(2, priceDec(j.exit || j.entry || 1));
                 return (

@@ -13,7 +13,7 @@ import { setDash, groupOf } from './dash';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Demo Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
+const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
 const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
 const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 11, 9, 5, 'hist']], ['MARKETS', [8, 13, 19, 18, 17]], ['SUPPORT', [14, 15, 6, 'help']]]; // tab numbers from NAV; 'hist' opens Trade History, 'help' opens Help chat
@@ -65,10 +65,10 @@ function TopNav() {
         <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', paddingHorizontal: padX, gap: slim ? 2 : 4 }}>
           <Pressable onPress={() => setTab(0)} style={{ flexDirection: 'row', alignItems: 'center', gap: 11, cursor: 'pointer' } as any}>
             <LogoMark size={34} radius={8} />
-            <View>
+            {L.full >= 350 && <View>
               <Text style={{ color: ink, fontSize: 17, fontWeight: '700', letterSpacing: -0.2 }} numberOfLines={1}>Chart Reader</Text>
               {!slim && <Text style={{ color: mute, fontSize: 9, fontWeight: '600', letterSpacing: 2 }} numberOfLines={1}>TRADING ANALYSIS</Text>}
-            </View>
+            </View>}
           </Pressable>
           {!compact && (<>
           <View style={{ width: 1, height: 28, backgroundColor: rule, marginHorizontal: slim ? 12 : 28 }} />

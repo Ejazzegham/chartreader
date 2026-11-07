@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { Icon } from './ui';
 import { HERO_BG, HERO_BRASS } from './ui';
 import { LogoMark } from './Brand';
@@ -48,6 +48,11 @@ export default function Landing({ stacked = false }: { stacked?: boolean }) {
         <View style={{ borderTopWidth: 1, borderTopColor: '#FFFFFF1F', paddingTop: 18, gap: 6, maxWidth: 540 }}>
           <Text style={{ color: tx, fontSize: 13, fontWeight: '600' }}>{`3-day free trial  ·  Weekly $${PLANS.weekly}  ·  Monthly $${PLANS.monthly}`}</Text>
           <Text style={{ color: '#8E9BB8', fontSize: 12 }}>Educational tool, not financial advice.</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 6, marginTop: 4 }}>
+            {([['Terms of Service', '/terms.html'], ['Privacy Policy', '/privacy.html'], ['Disclaimer', '/disclaimer.html']] as const).map(([l, u]) => (
+              <Pressable key={l} accessibilityRole="link" onPress={() => Linking.openURL(u)} style={{ cursor: 'pointer' } as any}><Text style={{ color: HERO_BRASS, fontSize: 12, fontWeight: '600' }}>{l}</Text></Pressable>
+            ))}
+          </View>
         </View>
       </Wrap>
     </View>

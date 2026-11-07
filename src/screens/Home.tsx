@@ -127,13 +127,13 @@ function PhoneHome() {
         {(() => {
           const flo = positions.reduce((a, p) => { const x = quotes[p.symId], m = p.side === 'buy' ? (x?.bid ?? x?.price) : (x?.ask ?? x?.price); return a + (m !== undefined ? totalPnl(p, m) : p.realized); }, 0);
           return (
-            <Pressable onPress={() => setTab(MANUAL_TAB)} accessibilityRole="button" accessibilityLabel="Demo Trade" style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+            <Pressable onPress={() => setTab(MANUAL_TAB)} accessibilityRole="button" accessibilityLabel="Paper Trade" style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
               <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderColor: th.accent + '77' }}>
                 <LinearGradient colors={[th.buy, th.sell]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 48, height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', direction: 'ltr' }}>
                   <Icon name="swap-vertical" size={26} color="#FFFFFF" />
                 </LinearGradient>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>Demo Trade</Text>
+                  <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>Paper Trade</Text>
                   <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 17, marginTop: 2 }}>{positions.length ? `${positions.length} running · floating ${money(flo)}` : 'Practice SELL / BUY on any pair with virtual money, like MetaTrader 5.'}</Text>
                 </View>
                 {positions.length > 0 && <Badge label={String(positions.length)} color={flo >= 0 ? th.buy : th.sell} />}
