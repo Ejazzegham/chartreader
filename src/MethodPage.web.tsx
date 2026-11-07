@@ -37,15 +37,17 @@ function MethodGrid({ w, cur, onOpen }: { w: number; cur?: string; onOpen: (d: M
     <View onLayout={(e) => setGw(e.nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: GAP }}>
       {cw > 0 && MDEFS.map((d) => {
         const on = d.k === cur;
+        // The cards sit on the animated backdrop, so they must be (almost) opaque or the text washes out. The open card gets a solid tinted fill + a strong border.
+        const idle = P.dark ? '#1A2050F2' : '#FFFFFFF5', hover = P.dark ? '#232B66F7' : '#F3F7FFFA', active = P.dark ? '#26357FFA' : '#E3EDFFFA';
         return (
           <Pressable key={d.k} accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={`${d.label}. ${d.desc}`} onPress={() => onOpen(d)}
-            style={((s: any) => ({ width: cw, minHeight: 148, padding: 14, gap: 10, borderRadius: 8, borderWidth: on ? 1.6 : 1, borderColor: on ? P.blue : s.hovered ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: on || s.hovered ? 0.14 : 0.05, shadowRadius: 14, shadowOffset: { width: 0, height: 5 } })) as any}>
+            style={((s: any) => ({ width: cw, minHeight: 148, padding: 14, gap: 10, borderRadius: 8, borderWidth: on ? 2 : 1, borderColor: on ? P.blue : s.hovered ? P.blue + 'AA' : P.dark ? '#FFFFFF4D' : '#C9D2E8', backgroundColor: on ? active : s.hovered ? hover : idle, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: on || s.hovered ? 0.22 : 0.1, shadowRadius: 14, shadowOffset: { width: 0, height: 5 } })) as any}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <MethodIcon def={d} size={42} />
-              <Icon name="chevron-forward" size={15} color={on ? P.blue : P.body} />
+              <Icon name="chevron-forward" size={15} color={on ? P.blue : P.dark ? '#C7D0EA' : '#2B364D'} />
             </View>
-            <Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800', lineHeight: 18 }} numberOfLines={2}>{d.label}</Text>
-            <Text style={{ color: P.body, fontSize: 11.5, lineHeight: 16 }} numberOfLines={3}>{d.desc}</Text>
+            <Text style={{ color: P.dark ? '#FFFFFF' : '#0A1022', fontSize: 13.5, fontWeight: '800', lineHeight: 18 }} numberOfLines={2}>{d.label}</Text>
+            <Text style={{ color: P.dark ? '#D5DCF2' : '#2B364D', fontSize: 11.5, lineHeight: 16 }} numberOfLines={3}>{d.desc}</Text>
           </Pressable>
         );
       })}

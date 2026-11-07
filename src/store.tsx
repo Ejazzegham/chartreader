@@ -683,7 +683,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
     try {
       const cred = await signInWithCredential(auth, GoogleAuthProvider.credential(g.token));
       isNew = getAdditionalUserInfo(cred)?.isNewUser === true;
-    } catch (e: any) { return { err: errKey(e.code) === 'errLogin' ? 'errGoogle' : errKey(e.code), isNew: false }; }
+    } catch (e: any) { console.warn('[google login]', e?.code, e?.message); return { err: errKey(e.code) === 'errLogin' ? `Google sign-in did not work (${String(e?.code ?? 'unknown').replace('auth/', '')}). Please try again.` : errKey(e.code), isNew: false }; }
     const u = auth.currentUser;
     if (!u) return { err: 'errGoogle', isNew: false };
     const em = (u.email || '').toLowerCase(), uid = u.uid, samePerson = !!account && (account.email === em || (!!account.uid && account.uid === uid));

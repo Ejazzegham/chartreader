@@ -55,7 +55,8 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
   return (
     <View style={{ gap: 6, direction: 'ltr' }}>
       {/* one dock: quick timeframes (grouped by a thin divider) + a More button */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair, borderRadius: 8, padding: 3, gap: 4 }}>
+      {/* solid-ish fill: this bar sits on the animated backdrop, a see-through one made M1 / M5 / H1 hard to read */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.dark ? '#1A2050F2' : '#FFFFFFF5', borderWidth: 1, borderColor: th.dark ? '#FFFFFF4D' : th.line, borderRadius: 8, padding: 3, gap: 4 }}>
         <ScrollView ref={sc} horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" onLayout={(e) => { wRef.current = e.nativeEvent.layout.width; }} contentContainerStyle={{ alignItems: 'center', gap: 3, paddingRight: 4 }} style={{ flex: 1 }}>
           {quick.map((o, i) => {
             const on = value === o.k, newGroup = i > 0 && groupOf(Number(o.k)) !== groupOf(Number(quick[i - 1].k));
@@ -69,7 +70,7 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
                     </LinearGradient>
                   ) : (
                     <View style={{ minWidth: 44, height: 36, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
-                      <Text style={{ color: th.dim, fontWeight: '700', fontSize: 13, letterSpacing: 0.3 }}>{o.label}</Text>
+                      <Text style={{ color: th.dark ? '#E4E9F8' : '#1E2A4A', fontWeight: '700', fontSize: 13, letterSpacing: 0.3 }}>{o.label}</Text>
                     </View>
                   )}
                 </Pressable>
@@ -84,10 +85,10 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
       </View>
       {/* what the chosen timeframe means, in one quiet line */}
       {!!cur && isFinite(curS) && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 28, borderRadius: 8, backgroundColor: th.dark ? '#1A2050E6' : '#FFFFFFEB', borderWidth: 1, borderColor: th.dark ? '#FFFFFF33' : th.line }}>
           <Ionicons name={GROUPS[Math.max(0, groupOf(curS))].icon as any} size={12} color={th.accent} />
-          <Text numberOfLines={1} style={{ color: th.dim, fontSize: 11.5, flex: 1 }}>
-            <Text style={{ color: th.text, fontWeight: '800' }}>{fullName(curS)}</Text>{'  ·  '}{perDay(curS)}{'  ·  '}{useFor(curS)}
+          <Text numberOfLines={1} style={{ color: th.dark ? '#D5DCF2' : '#2B364D', fontSize: 11.5, flex: 1 }}>
+            <Text style={{ color: th.dark ? '#FFFFFF' : '#0A1022', fontWeight: '800' }}>{fullName(curS)}</Text>{'  ·  '}{perDay(curS)}{'  ·  '}{useFor(curS)}
           </Text>
         </View>
       )}

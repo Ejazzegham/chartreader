@@ -21,9 +21,14 @@ export async function googleIdToken(): Promise<GoogleToken> {
     return idToken ? { token: idToken } : { err: 'errGoogle' };
   } catch (e: any) {
     const c = String(e?.code ?? '');
+    console.warn('[google sign-in]', c, e?.message); // full detail for the browser console
     if (c.includes('popup-closed') || c.includes('cancelled-popup') || c.includes('user-cancelled')) return { cancelled: true };
     if (c.includes('popup-blocked')) return { err: 'errGooglePopup' };
-    if (c.includes('unauthorized-domain') || c.includes('operation-not-allowed')) return { err: 'errGoogleSetup' };
-    return { err: /network/i.test(String(e?.message)) ? 'errNetwork' : 'errGoogle' };
+    // The two setup problems on a website. They have their own, plain messages (the old "error 10" text is for the Android app only).
+    if (c.includes('unauthorized-domain')) return { err: `Google sign-in is not allowed on this website address (${location.hostname}). Add it in Firebase console > Authentication > Settings > Authorized domains.` };
+    if (c.includes('operation-not-allowed')) return { err: 'Google sign-in is switched off. Turn it on in Firebase console > Authentication > Sign-in method > Google.' };
+    if (c.includes('network')) return { err: 'errNetwork' };
+    if (c.includes('web-storage-unsupported') || c.includes('internal-error')) return { err: `Google sign-in could not start in this browser (${c.replace('auth/', '')}). Open the site in Chrome or Safari, not inside another app, and allow cookies.` };
+    return { err: `Google sign-in did not work (${c.replace('auth/', '') || 'unknown error'}). Please try again.` };
   }
 }
