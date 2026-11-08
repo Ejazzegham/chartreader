@@ -89,28 +89,83 @@ const brand: Scene = (cx, W, H, t, sy, st) => {
   candleRun(cx, S, t * 0.018 + sy * 0.4, 16, 8, (v) => H * (0.84 - v * 0.2), 0.3, W);
 };
 
-// Analysis: live candles, two moving averages, support / resistance and a gliding crosshair with a price tag.
-const analysis: Scene = (cx, W, H, t, sy, st) => {
-  const S: Ser = st.sr = st.sr || mkSeries(st.r, 360), sp = 18, bw = 9, off = t * 0.011 + sy * 0.3, yOf = (v: number) => H * (0.5 - v * 0.3);
-  cx.strokeStyle = 'rgba(147,197,253,0.07)'; cx.lineWidth = 1;
-  for (let i = 1; i < 5; i++) { cx.beginPath(); cx.moveTo(0, H * i / 5); cx.lineTo(W, H * i / 5); cx.stroke(); }
-  cx.setLineDash([7, 7]);
-  ([[0.2, GREEN], [0.8, RED]] as [number, string][]).forEach(([f, c], i) => { const y = H * f + Math.sin(t * 0.001 + i) * 2; cx.strokeStyle = `rgba(${c},0.3)`; cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); });
-  cx.setLineDash([]);
-  candleRun(cx, S, off, sp, bw, yOf, 0.42, W);
-  const first = Math.floor(off / sp), frac = off - first * sp;
-  const ma = (len: number, col: string, a: number) => {
-    cx.beginPath(); let m = 0;
-    for (let i = 0; i * sp - frac <= W + sp; i++) { let sum = 0; for (let j = 0; j < len; j++) sum += S.s[wrap(first + i - j, S.n)]; const x = i * sp - frac + bw / 2, y = yOf(sum / len); m++ ? cx.lineTo(x, y) : cx.moveTo(x, y); }
-    cx.strokeStyle = `rgba(${col},${a})`; cx.lineWidth = 1.8; cx.stroke();
+// Analysis: the "Orbit" hero. Six method pills (ICT, SMC, Top-Down, Scanner, VSA, Candlestick) circle a VERDICT core that alternates TRADE (green) / WAIT (amber),
+// with dashed rings, spokes with light dots flowing into the core and green pulse waves. It draws its own dark navy background (see OWN_BG), and sizes itself to the
+// hero height, so the hero box itself is unchanged.
+const ORBIT_NODES: [string, number][] = [['ICT', -90], ['SMC', -30], ['TOP-DOWN', 30], ['SCANNER', 90], ['VSA', 150], ['CANDLESTICK', 210]];
+const analysis: Scene = (cx, W, H, t) => {
+  const R1 = Math.min(H * 0.5 - 4, W * 0.45), R2 = R1 * 0.73, R3 = R1 * 0.46, RC = R1 * 0.285; // outer ring, node ring (brass), inner ring, core
+  const ox = Math.min(W * 0.8, W - R2 - 56), oy = H * 0.43;
+  // background: deep navy with the light centred behind the orbit
+  const far = Math.hypot(Math.max(ox, W - ox), Math.max(oy, H - oy));
+  const bg = cx.createRadialGradient(ox, oy, 0, ox, oy, far);
+  bg.addColorStop(0, '#16295A'); bg.addColorStop(0.55, '#0A1530'); bg.addColorStop(1, '#060D20');
+  cx.fillStyle = bg; cx.fillRect(0, 0, W, H);
+  // faint grid that fades out away from the orbit
+  const gm = cx.createRadialGradient(ox, oy, 0, ox, oy, far);
+  gm.addColorStop(0.1, 'rgba(255,255,255,0.05)'); gm.addColorStop(0.65, 'rgba(255,255,255,0)');
+  cx.strokeStyle = gm; cx.lineWidth = 1; cx.beginPath();
+  for (let x = 0; x <= W; x += 28) { cx.moveTo(x + 0.5, 0); cx.lineTo(x + 0.5, H); }
+  for (let y = 0; y <= H; y += 28) { cx.moveTo(0, y + 0.5); cx.lineTo(W, y + 0.5); }
+  cx.stroke();
+  // rings: outer dashed (slow, backwards), brass, inner dashed (forwards)
+  const ring = (r: number, col: string, dash: number[], spin: number) => {
+    cx.save(); cx.translate(ox, oy); cx.rotate(spin); cx.strokeStyle = col; cx.lineWidth = 1; cx.setLineDash(dash);
+    cx.beginPath(); cx.arc(0, 0, r, 0, TAU); cx.stroke(); cx.restore();
   };
-  ma(8, '34,211,238', 0.8); ma(21, '244,114,182', 0.7);
-  const xc = W * 0.68 + Math.sin(t * 0.0005) * W * 0.13, i = Math.round((xc + frac) / sp), k = wrap(first + i, S.n), xs = i * sp - frac + bw / 2, ys = yOf(S.s[k]);
-  cx.setLineDash([4, 4]); cx.strokeStyle = 'rgba(255,255,255,0.28)'; cx.lineWidth = 1;
-  cx.beginPath(); cx.moveTo(xs, 0); cx.lineTo(xs, H); cx.moveTo(0, ys); cx.lineTo(W, ys); cx.stroke(); cx.setLineDash([]);
-  rr(cx, W - 64, ys - 9, 58, 18, 4); cx.fillStyle = 'rgba(59,130,246,0.92)'; cx.fill();
-  cx.fillStyle = '#fff'; cx.font = `600 10.5px ${FONT}`; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText((1.0842 + S.s[k] * 0.012).toFixed(4), W - 35, ys + 0.5);
-  glow(cx, xs, ys, 22, [255, 255, 255], 0.25);
+  ring(R1, 'rgba(255,255,255,0.16)', [4, 5], -t * TAU / 90000);
+  ring(R2, 'rgba(200,169,106,0.3)', [], 0);
+  ring(R3, 'rgba(96,165,250,0.35)', [4, 5], t * TAU / 50000);
+  // verdict cycle: 8 s, TRADE (green) 0-44 %, WAIT (amber) 52-94 %, short blends in between
+  const u = (t % 8000) / 80, sm = (a: number, b: number) => cl((u - a) / (b - a));
+  const amber = u < 52 ? sm(44, 52) : u < 94 ? 1 : 1 - sm(94, 100);
+  const mix = (a: number[], b: number[]) => a.map((v, i) => Math.round(v + (b[i] - v) * amber));
+  const col = mix([52, 211, 153], [251, 191, 36]);
+  // green pulse waves leaving the core
+  for (let i = 0; i < 3; i++) {
+    const p = wrap(t / 4000 - i * 1.3 / 4, 1), r = RC * (1 + 2.3 * p);
+    cx.strokeStyle = `rgba(52,211,153,${0.7 * (1 - p)})`; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(ox, oy, r, 0, TAU); cx.stroke();
+  }
+  // spokes + inbound light dots + pills
+  const spin = t * TAU / 40000;
+  const pills: { x: number; y: number; a: string }[] = [];
+  ORBIT_NODES.forEach(([name, deg]) => {
+    const a = deg * Math.PI / 180 + spin, ca = Math.cos(a), sa = Math.sin(a), nx = ox + ca * R2, ny = oy + sa * R2;
+    const sg = cx.createLinearGradient(ox, oy, nx, ny); sg.addColorStop(0, 'rgba(200,169,106,0)'); sg.addColorStop(1, 'rgba(200,169,106,0.5)');
+    cx.strokeStyle = sg; cx.lineWidth = 1; cx.beginPath(); cx.moveTo(ox, oy); cx.lineTo(nx, ny); cx.stroke();
+    const p = wrap(t / 3000 + deg * 9 / 3000, 1), d = R2 * (1 - p), al = p < 0.2 ? p / 0.2 : (1 - p) / 0.8;
+    glow(cx, ox + ca * d, oy + sa * d, 8, [200, 169, 106], 0.9 * al);
+    cx.fillStyle = `rgba(255,255,255,${al})`; cx.beginPath(); cx.arc(ox + ca * d, oy + sa * d, 1.8, 0, TAU); cx.fill();
+    pills.push({ x: nx, y: ny, a: name });
+  });
+  cx.font = `700 9px ${FONT}`; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+  try { (cx as any).letterSpacing = '0.7px'; } catch {}
+  pills.forEach((q) => {
+    const w = cx.measureText(q.a).width + 18, h = 19;
+    glow(cx, q.x, q.y, w * 0.7, [96, 165, 250], 0.16);
+    rr(cx, q.x - w / 2, q.y - h / 2, w, h, h / 2); cx.fillStyle = 'rgba(18,32,70,0.9)'; cx.fill();
+    cx.strokeStyle = 'rgba(255,255,255,0.22)'; cx.lineWidth = 1; cx.stroke();
+    cx.fillStyle = '#fff'; cx.fillText(q.a, q.x + 0.35, q.y + 0.5);
+  });
+  try { (cx as any).letterSpacing = '0px'; } catch {}
+  // core
+  const cg = cx.createRadialGradient(ox - RC * 0.3, oy - RC * 0.4, 0, ox, oy, RC); cg.addColorStop(0, '#1E3A72'); cg.addColorStop(1, '#0B1738');
+  glow(cx, ox, oy, RC * 1.9, col, 0.3);
+  cx.beginPath(); cx.arc(ox, oy, RC, 0, TAU); cx.fillStyle = cg; cx.fill();
+  cx.strokeStyle = `rgb(${col})`; cx.lineWidth = 2; cx.stroke();
+  const t1 = u < 44 ? 1 : u < 50 ? 1 - (u - 44) / 6 : u < 94 ? 0 : (u - 94) / 6, t2 = u < 44 ? 0 : u < 50 ? (u - 44) / 6 : u < 94 ? 1 : 1 - (u - 94) / 6;
+  cx.textAlign = 'center'; cx.textBaseline = 'middle';
+  try { (cx as any).letterSpacing = '1.6px'; } catch {}
+  cx.font = `700 5.5px ${FONT}`; cx.fillStyle = 'rgba(159,176,206,0.95)'; cx.fillText('VERDICT', ox + 0.8, oy - RC * 0.46);
+  try { (cx as any).letterSpacing = '0.6px'; } catch {}
+  cx.font = `800 ${Math.round(RC * 0.4)}px ${FONT}`;
+  cx.fillStyle = `rgba(110,231,183,${t1})`; cx.fillText('TRADE', ox + 0.3, oy + RC * 0.2);
+  cx.fillStyle = `rgba(252,211,77,${t2})`; cx.fillText('WAIT', ox + 0.3, oy + RC * 0.2);
+  try { (cx as any).letterSpacing = '0px'; } catch {}
+  // the hero's key-points strip sits along the bottom: the orbit sinks softly into it instead of running through its text
+  const fy = H - 112, fg = cx.createLinearGradient(0, fy, 0, H - 66);
+  fg.addColorStop(0, 'rgba(6,13,32,0)'); fg.addColorStop(1, 'rgba(6,13,32,0.93)');
+  cx.fillStyle = fg; cx.fillRect(0, fy, W, H - fy);
 };
 
 // Analysis methods: a web of connected strategy nodes with pulses travelling between them.
@@ -538,7 +593,18 @@ const SCENES: Record<HeroKind, Scene> = { brand, analysis, methods, markets, cry
 // Per-canvas state (random numbers are seeded by the page, so each page always looks the same).
 export const heroState = (kind: HeroKind) => ({ r: makeRng(hash(kind)) });
 
+const OWN_BG = new Set<HeroKind>(['analysis']); // scenes that paint their own background (no shared gradient, drifting glows or text scrim)
+
 export function drawHero(cx: Ctx, W: number, H: number, t: number, sy: number, kind: HeroKind, st: any) {
+  if (OWN_BG.has(kind)) {
+    cx.save(); cx.lineCap = 'butt'; cx.lineJoin = 'miter'; cx.setLineDash([]); cx.globalAlpha = 1;
+    SCENES[kind](cx, W, H, t, sy, st);
+    cx.restore();
+    const sc0 = cx.createLinearGradient(0, 0, W, 0); // keep the text side calm and readable
+    sc0.addColorStop(0, 'rgba(6,13,32,0.55)'); sc0.addColorStop(0.55, 'rgba(6,13,32,0.15)'); sc0.addColorStop(0.7, 'rgba(6,13,32,0)');
+    cx.fillStyle = sc0; cx.fillRect(0, 0, W, H);
+    return;
+  }
   const P = PAL[kind];
   const g = cx.createLinearGradient(0, 0, W, H);
   g.addColorStop(0, P.bg[0]); g.addColorStop(0.55, P.bg[1]); g.addColorStop(1, P.bg[2]);
