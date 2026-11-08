@@ -163,7 +163,7 @@ export const authMail = async (kind: 'reset' | 'verify' | 'change-email', body: 
 };
 // idToken = the Firebase ID token of the signed-in user; the server verifies it and reads the email from it.
 // accountCreated = when Firebase created the account (ms). The server uses it so a trial that already ran offline is not started again from zero.
-export const registerLic = async (idToken: string, accountCreated?: number, fresh = false): Promise<Lic> => post('/register', { idToken, deviceId: await deviceId(), kind: deviceKind, fresh, ...(accountCreated && accountCreated > 0 ? { accountCreated } : {}) }); // fresh = the person has just typed their password / used Google here
+export const registerLic = async (idToken: string, accountCreated?: number, fresh = false, name = ''): Promise<Lic> => post('/register', { idToken, deviceId: await deviceId(), kind: deviceKind, fresh, ...(accountCreated && accountCreated > 0 ? { accountCreated } : {}), ...(name.trim() ? { name: name.trim().slice(0, 60) } : {}) }); // fresh = the person has just typed their password / used Google here
 export type AdminUser = { id?: string; email: string; status: 'paid' | 'trial' | 'expired'; trialEnd: number; paidUntil: number; created: number; last: number };
 export type PayStatus = 'review' | 'approved' | 'rejected';
 export type AdminPay = { txid: string; pid?: string; email: string; network: string; usd: number; days: number; at: number; status: PayStatus; wallet: string; plan: string; suggest: number; verified: boolean; from: string; note: string; decidedAt: number };

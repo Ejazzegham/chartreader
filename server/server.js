@@ -107,6 +107,9 @@ async function register(req, b) {
   if (person.uid === uid) person.email = email; // the person changed their email in the app: keep the record in step
   db.emails[email] = pid; db.devices[dev] = pid;
   person.email ||= email; person.last = Date.now();
+  // The name typed at sign-up (or the Google name) belongs on the record from the first login, so the signup map and the admin list show it. Before, it only arrived
+  // when the person later saved their profile, and until then the map said "New trader". A name the person already saved is never overwritten.
+  if (!person.name) { const nm = cleanName(fb.name || b.name); if (nm) person.name = nm; }
   // Signup map: look the member's country / city up once (in the background, it never slows or blocks the login). Older members get it the next time they log in.
   if ((!person.geo || person.geo.lat === undefined) && !(person.geoTry > Date.now() - 864e5)) { person.geoTry = Date.now(); geo.lookup(ip, req.headers).then((g) => { if (g && (!person.geo || g.lat !== undefined)) { person.geo = g; save(); } }).catch(() => {}); }
   // Admin needs an email on the admin list that is CONFIRMED. Anyone can type an admin's address into the sign-up form; only the owner can click the link in the mailbox.

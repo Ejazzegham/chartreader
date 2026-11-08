@@ -1,3 +1,16 @@
+# New home-page hero (B6 "Annotated" style), a little bigger
+
+- **Home hero rebuilt** from the B6 · Annotated design: navy sky with a gold horizon glow, a skyline of candles that a scanning beam lights up, a gold market wave that draws itself with a runner dot, three pop-in annotations (Liquidity Sweep, Order Block, Fair Value Gap), a moving grid floor and a ticker strip (ICT, SMC, Top-Down, Scanner, VSA ...). New `src/HomeHero.web.tsx` (pure DOM + CSS, no canvas or images; its styles are scoped with an `hh-` prefix). `src/HomeHero.tsx` is the empty phone stub.
+- **Bigger:** the home hero is now 540 px tall on desktop (was about 290 with the feature row), 520 px on tablet and 560 px on phone; the headline scales with the window. Everything is positioned from the real width, so it stays sharp at any size.
+- Buttons are wired as before: **Go to Analysis** opens the Analysis page, **Explore Markets** opens Markets. Animations pause when the hero is scrolled off screen and stop for visitors who prefer reduced motion.
+- Only the home page changed. Every other page keeps the shared `HeroBanner` and its own animation scene (`src/heroScenes.ts` is untouched). `src/DesktopHome.web.tsx` now renders `<HomeHero go={go} />` in place of the old banner.
+- Checked: `tsc --noEmit` clean, `expo export --platform web` builds, hero checked in a real browser at desktop, tablet and phone widths.
+
+# Signup map shows the new member's name
+
+- A new member's name was only saved on the server when they later edited their profile, so the home-page map said "New trader". `server/server.js` (`register`) now saves the name from the Firebase account (typed at sign-up, or the Google name) on the first login, and never overwrites a name the person saved themselves. The app sends it too (`registerLic` in `src/license.ts`, call in `src/store.tsx`).
+- Members who signed up earlier without a saved name get theirs the next time they log in. The map shows "Anna K." (first name + last initial); `MAP_NAMES=0` still hides names. The map refreshes about once a minute. **Restart the server.**
+
 # Readable notes everywhere, new Journal filter bar, new hero animations, Trade History page
 
 - **Unreadable text fixed site-wide.** Notes, tips and fine print used a faint tint (or nothing) on top of the animated backdrop, so dark text on a dark patch could not be read. New `src/Note.tsx` (`Note`, `Fineprint`, `noteSurface`) puts them on a frosted card. Fixed on: News (alerts strip + fine print), Risk & TP Planner (Pro Trading Tips), Trade Checklist (Discipline Builds Profits + fine print), Forex Market Hours (intro + "Trade when the market is moving"), About (Please note, Contact us, intro and "Everything you need" blocks), Crypto / Prop Firms / Brokers (how to choose + risk notes), How to use (section headings, intro, fine print), Journal fine print, Killzones intro, Demo account warning.

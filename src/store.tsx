@@ -223,7 +223,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
       if (!idToken) throw new Error('Please log in again');
       setEmailVerified(!!u?.emailVerified);
       const created = Date.parse(u?.metadata?.creationTime || ''); // Firebase's own date for the account: lets the server count a trial that already ran offline
-      const l = await registerLic(idToken, isFinite(created) ? created : undefined, fresh === true); // === true: a button press passes an event here, which must not count as a sign-in
+      const l = await registerLic(idToken, isFinite(created) ? created : undefined, fresh === true, u?.displayName || ''); // === true: a button press passes an event here, which must not count as a sign-in
       setLic(l); setLicErr(''); tokRef.current = l.token;
       if (!cloudOk.current) restoreCloud(); // first contact of this login: bring the backup back
       flushChatOutbox(l.token); // messages written to support while the server was off

@@ -3,7 +3,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import SignupMap from './SignupMap';
 import Svg, { Path, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from './store';
-import { Icon, HeroBanner, HERO_BG } from './ui';
+import { Icon, HERO_BG } from './ui';
 import { Coin, CandleChart } from './MarketWidgets';
 import { useFeed, chg, symOf, SYMBOLS, watchCandles, toggleFav, setWatch, Candle } from './markets';
 import { analyzeAll } from './refine';
@@ -14,6 +14,7 @@ export { Footer, useGo };
 import { useDash, setDash } from './dash';
 import { glassWeb } from './sheet';
 import HeroFx from './HeroFx';
+import HomeHero from './HomeHero';
 
 // The website's home page, designed like the "Fintech Analytics Homepage" mockup: hero with a live chart, market overview,
 // multi-timeframe analysis, why-choose cards, call-to-action and footer. All numbers are live (same engine as the phone app).
@@ -189,17 +190,10 @@ function Hero({ w, go }: { w: number; go: (t: number) => void }) {
   const s = useSetup(d.sym, d.tf, 'dash');
   const two = w >= 1020;
   const c = chg(s.sym.id);
-  const cta = (label: string, onPress: () => void, solid?: boolean) => (
-    <Pressable key={label} accessibilityRole="button" onPress={onPress} style={((st: any) => ({ height: 42, paddingHorizontal: 20, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: solid ? '#FFFFFF' : 'transparent', borderWidth: 1, borderColor: solid ? '#FFFFFF' : '#FFFFFF4D', opacity: st.hovered ? 0.9 : 1 })) as any}>
-      <Text style={{ color: solid ? HERO_BG : '#FFFFFF', fontSize: 13.5, fontWeight: '600' }}>{label}</Text>
-    </Pressable>
-  );
   return (
     <View style={{ backgroundColor: P.bg }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingTop: 24, paddingBottom: 40, gap: 24 }}>
-        <HeroBanner fx="brand" tag="Smarter analysis. Better decisions." title="Trading Analysis Platform" subtitle="Real-time market insights, powerful analysis tools and personalized trading plans, all in one place."
-          right={<>{cta('Go to Analysis', () => go(1), true)}{cta('Explore Markets', () => go(2))}</>}
-          features={[{ icon: 'flash-outline', title: 'Real-time insights', sub: 'Live prices and signals' }, { icon: 'shield-checkmark-outline', title: 'Risk management', sub: 'Position size and limits' }, { icon: 'locate-outline', title: 'Detailed trade plans', sub: 'Entry, stop loss, 3 targets' }]} />
+        <HomeHero go={go} />
         <View style={{ flexDirection: two ? 'row' : 'column', gap: 20, alignItems: 'stretch' }}>
           <Panel style={{ flex: 1, minWidth: 0, width: two ? undefined : '100%', padding: 16, gap: 10 }}>
             <ChartHeader s={s} sub={d.tf === '60' ? '1 minute' : TFB.find((x) => x[0] === d.tf)?.[1]} />
