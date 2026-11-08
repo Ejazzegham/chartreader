@@ -6,7 +6,7 @@
 # cross-site call (no CORS problem, no ngrok warning page). If you change SERVER in src/license.ts, change the address below too.
 [[redirects]]
   from = "/srv/*"
-  to = "https://undercook-tribune-gratuity.ngrok-free.dev/:splat"
+  to = "https://smile-demotion-daylong.ngrok-free.dev/:splat"
   status = 200
   force = true
 
