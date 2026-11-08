@@ -4,6 +4,8 @@ import { LinearGradient } from './FlatGradient';
 import Svg, { Rect, Circle, Line, Path, G, Text as SvgText } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
+import { noteSurface, Fineprint } from './Note';
+import { glassWeb } from './sheet';
 import { useRealWindow } from './win';
 import { usePal, Footer, useGo } from './DesktopHome.web';
 import { Notices } from './Desktop.web';
@@ -172,7 +174,7 @@ function StepCard({ s, i, width, onOpen }: { s: Step; i: number; width: number |
 function GroupHead({ g, count, unit }: { g: { n: number; title: string; sub: string }; count: number; unit: string }) {
   const P = usePal(), th = P.th;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, ...glassWeb }}>
       <View style={{ flexDirection: 'row', gap: 14, flexShrink: 1 }}>
         <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 17, fontWeight: '800' }}>{g.n}</Text></View>
         <View style={{ flexShrink: 1, gap: 2 }}>
@@ -224,7 +226,7 @@ export default function GuideHome({ active }: Props) {
         <Notices flush />
 
         {/* intro strip */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33', marginBottom: -6 }}>
+        <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, marginBottom: -6 }, noteSurface(th, P.blue)]}>
           <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="information" size={20} color={th.onAccent} /></View>
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={{ color: P.head, fontSize: 14, fontWeight: '800' }}>Start your journey</Text>
@@ -263,7 +265,7 @@ export default function GuideHome({ active }: Props) {
           </View>
         </View>
 
-        <Text style={{ color: P.body, fontSize: 12, lineHeight: 18, textAlign: 'center', maxWidth: 760, alignSelf: 'center' }}>Chart Reader is an educational tool. It is not financial advice and it cannot promise profit. Trading is risky. Test on a demo account first and never risk money you cannot afford to lose.</Text>
+        <Fineprint>Chart Reader is an educational tool. It is not financial advice and it cannot promise profit. Trading is risky. Test on a demo account first and never risk money you cannot afford to lose.</Fineprint>
       </View>
       <Footer w={w} go={go} />
     </ScrollView>

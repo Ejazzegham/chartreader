@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, Platform, ScrollView } from 'react-native';
 import { useApp } from './store';
 import { Icon } from './ui';
+import { noteSurface } from './Note';
 import { fxClosedAt } from './session';
 import {
   FX_SESSIONS, TZ_CHOICES, sessionState, timelineDay, overlapsAround, volumeAt, fmtClock, fmtDay, fmtLeft, fmtWeekdayClock,
@@ -181,7 +182,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
   return (
     <View style={{ gap: sectionGap }}>
       {/* intro */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
+      <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 }, noteSurface(th, P.blue)]}>
         <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="information" size={20} color={th.onAccent} /></View>
         <Text style={{ color: P.head, fontSize: 13, lineHeight: 20, flex: 1 }}>When does the forex market open? Use the converter below to see when the four main sessions open and close in your own time zone. Retail forex trades from Sunday evening to Friday evening, New York time.</Text>
       </View>
@@ -316,7 +317,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
       </Box>
 
       {/* call to action */}
-      <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.blue + '22', backgroundColor: P.blue + (P.dark ? '26' : '14'), padding: 22, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 18 }}>
+      <View style={[{ padding: 22, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 18 }, noteSurface(th, P.blue)]}>
         <View style={{ flex: 1, minWidth: 240, gap: 4 }}>
           <Text style={{ color: P.head, fontSize: 20, fontWeight: '900' }}>Trade when the market is moving</Text>
           <Text style={{ color: P.body, fontSize: 13.5, lineHeight: 20, maxWidth: 560 }}>Pick the hours that suit you, then analyze a pair from a session that is open. Looking for ICT killzones? They are part of the ICT analysis.</Text>

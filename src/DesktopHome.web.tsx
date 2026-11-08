@@ -251,7 +251,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
   const head = (icon: string, name: string) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
       <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color={P.blue} /></View>
-      <Text style={{ color: P.head, fontSize: 15, fontWeight: '700' }}>{name}</Text>
+      <Text numberOfLines={1} style={{ color: P.head, fontSize: 15, fontWeight: '700', flexShrink: 1 }}>{name}</Text>
     </View>
   );
   const meta: Record<string, [string, string]> = { forex: ['cash', 'Forex'], crypto: ['logo-bitcoin', 'Crypto'], metals: ['layers', 'Metals'], deriv: ['flash', 'Deriv'] };
@@ -285,22 +285,16 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
           })}
           {cardBase(() => go(1, 'candle'), (
             <>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="bar-chart" size={19} color={P.blue} /></View>
-                <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Candles</Text>
-                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
-              </View>
-              <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 8 }}>{cdl?.text ?? 'Hammer, engulfing, confirmation candle'}</Text>
+              {head('bar-chart', 'Candles')}
+              <View style={{ alignSelf: 'flex-start', paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
+              <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>{cdl?.text ?? 'Hammer, engulfing, confirmation candle'}</Text>
             </>
           ), 'candles')}
           {cardBase(() => go(1, 'topdown'), (
             <>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="layers" size={19} color={P.blue} /></View>
-                <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', flex: 1 }}>Top-Down</Text>
-                <View style={{ paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
-              </View>
-              <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 8 }}>H4 → H1 → M15{'\n'}multi-timeframe</Text>
+              {head('layers', 'Top-Down')}
+              <View style={{ alignSelf: 'flex-start', paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
+              <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>H4 → H1 → M15{'\n'}multi-timeframe</Text>
             </>
           ), 'topdown')}
         </View>

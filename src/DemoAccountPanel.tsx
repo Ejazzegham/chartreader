@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { noteSurface } from './Note';
 import { View, Text, Pressable, TextInput } from 'react-native';
 import Svg, { Polyline, Path, Line, Circle, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from './store';
@@ -222,7 +223,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
               <Pressable disabled={!customV} onPress={() => customV && apply(customV)} accessibilityRole="button" style={((x: any) => ({ height: 42, paddingHorizontal: 18, borderRadius: 8, justifyContent: 'center', backgroundColor: customV ? P.down : P.border, opacity: x.hovered && customV ? 0.9 : 1, ...hand })) as any}><Text style={{ color: customV ? '#FFFFFF' : P.dim, fontSize: 13.5, fontWeight: '800' }}>Reset account</Text></Pressable>
             </View>
           </Group>
-          <View style={{ flexDirection: 'row', gap: 12, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '14' }}>
+          <View style={[{ flexDirection: 'row', gap: 12, padding: 14 }, noteSurface(th, th.gold)]}>
             <Icon name="information-circle-outline" size={20} color={th.gold} />
             <Text style={{ flex: 1, color: P.ink, fontSize: 12.5, lineHeight: 19 }}>This is a practice account with virtual money. Orders fill at the live price and no broker is involved, so real trading can differ (spreads, slippage, rejected orders). The account settings are saved on this device.</Text>
           </View>

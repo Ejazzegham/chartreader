@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
 import { Screen, Card, Icon, AppHeader, IconTile, HeroBanner } from '../ui';
+import { noteSurface, Fineprint } from '../Note';
 import { useWindowDimensions, useLayout } from '../win';
 
 const KEY = 'pretrade.v1';
@@ -342,7 +343,7 @@ export default function Checklist() {
   );
 
   const banner = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: mid ? 20 : 14, borderRadius: 8, backgroundColor: soft, borderColor: th.accent + (th.dark ? '33' : '1F'), borderWidth: 1, overflow: 'hidden' }}>
+    <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: mid ? 20 : 14, overflow: 'hidden' }, noteSurface(th, th.accent)]}>
       <IconTile icon="trophy" size={52} colors={['#3B5B93', '#3B5B93']} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={{ color: th.text, fontWeight: '800', fontSize: 16 }}>Discipline Builds Profits</Text>
@@ -366,7 +367,7 @@ export default function Checklist() {
       ) : (
         <View style={{ gap: 16 }}>{summary}{list}{actions}{tips}{cta}{banner}</View>
       )}
-      <Text style={{ color: th.dim, fontSize: 12, lineHeight: 17, marginTop: 16 }}>A trade that fails your own rules is a trade you planned not to take. Educational tool, not financial advice.</Text>
+      <Fineprint style={{ marginTop: 16 }}>A trade that fails your own rules is a trade you planned not to take. Educational tool, not financial advice.</Fineprint>
     </Screen>
   );
 }

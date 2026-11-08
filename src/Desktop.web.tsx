@@ -9,6 +9,7 @@ import { useLayout, useRealWindow } from './win';
 import { SYMBOLS, Sym } from './markets';
 import { setDash, groupOf } from './dash';
 import { glassWeb, sheet } from './sheet';
+import EditProfile from './EditProfile';
 
 // The desktop website: [ sidebar ] [ top bar over ( page | market watch ) ]. The pages are the same screens as on the phone;
 // Home is a dashboard (DesktopHome.web.tsx).
@@ -17,6 +18,7 @@ export const useDesktop = () => useLayout().mode === 'desktop';
 const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
 const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
+const HIST_TAB = NAV.findIndex((n) => n.key === 'tabTradeHistory');
 const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 11, 9, 5, 'hist']], ['MARKETS', [8, 13, 19, 18, 17]], ['SUPPORT', [14, 15, 6, 'help']]]; // tab numbers from NAV; 'hist' opens Trade History, 'help' opens Help chat
 const toolIcon: Record<number, string> = Object.fromEntries(TOOLS);
 
@@ -24,14 +26,14 @@ const toolIcon: Record<number, string> = Object.fromEntries(TOOLS);
 // Quiet and professional: a white bar with a hairline, small restrained type, a brass underline on the open page, hairline buttons (no pills, no glows).
 export const NAV_H = 72;
 function TopNav() {
-  const { th, t, tab, setTab, account, avatar, lic, setAdminOpen, setHelpOpen, setHistOpen, supportUnread, adminBadge } = useApp();
+  const { th, t, tab, setTab, account, avatar, lic, setAdminOpen, setHelpOpen, setHistOpen, supportUnread, adminBadge, logout, settings } = useApp(), lang = settings.lang;
   const L = useLayout();
   const compact = L.full < 900, H = useRealWindow().height, navH = compact ? 60 : NAV_H; // compact = phone / small tablet: logo, icons and a menu button
-  const [menu, setMenu] = useState<'' | 'tools' | 'user' | 'nav'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState('');
+  const [menu, setMenu] = useState<'' | 'tools' | 'user' | 'nav'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState(''), [editOpen, setEditOpen] = useState(false);
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1120;
   const ink = th.text, mute = th.dim, rule = th.line;
-  const bar = th.dark ? 'rgba(18,22,52,0.72)' : 'rgba(255,255,255,0.74)', toolTabs = TOOLS.map((x) => x[0]);
+  const bar = th.dark ? 'rgba(18,22,52,0.72)' : 'rgba(255,255,255,0.74)', toolTabs = [...TOOLS.map((x) => x[0]), HIST_TAB];
   const padX = compact ? 12 : slim ? 16 : 32;
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };
@@ -48,10 +50,10 @@ function TopNav() {
       </>)}
     </Pressable>
   );
-  const item = (icon: string, label: string, onPress: () => void, badge = 0, on = false) => (
+  const item = (icon: string, label: string, onPress: () => void, badge = 0, on = false, danger = false) => (
     <Pressable key={label} accessibilityRole="button" onPress={() => { setMenu(''); onPress(); }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, height: compact ? 44 : 38, paddingHorizontal: 12, borderRadius: 6, cursor: 'pointer', backgroundColor: s.hovered || on ? th.panel2 : 'transparent' })) as any}>
-      <Icon name={icon} size={16} color={on ? th.accent2 : mute} />
-      <Text style={{ flex: 1, color: ink, fontSize: 13.5, fontWeight: on ? '700' : '500' }} numberOfLines={1}>{label}</Text>
+      <Icon name={icon} size={16} color={danger ? th.sell : on ? th.accent2 : mute} />
+      <Text style={{ flex: 1, color: danger ? th.sell : ink, fontSize: 13.5, fontWeight: on || danger ? '700' : '500' }} numberOfLines={1}>{label}</Text>
       {badge > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '700' }}>{badge > 99 ? '99+' : badge}</Text></View>}
     </Pressable>
   );
@@ -61,6 +63,7 @@ function TopNav() {
   const count = adminBadge.chats + adminBadge.pays;
   return (
     <View style={{ zIndex: 30 }}>
+      <EditProfile visible={editOpen} onClose={() => setEditOpen(false)} />
       {(menu !== '' || searchOpen) && <Pressable onPress={() => { setMenu(''); setSearchOpen(false); }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 29 } as any} />}
       <View style={{ height: navH, backgroundColor: bar, ...glassWeb, borderBottomWidth: 1, borderBottomColor: rule, zIndex: 31 }}>
         <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', paddingHorizontal: padX, gap: slim ? 2 : 4 }}>
@@ -84,8 +87,8 @@ function TopNav() {
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                       {ids.map((id) => {
                         const special = typeof id === 'string', icon = id === 'hist' ? 'receipt' : id === 'help' ? 'chatbubbles-outline' : toolIcon[id as number];
-                        const label = id === 'hist' ? 'Trade History' : id === 'help' ? 'Help chat' : t(NAV[id as number].key);
-                        const on = !special && tab === id, badge = id === 'help' ? supportUnread : 0;
+                        const label = id === 'hist' ? 'Trade History' : id === 'help' ? 'Help chat' : id === 5 && lang === 'en' ? 'Analysis History' : t(NAV[id as number].key);
+                        const on = id === 'hist' ? tab === HIST_TAB : !special && tab === id, badge = id === 'help' ? supportUnread : 0;
                         const go = () => { setMenu(''); if (id === 'hist') setHistOpen(true); else if (id === 'help') setHelpOpen(true); else setTab(id as number); };
                         return (
                           <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={go} style={((s: any) => ({ width: 'calc(25% - 6px)', alignItems: 'center', gap: 8, paddingTop: 12, paddingBottom: 10, paddingHorizontal: 4, borderRadius: 8, borderWidth: 1, borderColor: on || s.hovered ? th.accent2 : rule, backgroundColor: s.hovered ? th.panel2 : 'transparent', cursor: 'pointer', transform: [{ translateY: s.hovered ? -2 : 0 }] })) as any}>
@@ -134,9 +137,12 @@ function TopNav() {
                   <Text style={{ color: mute, fontSize: 11.5 }}>{lic.admin ? 'Admin' : paid ? 'Premium Trader' : lic.status === 'trial' ? 'Free trial' : 'Account'}</Text>
                 </View>
                 <View style={{ height: 1, backgroundColor: rule, marginVertical: 4 }} />
+                {item('person-outline', 'Edit profile', () => setEditOpen(true))}
                 {item('settings-outline', 'Settings', () => setTab(6))}
                 {item('chatbubbles-outline', 'Help chat', () => setHelpOpen(true), supportUnread)}
                 {lic.admin && item('shield-checkmark-outline', 'Admin panel', () => setAdminOpen(true), count)}
+                <View style={{ height: 1, backgroundColor: rule, marginVertical: 4 }} />
+                {item('log-out-outline', t('logout'), () => logout(), 0, false, true)}
               </View>
             )}
           </View>

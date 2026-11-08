@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from './FlatGradient';
 import Svg, { Circle, Line, Rect, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
+import { noteSurface } from './Note';
 import { useRealWindow } from './win';
 import { killzonesFor, nextKillzone } from './ict';
 import { fxWeekendClosed } from './markets';
@@ -131,7 +132,7 @@ export default function KillzonesHome({ active }: Props) {
         <Notices flush />
 
         {/* intro strip */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
+        <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 }, noteSurface(th, P.blue)]}>
           <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="information" size={20} color={th.onAccent} /></View>
           <Text style={{ color: P.head, fontSize: 13, lineHeight: 20, flex: 1 }}>The Killzones page shows the most important trading sessions and time windows, helping you identify high-probability periods for market movements. Use the live clock and session timeline to plan your trades with precision.</Text>
           {w >= 900 && <Text style={{ color: P.blue, fontSize: 19, lineHeight: 22, fontStyle: 'italic', textAlign: 'center', transform: [{ rotate: '-6deg' }], fontFamily: "'Segoe Script','Brush Script MT','Lucida Handwriting',cursive" } as any}>{'Trade Smarter\nNot Harder'}</Text>}

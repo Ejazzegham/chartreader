@@ -35,7 +35,6 @@ module.exports = function makeGeo({ upstream }) {
   }
 
   // The public numbers for the home page. `people` is db.people; `skip(person)` returns true for accounts that must not be counted (deleted, admins).
-  let memo = { at: 0, v: null };
   // "Anna K.": first name and the initial of the last name only. MAP_NAMES=0 hides names completely ("A trader").
   const initial = (w) => (Array.from(w)[0] || '').toUpperCase();
   const shortName = (full) => {
@@ -44,21 +43,34 @@ module.exports = function makeGeo({ upstream }) {
     const first = initial(w[0]) + Array.from(w[0]).slice(1).join('').toLowerCase();
     return (Array.from(first).slice(0, 14).join('')) + (w.length > 1 ? ' ' + initial(w[w.length - 1]) + '.' : '');
   };
-  function summary(people, skip) {
-    if (memo.v && Date.now() - memo.at < 60e3) return memo.v;
+  const memo = new Map(); // range key -> { at, v }  (each period the home page asks for is cached for 60 s)
+  const DAYS30 = 30 * 864e5;
+  // range = { from, to } in ms (both optional): only members who signed up inside it are counted. growth = change over the LAST 30 DAYS,
+  // always measured on all members (not on the chosen period): members and countries, in percent (a new country counts when its first member joined).
+  function summary(people, skip, range = {}) {
+    const from = Number.isFinite(range.from) ? range.from : 0, to = Number.isFinite(range.to) ? range.to : Infinity, key = from + '|' + to;
+    const hit = memo.get(key); if (hit && Date.now() - hit.at < 60e3) return hit.v;
     const countries = {}, places = {}, recent = []; let total = 0;
+    const now = Date.now(), cut = now - DAYS30; let all = 0, allNew = 0; const firstSeen = {};
     for (const p of Object.values(people)) {
       if (skip(p)) continue;
+      const created = p.created || 0, g = p.geo;
+      all++; if (created >= cut) allNew++;
+      if (g && g.cc && (!(g.cc in firstSeen) || created < firstSeen[g.cc])) firstSeen[g.cc] = created;
+      if (created < from || created > to) continue;
       total++;
-      const g = p.geo; if (!g || !g.cc) continue;
-      recent.push({ t: p.created || 0, name: shortName(p.name), cc: g.cc });
+      if (!g || !g.cc) continue;
+      recent.push({ t: created, name: shortName(p.name), cc: g.cc });
       const c = (countries[g.cc] ||= { cc: g.cc, name: g.country || g.cc, n: 0 }); c.n++;
       if (typeof g.lat === 'number' && typeof g.lon === 'number') {
         const k = g.cc + '|' + g.lat + '|' + g.lon, pl = (places[k] ||= { cc: g.cc, city: g.city || '', lat: g.lat, lon: g.lon, n: 0 }); pl.n++;
       }
     }
-    const v = { total, located: Object.values(countries).reduce((a, c) => a + c.n, 0), countries: Object.values(countries).sort((a, b) => b.n - a.n), places: Object.values(places).sort((a, b) => b.n - a.n), recent: recent.sort((a, b) => b.t - a.t).slice(0, 12), at: Date.now() };
-    memo = { at: Date.now(), v };
+    const pct = (now30, before) => (before > 0 ? Math.round((now30 / before) * 100) : now30 > 0 ? 100 : 0);
+    const ccAll = Object.keys(firstSeen).length, ccNew = Object.values(firstSeen).filter((t) => t >= cut).length;
+    const growth = { members: pct(allNew, all - allNew), countries: pct(ccNew, ccAll - ccNew) };
+    const v = { total, located: Object.values(countries).reduce((a, c) => a + c.n, 0), countries: Object.values(countries).sort((a, b) => b.n - a.n), places: Object.values(places).sort((a, b) => b.n - a.n), recent: recent.sort((a, b) => b.t - a.t).slice(0, 12), growth };
+    memo.set(key, { at: Date.now(), v }); if (memo.size > 50) memo.delete(memo.keys().next().value);
     return v;
   }
   return { lookup, summary };

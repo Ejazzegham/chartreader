@@ -1,3 +1,28 @@
+# Readable notes everywhere, new Journal filter bar, new hero animations, Trade History page
+
+- **Unreadable text fixed site-wide.** Notes, tips and fine print used a faint tint (or nothing) on top of the animated backdrop, so dark text on a dark patch could not be read. New `src/Note.tsx` (`Note`, `Fineprint`, `noteSurface`) puts them on a frosted card. Fixed on: News (alerts strip + fine print), Risk & TP Planner (Pro Trading Tips), Trade Checklist (Discipline Builds Profits + fine print), Forex Market Hours (intro + "Trade when the market is moving"), About (Please note, Contact us, intro and "Everything you need" blocks), Crypto / Prop Firms / Brokers (how to choose + risk notes), How to use (section headings, intro, fine print), Journal fine print, Killzones intro, Demo account warning.
+- **Journal "Recent Signals" filters** rebuilt: wide search (with clear button) and a Buy/Sell segmented control on top; Period, Strategy, Timeframe and Sort by as labelled dropdowns in a grid below; "Reset filters" appears when something is set.
+- **Home:** the Candles and Top-Down cards no longer push their badge outside the box.
+- **News hero:** new live newsroom animation (release cards sliding in, LIVE beacon) with a longer description and three feature points.
+- **Forex Market Hours hero:** new animation with currency symbols and a board of live-looking pairs.
+- **History page renamed "Analysis History"** (menu tile too, English) with a new animation (saved-analysis cards and a rewinding clock), longer text and feature points.
+- **Trade History is now a page** with its own hero and animation (equity curve) on the website; opening it from the menu, Home or Journal goes to the page. The phone keeps its pop-up window. New tab 21.
+- **Community:** an unexpected server answer no longer crashes the page; it shows a clear message and the technical detail.
+- Checked: `tsc --noEmit` clean, `expo export --platform web` builds, tests pass, pages checked in a real browser.
+
+# Edit profile in the profile menu, real error details on Community
+
+- **Edit profile** is now in the website's profile menu (avatar, top right), above Settings. It opens the same Edit profile window as Settings (name, phone, email, backup, delete account).
+- **Community error details:** when the feed cannot load, the box now shows a small selectable line under the message, for example `POST /community/feed · HTTP 404`, or `no answer from the server` when it cannot be reached. Every server error now carries its HTTP status and path (`src/license.ts`, `errDetail`), so any screen can show it the same way.
+
+# Bug fixes, Log out in the website profile menu, home-page period filter
+
+- **Log out** is now in the website's profile menu (top-right avatar), under Settings / Help chat. It is red and signs out the same way as the one in Settings.
+- **Build fix:** `src/KillzonesHome.web.tsx` imported `expo-linear-gradient`, which was removed from package.json, so the web build could fail. It now uses `./FlatGradient` like every other page.
+- **Home page "Our community around the world":** the period filter (This Month / This Year / custom dates) and the +% growth badges were in the screen but the client and server never sent them. `getSignupMap(range)` in `src/license.ts` now sends `from` / `to`; `server/geo.js` filters members by sign-up date and returns `growth` (members and countries, last 30 days); `server/server.js` passes the range through. **Restart the server.**
+- **Clear message for an out-of-date server:** when the server answers its catch-all "Not found", the app now says the server is out of date and must be updated and restarted (this is what the Community page showed).
+- Checked: `tsc --noEmit` clean, `expo export --platform web` builds, logic and server tests pass. `tests/daylevels.test.js` uses the real clock, so its 3 forex checks fail on weekends (the market is closed); they are not a code bug.
+
 # Login / sign up redesign, readability and Google sign-in messages
 
 - **Log in / Sign up (website, wide screens):** a short brand panel (logo + a few lines) on one half, the form on the other. Log in = brand left, form right. Sign up = the halves swap sides and slide in. New file `src/AuthBrand.tsx`; layout in `src/AuthFlow.tsx` (`Page`, `Slide`). Phones and narrow windows keep the stacked layout.

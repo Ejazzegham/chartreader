@@ -3,6 +3,8 @@ import { View, Text, Linking, Pressable, TextInput, ScrollView, Platform } from 
 import { LinearGradient } from '../FlatGradient';
 import { useApp } from '../store';
 import { Icon, Card, AppHeader, HeroBanner } from '../ui';
+import { noteSurface } from '../Note';
+import { glassWeb } from '../sheet';
 import { LogoMark, PoweredBy } from '../Brand';
 import { useLayout, useWindowDimensions } from '../win';
 import { PageFooter } from '../SiteFooter';
@@ -61,9 +63,10 @@ export default function About() {
       </View>
     </View>
   );
+  const box: any = { padding: wide ? 28 : 20, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, ...glassWeb }; // text that sits on the animated backdrop gets a frosted card so it stays readable
   const who = (
     <View style={{ flexDirection: wide ? 'row' : 'column', gap: wide ? 40 : 22, alignItems: wide ? 'center' : 'stretch', paddingVertical: wide ? 18 : 4 }}>
-      <View style={{ flex: 1, gap: 14, minWidth: 0 }}>
+      <View style={[{ flex: 1, gap: 14, minWidth: 0 }, box]}>
         <Eyebrow>{x.whoTag}</Eyebrow>
         <Text accessibilityRole="header" style={{ color: th.text, fontSize: h2, fontWeight: '900', letterSpacing: -0.8 }}>{x.whoTitle}</Text>
         <Text style={{ color: th.dim, fontSize: 15, lineHeight: 24 }}>{x.who1}</Text>
@@ -82,9 +85,11 @@ export default function About() {
   const per = wide ? 3 : mid ? 2 : 1;
   const why = (
     <View style={{ gap: 14, alignItems: 'stretch', paddingVertical: wide ? 18 : 4 }}>
-      <Eyebrow center>{x.whyTag}</Eyebrow>
-      <Text accessibilityRole="header" style={{ color: th.text, fontSize: h2, fontWeight: '900', letterSpacing: -0.8, textAlign: 'center' }}>{x.whyTitle}</Text>
-      <Text style={{ color: th.dim, fontSize: 15, lineHeight: 22, textAlign: 'center', alignSelf: 'center', maxWidth: 560 }}>{x.whySub}</Text>
+      <View style={[{ gap: 10, alignItems: 'center' }, box]}>
+        <Eyebrow center>{x.whyTag}</Eyebrow>
+        <Text accessibilityRole="header" style={{ color: th.text, fontSize: h2, fontWeight: '900', letterSpacing: -0.8, textAlign: 'center' }}>{x.whyTitle}</Text>
+        <Text style={{ color: th.dim, fontSize: 15, lineHeight: 22, textAlign: 'center', alignSelf: 'center', maxWidth: 560 }}>{x.whySub}</Text>
+      </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 14 }}>
         {x.cards.map((cd, i) => (
           <View key={i} style={{ width: per === 1 ? '100%' : per === 2 ? '48.6%' : '31.9%', flexGrow: 1 } as any}>
@@ -106,7 +111,7 @@ export default function About() {
   // ---------- 4. contact ----------
   const contact = (
     <View style={{ flexDirection: wide ? 'row' : 'column', gap: wide ? 40 : 18, alignItems: wide ? 'center' : 'stretch', paddingVertical: wide ? 18 : 4 }}>
-      <View style={{ flex: 1, gap: 12, minWidth: 0 }}>
+      <View style={[{ flex: 1, gap: 12, minWidth: 0 }, box]}>
         <Eyebrow>{x.contactTag}</Eyebrow>
         <Text accessibilityRole="header" style={{ color: th.text, fontSize: h2, fontWeight: '900', letterSpacing: -0.8 }}>{c.contactTitle}</Text>
         <Text style={{ color: th.dim, fontSize: 15, lineHeight: 23, maxWidth: 380 }}>{c.contactText}</Text>
@@ -128,7 +133,7 @@ export default function About() {
 
   // ---------- 5. please note ----------
   const note = (
-    <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', padding: 20, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + (th.dark ? '18' : '14') }}>
+    <View style={[{ flexDirection: 'row', gap: 16, alignItems: 'center', padding: 20 }, noteSurface(th, th.gold)]}>
       {circle('alert', 48, th.gold + '33', th.gold)}
       <View style={{ flex: 1, gap: 4 }}>
         <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>{c.discTitle}</Text>

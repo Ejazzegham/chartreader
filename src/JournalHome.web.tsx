@@ -4,6 +4,7 @@ import { LinearGradient } from './FlatGradient';
 import Svg, { Circle, Polyline, Path } from 'react-native-svg';
 import { useApp, Trade } from './store';
 import { Icon, confirmAction, HeroBanner } from './ui';
+import { Fineprint } from './Note';
 import { Coin } from './MarketWidgets';
 import GuardBanner from './Guard';
 import { MiniRing } from './MethodArt';
@@ -32,22 +33,24 @@ const methodOf = (src?: string) => sourceName(src ? src.split(' · ')[0] : undef
 const RANGES: [string, string][] = [['all', 'All time'], ['today', 'Today'], ['week', 'Last 7 days'], ['month', 'Last 30 days']];
 
 // ---------- small pieces
-function Select({ value, options, onChange, icon, width = 150 }: { value: string; options: [string, string][]; onChange: (k: string) => void; icon?: string; width?: number }) {
+function Select({ value, options, onChange, icon, width = 150, label, fill }: { value: string; options: [string, string][]; onChange: (k: string) => void; icon?: string; width?: number; label?: string; fill?: boolean }) {
   const P = usePal();
   const [open, setOpen] = useState(false);
   const cur = options.find((o) => o[0] === value)?.[1] ?? value;
   return (
-    <View style={{ zIndex: open ? 50 : 1 }}>
-      <Pressable onPress={() => setOpen((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, height: 36, minWidth: width, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, cursor: 'pointer' } as any}>
-        {!!icon && <Icon name={icon} size={14} color={P.blue} />}
-        <Text style={{ flex: 1, color: P.head, fontSize: 12.5 }} numberOfLines={1}>{cur}</Text>
-        <Icon name="chevron-down" size={13} color={P.body} />
+    <View style={{ zIndex: open ? 50 : 1, gap: 5, ...(fill ? { flexGrow: 1, flexBasis: 170, minWidth: 150 } : null) }}>
+      {!!label && <Text style={{ color: P.body, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.9 }}>{label.toUpperCase()}</Text>}
+      <Pressable accessibilityRole="button" accessibilityLabel={label ? `${label}: ${cur}` : cur} onPress={() => setOpen((v) => !v)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, minWidth: fill ? 0 : width, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: open ? P.blue : st.hovered ? P.blue + '88' : P.border, backgroundColor: P.th.solid, cursor: 'pointer' })) as any}>
+        {!!icon && <Icon name={icon} size={15} color={P.blue} />}
+        <Text style={{ flex: 1, color: P.head, fontSize: 13, fontWeight: '600' }} numberOfLines={1}>{cur}</Text>
+        <Icon name={open ? 'chevron-up' : 'chevron-down'} size={14} color={P.body} />
       </Pressable>
       {open && (
-        <View style={{ position: 'absolute', top: 40, left: 0, minWidth: Math.max(width, 160), padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 60, shadowColor: P.shadow, shadowOpacity: 0.16, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
+        <View style={{ position: 'absolute', top: label ? 70 : 44, left: 0, right: fill ? 0 : undefined, minWidth: Math.max(width, 170), padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid, zIndex: 60, shadowColor: P.shadow, shadowOpacity: 0.2, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } }}>
           {options.map(([k, l]) => (
-            <Pressable key={k} onPress={() => { onChange(k); setOpen(false); }} style={((st: any) => ({ height: 34, paddingHorizontal: 10, borderRadius: 8, justifyContent: 'center', cursor: 'pointer', backgroundColor: k === value ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
-              <Text style={{ color: k === value ? P.blue : P.head, fontSize: 12.5, fontWeight: k === value ? '700' : '500' }}>{l}</Text>
+            <Pressable key={k} onPress={() => { onChange(k); setOpen(false); }} style={((st: any) => ({ height: 36, paddingHorizontal: 10, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', backgroundColor: k === value ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
+              <Text style={{ flex: 1, color: k === value ? P.blue : P.head, fontSize: 13, fontWeight: k === value ? '700' : '500' }} numberOfLines={1}>{l}</Text>
+              {k === value && <Icon name="checkmark" size={14} color={P.blue} />}
             </Pressable>
           ))}
         </View>
@@ -327,22 +330,30 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
       })}
     </Panel>
   );
+  const filtersOn = side !== 'all' || !!q.trim() || range !== 'all' || strat !== 'all' || tfF !== 'all' || order !== 'new';
+  const resetFilters = () => { setSide('all'); setQ(''); setRange('all'); setStrat('all'); setTfF('all'); setOrder('new'); };
   const filters = view !== 'insights' && (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, zIndex: 20 }}>
-      <View style={{ flexDirection: 'row', gap: 6 }}>
-        {(['all', 'buy', 'sell'] as const).map((k) => {
-          const on = side === k, c = k === 'buy' ? th.buy : k === 'sell' ? th.sell : P.blue;
-          return <Pressable key={k} onPress={() => setSide(k)} style={{ height: 34, minWidth: 48, paddingHorizontal: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? c : P.alt, cursor: 'pointer' } as any}><Text style={{ color: on ? '#FFFFFF' : P.body, fontSize: 12.5, fontWeight: '700' }}>{k === 'all' ? 'All' : k === 'buy' ? 'Buy' : 'Sell'}</Text></Pressable>;
-        })}
+    <View style={{ gap: 14, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt, zIndex: 20 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+        <View style={{ flexGrow: 1, flexBasis: 280, minWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid }}>
+          <Icon name="search" size={16} color={P.body} />
+          <TextInput value={q} onChangeText={setQ} placeholder="Search by symbol or strategy" placeholderTextColor={P.body} accessibilityLabel="Search signals" style={{ flex: 1, minWidth: 0, color: P.head, fontSize: 13.5, outlineStyle: 'none' } as any} />
+          {!!q && <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => setQ('')} hitSlop={8} style={{ cursor: 'pointer' } as any}><Icon name="close-circle" size={16} color={P.body} /></Pressable>}
+        </View>
+        <View style={{ flexDirection: 'row', padding: 3, gap: 3, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid }}>
+          {(['all', 'buy', 'sell'] as const).map((k) => {
+            const on = side === k, c = k === 'buy' ? th.buy : k === 'sell' ? th.sell : P.blue;
+            return <Pressable key={k} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => setSide(k)} style={((st: any) => ({ height: 36, minWidth: 64, paddingHorizontal: 16, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? c : st.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}><Text style={{ color: on ? '#FFFFFF' : P.head, fontSize: 13, fontWeight: '700' }}>{k === 'all' ? 'All' : k === 'buy' ? 'Buy' : 'Sell'}</Text></Pressable>;
+          })}
+        </View>
       </View>
-      <View style={{ flex: 1, minWidth: 180, flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
-        <Icon name="search" size={14} color={P.body} />
-        <TextInput value={q} onChangeText={setQ} placeholder="Search symbol or strategy..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', gap: 12, zIndex: 30 }}>
+        <Select fill label="Period" value={range} options={RANGES} onChange={setRange} icon="calendar-outline" />
+        <Select fill label="Strategy" value={strat} options={[['all', 'All Strategies'], ...methods.map((m) => [m, m] as [string, string])]} onChange={setStrat} icon="layers-outline" />
+        <Select fill label="Timeframe" value={tfF} options={[['all', 'All Timeframes'], ...tfs.map((t) => [t, tfName(t)] as [string, string])]} onChange={setTfF} icon="time-outline" />
+        <Select fill label="Sort by" value={order} options={[['new', 'Newest First'], ['old', 'Oldest First']]} onChange={setOrder} icon="swap-vertical-outline" />
+        {filtersOn && <Pressable accessibilityRole="button" onPress={resetFilters} style={((st: any) => ({ height: 40, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, backgroundColor: st.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}><Icon name="refresh" size={14} color={P.blue} /><Text style={{ color: P.blue, fontSize: 13, fontWeight: '700' }}>Reset filters</Text></Pressable>}
       </View>
-      <Select value={range} options={RANGES} onChange={setRange} icon="calendar-outline" width={140} />
-      <Select value={strat} options={[['all', 'All Strategies'], ...methods.map((m) => [m, m] as [string, string])]} onChange={setStrat} width={140} />
-      <Select value={tfF} options={[['all', 'All Timeframes'], ...tfs.map((t) => [t, tfName(t)] as [string, string])]} onChange={setTfF} width={140} />
-      <Select value={order} options={[['new', 'Newest First'], ['old', 'Oldest First']]} onChange={setOrder} width={130} />
     </View>
   );
 
@@ -523,7 +534,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
           <View style={{ flex: 1 }}><Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800' }}>Refine Your Setups. Trade Smarter.</Text><Text style={{ color: '#EAF2FFDD', fontSize: 12.5, marginTop: 2 }}>Use your journal insights to improve your strategy, reduce mistakes and grow consistently.</Text></View>
           <Btn label="Open Analysis" onPress={() => setTab(1)} />
         </LinearGradient>
-        <Text style={{ color: P.body, fontSize: 11.5 }}>Paper trading on live prices. Results are a study tool, not financial advice.</Text>
+        <Fineprint>Paper trading on live prices. Results are a study tool, not financial advice.</Fineprint>
       </View>
       <Footer w={w} go={go} />
     </ScrollView>

@@ -4,7 +4,7 @@
 // (Analysis = candles + indicators, Killzones = radar sweep, Crypto = spinning coins, Settings = gears ...).
 export type HeroKind =
   | 'brand' | 'analysis' | 'methods' | 'markets' | 'crypto' | 'sessions' | 'brokers' | 'prop' | 'community' | 'killzones'
-  | 'news' | 'performance' | 'risk' | 'journal' | 'guide' | 'checklist' | 'settings' | 'about' | 'paper';
+  | 'news' | 'performance' | 'risk' | 'journal' | 'guide' | 'checklist' | 'settings' | 'about' | 'paper' | 'forex' | 'history' | 'tradehistory';
 
 type Ctx = CanvasRenderingContext2D;
 type Scene = (cx: Ctx, W: number, H: number, t: number, sy: number, st: any) => void;
@@ -38,6 +38,9 @@ export const PAL: Record<HeroKind, { bg: [string, string, string]; g: number[][]
   settings:    { bg: ['#0C1226', '#141C3A', '#1E2848'], g: [[100, 116, 139], [59, 130, 246]] },
   about:       { bg: ['#080C26', '#120E40', '#1E0F52'], g: [[139, 92, 246], [236, 72, 153]] },
   paper:       { bg: ['#071533', '#0A1E4A', '#0F2A5E'], g: [[59, 130, 246], [16, 185, 129]] },
+  forex:       { bg: ['#071634', '#0B2150', '#0E2C66'], g: [[59, 130, 246], [20, 184, 166]] },
+  history:     { bg: ['#0B1233', '#14194A', '#1F1B5A'], g: [[99, 102, 241], [56, 189, 248]] },
+  tradehistory: { bg: ['#0A1630', '#0E2347', '#112F58'], g: [[16, 185, 129], [59, 130, 246]] },
 };
 export const heroKind = (k?: string): HeroKind => (k && (PAL as any)[k] ? (k as HeroKind) : 'brand');
 
@@ -283,21 +286,39 @@ const killzones: Scene = (cx, W, H, t) => {
 };
 
 // News: headlines streaming past in rows, an occasional red "breaking" line, and a pulsing live dot.
+// News: a live newsroom. Release cards (name, forecast, impact) slide in one after another like a calendar feed, a LIVE beacon broadcasts, and a
+// drifting row of headline lines runs behind them.
+const NEWS_EVENTS: [string, string, 0 | 1 | 2][] = [
+  ['US CPI (YoY)', 'Forecast 3.1%  ·  Prev 3.2%', 0], ['ECB Rate Decision', 'Forecast 4.25%  ·  Prev 4.25%', 0], ['Non-Farm Payrolls', 'Forecast 185K  ·  Prev 206K', 0],
+  ['UK GDP (QoQ)', 'Forecast 0.3%  ·  Prev 0.1%', 1], ['FOMC Minutes', 'Release 19:00 GMT', 0], ['Crude Oil Inventories', 'Forecast -1.2M  ·  Prev 0.8M', 1],
+  ['JPY Tankan Index', 'Forecast 13  ·  Prev 13', 2], ['BoE Rate Decision', 'Forecast 5.00%  ·  Prev 5.25%', 0],
+];
+const IMPACT = [['251,113,133', 'HIGH'], ['251,191,36', 'MED'], ['148,163,184', 'LOW']];
 const news: Scene = (cx, W, H, t, sy, st) => {
-  const rows = st.rw = st.rw || Array.from({ length: 8 }, (_, ri) => { const r = makeRng(ri * 977 + 11), seg: { w: number; x: number; hot: boolean }[] = []; let x = 0; while (x < 1700) { const w = 34 + r() * 110; seg.push({ w, x, hot: r() < 0.07 }); x += w + 12 + r() * 26; } return { seg, L: x, sp: 0.02 + r() * 0.035, y: 0.1 + ri * 0.112, a: 0.1 + r() * 0.1 }; });
-  rows.forEach((row: any, ri: number) => {
+  const rows = st.rw = st.rw || Array.from({ length: 6 }, (_, ri) => { const r = makeRng(ri * 977 + 11), seg: { w: number; x: number }[] = []; let x = 0; while (x < 1700) { const w = 34 + r() * 110; seg.push({ w, x }); x += w + 12 + r() * 24; } return { seg, L: x, y: 0.12 + ri * 0.15, sp: 0.012 + r() * 0.02, a: 0.05 + r() * 0.05 }; });
+  rows.forEach((row: any, ri: number) => { // faint headline lines drifting behind everything
     const off = wrap(t * row.sp + sy * (0.5 + ri * 0.1), row.L), y = H * row.y;
-    row.seg.forEach((s: any) => {
-      for (let k = 0; k < 2; k++) {
-        const x = s.x - off + k * row.L; if (x > W || x + s.w < 0) continue;
-        const hot = s.hot, pulse = 0.55 + 0.45 * Math.sin(t * 0.006 + ri);
-        rr(cx, x, y, s.w, 7, 3.5); cx.fillStyle = hot ? `rgba(251,113,133,${0.45 + pulse * 0.4})` : `rgba(226,232,240,${row.a})`; cx.fill();
-      }
-    });
+    row.seg.forEach((sg: any) => { for (let k = 0; k < 2; k++) { const x = sg.x - off + k * row.L; if (x > W || x + sg.w < 0) continue; rr(cx, x, y, sg.w, 6, 3); cx.fillStyle = `rgba(226,232,240,${row.a})`; cx.fill(); } });
   });
-  const lx = W * 0.92, ly = H * 0.5;
-  for (let k = 0; k < 3; k++) { const p = wrap(t * 0.0006 + k / 3, 1); cx.strokeStyle = `rgba(251,113,133,${0.7 * (1 - p)})`; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(lx, ly, 6 + p * 34, 0, TAU); cx.stroke(); }
-  glow(cx, lx, ly, 22, [244, 63, 94], 0.7); cx.fillStyle = '#FB7185'; cx.beginPath(); cx.arc(lx, ly, 5, 0, TAU); cx.fill();
+  const bx = W * 0.94, by = 24; // broadcast beacon
+  for (let k = 0; k < 4; k++) { const p = wrap(t * 0.0005 + k / 4, 1); cx.strokeStyle = `rgba(251,113,133,${0.32 * (1 - p)})`; cx.lineWidth = 1.5; cx.beginPath(); cx.arc(bx, by, 8 + p * H * 0.8, 0, TAU); cx.stroke(); }
+  if (W < 520) return;
+  const cw = Math.min(W * 0.4, 350), x0 = W - cw - 24, ch = 38, gap = 8, y0 = 38, T = 2400, n = Math.floor(t / T), p = wrap(t, T) / T, shift = eo(cl(p / 0.22));
+  cx.font = `800 10px ${FONT}`; cx.textAlign = 'left'; cx.textBaseline = 'middle'; // LIVE pill
+  rr(cx, x0, 10, 52, 20, 10); cx.fillStyle = 'rgba(244,63,94,0.9)'; cx.fill();
+  cx.fillStyle = `rgba(255,255,255,${0.6 + 0.4 * Math.sin(t * 0.008)})`; cx.beginPath(); cx.arc(x0 + 13, 20, 3.2, 0, TAU); cx.fill(); cx.fillStyle = '#fff'; cx.fillText('LIVE', x0 + 22, 20.5);
+  cx.fillStyle = 'rgba(226,232,240,0.7)'; cx.font = `600 10px ${FONT}`; cx.fillText('Economic calendar', x0 + 62, 20.5);
+  cx.save(); cx.beginPath(); cx.rect(x0 - 12, y0 - 4, cw + 24, 3 * (ch + gap) - gap + 8); cx.clip();
+  for (let i = 0; i < 4; i++) {
+    const ev = NEWS_EVENTS[wrap(n - i, NEWS_EVENTS.length)], [col, lab] = IMPACT[ev[2]], y = y0 + (i - 1 + shift) * (ch + gap), a = i === 0 ? shift : i === 3 ? 1 - shift : 1, sx = i === 0 ? (1 - shift) * 40 : 0;
+    cx.globalAlpha = a; rr(cx, x0 + sx, y, cw, ch, 8); cx.fillStyle = 'rgba(255,255,255,0.09)'; cx.fill(); cx.strokeStyle = `rgba(${col},${i === 0 ? 0.75 : 0.35})`; cx.lineWidth = 1; cx.stroke();
+    rr(cx, x0 + sx, y, 4, ch, 2); cx.fillStyle = `rgba(${col},0.95)`; cx.fill();
+    cx.textAlign = 'left'; cx.font = `700 12px ${FONT}`; cx.fillStyle = '#fff'; cx.fillText(ev[0], x0 + sx + 16, y + 14);
+    cx.font = `500 10px ${FONT}`; cx.fillStyle = 'rgba(203,213,225,0.85)'; cx.fillText(ev[1], x0 + sx + 16, y + 28);
+    rr(cx, x0 + sx + cw - 52, y + 10, 40, 18, 9); cx.fillStyle = `rgba(${col},0.22)`; cx.fill(); cx.fillStyle = `rgb(${col})`; cx.font = `800 9px ${FONT}`; cx.textAlign = 'center'; cx.fillText(lab, x0 + sx + cw - 32, y + 19.5);
+    cx.globalAlpha = 1;
+  }
+  cx.restore();
 };
 
 // Performance: monthly result bars growing in, a cumulative line over them and a win-rate ring filling up.
@@ -440,7 +461,79 @@ const paper: Scene = (cx, W, H, t, sy, st) => {
   glow(cx, xHead, liveY, 18, [52, 211, 153], 0.7 + 0.2 * Math.sin(t * 0.01)); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(xHead, liveY, 3, 0, TAU); cx.fill();
 };
 
-const SCENES: Record<HeroKind, Scene> = { brand, analysis, methods, markets, crypto, sessions, brokers, prop, community, killzones, news, performance, risk, journal, guide, checklist, settings, about, paper };
+// Forex: currency symbols drifting up behind a board of live-looking pairs (rate, change and a tiny trend line).
+const FX_PAIRS: [string, number, number][] = [['EUR/USD', 1.0842, 4], ['GBP/USD', 1.2716, 4], ['USD/JPY', 151.32, 2], ['AUD/USD', 0.6554, 4], ['USD/CHF', 0.8851, 4], ['USD/CAD', 1.3624, 4]];
+const forex: Scene = (cx, W, H, t, sy, st) => {
+  const syms = st.sy = st.sy || Array.from({ length: 18 }, (_, i) => ({ x: hn(i * 3 + 1), y: hn(i * 5 + 2), s: 16 + hn(i * 7 + 3) * 28, v: 0.008 + hn(i * 11) * 0.02, c: ['$', '€', '£', '¥', 'Fr', 'A$', 'C$'][i % 7], ph: hn(i * 13) * TAU }));
+  cx.textAlign = 'center'; cx.textBaseline = 'middle';
+  syms.forEach((o: any) => { const y = wrap(o.y * H - t * o.v - sy * 0.15, H + 60) - 30, x = o.x * W + Math.sin(t * 0.0006 + o.ph) * 10; cx.font = `700 ${o.s}px ${FONT}`; cx.fillStyle = `rgba(147,197,253,${0.07 + 0.05 * Math.sin(t * 0.001 + o.ph)})`; cx.fillText(o.c, x, y); });
+  if (W < 520) return;
+  const cols = W > 1050 ? 3 : 2, gap = 10, cw = Math.min(150, (Math.min(W * 0.4, 420) - gap * (cols - 1)) / cols), ch = 62, x0 = W - 24 - (cols * cw + (cols - 1) * gap), y0 = 14;
+  for (let i = 0; i < cols * 2; i++) {
+    const [name, base, dec] = FX_PAIRS[i], x = x0 + (i % cols) * (cw + gap), y = y0 + Math.floor(i / cols) * (ch + gap), ph = hn(i * 17 + 5) * TAU, N = 26;
+    const f = (k: number) => Math.sin(k * 0.45 + ph + t * 0.0011) * 0.5 + Math.sin(k * 1.1 + ph * 2 + t * 0.0006) * 0.3 + (k / N) * (hn(i * 3 + 9) - 0.5) * 1.2;
+    const last = f(N), first = f(0), up = last >= first, col = up ? GREEN : RED, price = base * (1 + last * 0.0007), pct = ((last - first) * 0.07);
+    rr(cx, x, y, cw, ch, 8); cx.fillStyle = 'rgba(255,255,255,0.08)'; cx.fill(); cx.strokeStyle = `rgba(147,197,253,${0.3})`; cx.lineWidth = 1; cx.stroke();
+    cx.textAlign = 'left'; cx.font = `700 10px ${FONT}`; cx.fillStyle = 'rgba(203,213,225,0.9)'; cx.fillText(name, x + 10, y + 13);
+    cx.font = `800 15px ${FONT}`; cx.fillStyle = '#fff'; cx.fillText(price.toFixed(dec), x + 10, y + 31);
+    cx.textAlign = 'right'; cx.font = `700 10px ${FONT}`; cx.fillStyle = `rgb(${col})`; cx.fillText((up ? '+' : '-') + Math.abs(pct).toFixed(2) + '%', x + cw - 10, y + 13);
+    cx.beginPath(); for (let k = 0; k <= N; k++) { const px = x + 10 + (cw - 20) * k / N, py = y + ch - 9 - (f(k) + 1) * 0.5 * 11; k ? cx.lineTo(px, py) : cx.moveTo(px, py); }
+    cx.strokeStyle = `rgba(${col},0.9)`; cx.lineWidth = 1.5; cx.stroke();
+    glow(cx, x + cw - 10, y + ch - 9 - (last + 1) * 0.5 * 11, 9, up ? [52, 211, 153] : [251, 113, 133], 0.6);
+  }
+};
+
+// Analysis History: saved analysis cards (a mini chart, pair, side, date) scroll past while a clock face winds backwards behind them.
+const history: Scene = (cx, W, H, t) => {
+  const ccx = W * 0.8, ccy = H * 0.46, R = Math.min(H * 0.4, 84);
+  cx.strokeStyle = 'rgba(165,180,252,0.18)'; cx.lineWidth = 2; cx.beginPath(); cx.arc(ccx, ccy, R, 0, TAU); cx.stroke();
+  for (let k = 0; k < 12; k++) { const a = k * TAU / 12; cx.beginPath(); cx.moveTo(ccx + Math.cos(a) * R * 0.86, ccy + Math.sin(a) * R * 0.86); cx.lineTo(ccx + Math.cos(a) * R * 0.97, ccy + Math.sin(a) * R * 0.97); cx.stroke(); }
+  const ha = -Math.PI / 2 - t * 0.0006, ma = -Math.PI / 2 - t * 0.0072; cx.lineCap = 'round';
+  cx.strokeStyle = 'rgba(199,210,254,0.35)'; cx.lineWidth = 3; cx.beginPath(); cx.moveTo(ccx, ccy); cx.lineTo(ccx + Math.cos(ha) * R * 0.5, ccy + Math.sin(ha) * R * 0.5); cx.stroke();
+  cx.lineWidth = 2; cx.beginPath(); cx.moveTo(ccx, ccy); cx.lineTo(ccx + Math.cos(ma) * R * 0.78, ccy + Math.sin(ma) * R * 0.78); cx.stroke(); cx.lineCap = 'butt';
+  cx.strokeStyle = 'rgba(56,189,248,0.5)'; cx.lineWidth = 2; cx.beginPath(); cx.arc(ccx, ccy, R + 8, Math.PI * 1.15, Math.PI * 1.75, false); cx.stroke(); // a "rewind" arrow around the dial
+  const ea = Math.PI * 1.15; cx.fillStyle = 'rgba(56,189,248,0.7)'; cx.beginPath(); cx.moveTo(ccx + Math.cos(ea) * (R + 8) - 7, ccy + Math.sin(ea) * (R + 8) - 2); cx.lineTo(ccx + Math.cos(ea) * (R + 8) + 6, ccy + Math.sin(ea) * (R + 8) - 7); cx.lineTo(ccx + Math.cos(ea) * (R + 8) + 6, ccy + Math.sin(ea) * (R + 8) + 7); cx.fill();
+  if (W < 520) return;
+  const rowH = 52, n = 9, L = n * rowH, cw = Math.min(W * 0.36, 320), x = W - cw - 24, off = t * 0.016, top = 10, bot = 150;
+  const PAIRS = ['EUR/USD', 'GBP/JPY', 'XAU/USD', 'BTC/USD', 'USD/JPY', 'GBP/USD', 'ETH/USD', 'AUD/USD', 'US30'], TFS = ['M15', 'H1', 'H4', 'M5', 'H1', 'D1', 'M30', 'H4', 'M15'];
+  cx.save(); cx.beginPath(); cx.rect(x - 10, top, cw + 20, bot - top); cx.clip();
+  for (let i = 0; i < n; i++) {
+    const y = wrap(i * rowH - off + rowH, L) - rowH, buy = i % 3 !== 1, a = cl(Math.min(y + rowH - top, bot - y) / 40); if (y > bot || y < top - rowH) continue;
+    cx.globalAlpha = a; rr(cx, x, y + 3, cw, rowH - 9, 8); cx.fillStyle = 'rgba(255,255,255,0.09)'; cx.fill(); cx.strokeStyle = 'rgba(165,180,252,0.3)'; cx.lineWidth = 1; cx.stroke();
+    rr(cx, x + 8, y + 8, 48, rowH - 19, 5); cx.fillStyle = 'rgba(6,10,30,0.45)'; cx.fill(); // mini chart
+    for (let k = 0; k < 7; k++) { const o = hn(i * 31 + k * 3), c2 = hn(i * 31 + k * 3 + 1), mx = x + 12 + k * 6.2, base = y + 8 + (rowH - 19) / 2, up = c2 >= 0.5; cx.fillStyle = up ? `rgba(${GREEN},0.9)` : `rgba(${RED},0.9)`; const hh = 4 + o * 11; cx.fillRect(mx, base - hh / 2 + (0.5 - c2) * 6, 3.4, hh); }
+    cx.textAlign = 'left'; cx.textBaseline = 'middle'; cx.font = `700 12px ${FONT}`; cx.fillStyle = '#fff'; cx.fillText(PAIRS[i] + '  ' + TFS[i], x + 66, y + 17);
+    cx.font = `500 10px ${FONT}`; cx.fillStyle = 'rgba(203,213,225,0.8)'; cx.fillText('Saved analysis  ·  ' + (10 + i * 2) + ':' + (10 + ((i * 17) % 50)), x + 66, y + 31);
+    rr(cx, x + cw - 52, y + 11, 40, 18, 9); cx.fillStyle = buy ? `rgba(${GREEN},0.22)` : `rgba(${RED},0.22)`; cx.fill(); cx.fillStyle = buy ? `rgb(${GREEN})` : `rgb(${RED})`; cx.font = `800 9px ${FONT}`; cx.textAlign = 'center'; cx.fillText(buy ? 'BUY' : 'SELL', x + cw - 32, y + 20.5);
+    cx.globalAlpha = 1;
+  }
+  cx.restore();
+};
+
+// Trade History: an equity curve drawing itself trade by trade, every closed trade marked win / loss, with the running R total counting up.
+const tradehistory: Scene = (cx, W, H, t) => {
+  if (W < 520) return;
+  const N = 18, x0 = Math.max(W * 0.66, W - 360), x1 = W - 40, top = 40, bot = 140, T = 9000, p = cl(wrap(t, T) / 6800), fade = wrap(t, T) / T > 0.9 ? cl((1 - wrap(t, T) / T) / 0.1) : 1;
+  const R: number[] = Array.from({ length: N }, (_, i) => (hn(i * 7 + 3) > 0.34 ? 0.6 + hn(i * 5 + 1) * 1.8 : -1)); const cum: number[] = []; R.reduce((a, v, i) => (cum[i] = a + v), 0);
+  const mx = Math.max(...cum, 1), mn = Math.min(...cum, 0), yOf = (v: number) => bot - ((v - mn) / (mx - mn || 1)) * (bot - top), xOf = (i: number) => x0 + (x1 - x0) * i / (N - 1);
+  cx.globalAlpha = fade; cx.strokeStyle = 'rgba(167,243,208,0.1)'; cx.lineWidth = 1; for (let i = 0; i < 4; i++) { const y = top + (bot - top) * i / 3; cx.beginPath(); cx.moveTo(x0 - 10, y); cx.lineTo(x1 + 10, y); cx.stroke(); }
+  cx.setLineDash([4, 4]); cx.strokeStyle = 'rgba(255,255,255,0.3)'; cx.beginPath(); cx.moveTo(x0 - 10, yOf(0)); cx.lineTo(x1 + 10, yOf(0)); cx.stroke(); cx.setLineDash([]);
+  const upto = p * (N - 1), full = Math.floor(upto), frac = upto - full; const pts: number[][] = [];
+  for (let i = 0; i <= full && i < N; i++) pts.push([xOf(i), yOf(cum[i])]); if (full < N - 1) pts.push([xOf(full) + (xOf(full + 1) - xOf(full)) * frac, yOf(cum[full]) + (yOf(cum[full + 1]) - yOf(cum[full])) * frac]);
+  if (pts.length > 1) {
+    const g = cx.createLinearGradient(0, top, 0, bot); g.addColorStop(0, 'rgba(52,211,153,0.28)'); g.addColorStop(1, 'rgba(52,211,153,0)');
+    cx.beginPath(); pts.forEach(([x, y], i) => (i ? cx.lineTo(x, y) : cx.moveTo(x, y))); cx.lineTo(pts[pts.length - 1][0], bot); cx.lineTo(pts[0][0], bot); cx.closePath(); cx.fillStyle = g; cx.fill();
+    cx.beginPath(); pts.forEach(([x, y], i) => (i ? cx.lineTo(x, y) : cx.moveTo(x, y))); cx.strokeStyle = 'rgba(165,243,252,0.95)'; cx.lineWidth = 2; cx.stroke();
+  }
+  for (let i = 0; i <= full && i < N; i++) { const win = R[i] > 0; cx.fillStyle = win ? `rgba(${GREEN},0.95)` : `rgba(${RED},0.95)`; cx.beginPath(); cx.arc(xOf(i), yOf(cum[i]), 3.6, 0, TAU); cx.fill(); }
+  const hp = pts[pts.length - 1]; if (hp) { glow(cx, hp[0], hp[1], 16, [165, 243, 252], 0.7); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(hp[0], hp[1], 3, 0, TAU); cx.fill(); }
+  const total = full >= N - 1 ? cum[N - 1] : cum[full] + (cum[Math.min(full + 1, N - 1)] - cum[full]) * frac;
+  cx.textAlign = 'left'; cx.textBaseline = 'middle'; cx.font = `700 10px ${FONT}`; cx.fillStyle = 'rgba(203,213,225,0.8)'; cx.fillText('CLOSED TRADES  ·  ' + Math.min(N, full + 1), x0 - 10, 18);
+  cx.textAlign = 'right'; cx.font = `800 15px ${FONT}`; cx.fillStyle = total >= 0 ? `rgb(${GREEN})` : `rgb(${RED})`; cx.fillText((total >= 0 ? '+' : '') + total.toFixed(1) + 'R', x1 + 10, 18);
+  cx.globalAlpha = 1;
+};
+
+const SCENES: Record<HeroKind, Scene> = { brand, analysis, methods, markets, crypto, sessions, brokers, prop, community, killzones, news, performance, risk, journal, guide, checklist, settings, about, paper, forex, history, tradehistory };
 
 // Per-canvas state (random numbers are seeded by the page, so each page always looks the same).
 export const heroState = (kind: HeroKind) => ({ r: makeRng(hash(kind)) });

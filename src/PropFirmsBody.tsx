@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { noteSurface } from './Note';
 import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
 import DirectoryBody, { DirectoryCfg, usePal } from './DirectoryBody';
 import { PROP_FIRMS, toggleCompare } from './propFirms';
@@ -42,7 +43,7 @@ export default function PropFirmsBody({ w }: { w: number }) {
       {tab === 'compare' && <CompareTab P={P} w={w} sel={sel} setSel={setSel} />}
       {tab === 'guide' && <GuideTab P={P} w={w} />}
       {tab !== 'directory' && (
-        <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: P.th.gold + '66', backgroundColor: P.th.gold + '14' }}>
+        <View style={[{ flexDirection: 'row', gap: 12, padding: 16 }, noteSurface(P.th, P.th.gold)]}>
           <Icon name="warning-outline" size={20} color={P.th.gold} />
           <Text style={{ flex: 1, color: P.head, fontSize: 12.5, lineHeight: 19 }}>{CFG.disclaimer}</Text>
         </View>

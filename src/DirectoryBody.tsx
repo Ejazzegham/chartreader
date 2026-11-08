@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, TextInput, Linking, Platform } from 'react-native';
 import { useApp } from './store';
 import { Icon } from './ui';
+import { noteSurface } from './Note';
 import { PropFirm, domainOf, searchFirms } from './propFirms';
 
 // One directory page for any list of companies with a website (Prop Firms, Forex Brokers): optional top-three cards, a table with a Visit website link,
@@ -83,7 +84,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
 
   return (
     <View style={{ gap: 20 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, backgroundColor: P.soft, borderWidth: 1, borderColor: P.blue + '33' }}>
+      <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16 }, noteSurface(th, P.blue)]}>
         <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Icon name="information" size={20} color={th.onAccent} /></View>
         <Text style={{ color: P.head, fontSize: 13, lineHeight: 20, flex: 1 }}>{cfg.intro}</Text>
       </View>
@@ -170,7 +171,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
         </View>
       </Panel>
 
-      {!cfg.noChoose && <Panel P={P} style={{ backgroundColor: P.dark ? th.panel : th.accent2 + '0A' }}>
+      {!cfg.noChoose && <Panel P={P} style={{ backgroundColor: th.panel }}>
         <Head P={P} icon="shield-checkmark-outline" title={cfg.chooseTitle} sub={cfg.chooseSub} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
           {cfg.checks.map((c) => (
@@ -185,7 +186,7 @@ export default function DirectoryBody({ w, cfg }: { w: number; cfg: DirectoryCfg
         </View>
       </Panel>}
 
-      <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '66', backgroundColor: th.gold + '14' }}>
+      <View style={[{ flexDirection: 'row', gap: 12, padding: 16 }, noteSurface(th, th.gold)]}>
         <Icon name="warning-outline" size={20} color={th.gold} />
         <Text style={{ flex: 1, color: P.head, fontSize: 12.5, lineHeight: 19 }}>{cfg.disclaimer}</Text>
       </View>

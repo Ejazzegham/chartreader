@@ -17,6 +17,7 @@ import { initPush, registerPush, unregisterPush, setBadge, onPushEvent, PushStat
 import { notifTarget, NotifData } from './notifTarget';
 import { Signal, Desk, DESK0, Ev, CloseSetup, step, closeNow, partialClose as partialClosePos, isDuplicate, isOldDemoDesk, liveOpposite, dropOpposite, reconcile, Skipped, isSkipped, pruneSkipped, liveSame, wasTaken, TAKEN_HOURS, money, stopAtBE } from './trades';
 import { Position, Closed, openPosition as newPosition, closeLots, setLevels as setPosLevels, toBreakEven as posBreakEven, stepPosition } from './positions';
+import { NAV } from './nav';
 import { Vibration, AppState, Platform } from 'react-native';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword, verifyBeforeUpdateEmail, deleteUser, sendEmailVerification, GoogleAuthProvider, signInWithCredential, getAdditionalUserInfo } from 'firebase/auth';
 import { googleIdToken } from './google';
@@ -148,7 +149,9 @@ export function Provider({ children }: { children: React.ReactNode }) {
   const [adminOpen, setAdminOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false), [supportUnread, setSupportUnread] = useState(0), [adminBadge, setAdminBadge] = useState({ chats: 0, pays: 0 });
   const supRef = useRef({ since: 0, init: false, chats: 0, pays: 0, binit: false }), helpRef = useRef(false), badgeRef = useRef<() => void>(() => {});
-  const [histOpen, setHistOpen] = useState(false);
+  const [histOpen, setHistOpenRaw] = useState(false);
+  // The website shows Trade History as a page (tab 21, with its own hero like every other page); the phone apps keep the full-screen window.
+  const setHistOpen = (v: boolean) => { if (v && Platform.OS === 'web') { setMenu(false); setTab(NAV.findIndex((n) => n.key === 'tabTradeHistory')); } else setHistOpenRaw(v); };
   const [notes, _notes] = useState<Note[]>([]);
   const notesRef = useRef<Note[]>([]);
   const [notesOpen, setNotesOpen] = useState(false);

@@ -26,6 +26,7 @@ import About from './src/screens/About';
 import ManualTrade from './src/screens/ManualTrade';
 import RightSidebar from './src/RightSidebar';
 import TradeHistory from './src/TradeHistory';
+import TradeHistoryPage from './src/screens/TradeHistoryPage';
 import NotificationCenter from './src/NotificationCenter';
 import AdminPanel from './src/screens/AdminPanel';
 import Help from './src/Help';
@@ -49,7 +50,7 @@ const Go = (method: string, slot: number) => function Go() {
   useEffect(() => { if (tab === slot) { setAmethod(method); setTab(1); } }, [tab]);
   return null;
 };
-const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community]; // same order as NAV in src/nav.ts
+const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community, TradeHistoryPage]; // same order as NAV in src/nav.ts
 const TABS = NAV.map((n, i) => ({ key: n.key, icon: n.icon, Comp: COMPS[i] }));
 
 // Every page stays mounted (so charts keep their state). The one you open fades and rises in.

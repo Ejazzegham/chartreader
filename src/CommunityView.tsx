@@ -5,6 +5,7 @@ import { Icon } from './ui';
 import { SYMBOLS } from './markets';
 import { showAlert } from './dialog';
 import * as C from './community';
+import { errDetail } from './license';
 
 // The Community: members discuss the markets, ask questions and share trade ideas. Light and dark themes, phone to wide monitor.
 //   wide screens: the feed (composer, filters, posts) on the left and a side panel (numbers, trending pairs, top members, guidelines) on the right
@@ -338,7 +339,7 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
   const wide = width >= 1000, token = lic.token, active = tab === tabIndex;
   const [posts, setPosts] = useState<C.CPost[]>([]), [more, setMore] = useState(false);
   const [side, setSide] = useState<C.CFeed | null>(null);
-  const [loading, setLoading] = useState(true), [err, setErr] = useState(''), [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true), [err, setErr] = useState(''), [errInfo, setErrInfo] = useState(''), [loaded, setLoaded] = useState(false);
   const [f, setF] = useState({ kind: '' as C.CKind | '', sort: 'new' as 'new' | 'top', symbol: '', mine: false }), [text, setText] = useState(''), [qd, setQd] = useState('');
   const [composer, setComposer] = useState<C.CKind | null>(null);
   const [note, setNote] = useState<{ m: string; k: 'ok' | 'err' } | null>(null);
@@ -353,10 +354,12 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
     try {
       const r = await C.commFeed(token, { kind: f.kind, sort: f.sort, symbol: f.symbol, q: qd, mine: f.mine, offset: reset ? 0 : postsRef.current.length, limit: 15 });
       if (id !== req.current) return;
-      setErr(''); setLoaded(true);
+      // An old or broken server can answer with something that is not a feed. Show a clear message instead of crashing the page.
+      if (!r || !Array.isArray(r.posts)) throw Object.assign(new Error('The server sent an unexpected answer. It may be out of date: update and restart the server, then try again.'), { status: 200, path: '/community/feed' });
+      setErr(''); setErrInfo(''); setLoaded(true);
       setPosts((prev) => (reset ? r.posts : [...prev, ...r.posts.filter((p) => !prev.some((x) => x.id === p.id))])); setMore(r.more);
       if (r.stats) setSide(r); else if (reset) setSide((s) => (s ? { ...s, me: r.me } : s));
-    } catch (e: any) { if (id === req.current) setErr(e.message || 'Could not load the community.'); }
+    } catch (e: any) { if (id === req.current) { setErr(e.message || 'Could not load the community.'); setErrInfo(errDetail(e)); } }
     if (id === req.current) setLoading(false);
   }, [token, f.kind, f.sort, f.symbol, f.mine, qd]);
   const loadRef = useRef(load); loadRef.current = load;
@@ -411,7 +414,7 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
       </View>
 
       {err && !posts.length ? (
-        <View style={card(P, { padding: 22, alignItems: 'center', gap: 10 })}><Icon name="cloud-offline-outline" size={30} color={P.body} /><Text style={{ color: P.head, fontSize: 14.5, fontWeight: '700', textAlign: 'center' }}>{err}</Text><Button ghost small label="Try again" onPress={() => load(true)} /></View>
+        <View style={card(P, { padding: 22, alignItems: 'center', gap: 10 })}><Icon name="cloud-offline-outline" size={30} color={P.body} /><Text style={{ color: P.head, fontSize: 14.5, fontWeight: '700', textAlign: 'center' }}>{err}</Text>{!!errInfo && <Text selectable style={{ color: P.body, fontSize: 11.5, textAlign: 'center', opacity: 0.8 }}>{errInfo}</Text>}<Button ghost small label="Try again" onPress={() => load(true)} /></View>
       ) : !loaded ? (
         [0, 1, 2].map((i) => <View key={i} style={card(P, { padding: 16, gap: 12 })}><View style={{ flexDirection: 'row', gap: 11, alignItems: 'center' }}><View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.alt }} /><View style={{ gap: 6 }}><View style={{ width: 120, height: 11, borderRadius: 6, backgroundColor: P.alt }} /><View style={{ width: 70, height: 9, borderRadius: 5, backgroundColor: P.alt }} /></View></View><View style={{ width: '70%', height: 14, borderRadius: 7, backgroundColor: P.alt }} /><View style={{ width: '95%', height: 10, borderRadius: 5, backgroundColor: P.alt }} /><View style={{ width: '60%', height: 10, borderRadius: 5, backgroundColor: P.alt }} /></View>)
       ) : posts.length === 0 ? (

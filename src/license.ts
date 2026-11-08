@@ -77,6 +77,7 @@ export type SignupMapData = {
   places: { cc: string; city: string; lat: number; lon: number; n: number }[];
   recent?: { t: number; name: string; cc: string }[]; // newest members: first name + last initial, and country
   visitors?: number; visits?: number; online?: number; // visitor counter (older servers do not send these)
+  growth?: { members: number; countries: number }; // change over the last 30 days in percent (older servers do not send this)
 };
 export type VisitCounts = { visitors: number; visits: number; online: number };
 // Visitor counter: a random id kept in this browser tells visitors apart (the server stores only a one-way hash of it, no IP, nothing personal).
@@ -101,19 +102,22 @@ export async function pingVisit(): Promise<VisitCounts | null> {
 
 let signupDiag = 'not asked yet';
 export const getSignupMapDiag = () => signupDiag; // for the ?mapdebug switch on the website: why the map has no numbers
-export async function getSignupMap(): Promise<SignupMapData | null> {
+export async function getSignupMap(range: { from?: number; to?: number } = {}): Promise<SignupMapData | null> {
   if (base.includes('YOUR-SERVER-URL')) { signupDiag = 'no server address set'; return null; }
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
-    const r = await fetch(base + '/public/signups', { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
+    const qs = [range.from != null ? 'from=' + range.from : '', range.to != null ? 'to=' + range.to : ''].filter(Boolean).join('&');
+    const r = await fetch(base + '/public/signups' + (qs ? '?' + qs : ''), { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
     const txt = await r.text(); let j: any = null; try { j = JSON.parse(txt); } catch {}
     if (!r.ok) { signupDiag = `${base}/public/signups answered HTTP ${r.status}: ${txt.replace(/\s+/g, ' ').slice(0, 90)}`; return null; }
     if (!j || !Array.isArray(j.countries) || !Array.isArray(j.places)) { signupDiag = 'the answer is not the signup numbers (is the server on the new server.js?): ' + txt.replace(/\s+/g, ' ').slice(0, 90); return null; }
     signupDiag = `ok, ${j.total} members, ${j.countries.length} countries`; return j;
   } catch (e: any) { signupDiag = 'request failed: ' + String(e?.message || e).slice(0, 90); return null; } finally { clearTimeout(to); }
 }
+// One short line for "technical details" under an error: what was called and what came back, e.g. "POST /community/feed · HTTP 404".
+export const errDetail = (e: any): string => (e && e.path ? 'POST ' + e.path + ' · ' + (e.status === 200 ? 'unexpected answer' : e.status ? 'HTTP ' + e.status : 'no answer from the server') : '');
 async function post(path: string, body: any, token = '', ms = 25000) {
-  const net = (m: string) => Object.assign(new Error(m), { network: true }); // marks "server not reachable" so the app can carry on offline (see localTrial)
+  const net = (m: string, status = 0) => Object.assign(new Error(m), { network: true, status, path }); // status + path let a screen show the technical detail (HTTP 404 on /community/feed) // marks "server not reachable" so the app can carry on offline (see localTrial)
   if (base.includes('YOUR-SERVER-URL')) throw net('License server is not set up yet. Set the server address in Settings.');
   // A dead tunnel used to leave every screen waiting forever. Give up after 25 s with a message the user can act on.
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
@@ -125,9 +129,11 @@ async function post(path: string, body: any, token = '', ms = 25000) {
   } finally { clearTimeout(to); }
   const j = await r.json().catch(() => null);
   // Our server always answers in JSON. An HTML page (ngrok "tunnel offline", a proxy error) or a 5xx means the server itself is not there.
-  if (j === null || r.status >= 500) throw net(r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'The server is not running right now. Try again in a minute.');
+  if (j === null || r.status >= 500) throw net(r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'The server is not running right now. Try again in a minute.', r.status);
+  // 'Not found' (no full stop) is the server's catch-all: it does not know this route at all, so it is running an OLD version of server/ (missing the newest files).
+  if (r.status === 404 && j.error === 'Not found') throw Object.assign(new Error('The server is out of date and does not have this feature yet. Update and restart the server (the server folder), then try again.'), { network: false, status: 404, path });
   if (!r.ok) {
-    const err = Object.assign(new Error(j.error || 'Server error'), j.code ? { code: String(j.code) } : {});
+    const err = Object.assign(new Error(j.error || 'Server error'), { status: r.status, path }, j.code ? { code: String(j.code) } : {});
     if (r.status === 401 && j.code === 'replaced' && onReplaced && Date.now() - replacedFired > 10000) { replacedFired = Date.now(); onReplaced(err.message); } // signs this device out once, with the reason
     throw err;
   }

@@ -4,6 +4,7 @@ import { LinearGradient } from './FlatGradient';
 import Svg, { Rect, Line } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HeroBanner } from './ui';
+import { Note } from './Note';
 import { SYMBOLS, useFeed } from './markets';
 import { useRealWindow } from './win';
 import { usePal, Panel, Footer, useGo } from './DesktopHome.web';
@@ -333,13 +334,7 @@ export default function RiskHome() {
           </View>
         </Panel>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: P.blue + '26', backgroundColor: P.soft }}>
-          <Icon name="bulb" size={26} color={P.blue} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: P.blue, fontSize: 13.5, fontWeight: '800' }}>Pro Trading Tips</Text>
-            <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 19, marginTop: 2 }}>Always use a stop loss and never risk more than 1-2% of your account per trade. A good risk/reward ratio (1:2 or higher) helps you stay profitable in the long run, even if you don't win every trade.</Text>
-          </View>
-        </View>
+        <Note icon="bulb" title="Pro Trading Tips" tone={P.blue} style={{ padding: 18 }}>Always use a stop loss and never risk more than 1-2% of your account per trade. A good risk/reward ratio (1:2 or higher) helps you stay profitable in the long run, even if you don't win every trade.</Note>
       </View>
       <Footer w={w} go={go} />
     </ScrollView>

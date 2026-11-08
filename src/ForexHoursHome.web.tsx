@@ -15,7 +15,7 @@ export default function ForexHoursHome({ active }: { active: boolean }) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24 }}>
-        <HeroBanner fx="sessions" icon="globe" title="Forex Market Hours" subtitle="See which forex sessions are open right now, in your own time zone."
+        <HeroBanner fx="forex" icon="globe" title="Forex Market Hours" subtitle="See which forex sessions are open right now, in your own time zone."
           features={[
             { icon: 'globe-outline', title: 'Any Time Zone', sub: 'Your city or UTC' },
             { icon: 'radio-outline', title: 'Live Session Status', sub: 'Open or closed right now' },

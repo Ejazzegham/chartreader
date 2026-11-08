@@ -4,7 +4,8 @@ import { shareText } from './dialog';
 import Modal from './Modal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp, Trade } from './store';
-import { Icon } from './ui';
+import { Icon, Screen } from './ui';
+import { glassWeb } from './sheet';
 import { fmtR, money, sourceName } from './trades';
 import TradeDetail from './TradeDetail';
 
@@ -17,7 +18,8 @@ type Side = 'all' | 'buy' | 'sell';
 const DAY = 864e5;
 const startOfDay = (d: number) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); };
 
-export default function TradeHistory() {
+// page = the website's Trade History page (its own hero, like every other page); without it this is the phone's full-screen window.
+export function TradeHistoryView({ page }: { page?: boolean }) {
   const { th, t, rtl, histOpen, setHistOpen, journal, setTab, settings } = useApp();
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<Period>('all');
@@ -34,7 +36,7 @@ export default function TradeHistory() {
       .sort((a, b) => b.date - a.date);
   }, [journal, period, result, side, q]);
 
-  if (!histOpen) return null;
+  if (!page && !histOpen) return null;
 
   const n = rows.length, wins = rows.filter((j) => j.pnl > 0).length, net = rows.reduce((a, j) => a + j.pnl, 0);
   const gw = rows.filter((j) => j.pnl > 0).reduce((a, j) => a + j.pnl, 0), gl = Math.abs(rows.filter((j) => j.pnl < 0).reduce((a, j) => a + j.pnl, 0));
@@ -80,28 +82,8 @@ export default function TradeHistory() {
   const close = () => setHistOpen(false);
   const openTrade = open ? journal.find((x) => x.id === open) : undefined;
 
-  return (
+  const content = (
     <>
-    <Modal animationType="slide" onRequestClose={close} statusBarTranslucent>
-      <View style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr' }}>
-        {/* header */}
-        <View style={{ paddingTop: Math.max(insets.top, StatusBar.currentHeight ?? 0, 24) + 14, paddingBottom: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: th.line, backgroundColor: th.panel, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name={rtl ? 'arrow-forward' : 'arrow-back'} size={20} color={th.text} />
-          </Pressable>
-          <View style={{ flex: 1 }}>
-            <Text accessibilityRole="header" style={{ color: th.text, fontSize: 18, fontWeight: '900' }} numberOfLines={1}>{t('tabTradeHistory')}</Text>
-            <Text style={{ color: th.dim, fontSize: 11.5 }} numberOfLines={1}>{journal.length} {t('closedTradesWord')}</Text>
-          </View>
-          {journal.length > 0 && (
-            <Pressable onPress={exportCsv} hitSlop={6} accessibilityRole="button" accessibilityLabel={t('thExport')} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: th.accent + '88', backgroundColor: th.accent + '1A' }}>
-              <Icon name="share-outline" size={17} color={th.accent} />
-              <Text style={{ color: th.accent, fontWeight: '800', fontSize: 12.5 }}>{t('thExport')}</Text>
-            </Pressable>
-          )}
-        </View>
-
-        <ScrollView contentContainerStyle={{ padding: 14, gap: 12, paddingBottom: insets.bottom + 28 }} keyboardShouldPersistTaps="handled">
           {journal.length === 0 ? (
             <View style={{ alignItems: 'center', gap: 10, paddingVertical: 48, paddingHorizontal: 20 }}>
               <View style={{ width: 60, height: 60, borderRadius: 8, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt-outline" size={28} color={th.accent} /></View>
@@ -179,6 +161,50 @@ export default function TradeHistory() {
               ))}
             </>
           )}
+    </>
+  );
+
+  if (page) {
+    const exportBtn = journal.length > 0 ? (
+      <Pressable onPress={exportCsv} accessibilityRole="button" accessibilityLabel={t('thExport')} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: '#FFFFFF55', backgroundColor: st.hovered ? '#FFFFFF2E' : '#FFFFFF1A', cursor: 'pointer' })) as any}>
+        <Icon name="share-outline" size={17} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>{t('thExport')}</Text>
+      </Pressable>
+    ) : undefined;
+    return (
+      <>
+        <Screen fx="tradehistory" icon="receipt" tag="Journal / Trading Tools" title={settings.lang === 'en' ? 'Trade History' : t('tabTradeHistory')} right={exportBtn}
+          subtitle={settings.lang === 'en' ? `Every closed trade in one place, from the Journal and the paper desk. Filter by period, result and side, search a pair, see totals and a per-day result, open any trade for its full story and export everything to CSV${journal.length ? ` · ${journal.length} closed ${journal.length === 1 ? 'trade' : 'trades'}` : ''}.` : `${journal.length} ${t('closedTradesWord')}`}
+          features={settings.lang === 'en' ? [{ icon: 'funnel-outline', title: 'Filter and search', sub: 'Period, result, side and pair' }, { icon: 'calendar-outline', title: 'Daily results', sub: 'Trades grouped by day with totals' }, { icon: 'download-outline', title: 'Export to CSV', sub: 'Take your records anywhere' }] : undefined}>
+          <View style={{ gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, direction: rtl ? 'rtl' : 'ltr', ...glassWeb }}>{content}</View>
+        </Screen>
+        {openTrade && <TradeDetail key={openTrade.id} j={openTrade} onClose={() => setOpen(null)} />}
+      </>
+    );
+  }
+
+  return (
+    <>
+    <Modal animationType="slide" onRequestClose={close} statusBarTranslucent>
+      <View style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr' }}>
+        {/* header */}
+        <View style={{ paddingTop: Math.max(insets.top, StatusBar.currentHeight ?? 0, 24) + 14, paddingBottom: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: th.line, backgroundColor: th.panel, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name={rtl ? 'arrow-forward' : 'arrow-back'} size={20} color={th.text} />
+          </Pressable>
+          <View style={{ flex: 1 }}>
+            <Text accessibilityRole="header" style={{ color: th.text, fontSize: 18, fontWeight: '900' }} numberOfLines={1}>{t('tabTradeHistory')}</Text>
+            <Text style={{ color: th.dim, fontSize: 11.5 }} numberOfLines={1}>{journal.length} {t('closedTradesWord')}</Text>
+          </View>
+          {journal.length > 0 && (
+            <Pressable onPress={exportCsv} hitSlop={6} accessibilityRole="button" accessibilityLabel={t('thExport')} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: th.accent + '88', backgroundColor: th.accent + '1A' }}>
+              <Icon name="share-outline" size={17} color={th.accent} />
+              <Text style={{ color: th.accent, fontWeight: '800', fontSize: 12.5 }}>{t('thExport')}</Text>
+            </Pressable>
+          )}
+        </View>
+
+        <ScrollView contentContainerStyle={{ padding: 14, gap: 12, paddingBottom: insets.bottom + 28 }} keyboardShouldPersistTaps="handled">
+          {content}
         </ScrollView>
       </View>
     </Modal>
@@ -186,3 +212,5 @@ export default function TradeHistory() {
     </>
   );
 }
+
+export default function TradeHistory() { return <TradeHistoryView />; }

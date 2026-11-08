@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, Linking } from 'react-native';
 import { Icon, HeroBanner } from './ui';
+import { Note, Fineprint } from './Note';
 import { useRealWindow } from './win';
 import { useHeadlines, ago, tone, safeHttpUrl, Topic, Headline } from './headlines';
 import { useNews, newsRisk, fmtIn, localTime, Impact, NewsEvent } from './news';
@@ -244,7 +245,12 @@ export default function NewsHome({ active }: Props) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: P.bg, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
       <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: pad, paddingTop: 24, paddingBottom: 28, gap: 14 }}>
-        <HeroBanner fx="news" icon="newspaper" tag="Market News" title="News" subtitle={`Market headlines and the economic calendar${stamp ? ` · updated ${localTime(stamp)}` : ''}`} />
+        <HeroBanner fx="news" icon="newspaper" tag="Market News" title="News" subtitle={`Live market headlines and the economic calendar in one place. See what is moving the markets, which releases carry high impact and exactly when they land in your own time zone${stamp ? ` · updated ${localTime(stamp)}` : ''}.`}
+          features={[
+            { icon: 'calendar-outline', title: 'Economic calendar', sub: 'Impact, forecast and previous' },
+            { icon: 'flame-outline', title: 'Hot stories', sub: 'Ranked by market-moving keywords' },
+            { icon: 'notifications-outline', title: 'High-impact alerts', sub: 'Get warned before big releases' },
+          ]} />
         <Notices flush />
         {/* tabs and search */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', flexWrap: 'wrap', gap: 14, borderBottomWidth: 1, borderBottomColor: P.border }}>
@@ -279,12 +285,8 @@ export default function NewsHome({ active }: Props) {
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: P.blue + '33', backgroundColor: P.soft }}>
-          <Icon name="notifications-outline" size={17} color={P.blue} />
-          <Text style={{ color: P.head, fontSize: 12.5, flex: 1, minWidth: 220 }}>Get warned before high-impact news. Turn on news alerts in Settings.</Text>
-          <Pressable onPress={() => go(6)} style={((s: any) => ({ paddingHorizontal: 16, height: 32, borderRadius: 5, justifyContent: 'center', backgroundColor: P.blue, opacity: s.hovered ? 0.9 : 1, cursor: 'pointer' })) as any}><Text style={{ color: P.th.onAccent, fontSize: 12.5, fontWeight: '700' }}>Set News Alerts</Text></Pressable>
-        </View>
-        <Text style={{ color: P.body, fontSize: 11, textAlign: 'center' }}>The dot beside a headline is a keyword hint (green positive, red negative), not a trading signal. Hot Stories ranks recent headlines by market-moving keywords. Educational tool, not financial advice.</Text>
+        <Note icon="notifications-outline" title="Never miss a high-impact release" tone={P.blue} right={<Pressable onPress={() => go(6)} style={((s: any) => ({ paddingHorizontal: 16, height: 32, borderRadius: 5, justifyContent: 'center', backgroundColor: P.blue, opacity: s.hovered ? 0.9 : 1, cursor: 'pointer' })) as any}><Text style={{ color: P.th.onAccent, fontSize: 12.5, fontWeight: '700' }}>Set News Alerts</Text></Pressable>}>Get warned before high-impact news. Turn on news alerts in Settings.</Note>
+        <Fineprint>The dot beside a headline is a keyword hint (green positive, red negative), not a trading signal. Hot Stories ranks recent headlines by market-moving keywords. Educational tool, not financial advice.</Fineprint>
       </View>
       <Footer w={w} go={go} />
     </ScrollView>

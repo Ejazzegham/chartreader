@@ -13,8 +13,10 @@ export default function History() {
   const row = (k: string, v: string, c?: string) => <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 3 }}><Text style={{ flex: 1, minWidth: 0, color: th.dim, fontSize: 13 }}>{k}</Text><Text style={{ flexShrink: 1, maxWidth: '62%', textAlign: 'right', color: c ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{v}</Text></View>;
 
   return (
-    <Screen fx="journal" icon="time" title={t('tabHistory')} subtitle={history.length ? `${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : undefined}>
-      {history.length === 0 && <EmptyState icon="time-outline" title={t('tabHistory')} body="Open a pair in Markets and tap the analysis button. Every result is saved here." action={t('tabMarkets')} onAction={() => setTab(2)} />}
+    <Screen fx="history" icon="time" tag="Chart Reader" title={settings.lang === 'en' ? 'Analysis History' : t('tabHistory')}
+      subtitle={settings.lang === 'en' ? `Every chart analysis you run is saved here automatically, with its bias, entry, stop loss and take-profit levels. Reopen a past setup, compare it with what the market did and learn from it${history.length ? ` · ${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : ''}.` : (history.length ? `${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : undefined)}
+      features={settings.lang === 'en' ? [{ icon: 'save-outline', title: 'Saved automatically', sub: 'Each result is kept for you' }, { icon: 'locate-outline', title: 'Full trade levels', sub: 'Entry, stop loss and targets' }, { icon: 'git-compare-outline', title: 'Review and compare', sub: 'See how past setups played out' }] : undefined}>
+      {history.length === 0 && <EmptyState icon="time-outline" title={settings.lang === 'en' ? 'No saved analyses yet' : t('tabHistory')} body="Open a pair in Markets and tap the analysis button. Every result is saved here." action={t('tabMarkets')} onAction={() => setTab(2)} />}
       <View style={{ gap: 12 }}>
         {history.map((i) => {
           const r = i.result, bc = r.bias === 'buy' ? th.buy : r.bias === 'sell' ? th.sell : th.gold, isOpen = open === i.id;

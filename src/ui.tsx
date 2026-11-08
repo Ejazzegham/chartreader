@@ -151,10 +151,10 @@ export const HeroBanner = ({ title, subtitle, icon, features, right, tag, fx }: 
 };
 
 // Phone and tablet: a quiet header card (the website uses the HeroBanner above).
-export const PageHero = ({ title, subtitle, icon, right, tag, fx }: { title: string; subtitle?: string; icon?: string; right?: React.ReactNode; tag?: string; fx?: string }) => {
+export const PageHero = ({ title, subtitle, icon, right, tag, fx, features }: { title: string; subtitle?: string; icon?: string; right?: React.ReactNode; tag?: string; fx?: string; features?: HeroFeature[] }) => {
   const { th, rtl } = useApp();
   const desk = useLayout().mode === 'desktop';
-  if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} fx={fx} />;
+  if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} fx={fx} features={features} />;
   return (
     <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, padding: 16, gap: 10, direction: rtl ? 'rtl' : 'ltr' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -172,7 +172,7 @@ export const PageHero = ({ title, subtitle, icon, right, tag, fx }: { title: str
 
 // bare: the page draws its own header (the Analysis page does). scrollKey: when it changes the page jumps back to the top.
 // Every other page gets the same header row and hero banner as the Analysis page.
-export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey, icon, tag, fx }: { title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string; fx?: string }) => {
+export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey, icon, tag, fx, features }: { title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; bare?: boolean; scrollKey?: string; icon?: string; tag?: string; fx?: string; features?: HeroFeature[] }) => {
   const L = useLayout();
   const insets = useSafeAreaInsets();
   const scroller = useRef<ScrollView>(null);
@@ -186,7 +186,7 @@ export const Screen = ({ title = '', subtitle, right, children, bare, scrollKey,
         <View style={L.mode === 'desktop' ? { flexGrow: 1, padding: 16, paddingTop: Math.max(insets.top, 24) + 4, paddingBottom: 36, width: '100%', maxWidth: L.content, alignSelf: 'center' } : undefined}>
           {!bare && <View style={{ gap: 14, marginBottom: 16 }}>
             <AppHeader />
-            <PageHero title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} fx={fx} />
+            <PageHero title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} fx={fx} features={features} />
           </View>}
           {children}
         </View>
