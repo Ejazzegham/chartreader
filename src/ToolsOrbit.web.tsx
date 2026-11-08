@@ -35,11 +35,11 @@ const CSS = `
 .to-area{position:absolute;left:0;right:0;bottom:0}
 .to-st{position:absolute;left:50%;top:50%;width:${SW}px;height:${SH}px}
 .to-svg{position:absolute;left:0;top:0;pointer-events:none}
-.to-c{position:absolute;display:flex;align-items:center;gap:14px;width:216px;height:72px;padding:0 16px 0 12px;margin:-36px 0 0 -108px;border-radius:30px;border:1px solid var(--cb);
+.to-c{position:absolute;display:flex;align-items:center;gap:14px;width:216px;height:72px;padding:0 16px 0 12px;margin:-36px 0 0 -108px;border-radius:18px;border:1px solid var(--cb);
   background:var(--card);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);color:var(--ink);cursor:pointer;text-align:left;font:inherit;
   box-shadow:0 22px 30px -16px var(--sh),0 4px 12px -6px var(--sh),inset 0 0 0 1px var(--inner),inset 0 1px 0 var(--hi),inset 0 -10px 18px var(--low);
   transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .2s,background .2s;animation:to-pop .5s cubic-bezier(.2,.8,.2,1) both,to-fl 7s ease-in-out infinite;animation-delay:var(--e),var(--d)}
-.to-c::before{content:"";position:absolute;left:3px;right:3px;top:2px;height:46%;border-radius:28px 28px 50% 50%/28px 28px 16px 16px;background:linear-gradient(180deg,var(--gloss),rgba(255,255,255,0));pointer-events:none}
+.to-c::before{content:"";position:absolute;left:3px;right:3px;top:2px;height:46%;border-radius:16px 16px 50% 50%/16px 16px 10px 10px;background:linear-gradient(180deg,var(--gloss),rgba(255,255,255,0));pointer-events:none}
 .to-c:hover,.to-c:focus-visible{outline:none;background:var(--cardh);border-color:rgba(119,59,255,.5);transform:translateY(-5px) scale(1.04);box-shadow:0 30px 40px -16px var(--sh),0 0 0 3px rgba(119,59,255,.16),inset 0 0 0 1px var(--inner),inset 0 1px 0 var(--hi),inset 0 -10px 18px var(--low)}
 .to-c.on{border-color:rgba(119,59,255,.6);box-shadow:0 22px 30px -16px var(--sh),0 0 0 3px rgba(119,59,255,.18),inset 0 0 0 1px var(--inner),inset 0 1px 0 var(--hi),inset 0 -10px 18px var(--low)}
 @keyframes to-pop{from{opacity:0;transform:scale(.75)}}
