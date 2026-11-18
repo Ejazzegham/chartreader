@@ -266,7 +266,7 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
   const tv = tvSymbol(sym);
   const web = mode === 'tv' ? (tv ? { html: tvHtml(tv, TV_INTERVAL[tf] ?? '15', th.dark, th.bg, TV_STUDIES.filter((x) => studies.includes(x.k)).map((x) => x.id), cstyle) } : null) : mode === 'deriv' ? { uri: DERIV_CHARTS } : null;
   // Deriv's own chart site can fail to load on some networks (net::ERR_NAME_NOT_RESOLVED). Then show the same market on TradingView,.
-  const fbHtml = mode === 'deriv' && tv ? tvHtml(tv, TV_INTERVAL[tf] ?? '15', th.dark, th.bg, []) : undefined;
+  const fbHtml = mode === 'deriv' && tv ? tvHtml(tv, TV_INTERVAL[tf] ?? '15', th.dark, th.bg, ['Volume@tv-basicstudies']) : undefined;
   const webExtra = mode === 'deriv' ? { fallbackHtml: fbHtml } : {};
   if (full && web) {
     return (

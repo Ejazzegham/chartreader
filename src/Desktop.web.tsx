@@ -24,7 +24,7 @@ const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 11, 9, 5, 'h
 const toolIcon: Record<number, string> = Object.fromEntries(TOOLS);
 
 // Premium Liquid Glass top bar: a floating frosted-glass bar (94% wide, 82 px tall, 26 px corners) with the brand on the left, the page links
-// in the middle (a glowing violet pill + thin indicator on the open page) and search, live status, alerts, Admin and the account menu on the right.
+// in the middle (an animated gradient underline on the open page) and search, live status, alerts, Admin and the account menu on the right.
 // The glass itself is a separate background layer (not the bar), so the dropdowns that open from the bar can blur the page behind them too.
 export const NAV_H = 64;
 const BLUE = '#1677FF', VIOLET = '#773BFF', NAVY = '#111A3A';
@@ -49,22 +49,31 @@ function TopNav() {
   }, []);
   const hits = q.trim().length ? SYMBOLS.filter((s) => (s.name + ' ' + s.id).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8) : [];
   const pick = (s: Sym) => { setDash({ sym: s.id, market: groupOf(s.cat) }); setTab(0); setQ(''); setSearchOpen(false); };
-  const ACTIVE = '#3A33D6'; // deep indigo text on the open page, like the design reference
-  // Active page = a solid blue-to-violet gradient pill with a white label, a coloured glow and a glossy top edge, so it is clear at a glance
-  // on both the light and the dark glass. Inactive links stay plain text and get a soft chip on hover.
+  const ACTIVE = dk ? '#FFFFFF' : '#3A33D6'; // open page label: white on the dark glass, deep indigo on the light glass
+  // Active page = no box, no pill. Just a clean label with a thin blue-to-violet underline that grows out from the centre (scaleX with an
+  // ease-out curve); on hover a fainter underline previews it, and it retracts smoothly when the page changes. Same size/weight on every link
+  // so nothing shifts, and a keyboard-visible focus underline comes for free through the hovered/focused state.
+  const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
   const link = (label: string, on: boolean, onPress: () => void, chevron?: boolean) => (
     <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={onPress} style={((s: any) => ({
-      height: 40, paddingHorizontal: slim ? 11 : wide ? 22 : 15, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', borderRadius: 12, cursor: 'pointer', borderWidth: 1,
-      borderColor: on ? 'rgba(255,255,255,0.4)' : s.hovered ? (dk ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.9)') : 'transparent',
-      backgroundColor: on ? VIOLET : s.hovered ? (dk ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.55)') : 'transparent',
-      backgroundImage: on ? `linear-gradient(135deg, ${BLUE} 0%, ${VIOLET} 100%)` : undefined,
-      boxShadow: on ? '0 10px 24px -8px rgba(119,59,255,0.85), 0 2px 6px -2px rgba(22,119,255,0.6), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -2px 4px rgba(40,20,120,0.25)' : 'none',
-      transform: [{ translateY: on ? -1 : 0 }], ...TRANS,
+      height: 40, paddingHorizontal: slim ? 11 : wide ? 20 : 14, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', cursor: 'pointer',
+      backgroundColor: 'transparent', borderWidth: 0, outlineStyle: 'none',
     })) as any}>
-      {(s: any) => (<>
-        <Text style={{ color: on ? '#FFFFFF' : ink, opacity: on || s.hovered ? 1 : 0.9, fontSize: slim ? 14 : 15, fontWeight: on ? '700' : '500', letterSpacing: 0.15, ...(on ? { textShadow: '0 1px 2px rgba(30,10,100,0.45)' } : null) } as any} numberOfLines={1}>{label}</Text>
-        {chevron && <Icon name="chevron-down" size={13} color={on ? '#FFFFFF' : mute} />}
-      </>)}
+      {(s: any) => {
+        const hot = s.hovered || s.focused;
+        return (<>
+          <Text style={{ color: on ? ACTIVE : ink, opacity: on || hot ? 1 : 0.78, fontSize: slim ? 14 : 15, fontWeight: '600', letterSpacing: 0.2, transitionProperty: 'color, opacity', transitionDuration: '220ms', transitionTimingFunction: 'ease' } as any} numberOfLines={1}>{label}</Text>
+          {chevron && <Icon name="chevron-down" size={13} color={on ? ACTIVE : mute} />}
+          <View pointerEvents="none" style={{
+            position: 'absolute', left: slim ? 11 : wide ? 20 : 14, right: slim ? 11 : wide ? 20 : 14, bottom: 3, height: 2.5, borderRadius: 2,
+            backgroundImage: `linear-gradient(90deg, ${BLUE} 0%, ${VIOLET} 100%)`,
+            opacity: on ? 1 : hot ? 0.45 : 0,
+            transform: [{ scaleX: on ? 1 : hot ? 0.55 : 0 }],
+            boxShadow: on ? '0 2px 10px -1px rgba(119,59,255,0.65)' : 'none',
+            transitionProperty: 'transform, opacity, box-shadow', transitionDuration: '320ms', transitionTimingFunction: EASE,
+          } as any} />
+        </>);
+      }}
     </Pressable>
   );
   // A menu row: a small gradient icon tile, the label and an optional red badge. Alternates blue / violet like the tool cards.

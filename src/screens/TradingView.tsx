@@ -334,19 +334,36 @@ export default function TradingView() {
     return (
       <View style={{ flexDirection: desk ? 'row' : 'column', gap: 8 }}>
         {items.map((it) => {
-          const cc = it.c >= 0 ? th.buy : th.sell, on = it.i === act;
+          const up = it.c >= 0, cc = up ? th.buy : th.sell, on = it.i === act, dk = th.dark;
+          // Solid premium card (no see-through fill, so the pair name stays crisp on any backdrop): number badge, name + market, big price, change chip, strength bar.
+          const solid = dk ? (on ? '#141C42' : '#0E1431') : (on ? '#FFFFFF' : '#FBFBFF');
           return (
-            <Pressable key={it.i} accessibilityRole="button" onPress={() => setAct(it.i)} style={((st: any) => ({ flex: desk ? 1 : undefined, minWidth: 0, gap: 6, padding: 10, borderRadius: 10, borderWidth: 1, cursor: 'pointer', borderColor: on ? th.accent : th.hair, backgroundColor: on ? th.accent + '1A' : st.hovered ? th.panel2 : th.panel })) as any}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <View style={{ width: 20, height: 20, borderRadius: 6, backgroundColor: on ? th.accent : th.panel2, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: on ? th.onAccent : th.dim, fontSize: 11, fontWeight: '800' }}>{it.i + 1}</Text></View>
-                <Text numberOfLines={1} style={{ flex: 1, color: th.text, fontSize: 13, fontWeight: '700' }}>{it.s.name}</Text>
-                {best.i === it.i && it.c > 0 && <View style={{ paddingHorizontal: 6, height: 18, borderRadius: 5, backgroundColor: th.buy + '26', justifyContent: 'center' }}><Text style={{ color: th.buy, fontSize: 9.5, fontWeight: '800', letterSpacing: 0.6 }}>STRONGEST</Text></View>}
+            <Pressable key={it.i} accessibilityRole="button" onPress={() => setAct(it.i)} style={((st: any) => ({
+              flex: desk ? 1 : undefined, minWidth: 0, gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, borderWidth: on ? 1.5 : 1, cursor: 'pointer', overflow: 'hidden',
+              borderColor: on ? th.accent : st.hovered ? th.accent + '88' : (dk ? 'rgba(255,255,255,0.14)' : 'rgba(40,50,130,0.16)'),
+              backgroundColor: solid,
+              boxShadow: on ? `0 14px 30px -14px ${th.accent}CC, inset 0 1px 0 rgba(255,255,255,${dk ? 0.1 : 0.9})` : (dk ? '0 10px 24px -16px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 10px 24px -16px rgba(60,50,140,0.45), inset 0 1px 0 rgba(255,255,255,0.9)'),
+              transform: [{ translateY: st.hovered && !on ? -1 : 0 }], transitionProperty: 'border-color, box-shadow, transform', transitionDuration: '180ms',
+            })) as any}>
+              {on && <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundImage: `linear-gradient(90deg, ${th.accent}, ${th.accent}33)` } as any} />}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={{ width: 26, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : (dk ? 'rgba(255,255,255,0.12)' : 'rgba(40,50,130,0.1)'), boxShadow: on ? `0 6px 12px -6px ${th.accent}` : 'none' } as any}>
+                  <Text style={{ color: on ? th.onAccent : (dk ? '#DCE3FF' : '#2B3563'), fontSize: 12.5, fontWeight: '800' }}>{it.i + 1}</Text>
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text numberOfLines={1} style={{ color: dk ? '#FFFFFF' : '#111A3A', fontSize: 16, fontWeight: '800', letterSpacing: 0.2 }}>{it.s.name}</Text>
+                  {!!it.s.sub && <Text numberOfLines={1} style={{ color: dk ? '#9FB0DA' : '#5A6690', fontSize: 10.5, fontWeight: '600', letterSpacing: 0.8, marginTop: 1, textTransform: 'uppercase' }}>{it.s.sub}</Text>}
+                </View>
+                {best.i === it.i && it.c > 0 && <View style={{ paddingHorizontal: 7, height: 20, borderRadius: 6, backgroundColor: th.buy + '26', borderWidth: 1, borderColor: th.buy + '55', justifyContent: 'center' }}><Text style={{ color: th.buy, fontSize: 9.5, fontWeight: '800', letterSpacing: 0.8 }}>STRONGEST</Text></View>}
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <Text style={{ color: th.text, fontSize: 15, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{it.r ? it.r.price.toFixed(it.r.dec) : '—'}</Text>
-                <Text style={{ color: cc, fontSize: 12, fontWeight: '800' }}>{it.c >= 0 ? '+' : ''}{it.c.toFixed(2)}%</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <Text numberOfLines={1} style={{ color: dk ? '#FFFFFF' : '#111A3A', fontSize: 21, fontWeight: '800', letterSpacing: 0.2, fontVariant: ['tabular-nums'] }}>{it.r ? it.r.price.toFixed(it.r.dec) : '—'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, height: 24, borderRadius: 8, backgroundColor: cc + '22', borderWidth: 1, borderColor: cc + '55' }}>
+                  <Icon name={up ? 'caret-up' : 'caret-down'} size={12} color={cc} />
+                  <Text style={{ color: cc, fontSize: 12.5, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{up ? '+' : ''}{it.c.toFixed(2)}%</Text>
+                </View>
               </View>
-              <View style={{ height: 4, borderRadius: 2, backgroundColor: th.hair, overflow: 'hidden' }}><View style={{ width: `${Math.max(6, (Math.abs(it.c) / max) * 100)}%`, height: 4, backgroundColor: cc }} /></View>
+              <View style={{ height: 4, borderRadius: 2, backgroundColor: dk ? 'rgba(255,255,255,0.1)' : 'rgba(40,50,130,0.1)', overflow: 'hidden' }}><View style={{ width: `${Math.max(6, (Math.abs(it.c) / max) * 100)}%`, height: 4, borderRadius: 2, backgroundColor: cc }} /></View>
             </Pressable>
           );
         })}
@@ -381,15 +398,6 @@ export default function TradingView() {
       </Card>
       {strip}
       {grid}
-      {!fsOn && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <Icon name="hand-left-outline" size={15} color={th.dim} />
-          <Text style={{ flex: 1, color: th.dim, fontSize: 11.5, minWidth: 200 }}>Scroll to zoom, drag to move through time, use the toolbar on the left of each chart for drawing tools and Fibonacci. Keys: F full screen, 1 to 4 layouts.</Text>
-          <Pressable onPress={() => Linking.openURL(`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tv)}`).catch(() => {})} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Icon name="open-outline" size={14} color={th.dim} /><Text style={{ color: th.dim, fontSize: 11.5, fontWeight: '700' }}>Open {symId.replace(/^(frx|cry)/, '')} on tradingview.com</Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
 

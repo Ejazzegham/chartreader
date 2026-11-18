@@ -45,10 +45,13 @@ export const TV_STYLES: { k: string; label: string; icon: string }[] = [
   { k: '0', label: 'Bars', icon: 'reorder-three-outline' }, { k: '2', label: 'Line', icon: 'trending-up-outline' }, { k: '3', label: 'Area', icon: 'pulse-outline' },
 ];
 // The chart page. user-scalable=no + touch-action:none keep two-finger pinch for the chart itself (zoom in and out) instead of zooming the whole page.
+const VOL_ID = 'Volume@tv-basicstudies';
+// The TradingView widget already draws its own volume histogram, so adding the Volume study on top made two volume bars. Volume is therefore
+// handled with the built-in one (hide_volume) and the study is never sent.
 export const tvHtml = (symbol: string, interval: string, dark: boolean, bg: string, studies: string[] = [], style = '1', tz = 'Etc/UTC') => `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><style>html,body{margin:0;height:100%;background:${bg};touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none}.tradingview-widget-container,.tradingview-widget-container__widget{height:100%;width:100%}</style></head><body><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>${JSON.stringify({
   autosize: true, symbol, interval, timezone: tz, theme: dark ? 'dark' : 'light', style, locale: 'en',
   backgroundColor: bg, gridColor: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)', allow_symbol_change: false, hide_side_toolbar: false, hide_top_toolbar: false, hide_legend: false,
-  withdateranges: true, save_image: false, enable_publishing: false, calendar: false, details: false, hotlist: false, support_host: 'https://www.tradingview.com', studies,
+  withdateranges: true, save_image: false, enable_publishing: false, calendar: false, details: false, hotlist: false, support_host: 'https://www.tradingview.com', studies: studies.filter((x) => x !== VOL_ID), hide_volume: !studies.includes(VOL_ID),
 })}</script></div></body></html>`;
 
 // ---- follow the pair shown inside a chart page ----
