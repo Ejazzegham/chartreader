@@ -16,3 +16,10 @@ export const useLayout = (): LayoutInfo => layoutFor(real().width);
 // Cols (ui.tsx) puts cards in two columns; inside a column every screen part sizes itself to that column's width.
 export const WidthCtx = createContext<number | null>(null);
 export function useWindowDimensions() { const d = real(), o = useContext(WidthCtx); return { ...d, width: o ?? layoutFor(d.width).content }; }
+
+// No visible scrollbars anywhere (pair lists, drop-downs, panels); wheel, touch and keyboard scrolling still work.
+if (typeof document !== 'undefined' && !document.getElementById('no-sb-css')) {
+  const st = document.createElement('style'); st.id = 'no-sb-css';
+  st.textContent = '*{scrollbar-width:none;-ms-overflow-style:none}*::-webkit-scrollbar{display:none;width:0;height:0}';
+  document.head.appendChild(st);
+}

@@ -11,7 +11,7 @@ import { qualify } from './verdict';
 import { useRealWindow } from './win';
 import { Footer, useGo } from './SiteFooter';
 export { Footer, useGo };
-import { useDash, setDash } from './dash';
+import { useDash, setDash, groupOf } from './dash';
 import { glassWeb } from './sheet';
 import HeroFx from './HeroFx';
 import HomeHero from './HomeHero';
@@ -148,8 +148,8 @@ export function TfTabs({ tf, set }: { tf: string; set: (k: string) => void }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
       {TFB.map(([k, l]) => (
-        <Pressable key={k} onPress={() => set(k)} style={((st: any) => ({ paddingHorizontal: 11, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: tf === k ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
-          <Text style={{ color: tf === k ? P.blue : P.body, fontSize: 12.5, fontWeight: tf === k ? '700' : '500' }}>{l}</Text>
+        <Pressable key={k} onPress={() => set(k)} style={((st: any) => ({ paddingHorizontal: 11, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: tf === k ? P.soft : st.hovered ? P.alt : 'transparent', borderWidth: 1, borderColor: tf === k ? P.blue + '66' : 'transparent' })) as any}>
+          <Text style={{ color: tf === k ? P.blue : P.head, fontSize: 12.5, fontWeight: tf === k ? '800' : '600' }}>{l}</Text>
         </Pressable>
       ))}
     </View>
@@ -242,7 +242,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
   const [lead, setLeadState] = useState<Record<string, string>>(loadLead), [openG, setOpenG] = useState<string | null>(null), [pq, setPq] = useState('');
   const leadKey = Object.values(lead).join(',');
   useEffect(() => { setWatch('home-leads', Object.values(lead)); return () => setWatch('home-leads', []); }, [leadKey]);
-  const pick = (g: string, id: string) => { const n = { ...lead, [g]: id }; setLeadState(n); saveLead(n); setOpenG(null); setPq(''); };
+  const pick = (g: string, id: string) => { const n = { ...lead, [g]: id }; setLeadState(n); saveLead(n); setOpenG(null); setPq(''); setDash({ sym: id, market: groupOf(symOf(id).cat) }); };
   const cdl = s.land?.votes.find((x) => x.method === 'CDL');
   const cdlSide = cdl?.side === 'buy' ? { l: 'Buy', c: th.buy } : cdl?.side === 'sell' ? { l: 'Sell', c: th.sell } : { l: 'Neutral', c: th.gold };
   const td = s.land?.ict.trend === 'bullish' ? { l: 'Bullish', c: th.buy } : s.land?.ict.trend === 'bearish' ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
@@ -257,7 +257,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
   );
   const meta: Record<string, [string, string]> = { forex: ['cash', 'Forex'], crypto: ['logo-bitcoin', 'Crypto'], metals: ['layers', 'Metals'], deriv: ['flash', 'Deriv'] };
   return (
-    <View style={{ backgroundColor: P.section }}>
+    <View style={{ backgroundColor: P.section, zIndex: openG ? 50 : 1 }}>{/* above the next section while a pair list is open */}
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 44, gap: 24 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 16 }}>
           <View style={{ flex: 1, gap: 8 }}>
@@ -285,7 +285,7 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
                 {isOpen && (
                   <View style={{ position: 'absolute', top: 96, left: 8, right: 8, padding: 6, gap: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 70, shadowColor: P.shadow, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
                     <TextInput value={pq} onChangeText={setPq} placeholder="Search pair…" placeholderTextColor={P.body + '99'} autoFocus style={{ height: 32, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
-                    <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled>
+                    <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
                       {opts.map((x) => (
                         <Pressable key={x.id} onPress={() => pick(g.g, x.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, paddingHorizontal: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: x.id === sid ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
                           <Coin s={x} size={18} /><Text numberOfLines={1} style={{ color: P.head, fontSize: 12.5, fontWeight: '600', flexShrink: 1 }}>{x.name}</Text>
@@ -324,14 +324,15 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
 function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
   const P = usePal();
   const [tf, setTf] = useState('3600');
-  const s = useSetup('frxXAUUSD', tf, 'dash-gold');
+  const d = useDash(), s = useSetup(d.sym, tf, 'dash-gold'); // the main chart follows the pair picked on the Home cards
+  const kind = s.sym.cat === 'deriv' ? 'Deriv synthetic index' : s.sym.cat === 'crypto' ? 'Cryptocurrency' : METALS.includes(s.sym.id) ? 'Metal' : s.sym.cat === 'indices' ? 'Stock index' : 'Forex pair';
   const three = w >= 1080, stat = (a: string, b: string) => (
     <View key={a} style={{ gap: 2, paddingRight: 18, marginRight: 4, borderRightWidth: 1, borderRightColor: P.onBackLine }}>
       <Text style={{ color: P.onBack, fontSize: 16, fontWeight: '800' }}>{a}</Text><Text style={{ color: P.onBackDim, fontSize: 11.5 }}>{b}</Text>
     </View>
   );
   return (
-    <View style={{ backgroundColor: P.alt }}>
+    <View style={{ backgroundColor: P.alt, zIndex: 0 }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: 'stretch', gap: 30 }}>
         <View style={{ width: three ? 300 : '100%', gap: 16 }}>
           <Pill text="Powerful Analysis Tools" tone={P.onBackAccent} />
@@ -344,7 +345,7 @@ function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
           </View>
         </View>
         <Panel style={{ flex: 1, minWidth: 0, width: three ? undefined : '100%', padding: 16, gap: 10 }}>
-          <ChartHeader s={s} sub="Gold / US Dollar" />
+          <ChartHeader s={s} sub={kind} />
           <TfTabs tf={tf} set={setTf} />
           <FillChart s={s} tf={tf} min={310} />
         </Panel>
