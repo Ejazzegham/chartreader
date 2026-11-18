@@ -104,3 +104,4 @@ Server: `server/server.js` needs the CORS headers and `await proxy(req, res)` li
 - It is tab 22 in `src/nav.ts` (added last so older tab numbers stay the same) and the last entry of `COMPS` in `App.tsx`. The top-bar link is in `LINKS` in `src/Desktop.web.tsx`.
 - The chart is created only the first time the page is opened, then it keeps its pair, timeframe and indicators.
 - The top bar turns into the compact (menu button) version below 1280 px instead of 1180 px, because it now holds one more link.
+- v2 of the page: its own animated hero (`tradingview` scene in `src/heroScenes.ts`), 1 / 2 / 4 charts to compare pairs (linked or own timeframes), a pro timeframe bar (1m to 1M), chart style, indicators with quick sets, time zone, compare presets and a compare strip. Full screen uses the browser Fullscreen API (key F); where it is missing, a full-window view opens instead. `tvHtml` in `src/tv.ts` got an optional time-zone argument.

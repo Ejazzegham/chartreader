@@ -4,7 +4,7 @@
 // (Analysis = candles + indicators, Killzones = radar sweep, Crypto = spinning coins, Settings = gears ...).
 export type HeroKind =
   | 'brand' | 'analysis' | 'methods' | 'markets' | 'crypto' | 'sessions' | 'brokers' | 'prop' | 'community' | 'killzones'
-  | 'news' | 'performance' | 'risk' | 'journal' | 'guide' | 'checklist' | 'settings' | 'about' | 'paper' | 'forex' | 'history' | 'tradehistory';
+  | 'news' | 'performance' | 'risk' | 'journal' | 'guide' | 'checklist' | 'settings' | 'about' | 'paper' | 'forex' | 'history' | 'tradehistory' | 'tradingview';
 
 type Ctx = CanvasRenderingContext2D;
 type Scene = (cx: Ctx, W: number, H: number, t: number, sy: number, st: any) => void;
@@ -41,6 +41,7 @@ export const PAL: Record<HeroKind, { bg: [string, string, string]; g: number[][]
   forex:       { bg: ['#071634', '#0B2150', '#0E2C66'], g: [[59, 130, 246], [20, 184, 166]] },
   history:     { bg: ['#0B1233', '#14194A', '#1F1B5A'], g: [[99, 102, 241], [56, 189, 248]] },
   tradehistory: { bg: ['#0A1630', '#0E2347', '#112F58'], g: [[16, 185, 129], [59, 130, 246]] },
+  tradingview: { bg: ['#070D24', '#0B1640', '#0F2160'], g: [[41, 98, 255], [139, 92, 246]] },
 };
 export const heroKind = (k?: string): HeroKind => (k && (PAL as any)[k] ? (k as HeroKind) : 'brand');
 
@@ -588,7 +589,46 @@ const tradehistory: Scene = (cx, W, H, t) => {
   cx.globalAlpha = 1;
 };
 
-const SCENES: Record<HeroKind, Scene> = { brand, analysis, methods, markets, crypto, sessions, brokers, prop, community, killzones, news, performance, risk, journal, guide, checklist, settings, about, paper, forex, history, tradehistory };
+
+// TradingView: a candle chart scrolling by, a Fibonacci retracement, a trend line with drag handles, a crosshair that snaps to candles and the price tag.
+const tradingview: Scene = (cx, W, H, t) => {
+  const cw = 12, step = 17, x0 = W * 0.4, s = t * 0.012, base = Math.floor(s / step), n = Math.ceil((W - x0) / step) + 3;
+  const val = (i: number) => Math.sin(i * 0.23) * 0.55 + Math.sin(i * 0.071 + 1.3) * 0.9 + (hn(i) - 0.5) * 0.5;
+  const Y = (v: number) => H * 0.52 - v * H * 0.16, fade = (x: number) => cl((x - x0) / (W * 0.1));
+  cx.lineWidth = 1; cx.strokeStyle = 'rgba(148,163,184,0.07)';
+  for (let k = 1; k < 5; k++) { cx.beginPath(); cx.moveTo(x0 - 30, (H * k) / 5); cx.lineTo(W, (H * k) / 5); cx.stroke(); }
+  // Fibonacci retracement (fixed band, the candles move through it)
+  const top = Y(1.25), bot = Y(-1.25), lv: [number, string][] = [[0, '0'], [0.236, '0.236'], [0.382, '0.382'], [0.5, '0.5'], [0.618, '0.618'], [1, '1']];
+  cx.fillStyle = 'rgba(41,98,255,0.09)'; cx.fillRect(x0, top + (bot - top) * 0.382, W - x0, (bot - top) * 0.236);
+  cx.font = '10px system-ui, sans-serif'; cx.textBaseline = 'middle';
+  lv.forEach(([f, lab], i) => {
+    const y = top + (bot - top) * f; cx.strokeStyle = i % 2 ? 'rgba(96,165,250,0.28)' : 'rgba(167,139,250,0.3)'; cx.setLineDash([5, 5]);
+    cx.beginPath(); cx.moveTo(x0, y); cx.lineTo(W, y); cx.stroke(); cx.setLineDash([]);
+    cx.fillStyle = 'rgba(191,219,254,0.55)'; cx.fillText(lab, x0 + 6, y - 7);
+  });
+  // candles
+  for (let k = 0; k < n; k++) {
+    const i = base + k, x = x0 + i * step - s; if (x < x0 - step || x > W) continue;
+    const o = val(i - 1), c = val(i), hh = Math.max(o, c) + hn(i * 3 + 1) * 0.18, ll = Math.min(o, c) - hn(i * 5 + 2) * 0.18;
+    cx.globalAlpha = fade(x) * 0.95; cx.fillStyle = cx.strokeStyle = c >= o ? '#26A69A' : '#EF5350';
+    cx.beginPath(); cx.moveTo(x + cw / 2, Y(hh)); cx.lineTo(x + cw / 2, Y(ll)); cx.stroke();
+    cx.fillRect(x, Math.min(Y(o), Y(c)), cw, Math.max(1.5, Math.abs(Y(o) - Y(c))));
+  }
+  cx.globalAlpha = 1;
+  // trend line with handles
+  const ax = W * 0.5, ay = Y(-0.95), bx = W * 0.92, by = Y(0.75), pul = 0.5 + 0.5 * Math.sin(t * 0.003);
+  cx.strokeStyle = 'rgba(96,165,250,0.85)'; cx.lineWidth = 1.6; cx.beginPath(); cx.moveTo(ax, ay); cx.lineTo(bx, by); cx.stroke();
+  [[ax, ay], [bx, by]].forEach(([x, y]) => { cx.fillStyle = '#0B1640'; cx.strokeStyle = `rgba(147,197,253,${0.7 + pul * 0.3})`; cx.lineWidth = 1.6; cx.fillRect(x - 4, y - 4, 8, 8); cx.strokeRect(x - 4, y - 4, 8, 8); });
+  // crosshair snapped to a candle
+  const xh = x0 + (W - x0) * (0.5 + 0.32 * Math.sin(t * 0.00035)), ic = Math.round((xh + s - x0 - cw / 2) / step), hx = x0 + ic * step - s + cw / 2, hy = Y(val(ic));
+  cx.strokeStyle = 'rgba(203,213,225,0.45)'; cx.lineWidth = 1; cx.setLineDash([4, 4]);
+  cx.beginPath(); cx.moveTo(hx, 0); cx.lineTo(hx, H); cx.moveTo(x0 - 30, hy); cx.lineTo(W, hy); cx.stroke(); cx.setLineDash([]);
+  glow(cx, hx, hy, 12, [41, 98, 255], 0.8); cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(hx, hy, 3, 0, TAU); cx.fill();
+  const tag = (1.0842 + val(ic) * 0.012).toFixed(4); cx.fillStyle = '#2962FF'; cx.fillRect(W - 54, hy - 9, 50, 18);
+  cx.fillStyle = '#fff'; cx.textBaseline = 'middle'; cx.fillText(tag, W - 49, hy);
+};
+
+const SCENES: Record<HeroKind, Scene> = { brand, analysis, methods, markets, crypto, sessions, brokers, prop, community, killzones, news, performance, risk, journal, guide, checklist, settings, about, paper, forex, history, tradehistory, tradingview };
 
 // Per-canvas state (random numbers are seeded by the page, so each page always looks the same).
 export const heroState = (kind: HeroKind) => ({ r: makeRng(hash(kind)) });
