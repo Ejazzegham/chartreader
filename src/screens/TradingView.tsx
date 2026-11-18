@@ -4,9 +4,10 @@ import Modal from '../Modal';
 import { useApp } from '../store';
 import { Screen, Card, Icon } from '../ui';
 import { useLayout, useRealWindow } from '../win';
-import { SYMBOLS, Sym, useFeed, chg, isBad, symOf, toggleFav, setWatch } from '../markets';
+import { SYMBOLS, Sym, useFeed, chg, isBad, toggleFav, setWatch, catalog, bnState, loadCrypto } from '../markets';
+import { QUOTES } from '../crypto';
 import { Coin } from '../MarketWidgets';
-import { tvSymbol, tvHtml, TV_STUDIES, TV_STYLES, TV_GROUPS } from '../tv';
+import { tvSymbol, tvHtml, TV_STUDIES, TV_STYLES, TV_GROUPS, TV_EXTRA, TVX, lookSym, tvOf } from '../tv';
 import ChartWeb from '../ChartWeb';
 import { useDash } from '../dash';
 import { NAV } from '../nav';
@@ -19,8 +20,8 @@ import { NAV } from '../nav';
 // The charts are created the first time the page is opened (every page stays mounted), then keep their state.
 const TV_TAB = NAV.findIndex((n) => n.key === 'tabTradingView');
 type Layout = '1' | '2h' | '2v' | '4';
-const CATS: [string, string][] = [['fav', 'Watchlist'], ['forex', 'Forex'], ['crypto', 'Crypto'], ['deriv', 'Deriv'], ['indices', 'Indices']];
-const MAX_ROWS = 60;
+const CATS: [string, string][] = [['fav', 'Watchlist'], ['forex', 'Forex'], ['crypto', 'Crypto'], ['indices', 'Indices'], ['deriv', 'Deriv'], ['stocks', 'Stocks']];
+const PAGE = 80; // rows shown at a time; "Show more" adds more
 const TF_GROUPS: { g: string; items: [string, string][] }[] = [
   { g: 'MINUTES', items: [['1', '1m'], ['3', '3m'], ['5', '5m'], ['15', '15m'], ['30', '30m']] },
   { g: 'HOURS', items: [['60', '1H'], ['120', '2H'], ['240', '4H']] },
@@ -68,8 +69,10 @@ export default function TradingView() {
   const [cstyle, setCstyle] = useState('1');
   const [tz, setTz] = useState('Etc/UTC');
   const [panel, setPanel] = useState<'' | 'style' | 'ind' | 'tz' | 'cmp'>('');
-  const [cat, setCat] = useState<string>(symOf(dash.sym).cat);
+  const [cat, setCat] = useState<string>(lookSym(dash.sym).cat);
   const [q, setQ] = useState('');
+  const [quote, setQuote] = useState('USDT'); // crypto: which quote asset
+  const [limit, setLimit] = useState(PAGE);
   const [reload, setReload] = useState(0);
   const [isFs, setIsFs] = useState(false), [pseudo, setPseudo] = useState(false);
   const [seen, setSeen] = useState(active);
@@ -79,25 +82,39 @@ export default function TradingView() {
   const n = LAYOUTS.find((l) => l.k === layout)!.n;
   useEffect(() => { if (act >= n) setAct(0); }, [n]);
   const symId = cells[act] ?? cells[0];
-  const sym = symOf(symId);
-  const tv = tvSymbol(sym) ?? 'FX:EURUSD';
+  const sym = lookSym(symId);
+  const tv = tvOf(sym) ?? 'FX:EURUSD';
   const fsOn = isFs || pseudo;
   const stack = !desk || layout === '2v';
   const gridH = desk ? Math.max(520, Math.round(H * 0.7)) : n === 1 ? Math.max(380, Math.round(H * 0.6)) : n * 320;
   const studyIds = TV_STUDIES.filter((s) => studies.includes(s.k)).map((s) => s.id);
 
-  // ---- market picker ----
+  // ---- market picker: every market the app has (all Deriv, all Binance) plus every forex pair, indices and stocks ----
+  useEffect(() => { if (active && !bnState.loaded) loadCrypto(); }, [active]);
+  const nDeriv = catalog.count, nCrypto = bnState.count;
+  const universe = useMemo(() => {
+    const out: (Sym & { tv: string })[] = [], seenId = new Set<string>(), seenTv = new Set<string>();
+    for (const s of SYMBOLS) { if (isBad(s.id)) continue; const tv = tvSymbol(s); if (!tv) continue; out.push({ ...s, tv }); seenId.add(s.id); seenTv.add(tv); }
+    for (const e of TV_EXTRA) if (!seenId.has(e.id) && !seenTv.has(e.tv)) out.push(e);
+    return out;
+  }, [nDeriv, nCrypto]);
+  const counts = useMemo(() => { const m: Record<string, number> = {}; universe.forEach((s) => { m[s.cat] = (m[s.cat] ?? 0) + 1; }); return m; }, [universe]);
   const term = q.trim().toLowerCase();
   const favKey = db.favs.join(',');
-  const list = useMemo(() => {
-    const base = term
-      ? SYMBOLS.filter((s) => !isBad(s.id) && (s.name + ' ' + s.id).toLowerCase().includes(term))
-      : cat === 'fav' ? db.favs.map(symOf) : SYMBOLS.filter((s) => !isBad(s.id) && s.cat === cat);
-    return base.filter((s) => !!tvSymbol(s)).slice(0, MAX_ROWS);
-  }, [term, cat, favKey]);
-  const watchKey = [...cells.slice(0, n), ...list.map((s) => s.id)].join(',');
+  const all = useMemo(() => {
+    if (term) {
+      const hit = universe.filter((s) => (s.name + ' ' + s.id + ' ' + s.tv).toLowerCase().includes(term));
+      return [...hit.filter((s) => s.name.toLowerCase().startsWith(term)), ...hit.filter((s) => !s.name.toLowerCase().startsWith(term))];
+    }
+    if (cat === 'fav') return db.favs.map((id) => { const s = lookSym(id); return { ...s, tv: tvOf(s) as string }; }).filter((s) => !!s.tv);
+    return universe.filter((s) => s.cat === cat && (cat !== 'crypto' || quote === 'ALL' || (quote === 'DERIV' ? !s.quote : s.quote === quote)));
+  }, [universe, term, cat, quote, favKey]);
+  useEffect(() => { setLimit(PAGE); }, [term, cat, quote]);
+  const list = all.slice(0, limit);
+  const inFeed = useMemo(() => new Set(SYMBOLS.map((s) => s.id)), [nDeriv, nCrypto]);
+  const watchKey = [...cells.slice(0, n), ...list.map((s) => s.id)].filter((id) => inFeed.has(id)).join(',');
   useEffect(() => {
-    setWatch('tvpage', active ? [...new Set(watchKey.split(','))] : []);
+    setWatch('tvpage', active && watchKey ? [...new Set(watchKey.split(','))] : []);
     return () => setWatch('tvpage', []);
   }, [active, watchKey]);
 
@@ -176,7 +193,7 @@ export default function TradingView() {
           <View style={{ flexDirection: 'row', gap: 6 }}>
             {cells.slice(0, n).map((id, i) => (
               <Pressable key={i} onPress={() => setAct(i)} style={((st: any) => ({ flex: 1, height: 34, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hov(i === act, st) })) as any}>
-                <Text numberOfLines={1} style={{ color: i === act ? th.accent : th.text, fontSize: 11.5, fontWeight: '800' }}>{i + 1} · {symOf(id).name.split(' ')[0]}</Text>
+                <Text numberOfLines={1} style={{ color: i === act ? th.accent : th.text, fontSize: 11.5, fontWeight: '800' }}>{i + 1} · {lookSym(id).name.split(' ')[0]}</Text>
               </Pressable>
             ))}
           </View>
@@ -184,16 +201,42 @@ export default function TradingView() {
       )}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.panel2, borderColor: th.hair, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
         <Icon name="search" size={17} color={th.dim} />
-        <TextInput value={q} onChangeText={setQ} placeholder={`Search ${SYMBOLS.length} markets`} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, paddingVertical: 11, fontSize: 14, outlineStyle: 'none' } as any} />
+        <TextInput value={q} onChangeText={setQ} placeholder={`Search ${universe.length} markets`} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, paddingVertical: 11, fontSize: 14, outlineStyle: 'none' } as any} />
         {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={17} color={th.dim} /></Pressable>}
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-        {CATS.map(([k, label]) => chipBtn(k, label, cat === k && !term, () => { setCat(k); setQ(''); }, k === 'fav' ? 'star' : undefined))}
+        {CATS.map(([k, label]) => chipBtn(k, `${label} ${k === 'fav' ? db.favs.length : counts[k] ?? 0}`, cat === k && !term, () => { setCat(k); setQ(''); }, k === 'fav' ? 'star' : undefined))}
       </View>
+      {cat === 'crypto' && !term && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+          {['ALL', ...QUOTES, 'DERIV'].map((k) => chipBtn('q' + k, k === 'ALL' ? 'All pairs' : k === 'DERIV' ? 'Deriv crypto' : k, quote === k, () => setQuote(k)))}
+        </View>
+      )}
+      {cat === 'crypto' && !term && !bnState.loaded && <Text style={{ color: bnState.err ? th.sell : th.dim, fontSize: 12 }}>{bnState.err || 'Loading every crypto pair…'}</Text>}
+      {(cat === 'deriv' || cat === 'indices') && !term && !catalog.loaded && <Text style={{ color: th.dim, fontSize: 12 }}>Loading every Deriv market…</Text>}
       <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false} style={{ maxHeight: desk ? gridH + 90 : 260 }} contentContainerStyle={{ gap: 2 }}>
         {list.length === 0
-          ? <Text style={{ color: th.dim, fontSize: 13, padding: 8 }}>{cat === 'fav' && !term ? 'Star a market to keep it here.' : 'No market found.'}</Text>
-          : list.map(row)}
+          ? <Text style={{ color: th.dim, fontSize: 13, padding: 8 }}>{cat === 'fav' && !term ? 'Star a market to keep it here.' : 'No market in the list.'}</Text>
+          : list.map((s, i) => (
+            <React.Fragment key={s.id}>
+              {!term && cat !== 'crypto' && cat !== 'fav' && !!s.sub && s.sub !== list[i - 1]?.sub && <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800', letterSpacing: 1.4, paddingHorizontal: 4, paddingTop: i ? 10 : 2, paddingBottom: 2 }}>{s.sub.toUpperCase()}</Text>}
+              {row(s)}
+            </React.Fragment>
+          ))}
+        {all.length > list.length && (
+          <Pressable onPress={() => setLimit(limit + PAGE)} style={((st: any) => ({ height: 38, marginTop: 6, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hov(false, st) })) as any}>
+            <Text style={{ color: th.accent, fontSize: 12.5, fontWeight: '800' }}>Show more ({all.length - list.length} left)</Text>
+          </Pressable>
+        )}
+        {term.length >= 2 && (
+          <Pressable onPress={() => { pickSym(TVX + q.trim().toUpperCase().replace(/\s+/g, '')); setQ(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8, padding: 10, borderRadius: 8, borderWidth: 1, borderStyle: 'dashed', cursor: 'pointer', ...hov(false, st) })) as any}>
+            <Icon name="globe-outline" size={20} color={th.accent} />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text numberOfLines={1} style={{ color: th.text, fontSize: 13, fontWeight: '700' }}>Open “{q.trim().toUpperCase()}” on TradingView</Text>
+              <Text numberOfLines={2} style={{ color: th.dim, fontSize: 11 }}>Any stock, index or pair TradingView has. Type EXCHANGE:TICKER, e.g. NASDAQ:AAPL or BINANCE:SOLUSDT.</Text>
+            </View>
+          </Pressable>
+        )}
       </ScrollView>
     </Card>
   );
@@ -286,7 +329,7 @@ export default function TradingView() {
 
   // compare strip: price, day change and a relative strength bar for each chart
   const strip = n > 1 && (() => {
-    const items = cells.slice(0, n).map((id, i) => ({ id, i, s: symOf(id), c: chg(id), r: quotes[id] }));
+    const items = cells.slice(0, n).map((id, i) => ({ id, i, s: lookSym(id), c: chg(id), r: quotes[id] }));
     const max = Math.max(0.01, ...items.map((it) => Math.abs(it.c))), best = items.reduce((a, b) => (b.c > a.c ? b : a), items[0]);
     return (
       <View style={{ flexDirection: desk ? 'row' : 'column', gap: 8 }}>
@@ -312,7 +355,7 @@ export default function TradingView() {
   })();
 
   const cell = (i: number) => {
-    const id = cells[i], tvs = tvSymbol(symOf(id)) ?? 'FX:EURUSD', on = n > 1 && i === act;
+    const id = cells[i], tvs = tvOf(lookSym(id)) ?? 'FX:EURUSD', on = n > 1 && i === act;
     return (
       <View key={i} style={{ flex: 1, minWidth: 0, minHeight: 0, borderRadius: 10, overflow: 'hidden', borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel }}>
         {seen && <ChartWeb key={`${id}-${tfs[i]}-${cstyle}-${studyIds.join('')}-${tz}-${th.bg}-${reload}`} html={tvHtml(tvs, tfs[i], th.dark, th.bg, studyIds, cstyle, tz)} />}
@@ -331,9 +374,11 @@ export default function TradingView() {
 
   const workspace = (
     <View ref={wsRef} style={[{ gap: 10 }, isFs ? { width: '100%', height: '100%', padding: 10, backgroundColor: th.bg } : pseudo ? { flex: 1, padding: 10, backgroundColor: th.bg } : null]}>
-      {tfBar}
-      {actions}
-      {panelBody}
+      <Card style={{ padding: 12, gap: 12 }}>{/* solid card: the controls stay readable on any backdrop */}
+        {tfBar}
+        {actions}
+        {panelBody}
+      </Card>
       {strip}
       {grid}
       {!fsOn && (

@@ -1,4 +1,4 @@
-import { SYMBOLS } from './markets';
+import { SYMBOLS, symOf } from './markets';
 import type { Sym } from './markets';
 import { isBn, bnRaw } from './crypto';
 
@@ -8,7 +8,8 @@ export const TV_INTERVAL: Record<string, string> = { '60': '1', '180': '3', '300
 // Deriv symbol -> TradingView symbol. Deriv indices use TradingView's DERIV: exchange, named from the display name
 // (e.g. "Volatility 100 (1s) Index" -> DERIV:VOLATILITY_100_1S_INDEX, "Boom 1000 Index" -> DERIV:BOOM_1000_INDEX).
 // Markets that are not a 6-letter currency pair (the dollar index and oil) have their own TradingView symbols.
-const TV_FIXED: Record<string, string> = { frxDXY: 'TVC:DXY', frxWTI: 'TVC:USOIL', frxBRENT: 'TVC:UKOIL', frxBROUSD: 'TVC:UKOIL' };
+const TV_FIXED: Record<string, string> = { frxDXY: 'TVC:DXY', frxWTI: 'TVC:USOIL', frxBRENT: 'TVC:UKOIL', frxBROUSD: 'TVC:UKOIL',
+  OTC_SPC: 'SP:SPX', OTC_NDX: 'NASDAQ:NDX', OTC_DJI: 'DJ:DJI', OTC_GDAXI: 'XETR:DAX', OTC_FTSE: 'TVC:UKX', OTC_FCHI: 'TVC:CAC40', OTC_N225: 'TVC:NI225', OTC_HSI: 'TVC:HSI', OTC_AS51: 'ASX:XJO', OTC_AEX: 'TVC:AEX', OTC_IBEX35: 'TVC:IBEX35', OTC_SX5E: 'TVC:SX5E', OTC_SSMI: 'TVC:SMI' };
 export function tvSymbol(s: Sym): string | null {
   const id = s.id;
   if (TV_FIXED[id]) return TV_FIXED[id];
@@ -68,3 +69,43 @@ export function matchSymbol(raw: string): Sym | null {
   if (!base) return null;
   return SYMBOLS.find((s) => { const k = keysOf(s); return k.includes(full) || k.includes(base); }) ?? null;
 }
+
+
+// ---- every market, like TradingView ----
+// The app's own lists (all Deriv markets, all Binance pairs) come from SYMBOLS. TV_EXTRA adds what they do not have: every forex pair
+// (majors, minors, exotics), metals and energy, the world's stock indices and popular stocks. Anything else can be typed as a TradingView
+// symbol (EXCHANGE:TICKER) and becomes an id that starts with TVX.
+export const TVX = 'tvx:';
+export type TvItem = Sym & { tv: string };
+const FX = (p: string, sub: string): TvItem => ({ id: 'frx' + p, name: `${p.slice(0, 3)}/${p.slice(3)}`, cat: 'forex', sub, tv: `FX:${p}` });
+const ITEM = (tv: string, name: string, cat: string, sub: string): TvItem => ({ id: TVX + tv, name, cat: cat as any, sub, tv });
+export const TV_EXTRA: TvItem[] = [
+  ...'EURUSD GBPUSD AUDUSD NZDUSD USDJPY USDCHF USDCAD'.split(' ').map((p) => FX(p, 'Major Pairs')),
+  ...'EURGBP EURJPY EURCHF EURAUD EURNZD EURCAD GBPJPY GBPCHF GBPAUD GBPNZD GBPCAD AUDJPY AUDCHF AUDNZD AUDCAD NZDJPY NZDCHF NZDCAD CADJPY CADCHF CHFJPY'.split(' ').map((p) => FX(p, 'Minor Pairs')),
+  ...'USDTRY USDZAR USDMXN USDSEK USDNOK USDDKK USDPLN USDHUF USDCZK USDSGD USDHKD USDCNH USDINR USDTHB USDILS USDRON EURTRY EURPLN EURSEK EURNOK EURDKK EURHUF EURCZK EURZAR EURMXN GBPSEK GBPNOK GBPPLN GBPZAR GBPSGD AUDSGD SGDJPY ZARJPY'.split(' ').map((p) => FX(p, 'Exotic Pairs')),
+  ITEM('OANDA:XAUUSD', 'Gold / USD', 'forex', 'Metals'), ITEM('OANDA:XAGUSD', 'Silver / USD', 'forex', 'Metals'), ITEM('OANDA:XPTUSD', 'Platinum / USD', 'forex', 'Metals'), ITEM('OANDA:XPDUSD', 'Palladium / USD', 'forex', 'Metals'),
+  ITEM('OANDA:XAUEUR', 'Gold / EUR', 'forex', 'Metals'), ITEM('OANDA:XAUGBP', 'Gold / GBP', 'forex', 'Metals'), ITEM('OANDA:XCUUSD', 'Copper / USD', 'forex', 'Metals'),
+  ITEM('TVC:USOIL', 'Oil WTI (US Crude)', 'forex', 'Energy'), ITEM('TVC:UKOIL', 'Oil Brent', 'forex', 'Energy'), ITEM('NYMEX:NG1!', 'Natural Gas', 'forex', 'Energy'), ITEM('TVC:DXY', 'DXY (US Dollar Index)', 'forex', 'Indices'),
+  ITEM('SP:SPX', 'US 500 (S&P 500)', 'indices', 'Americas'), ITEM('NASDAQ:NDX', 'US Tech 100 (Nasdaq 100)', 'indices', 'Americas'), ITEM('DJ:DJI', 'Wall Street 30 (Dow Jones)', 'indices', 'Americas'),
+  ITEM('TVC:RUT', 'US Small Cap 2000', 'indices', 'Americas'), ITEM('TVC:VIX', 'Volatility Index (VIX)', 'indices', 'Americas'),
+  ITEM('XETR:DAX', 'Germany 40 (DAX)', 'indices', 'Europe'), ITEM('TVC:UKX', 'UK 100 (FTSE 100)', 'indices', 'Europe'), ITEM('TVC:CAC40', 'France 40 (CAC 40)', 'indices', 'Europe'),
+  ITEM('TVC:SX5E', 'Euro Stoxx 50', 'indices', 'Europe'), ITEM('TVC:IBEX35', 'Spain 35 (IBEX 35)', 'indices', 'Europe'), ITEM('TVC:AEX', 'Netherlands 25 (AEX)', 'indices', 'Europe'), ITEM('TVC:SMI', 'Switzerland 20 (SMI)', 'indices', 'Europe'),
+  ITEM('TVC:NI225', 'Japan 225 (Nikkei)', 'indices', 'Asia Pacific'), ITEM('TVC:HSI', 'Hong Kong 50 (Hang Seng)', 'indices', 'Asia Pacific'), ITEM('ASX:XJO', 'Australia 200 (ASX 200)', 'indices', 'Asia Pacific'),
+  ITEM('SSE:000001', 'Shanghai Composite', 'indices', 'Asia Pacific'), ITEM('NSE:NIFTY', 'India 50 (Nifty 50)', 'indices', 'Asia Pacific'), ITEM('BSE:SENSEX', 'India Sensex', 'indices', 'Asia Pacific'),
+  ...([['NASDAQ:AAPL', 'Apple'], ['NASDAQ:MSFT', 'Microsoft'], ['NASDAQ:NVDA', 'NVIDIA'], ['NASDAQ:TSLA', 'Tesla'], ['NASDAQ:AMZN', 'Amazon'], ['NASDAQ:GOOGL', 'Alphabet (Google)'], ['NASDAQ:META', 'Meta Platforms'], ['NASDAQ:NFLX', 'Netflix'],
+    ['NASDAQ:AMD', 'AMD'], ['NASDAQ:INTC', 'Intel'], ['NASDAQ:ADBE', 'Adobe'], ['NASDAQ:PYPL', 'PayPal'], ['NASDAQ:COIN', 'Coinbase'], ['NASDAQ:AVGO', 'Broadcom'], ['NYSE:BABA', 'Alibaba'], ['NYSE:DIS', 'Disney'],
+    ['NYSE:JPM', 'JPMorgan Chase'], ['NYSE:V', 'Visa'], ['NYSE:WMT', 'Walmart'], ['NYSE:KO', 'Coca-Cola'], ['NYSE:BA', 'Boeing'], ['NYSE:XOM', 'ExxonMobil'], ['NYSE:NKE', 'Nike'], ['NYSE:UBER', 'Uber']] as [string, string][])
+    .map(([tv, name]) => ITEM(tv, `${name} (${tv.split(':')[1]})`, 'stocks', 'Popular stocks')),
+];
+const EXTRA_BY_ID = new Map(TV_EXTRA.map((e) => [e.id, e]));
+// The market behind an id: the app's own list first, then the extras, then a custom TradingView symbol typed by the person.
+export function lookSym(id: string): Sym & { tv?: string } {
+  const s = SYMBOLS.find((x) => x.id === id);
+  if (s) return s;
+  const e = EXTRA_BY_ID.get(id);
+  if (e) return e;
+  if (id.startsWith(TVX)) { const raw = id.slice(TVX.length); return { id, name: raw.split(':').pop() || raw, cat: 'stocks' as any, sub: raw.includes(':') ? raw.split(':')[0] : 'TradingView', tv: raw } as any; }
+  return symOf(id);
+}
+// The TradingView symbol of any market above (extras and custom symbols carry it, the app's own markets are mapped).
+export const tvOf = (s: Sym): string | null => (s as any).tv ?? tvSymbol(s);
