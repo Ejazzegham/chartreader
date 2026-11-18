@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import SignupMap from './SignupMap';
 import Svg, { Path, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
 import { useApp } from './store';
 import { Icon, HERO_BG } from './ui';
 import { Coin, CandleChart } from './MarketWidgets';
-import { useFeed, chg, symOf, SYMBOLS, watchCandles, toggleFav, setWatch, Candle } from './markets';
+import { useFeed, chg, symOf, SYMBOLS, watchCandles, toggleFav, setWatch, isBad, Candle } from './markets';
 import { analyzeAll } from './refine';
 import { qualify } from './verdict';
 import { useRealWindow } from './win';
@@ -22,6 +22,10 @@ const TFB: [string, string][] = [['60', '1m'], ['300', '5m'], ['900', '15m'], ['
 const METALS = ['frxXAUUSD', 'frxXAGUSD', 'frxWTI', 'frxBRENT'];
 const groupKey = (id: string, cat: string) => (cat === 'crypto' ? 'crypto' : cat === 'deriv' ? 'deriv' : METALS.includes(id) ? 'metals' : 'forex');
 const LEAD: Record<string, string> = { forex: 'frxEURUSD', crypto: 'cryBTCUSD', metals: 'frxXAUUSD', deriv: 'R_100' };
+// The pair each Market Overview card shows is the visitor's choice; it is kept in this browser.
+const LEAD_KEY = 'home_lead_v1';
+const loadLead = (): Record<string, string> => { try { return { ...LEAD, ...JSON.parse(localStorage.getItem(LEAD_KEY) || '{}') }; } catch { return { ...LEAD }; } };
+const saveLead = (v: Record<string, string>) => { try { localStorage.setItem(LEAD_KEY, JSON.stringify(v)); } catch {} };
 
 export function usePal() {
   const { th } = useApp();
@@ -235,12 +239,15 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
     const avg = list.length ? list.reduce((a, x) => a + chg(x.id), 0) / list.length : 0;
     return { g, n: list.length, green: list.filter((x) => chg(x.id) >= 0).length, avg, pts: (quotes[LEAD[g]] ?? (list[0] ? quotes[list[0].id] : undefined))?.pts ?? [] };
   });
-  const eur = quotes['frxEURUSD'];
+  const [lead, setLeadState] = useState<Record<string, string>>(loadLead), [openG, setOpenG] = useState<string | null>(null), [pq, setPq] = useState('');
+  const leadKey = Object.values(lead).join(',');
+  useEffect(() => { setWatch('home-leads', Object.values(lead)); return () => setWatch('home-leads', []); }, [leadKey]);
+  const pick = (g: string, id: string) => { const n = { ...lead, [g]: id }; setLeadState(n); saveLead(n); setOpenG(null); setPq(''); };
   const cdl = s.land?.votes.find((x) => x.method === 'CDL');
   const cdlSide = cdl?.side === 'buy' ? { l: 'Buy', c: th.buy } : cdl?.side === 'sell' ? { l: 'Sell', c: th.sell } : { l: 'Neutral', c: th.gold };
   const td = s.land?.ict.trend === 'bullish' ? { l: 'Bullish', c: th.buy } : s.land?.ict.trend === 'bearish' ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
-  const cardBase = (onPress: () => void, children: React.ReactNode, key: string) => (
-    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
+  const cardBase = (onPress: () => void, children: React.ReactNode, key: string, open = false) => (
+    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', zIndex: open ? 60 : 1, shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
   );
   const head = (icon: string, name: string) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -264,18 +271,35 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
           {groups.map((g) => {
-            const [icon, name] = meta[g.g], up = g.avg >= 0, c = up ? th.buy : th.sell;
-            const forex = g.g === 'forex' && !!eur, ec = chg('frxEURUSD');
-            const big = forex ? eur.price.toFixed(eur.dec) : g.n ? `${g.green}/${g.n}` : '—';
-            const pct = forex ? ec : g.avg, pc = pct >= 0 ? th.buy : th.sell;
+            const [icon, name] = meta[g.g], sid = lead[g.g], lq = quotes[sid], has = !!lq, isOpen = openG === g.g;
+            const pct = has ? chg(sid) : g.avg, pc = pct >= 0 ? th.buy : th.sell;
+            const big = has ? lq.price.toFixed(lq.dec) : g.n ? `${g.green}/${g.n}` : '—';
+            const term = pq.trim().toLowerCase();
+            const opts = SYMBOLS.filter((x) => groupKey(x.id, x.cat) === g.g && !isBad(x.id) && (!term || x.name.toLowerCase().includes(term) || x.id.toLowerCase().includes(term))).slice(0, 80);
             return cardBase(() => go(2, g.g), (
               <>
                 {head(icon, name)}
+                <Pressable onPress={() => { setOpenG(isOpen ? null : g.g); setPq(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', height: 26, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: st.hovered || isOpen ? P.soft : 'transparent', cursor: 'pointer' })) as any}>
+                  <Text numberOfLines={1} style={{ color: P.head, fontSize: 12, fontWeight: '700', maxWidth: 130 }}>{symOf(sid).name}</Text><Icon name="chevron-down" size={12} color={P.body} />
+                </Pressable>
+                {isOpen && (
+                  <View style={{ position: 'absolute', top: 96, left: 8, right: 8, padding: 6, gap: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 70, shadowColor: P.shadow, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
+                    <TextInput value={pq} onChangeText={setPq} placeholder="Search pair…" placeholderTextColor={P.body + '99'} autoFocus style={{ height: 32, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
+                    <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled>
+                      {opts.map((x) => (
+                        <Pressable key={x.id} onPress={() => pick(g.g, x.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, paddingHorizontal: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: x.id === sid ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
+                          <Coin s={x} size={18} /><Text numberOfLines={1} style={{ color: P.head, fontSize: 12.5, fontWeight: '600', flexShrink: 1 }}>{x.name}</Text>
+                        </Pressable>
+                      ))}
+                      {!opts.length && <Text style={{ color: P.body, fontSize: 12, padding: 8 }}>No pair found</Text>}
+                    </ScrollView>
+                  </View>
+                )}
                 <Text style={{ color: P.head, fontSize: 25, fontWeight: '800', fontVariant: ['tabular-nums'], marginTop: 4 }}>{big}</Text>
                 <Text style={{ color: pc, fontSize: 13.5, fontWeight: '700' }}>{`${pct >= 0 ? '+' : '−'}${Math.abs(pct).toFixed(2)}%`}</Text>
-                <Spark pts={forex ? eur.pts : g.pts} color={forex ? pc : c} w={140} />
+                <Spark pts={has ? lq.pts : g.pts} color={pc} w={140} />
               </>
-            ), g.g);
+            ), g.g, isOpen);
           })}
           {cardBase(() => go(1, 'candle'), (
             <>

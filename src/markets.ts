@@ -29,7 +29,7 @@ export const EXTRA: Sym[] = [{ id: 'frxDXY', name: 'DXY (US Dollar Index)', cat:
 export const SYMBOLS: Sym[] = [
   ...S('forex', [['frxDXY', 'DXY (US Dollar Index)'], ['frxXAUUSD', 'Gold / USD'], ['frxXAGUSD', 'Silver / USD'], ['frxWTI', 'Oil WTI (US Crude)'], ['frxBRENT', 'Oil Brent'], ['frxEURUSD', 'EUR/USD'], ['frxGBPUSD', 'GBP/USD'], ['frxUSDJPY', 'USD/JPY'], ['frxAUDUSD', 'AUD/USD'], ['frxUSDCAD', 'USD/CAD'], ['frxUSDCHF', 'USD/CHF'], ['frxNZDUSD', 'NZD/USD'], ['frxEURJPY', 'EUR/JPY'], ['frxGBPJPY', 'GBP/JPY']]),
   ...S('crypto', [['cryBTCUSD', 'Bitcoin'], ['cryETHUSD', 'Ethereum'], ['cryLTCUSD', 'Litecoin'], ['cryBNBUSD', 'BNB'], ['cryXRPUSD', 'XRP']]),
-  ...S('deriv', [['R_100', 'Volatility 100'], ['R_75', 'Volatility 75'], ['R_50', 'Volatility 50'], ['R_25', 'Volatility 25'], ['R_10', 'Volatility 10'], ['1HZ100V', 'Volatility 100 (1s)'], ['BOOM1000', 'Boom 1000'], ['CRASH1000', 'Crash 1000'], ['BOOM500', 'Boom 500'], ['CRASH500', 'Crash 500'], ['BOOM300N', 'Boom 300'], ['CRASH300N', 'Crash 300'], ['BOOM600', 'Boom 600'], ['CRASH600', 'Crash 600'], ['BOOM900', 'Boom 900'], ['CRASH900', 'Crash 900'], ['stpRNG', 'Step Index 100'], ['stpRNG2', 'Step Index 200'], ['stpRNG3', 'Step Index 300'], ['stpRNG4', 'Step Index 400'], ['stpRNG5', 'Step Index 500'], ['JD10', 'Jump 10'], ['JD25', 'Jump 25'], ['JD50', 'Jump 50'], ['JD75', 'Jump 75'], ['JD100', 'Jump 100']]),
+  ...S('deriv', [['R_100', 'Volatility 100'], ['R_75', 'Volatility 75'], ['R_50', 'Volatility 50'], ['R_25', 'Volatility 25'], ['R_10', 'Volatility 10'], ['1HZ100V', 'Volatility 100 (1s)'], ['BOOM1000', 'Boom 1000'], ['CRASH1000', 'Crash 1000'], ['BOOM500', 'Boom 500'], ['CRASH500', 'Crash 500'], ['BOOM300N', 'Boom 300'], ['CRASH300N', 'Crash 300'], ['BOOM600', 'Boom 600'], ['CRASH600', 'Crash 600'], ['BOOM900', 'Boom 900'], ['CRASH900', 'Crash 900'], ['stpRNG', 'Step Index 100'], ['stpRNG2', 'Step Index 200'], ['stpRNG3', 'Step Index 300'], ['stpRNG4', 'Step Index 400'], ['stpRNG5', 'Step Index 500'], ['JD10', 'Jump 10'], ['JD25', 'Jump 25'], ['JD50', 'Jump 50'], ['JD75', 'Jump 75'], ['JD100', 'Jump 100'], ['1HZ10V', 'Volatility 10 (1s)'], ['1HZ15V', 'Volatility 15 (1s)'], ['1HZ25V', 'Volatility 25 (1s)'], ['1HZ30V', 'Volatility 30 (1s)'], ['1HZ50V', 'Volatility 50 (1s)'], ['1HZ75V', 'Volatility 75 (1s)'], ['1HZ90V', 'Volatility 90 (1s)'], ['1HZ150V', 'Volatility 150 (1s)'], ['1HZ250V', 'Volatility 250 (1s)'], ['RDBULL', 'Bull Market Index'], ['RDBEAR', 'Bear Market Index'], ['DEX600UP', 'DEX 600 UP'], ['DEX600DN', 'DEX 600 DOWN'], ['DEX900UP', 'DEX 900 UP'], ['DEX900DN', 'DEX 900 DOWN'], ['DEX1500UP', 'DEX 1500 UP'], ['DEX1500DN', 'DEX 1500 DOWN'], ['DSI10', 'Drift Switch 10'], ['DSI20', 'Drift Switch 20'], ['DSI30', 'Drift Switch 30']]),
 ];
 // MetaTrader 5 names. Every one of these is a granularity that Deriv serves and a TradingView interval.
 export const TFS: { k: string; label: string }[] = [
@@ -54,6 +54,10 @@ const guess = (id: string): Sym => {
   if ((m = id.match(/^R_(\d+)$/))) return { id, name: `Volatility ${m[1]}`, cat: 'deriv' };
   if ((m = id.match(/^1HZ(\d+)V$/))) return { id, name: `Volatility ${m[1]} (1s)`, cat: 'deriv' };
   if ((m = id.match(/^(BOOM|CRASH)(\d+)N?$/))) return { id, name: `${m[1] === 'BOOM' ? 'Boom' : 'Crash'} ${m[2]}`, cat: 'deriv' };
+  if ((m = id.match(/^DEX(\d+)(UP|DN)$/))) return { id, name: `DEX ${m[1]} ${m[2] === 'UP' ? 'UP' : 'DOWN'}`, cat: 'deriv' };
+  if ((m = id.match(/^DSI(\d+)$/))) return { id, name: `Drift Switch ${m[1]}`, cat: 'deriv' };
+  if (id === 'RDBULL') return { id, name: 'Bull Market Index', cat: 'deriv' };
+  if (id === 'RDBEAR') return { id, name: 'Bear Market Index', cat: 'deriv' };
   return { id, name: id, cat: 'deriv' };
 };
 export const symOf = (id: string): Sym => SYMBOLS.find((s) => s.id === id) ?? guess(id);

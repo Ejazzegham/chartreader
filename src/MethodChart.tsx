@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Pressable, Text } from 'react-native';
 import Svg, { Line, Rect, G, Circle, Polygon, Polyline, Defs, ClipPath, LinearGradient as SvgGrad, Stop, Text as SvgText, TSpan } from 'react-native-svg';
 import { ink } from './theme';
 import { useApp } from './store';
 import type { Candle } from './markets';
 import type { All } from './refine';
+import type { PatLine } from './patterns';
 import { useZoom, ChartHud, CrossLayer, Readout, fmtTime } from './ChartZoom';
 import { candleMarks } from './candles';
 import { fmtVol, volMA, volPaneNote, hasVolumePath } from './volume';
@@ -33,6 +34,7 @@ export default function MethodChart({ data, all, method, width: fullW, dec, heig
   const { th } = useApp();
   const width = fullW; // no scroll bars (MT5 style)
   const [volPref, setVolPref] = React.useState(VOL_PREF);
+  const [patKey, setPatKey] = React.useState<string | null>(null); // which detected pattern is drawn (null = the best one)
   const vma = React.useMemo(() => volMA(data), [data]);
   const z = useZoom(data.length, width - 62, height, { initial: 100, shift: 0.08 });
   const showPat = method === 'candle' || !!patterns;
@@ -40,6 +42,7 @@ export default function MethodChart({ data, all, method, width: fullW, dec, heig
   if (data.length < 2) return <View style={{ height, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={th.accent} /></View>;
 
   const { ict, smc, vsa, pat, cdl, scalp, combo } = all;
+  const cur = method === 'pat' ? (pat.list.find((q) => q.key === patKey) ?? pat.best) : undefined; // the pattern drawn on the chart
   const padR = 62, W = width - padR, s0 = z.start, vis = data.slice(z.start, z.end), n = z.slots; // slots = candles + empty space on the right
   const anyVol = data.some((c) => (c.v ?? 0) > 0);
   const canVol = anyVol || (!!symId && !!gran && hasVolumePath(symId, gran)); // the pane also shows "Loading volume..." while the feed is still coming
@@ -54,14 +57,14 @@ export default function MethodChart({ data, all, method, width: fullW, dec, heig
     : method === 'smc' ? (smc.setup && { entry: smc.setup.entry, sl: smc.setup.sl, tps: smc.setup.tps, tag: 'SMC' })
     : method === 'vsa' ? (vsa.setup && { entry: vsa.setup.entry, sl: vsa.setup.sl, tps: vsa.setup.tps, tag: 'VSA' })
     : method === 'candle' ? (cdl.setup && { entry: cdl.setup.entry, sl: cdl.setup.sl, tps: cdl.setup.tps, tag: cdl.setup.state === 'armed' ? 'WAIT' : 'CANDLE' })
-    : method === 'pat' ? (pat.setup && { entry: pat.setup.entry, sl: pat.setup.sl, tps: pat.setup.tps, tag: 'PAT' })
+    : method === 'pat' ? (cur && cur !== pat.best ? { entry: cur.entry, sl: cur.sl, tps: [cur.target], tag: 'PAT' } : pat.setup && { entry: pat.setup.entry, sl: pat.setup.sl, tps: pat.setup.tps, tag: 'PAT' })
     : (combo && { entry: combo.entry, sl: combo.sl, tps: combo.tps, tag: 'ENTRY' });
   const lv: Lv[] = pick ? [
     { v: pick.sl, color: th.sell, label: 'SL' },
     ...pick.tps.map((p, k) => ({ v: p, color: th.buy, label: `TP${k + 1}` })),
     { v: pick.entry, color: th.accent, label: pick.tag, dash: '0', w: 1.8 },
   ] : [];
-  const patTarget = method === 'pat' && pat.best ? pat.best.target : undefined;
+  const patTarget = method === 'pat' && cur ? cur.target : undefined;
 
   const fit = { hi: Math.max(...vis.map((c) => c.h), ...lv.map((l) => l.v)), lo: Math.min(...vis.map((c) => c.l), ...lv.map((l) => l.v)) };
   const { hi, lo } = z.fitY(fit.hi, fit.lo), rng = hi - lo || 1; // vertical zoom / scroll applied on top of the fitted range
@@ -91,11 +94,11 @@ export default function MethodChart({ data, all, method, width: fullW, dec, heig
       <SvgText x={W + 5} y={y(l.v) + 3.2} fontSize={8.5} fontWeight="800" fill={ink(l.color)}>{l.label} {l.v.toFixed(dec)}</SvgText>
     </G>
   );
-  const seg = (i1: number, p1: number, i2: number, p2: number, color: string, k: string, dash?: string) => {
+  const seg = (i1: number, p1: number, i2: number, p2: number, color: string, k: string, dash?: string, sw = 1.4) => {
     const a = Math.max(i1, s0), slope = i2 === i1 ? 0 : (p2 - p1) / (i2 - i1);
     const pa = p1 + slope * (a - i1);
     if (a >= i2 && i2 !== i1) return null;
-    return <Line key={k} x1={X(a)} y1={y(pa)} x2={X(Math.min(i2, z.end - 1))} y2={y(p1 + slope * (Math.min(i2, z.end - 1) - i1))} stroke={color} strokeWidth={1.4} strokeDasharray={dash} />;
+    return <Line key={k} x1={X(a)} y1={y(pa)} x2={X(Math.min(i2, z.end - 1))} y2={y(p1 + slope * (Math.min(i2, z.end - 1) - i1))} stroke={color} strokeWidth={sw} strokeDasharray={dash} />;
   };
   const last = data[data.length - 1], lc = last.c >= last.o ? th.buy : th.sell;
   const zx = (i: number) => i >= s0 && i < z.end;
@@ -199,20 +202,36 @@ export default function MethodChart({ data, all, method, width: fullW, dec, heig
           </G>
         )}
 
-        {/* ---------- Patterns ---------- */}
-        {method === 'pat' && pat.best && pat.best.lines.map((l, k) => seg(l.i1, l.p1, l.i2, l.p2, l.kind === 'neck' ? th.gold : l.kind === 'upper' ? th.sell : th.buy, `pl${k}`))}
-        {method === 'pat' && pat.best && pat.best.points.filter((p) => zx(p.i)).map((p, k) => (
-          <G key={`pp${k}`}>
-            <Circle cx={X(p.i)} cy={y(p.p)} r={3} fill={th.gold} />
-            {!!p.label && <SvgText x={X(p.i) - 6} y={y(p.p) + (pat.best!.dir === 'bearish' && p.label !== 'RS' ? -6 : 12)} fontSize={8.5} fontWeight="800" fill={th.gold}>{p.label}</SvgText>}
-          </G>
-        ))}
-        {patTarget !== undefined && (
-          <G>
-            <Line x1={0} x2={W} y1={y(patTarget)} y2={y(patTarget)} stroke={th.poi} strokeWidth={1} strokeDasharray="2 4" />
-            <SvgText x={4} y={y(patTarget) - 3} fontSize={8.5} fontWeight="800" fill={th.poi}>Target {patTarget.toFixed(dec)}</SvgText>
-          </G>
-        )}
+        {/* ---------- Patterns: the whole formation is drawn (zone, path, lines, points, name, measured move) ---------- */}
+        {method === 'pat' && cur && (() => {
+          const pc = cur.dir === 'bullish' ? th.buy : th.sell;
+          const pts = [...cur.points].sort((p1, p2) => p1.i - p2.i);
+          const neck = cur.lines.find((l) => l.kind === 'neck'), up = cur.lines.find((l) => l.kind === 'upper'), lw = cur.lines.find((l) => l.kind === 'lower');
+          const lat = (l: PatLine, i: number) => (l.i2 === l.i1 ? l.p1 : l.p1 + ((l.p2 - l.p1) * (i - l.i1)) / (l.i2 - l.i1));
+          const zone = up && lw ? [{ i: up.i1, p: up.p1 }, { i: up.i2, p: up.p2 }, { i: lw.i2, p: lw.p2 }, { i: lw.i1, p: lw.p1 }]
+            : neck && pts.length ? [...pts.map((q) => ({ i: q.i, p: q.p })), { i: pts[pts.length - 1].i, p: lat(neck, pts[pts.length - 1].i) }, { i: pts[0].i, p: lat(neck, pts[0].i) }] : [];
+          const avg = pts.length ? pts.reduce((t, q) => t + q.p, 0) / pts.length : 0;
+          const label = `${cur.name}  ·  ${cur.dir === 'bullish' ? 'Bullish' : 'Bearish'}  ·  ${cur.status[0].toUpperCase()}${cur.status.slice(1)}`;
+          const ax = W - 22, ay1 = y(cur.entry), ay2 = y(cur.target), dn = ay2 > ay1 ? -1 : 1; // measured-move arrow from the entry to the target
+          return (
+            <G>
+              {zone.length > 2 && <Polygon points={zone.map((q) => `${X(q.i)},${y(q.p)}`).join(' ')} fill={pc} fillOpacity={0.1} />}
+              {pts.length > 1 && <Polyline points={pts.map((q) => `${X(q.i)},${y(q.p)}`).join(' ')} fill="none" stroke={th.gold} strokeWidth={1.8} strokeLinejoin="round" />}
+              {cur.lines.map((l, k) => seg(l.i1, l.p1, l.i2, l.p2, l.kind === 'neck' ? th.gold : l.kind === 'upper' ? th.sell : th.buy, `pl${k}`, undefined, 2.2))}
+              {pts.filter((q) => zx(q.i)).map((q, k) => (
+                <G key={`pp${k}`}>
+                  <Circle cx={X(q.i)} cy={y(q.p)} r={4.2} fill={th.solid} stroke={th.gold} strokeWidth={2} />
+                  {!!q.label && <SvgText x={X(q.i)} y={y(q.p) + (q.p >= avg ? -9 : 17)} fontSize={9.5} fontWeight="800" fill={th.gold} textAnchor="middle">{q.label}</SvgText>}
+                </G>
+              ))}
+              <Line x1={ax} x2={ax} y1={ay1} y2={ay2 + dn * 3} stroke={th.buy} strokeWidth={1.8} />
+              <Polyline points={`${ax - 4.5},${ay2 + dn * 8} ${ax},${ay2 + dn * 1.5} ${ax + 4.5},${ay2 + dn * 8}`} fill="none" stroke={th.buy} strokeWidth={1.8} />
+              <SvgText x={ax - 6} y={(ay1 + ay2) / 2} fontSize={8.5} fontWeight="700" fill={th.buy} textAnchor="end">Measured move</SvgText>
+              <Rect x={6} y={8} width={label.length * 5.7 + 18} height={22} rx={6} fill={th.solid} fillOpacity={0.92} stroke={pc} strokeWidth={1.3} />
+              <SvgText x={15} y={22.5} fontSize={10} fontWeight="800" fill={th.text}>{label}</SvgText>
+            </G>
+          );
+        })()}
 
         {/* ---------- Combined: the refined zone ---------- */}
         {method === 'all' && combo && box(combo.zoneTop, combo.zoneBottom, Math.max(s0, data.length - 30), combo.side === 'buy' ? th.buy : th.sell, 'Refined zone', 'cz')}
@@ -314,6 +333,18 @@ export default function MethodChart({ data, all, method, width: fullW, dec, heig
       <ChartHud z={z} top={8} right={padR + 8} vol={canVol ? { on: volPref, toggle: toggleVol } : undefined} />
       </View>
      </View>
+     {method === 'pat' && pat.list.length > 1 && (
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+        {pat.list.map((q) => {
+          const on = q.key === cur?.key;
+          return (
+            <Pressable key={q.key} onPress={() => setPatKey(q.key)} style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: on ? th.gold : th.hair, backgroundColor: on ? th.gold + '22' : 'transparent' }}>
+              <Text style={{ color: on ? th.text : th.dim, fontSize: 11.5, fontWeight: on ? '700' : '500' }}>{q.name} <Text style={{ color: q.dir === 'bullish' ? th.buy : th.sell }}>{q.dir === 'bullish' ? 'buy' : 'sell'}</Text></Text>
+            </Pressable>
+          );
+        })}
+      </View>
+     )}
     </View>
   );
 }
