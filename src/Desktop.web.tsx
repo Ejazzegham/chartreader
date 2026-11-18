@@ -16,7 +16,7 @@ import ToolsOrbit, { OrbitItem } from './ToolsOrbit.web';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
+const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['TradingView', 22, 'stats-chart-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
 const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
 const HIST_TAB = NAV.findIndex((n) => n.key === 'tabTradeHistory');
@@ -32,7 +32,7 @@ const TRANS = { transitionProperty: 'background-color, border-color, box-shadow,
 function TopNav() {
   const { th, t, tab, setTab, account, avatar, lic, setAdminOpen, setHelpOpen, setHistOpen, supportUnread, adminBadge, logout, settings } = useApp(), lang = settings.lang;
   const L = useLayout();
-  const compact = L.full < 1180, H = useRealWindow().height, navH = compact ? 54 : NAV_H; // compact = phone / tablet / small laptop: logo, icons and a menu button
+  const compact = L.full < 1280, H = useRealWindow().height, navH = compact ? 54 : NAV_H; // compact = phone / tablet / small laptop: logo, icons and a menu button
   const [menu, setMenu] = useState<'' | 'tools' | 'user' | 'nav'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState(''), [editOpen, setEditOpen] = useState(false);
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1400, wide = L.full >= 1700; // slim: icons only on the right; wide: Admin label + Upgrade button too

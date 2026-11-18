@@ -97,3 +97,10 @@ Server: `server/server.js` needs the CORS headers and `await proxy(req, res)` li
 - Flat everywhere: no gradients, glows, orbs or gloss. `src/FlatGradient.tsx` stands in for `LinearGradient` (it draws one flat colour), so any screen that still says `<LinearGradient>` stays flat.
 - Icons are one quiet navy tint (`IconTile`, `MethodIcon`), not a rainbow. The only strong colours left are the meaningful ones: buy green, sell red, and amber warnings.
 - Navbar: `TopNav` in `src/Desktop.web.tsx` (72 px, hairline, brass underline on the open page).
+
+
+## TradingView page (tab 22)
+- A new page, **TradingView**, sits right after **Markets** in the top bar (and in the phone menu). It is `src/screens/TradingView.tsx`: a market picker (Watchlist / Forex / Crypto / Deriv / Indices with live prices and a star) next to the full TradingView chart, with the timeframe, chart style, indicator and full-screen controls of `src/TradingViewPanel.tsx`.
+- It is tab 22 in `src/nav.ts` (added last so older tab numbers stay the same) and the last entry of `COMPS` in `App.tsx`. The top-bar link is in `LINKS` in `src/Desktop.web.tsx`.
+- The chart is created only the first time the page is opened, then it keeps its pair, timeframe and indicators.
+- The top bar turns into the compact (menu button) version below 1280 px instead of 1180 px, because it now holds one more link.

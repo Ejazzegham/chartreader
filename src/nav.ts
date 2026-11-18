@@ -23,4 +23,5 @@ export const NAV: NavItem[] = [
   { key: 'tabCrypto', icon: 'logo-bitcoin', group: 'pro', desc: 'navDescCrypto' }, // tab 19: added last so older tab numbers stay the same
   { key: 'tabCommunity', icon: 'people', group: 'main', desc: 'navDescCommunity' }, // tab 20: added last so older tab numbers stay the same
   { key: 'tabTradeHistory', icon: 'receipt', group: 'hidden', desc: 'navDescTradeHistory' }, // tab 21: Trade History as a page (website). Not in the menus (the "Trade History" entry opens it); the phone keeps its pop-up window
+  { key: 'tabTradingView', icon: 'stats-chart', group: 'main', desc: 'navDescTradingView' }, // tab 22: the TradingView page, next to Markets in the website's top bar. Added last so older tab numbers stay the same
 ];
