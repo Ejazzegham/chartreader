@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { LinearGradient } from './FlatGradient';
+import PremiumBtn from './PremiumBtn';
 import { useApp, NewSignal } from './store';
 import { Icon } from './ui';
 import { Logged } from './signalLog';
@@ -49,15 +49,10 @@ export default function TakeSkip({ symId, name, tf, dec, setup }: { symId: strin
 
   return (
     <>
-      <View style={{ flexDirection: 'row', gap: 10 }}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Skip this trade" onPress={() => { skipSetup(n); setSkipped(true); }} style={({ pressed }) => ({ flex: 1, height: 50, borderRadius: 8, borderWidth: 1, borderColor: th.sell + '88', backgroundColor: th.sell + '14', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, opacity: pressed ? 0.8 : 1 })}>
-          <Icon name="close" size={18} color={th.sell} /><Text style={{ color: th.sell, fontWeight: '900' }}>Skip</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Take this trade" onPress={() => { const r = proposeSignal(n); if (r.err || !r.id) { toast(r.err ?? 'Could not add this setup.', 'bad'); return; } setTaking(r.id); }} style={({ pressed }) => ({ flex: 1.6, opacity: pressed ? 0.88 : 1 })}>
-          <LinearGradient colors={[sideCol, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 50, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}>
-            <Icon name="checkmark" size={19} color={th.dark ? '#06130E' : '#fff'} /><Text style={{ color: th.dark ? '#06130E' : '#fff', fontWeight: '900' }}>Take {setup.side === 'buy' ? 'BUY' : 'SELL'}</Text>
-          </LinearGradient>
-        </Pressable>
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <PremiumBtn kind="skip" label="Skip" icon="close" flex={1} accessibilityLabel="Skip this trade" onPress={() => { skipSetup(n); setSkipped(true); }} />
+        <PremiumBtn kind={setup.side === 'buy' ? 'buy' : 'sell'} label={`Take ${setup.side === 'buy' ? 'BUY' : 'SELL'}`} icon="checkmark-circle" flex={1.6} accessibilityLabel="Take this trade"
+          onPress={() => { const r = proposeSignal(n); if (r.err || !r.id) { toast(r.err ?? 'Could not add this setup.', 'bad'); return; } setTaking(r.id); }} />
       </View>
       {takingSig && takingSig.status === 'signal' && (
         <TakeSheet s={takingSig} price={price} desk={desk} equity={desk.balance + closedPnl} running={live} today={todayPnl(journal)} journalRows={journal}

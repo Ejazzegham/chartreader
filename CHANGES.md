@@ -1,3 +1,15 @@
+# Premium active page in the top navbar
+
+- The open page (Home, Analysis, Markets ... and Tools) is now a solid blue-to-violet gradient pill with a white bold label, a coloured glow and a glossy top edge, lifted 1 px. It replaces the faint translucent box and the thin underline, so it reads clearly on both the light and dark glass. Hover on other links shows a soft chip. Change is in `link` in `src/Desktop.web.tsx`.
+
+# Changeable chart pairs, boxed Multi-Timeframe intro, premium Take / Skip / Refine buttons
+
+- **Home: both charts have a pair picker.** The pair name above the main chart (EUR/USD, 15m) and above the Multi-Timeframe chart is now a button with an arrow: it opens a searchable list of every symbol with All / Forex / Crypto / Metals / Deriv filters (favourites first). Picking a pair reloads that chart, its sentiment and key levels. The top chart's pick also updates the shared dashboard pair; the Multi-Timeframe chart follows it until you pick a different pair there. Closes on outside click or Esc. `ChartHeader` in `src/DesktopHome.web.tsx` takes an optional `onPick`, so the Analysis page header is unchanged.
+- **Home: Multi-Timeframe intro is in a box.** Headline, text, button and the four stats (Symbols, Timeframes, Market Data, Tools) now sit in a frosted card with a tidy 2x2 stat grid instead of loose text on the backdrop (the last stat used to wrap onto its own line).
+- **Premium Take / Skip / Refine buttons.** New `src/PremiumBtn.tsx`: solid gradient buttons with white bold labels and a glow (Take BUY green, Take SELL red, Refine with all methods blue-violet-pink) and an opaque glass Skip button with a clear edge. Used in `TakeSkip.tsx` (every analysis method page: ICT Lab, Scalping, Top-Down, Scanner, Insight, Chart Reader), the Take card in `screens/Journal.tsx`, `ICTLab.tsx` (Refine), and the website Journal table buttons (`Btn2` in `JournalHome.web.tsx`: Take trade, Skip, View setup, Manage, Close ...).
+- **Bottom fine print is readable.** The "ICT, SMC, VSA and pattern levels ..." text (and the same kind of line on Insight and Journal) now uses the frosted `Fineprint` pill from `src/Note.tsx`.
+- Checked: `tsc --noEmit` clean, `expo export --platform web` builds.
+
 # New home-page hero (B6 "Annotated" style), a little bigger
 
 - **Home hero rebuilt** from the B6 · Annotated design: navy sky with a gold horizon glow, a skyline of candles that a scanning beam lights up, a gold market wave that draws itself with a runner dot, three pop-in annotations (Liquidity Sweep, Order Block, Fair Value Gap), a moving grid floor and a ticker strip (ICT, SMC, Top-Down, Scanner, VSA ...). New `src/HomeHero.web.tsx` (pure DOM + CSS, no canvas or images; its styles are scoped with an `hh-` prefix). `src/HomeHero.tsx` is the empty phone stub.

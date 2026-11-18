@@ -50,18 +50,20 @@ function TopNav() {
   const hits = q.trim().length ? SYMBOLS.filter((s) => (s.name + ' ' + s.id).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8) : [];
   const pick = (s: Sym) => { setDash({ sym: s.id, market: groupOf(s.cat) }); setTab(0); setQ(''); setSearchOpen(false); };
   const ACTIVE = '#3A33D6'; // deep indigo text on the open page, like the design reference
+  // Active page = a solid blue-to-violet gradient pill with a white label, a coloured glow and a glossy top edge, so it is clear at a glance
+  // on both the light and the dark glass. Inactive links stay plain text and get a soft chip on hover.
   const link = (label: string, on: boolean, onPress: () => void, chevron?: boolean) => (
-    <Pressable key={label} accessibilityRole="button" onPress={onPress} style={((s: any) => ({
-      height: 38, paddingHorizontal: slim ? 9 : wide ? 20 : 13, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', borderRadius: 11, cursor: 'pointer', borderWidth: 1,
-      borderColor: on ? 'rgba(119,59,255,0.38)' : 'transparent',
-      backgroundColor: on ? undefined : s.hovered ? (dk ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)') : 'transparent',
-      backgroundImage: on ? 'linear-gradient(180deg, rgba(150,110,255,0.34), rgba(119,100,255,0.2))' : undefined,
-      boxShadow: on ? '0 0 0 3px rgba(119,59,255,0.08), 0 10px 22px -8px rgba(119,59,255,0.65), inset 0 1px 0 rgba(255,255,255,0.75)' : 'none', ...TRANS,
+    <Pressable key={label} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={onPress} style={((s: any) => ({
+      height: 40, paddingHorizontal: slim ? 11 : wide ? 22 : 15, flexDirection: 'row', alignItems: 'center', gap: 5, justifyContent: 'center', borderRadius: 12, cursor: 'pointer', borderWidth: 1,
+      borderColor: on ? 'rgba(255,255,255,0.4)' : s.hovered ? (dk ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.9)') : 'transparent',
+      backgroundColor: on ? VIOLET : s.hovered ? (dk ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.55)') : 'transparent',
+      backgroundImage: on ? `linear-gradient(135deg, ${BLUE} 0%, ${VIOLET} 100%)` : undefined,
+      boxShadow: on ? '0 10px 24px -8px rgba(119,59,255,0.85), 0 2px 6px -2px rgba(22,119,255,0.6), inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -2px 4px rgba(40,20,120,0.25)' : 'none',
+      transform: [{ translateY: on ? -1 : 0 }], ...TRANS,
     })) as any}>
       {(s: any) => (<>
-        <Text style={{ color: on ? (dk ? '#FFFFFF' : ACTIVE) : ink, opacity: on || s.hovered ? 1 : 0.88, fontSize: slim ? 14 : 15, fontWeight: on ? '600' : '500', letterSpacing: 0.1 }} numberOfLines={1}>{label}</Text>
-        {chevron && <Icon name="chevron-down" size={13} color={on ? (dk ? '#FFFFFF' : ACTIVE) : mute} />}
-        <View pointerEvents="none" style={{ position: 'absolute', left: '50%', marginLeft: -22, bottom: -((navH - 38) / 2) - 1, width: 44, height: 3, borderRadius: 2, backgroundColor: on ? VIOLET : 'transparent', boxShadow: on ? '0 0 10px rgba(119,59,255,0.9)' : 'none' } as any} />
+        <Text style={{ color: on ? '#FFFFFF' : ink, opacity: on || s.hovered ? 1 : 0.9, fontSize: slim ? 14 : 15, fontWeight: on ? '700' : '500', letterSpacing: 0.15, ...(on ? { textShadow: '0 1px 2px rgba(30,10,100,0.45)' } : null) } as any} numberOfLines={1}>{label}</Text>
+        {chevron && <Icon name="chevron-down" size={13} color={on ? '#FFFFFF' : mute} />}
       </>)}
     </Pressable>
   );

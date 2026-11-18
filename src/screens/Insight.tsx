@@ -11,6 +11,7 @@ import { fibonacci, fin } from '../indicators';
 import { momentum } from '../momentum';
 import { Logged } from '../signalLog';
 import TakeSkip from '../TakeSkip';
+import { Fineprint } from '../Note';
 import { BodyProps } from '../embed';
 import { Candle, TFS, symOf, watchCandles, quotes } from '../markets';
 
@@ -173,7 +174,7 @@ export default function Insight({ on, symId = 'frxEURUSD', method = 'liquidity' 
               ))}
             </Card>
           )}
-          <Dim>Zones are candidates, not signals. A trade needs your own stop and size. Educational tool, not financial advice.</Dim>
+          <Fineprint>Zones are candidates, not signals. A trade needs your own stop and size. Educational tool, not financial advice.</Fineprint>
         </>
       )}
 

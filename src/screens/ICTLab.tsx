@@ -13,6 +13,8 @@ import { PATTERN_GUIDE } from '../patterns';
 import { analyzeMarket, MarketAI, TP_SPLIT } from '../gemini';
 import { useSignalLog, Logged } from '../signalLog';
 import TakeSkip from '../TakeSkip';
+import PremiumBtn from '../PremiumBtn';
+import { Fineprint } from '../Note';
 import VsaCard from '../VsaCard';
 import { volMissingNote, hasVolumePath, volLabel, volTile } from '../volume';
 import { BodyProps } from '../embed';
@@ -428,7 +430,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
           </>
         )}
 
-        <Btn label={busy ? t('analyzing') : t('ictAi')} onPress={refine} busy={busy} disabled={data.length < 40} icon="analytics-outline" />
+        <PremiumBtn kind="refine" height={56} label={busy ? t('analyzing') : t('ictAi')} onPress={refine} busy={busy} disabled={data.length < 40} icon="sparkles" />
         {!!aiErr && <Text style={{ color: th.sell, lineHeight: 20 }}>{aiErr}</Text>}
         {ai && (
           <Card>
@@ -453,7 +455,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
           </Card>
         )}
         {aiSetup && <TakeSkip symId={symId} name={sym.name} tf={tf} dec={dec} setup={aiSetup} />}
-        <Dim>{t('ictDisclaimer')}</Dim>
+        <Fineprint>{t('ictDisclaimer')}</Fineprint>
       </View>
   );
   return embedded ? body : <Screen fx="methods" icon="git-network" title={t('tabIct')} subtitle={t('navDescIct')} right={<Badge label="PRO" color={th.gold} />}>{body}</Screen>;

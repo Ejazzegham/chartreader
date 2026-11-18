@@ -7,6 +7,8 @@ import { useApp, Trade } from '../store';
 import { Screen, Card, Field, Btn, ActionBtn, Segment, Dim, Body, Icon, Badge, SectionTitle, confirmAction } from '../ui';
 import EquityCurve from '../Equity';
 import JournalHome from '../JournalHome';
+import PremiumBtn from '../PremiumBtn';
+import { Fineprint } from '../Note';
 import { useLayout } from '../win';
 import GuardBanner from '../Guard';
 import { useFeed, setWatch, quotes } from '../markets';
@@ -248,14 +250,8 @@ function SignalCard({ s, price, onTake, onCancel, onRisk }: { s: Signal; price?:
         <Pressable onPress={onRisk} hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Icon name="calculator-outline" size={15} color={th.accent} /><Text style={{ color: th.accent, fontWeight: '800', fontSize: 12 }}>Calc</Text></Pressable>
       </View>
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        <Pressable onPress={onCancel} style={({ pressed }) => ({ flex: 1, height: 48, borderRadius: 8, borderWidth: 1, borderColor: th.sell + '88', backgroundColor: th.sell + '14', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, opacity: pressed ? 0.8 : 1 })}>
-          <Icon name="close" size={18} color={th.sell} /><Text style={{ color: th.sell, fontWeight: '900' }}>Skip</Text>
-        </Pressable>
-        <Pressable onPress={onTake} style={({ pressed }) => ({ flex: 1.5, opacity: pressed ? 0.88 : 1 })}>
-          <LinearGradient colors={[th.buy, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6 }}>
-            <Icon name="checkmark" size={19} color={th.dark ? '#06130E' : '#fff'} /><Text style={{ color: th.dark ? '#06130E' : '#fff', fontWeight: '900' }}>Take trade</Text>
-          </LinearGradient>
-        </Pressable>
+        <PremiumBtn kind="skip" label="Skip" icon="close" height={50} flex={1} onPress={onCancel} />
+        <PremiumBtn kind="buy" label="Take trade" icon="checkmark-circle" height={50} flex={1.5} onPress={onTake} />
       </View>
     </Card>
   );
@@ -649,7 +645,7 @@ export default function Journal() {
         )}
 
         {view === 'insights' && insights()}
-        <Dim>Paper trading on live prices. Results are a study tool, not financial advice.</Dim>
+        <Fineprint>Paper trading on live prices. Results are a study tool, not financial advice.</Fineprint>
       </View>
 
       {sheets}

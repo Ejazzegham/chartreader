@@ -67,11 +67,19 @@ function StatusChip({ text, color }: { text: string; color: string }) {
   return <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 22, borderRadius: 8, backgroundColor: color + '1F' }}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color }} /><Text style={{ color, fontSize: 11, fontWeight: '700' }}>{text}</Text></View>;
 }
 function Btn2({ label, onPress, solid, tone, icon, disabled }: { label: string; onPress: () => void; solid?: boolean; tone?: string; icon?: string; disabled?: boolean }) {
-  const P = usePal(), c = tone ?? P.blue;
+  const P = usePal(), c = tone ?? P.blue, d = P.dark;
+  // Solid = premium gradient with white text and a glow (Take trade). Outline = opaque surface with a clear coloured edge (View setup, Skip),
+  // so the label never sits on a see-through fill over the animated backdrop.
   return (
-    <Pressable disabled={disabled} onPress={onPress} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 34, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: solid ? c : c + '66', backgroundColor: solid ? c : st.hovered ? c + '14' : P.card, opacity: disabled ? 0.45 : 1, cursor: 'pointer' })) as any}>
-      {!!icon && <Icon name={icon} size={14} color={solid ? P.th.onAccent : c} />}
-      <Text style={{ color: solid ? P.th.onAccent : c, fontSize: 12.5, fontWeight: '700' }}>{label}</Text>
+    <Pressable disabled={disabled} onPress={onPress} style={((st: any) => ({
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, height: 38, paddingHorizontal: 16, borderRadius: 10, borderWidth: solid ? 1 : 1.5,
+      borderColor: solid ? 'rgba(255,255,255,0.28)' : c + 'CC',
+      backgroundColor: solid ? '#2563EB' : d ? (st.hovered ? '#1B2150' : '#141943') : (st.hovered ? '#F1F5FF' : '#FFFFFF'),
+      ...(solid ? { backgroundImage: 'linear-gradient(135deg,#2563EB,#7C3AED,#C026D3)', boxShadow: '0 10px 22px -12px rgba(124,58,237,0.9), inset 0 1px 0 rgba(255,255,255,0.22)', filter: st.hovered ? 'brightness(1.08)' : 'none' } : { boxShadow: d ? '0 8px 18px -12px rgba(0,0,0,0.8)' : '0 8px 18px -14px rgba(11,27,63,0.5)' }),
+      opacity: disabled ? 0.45 : 1, cursor: 'pointer', transition: 'all 140ms ease',
+    })) as any}>
+      {!!icon && <Icon name={icon} size={15} color={solid ? '#FFFFFF' : c} />}
+      <Text style={{ color: solid ? '#FFFFFF' : d && tone ? P.head : c, fontSize: 13, fontWeight: '800', letterSpacing: 0.2 } as any}>{label}</Text>
     </Pressable>
   );
 }

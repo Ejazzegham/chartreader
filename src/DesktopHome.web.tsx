@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
 import SignupMap from './SignupMap';
 import Svg, { Path, Defs, LinearGradient as SvgGrad, Stop } from 'react-native-svg';
@@ -155,18 +155,70 @@ export function TfTabs({ tf, set }: { tf: string; set: (k: string) => void }) {
     </View>
   );
 }
-export function ChartHeader({ s, sub, price }: { s: Setup; sub?: string; price?: boolean }) {
+const PAIR_CATS: [string, string][] = [['all', 'All'], ['forex', 'Forex'], ['crypto', 'Crypto'], ['metals', 'Metals'], ['deriv', 'Deriv']];
+// Chart title row. Pass `onPick` and the pair name becomes a button that opens a searchable list of every symbol (grouped by market),
+// so the visitor can change the pair right on the chart. Without `onPick` it is the plain title it always was.
+export function ChartHeader({ s, sub, price, onPick }: { s: Setup; sub?: string; price?: boolean; onPick?: (id: string) => void }) {
   const P = usePal(), th = P.th, { db } = useFeed(true);
   const c = chg(s.sym.id), fav = db.favs.includes(s.sym.id);
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+  const [open, setOpen] = useState(false), [q, setQ] = useState(''), [cat, setCat] = useState('all');
+  const box = useRef<any>(null);
+  const close = () => { setOpen(false); setQ(''); };
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: any) => { const n = box.current as any; if (n && typeof n.contains === 'function' && e.target && !n.contains(e.target)) close(); };
+    const key = (e: any) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('mousedown', away); document.addEventListener('keydown', key);
+    return () => { document.removeEventListener('mousedown', away); document.removeEventListener('keydown', key); };
+  }, [open]);
+  const term = q.trim().toLowerCase();
+  const opts = open ? SYMBOLS.filter((x) => !isBad(x.id) && (cat === 'all' || groupKey(x.id, x.cat) === cat) && (!term || x.name.toLowerCase().includes(term) || x.id.toLowerCase().includes(term)))
+    .sort((a, b) => Number(db.favs.includes(b.id)) - Number(db.favs.includes(a.id))).slice(0, 150) : [];
+  const title = (
+    <>
       <Coin s={s.sym} size={36} />
-      <View style={{ flex: 1 }}>
+      <View style={{ flexShrink: 1, minWidth: 0 }}>
         <Text style={{ color: P.head, fontSize: 14.5, fontWeight: '700' }} numberOfLines={1}>{s.sym.name}</Text>
         {!!sub && <Text style={{ color: P.body, fontSize: 11.5 }} numberOfLines={1}>{sub}</Text>}
       </View>
+    </>
+  );
+  return (
+    <View ref={box} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, position: 'relative', zIndex: open ? 90 : 2 } as any}>
+      {onPick ? (
+        <Pressable accessibilityRole="button" accessibilityLabel="Change pair" onPress={() => (open ? close() : setOpen(true))}
+          style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1, minWidth: 0, paddingVertical: 4, paddingLeft: 4, paddingRight: 10, marginLeft: -4, borderRadius: 10, borderWidth: 1, borderColor: open || st.hovered ? P.blue + '88' : 'transparent', backgroundColor: open || st.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}>
+          {title}
+          <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} color={P.blue} />
+        </Pressable>
+      ) : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1, minWidth: 0 }}>{title}</View>}
+      <View style={{ flex: 1 }} />
       {price && !!s.quote && <Text style={{ color: c >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700' }}>{`${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%`}</Text>}
       <Pressable onPress={() => toggleFav(s.sym.id)} hitSlop={8} style={{ cursor: 'pointer' } as any}><Icon name={fav ? 'star' : 'star-outline'} size={19} color={fav ? th.gold : P.body} /></Pressable>
+      {open && !!onPick && (
+        <View style={{ position: 'absolute', top: 48, left: 0, width: 330, maxWidth: '100%', padding: 8, gap: 8, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? '#141943' : '#FFFFFF', zIndex: 100, boxShadow: '0 24px 50px -18px rgba(0,0,0,0.75)' } as any}>
+          <TextInput value={q} onChangeText={setQ} placeholder="Search pair, coin or index…" placeholderTextColor={P.body + 'AA'} autoFocus
+            style={{ height: 38, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 13.5, outlineStyle: 'none' } as any} />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {PAIR_CATS.map(([k, l]) => (
+              <Pressable key={k} onPress={() => setCat(k)} style={{ paddingHorizontal: 11, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: cat === k ? P.blue : P.border, backgroundColor: cat === k ? P.soft : 'transparent', cursor: 'pointer' } as any}>
+                <Text style={{ color: cat === k ? P.blue : P.head, fontSize: 12, fontWeight: '700' }}>{l}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+            {opts.map((x) => (
+              <Pressable key={x.id} onPress={() => { onPick(x.id); close(); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 36, paddingHorizontal: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: x.id === s.sym.id ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
+                <Coin s={x} size={22} />
+                <Text numberOfLines={1} style={{ flex: 1, color: P.head, fontSize: 13, fontWeight: '600' }}>{x.name}</Text>
+                {db.favs.includes(x.id) && <Icon name="star" size={13} color={th.gold} />}
+                {x.id === s.sym.id && <Icon name="checkmark" size={15} color={P.blue} />}
+              </Pressable>
+            ))}
+            {!opts.length && <Text style={{ color: P.body, fontSize: 12.5, padding: 10 }}>No pair found</Text>}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 }
@@ -200,7 +252,7 @@ function Hero({ w, go }: { w: number; go: (t: number) => void }) {
         <HomeHero go={go} />
         <View style={{ flexDirection: two ? 'row' : 'column', gap: 20, alignItems: 'stretch' }}>
           <Panel style={{ flex: 1, minWidth: 0, width: two ? undefined : '100%', padding: 16, gap: 10 }}>
-            <ChartHeader s={s} sub={d.tf === '60' ? '1 minute' : TFB.find((x) => x[0] === d.tf)?.[1]} />
+            <ChartHeader s={s} sub={d.tf === '60' ? '1 minute' : TFB.find((x) => x[0] === d.tf)?.[1]} onPick={(id) => setDash({ sym: id, market: groupOf(symOf(id).cat) })} />
             <TfTabs tf={d.tf} set={(k) => setDash({ tf: k })} />
             <FillChart s={s} tf={d.tf} min={280} />
             <Pressable onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
@@ -324,30 +376,34 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
 function MultiTf({ w, go }: { w: number; go: (t: number) => void }) {
   const P = usePal();
   const [tf, setTf] = useState('3600');
-  const d = useDash(), s = useSetup(d.sym, tf, 'dash-gold'); // the main chart follows the pair picked on the Home cards
+  const d = useDash();
+  // This chart has its own pair picker. It follows the pair chosen above until the visitor picks one here.
+  const [own, setOwn] = useState<string | null>(null);
+  useEffect(() => { setOwn(null); }, [d.sym]);
+  const s = useSetup(own ?? d.sym, tf, 'dash-gold');
   const kind = s.sym.cat === 'deriv' ? 'Deriv synthetic index' : s.sym.cat === 'crypto' ? 'Cryptocurrency' : METALS.includes(s.sym.id) ? 'Metal' : s.sym.cat === 'indices' ? 'Stock index' : 'Forex pair';
   const three = w >= 1080, stat = (a: string, b: string) => (
-    <View key={a} style={{ gap: 2, paddingRight: 18, marginRight: 4, borderRightWidth: 1, borderRightColor: P.onBackLine }}>
-      <Text style={{ color: P.onBack, fontSize: 16, fontWeight: '800' }}>{a}</Text><Text style={{ color: P.onBackDim, fontSize: 11.5 }}>{b}</Text>
+    <View key={a} style={{ width: '50%', gap: 2, paddingRight: 10 }}>
+      <Text style={{ color: P.head, fontSize: 17, fontWeight: '800' }}>{a}</Text><Text style={{ color: P.body, fontSize: 12 }}>{b}</Text>
     </View>
   );
   return (
     <View style={{ backgroundColor: P.alt, zIndex: 0 }}>
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: 'stretch', gap: 30 }}>
-        <View style={{ width: three ? 300 : '100%', gap: 16 }}>
-          <Pill text="Powerful Analysis Tools" tone={P.onBackAccent} />
-          <Text style={{ color: P.onBack, fontSize: 38, lineHeight: 38, fontWeight: '700', letterSpacing: -0.9 }}>Multi-Timeframe{'\n'}Analysis</Text>
-          <Text style={{ color: P.onBackDim, fontSize: 15, lineHeight: 23 }}>Analyze multiple timeframes, spot key levels, track trade ideas — all in real time.</Text>
+      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingVertical: 48, flexDirection: three ? 'row' : 'column', alignItems: 'stretch', gap: 24 }}>
+        {/* the intro sits in its own frosted box so every line stays readable on the animated backdrop */}
+        <Panel style={{ width: three ? 330 : '100%', padding: 24, gap: 14, justifyContent: 'center' }}>
+          <Pill text="Powerful Analysis Tools" tone={P.blue} />
+          <Text style={{ color: P.head, fontSize: 32, lineHeight: 38, fontWeight: '700', letterSpacing: -0.8 }}>Multi-Timeframe{'\n'}Analysis</Text>
+          <Text style={{ color: P.body, fontSize: 14.5, lineHeight: 22 }}>Analyze multiple timeframes, spot key levels, track trade ideas — all in real time.</Text>
           <View style={{ flexDirection: 'row' }}><Btn label="Explore Analysis" onPress={() => go(1)} /></View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 12, marginTop: 14 }}>
-            {stat(`${SYMBOLS.length}+`, 'Symbols')}{stat('Multiple', 'Timeframes')}{stat('Real-time', 'Market Data')}
-            <View style={{ gap: 2 }}><Text style={{ color: P.onBack, fontSize: 16, fontWeight: '800' }}>Advanced</Text><Text style={{ color: P.onBackDim, fontSize: 11.5 }}>Tools</Text></View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 14, marginTop: 6, paddingTop: 16, borderTopWidth: 1, borderTopColor: P.border }}>
+            {stat(`${SYMBOLS.length}+`, 'Symbols')}{stat('Multiple', 'Timeframes')}{stat('Real-time', 'Market Data')}{stat('Advanced', 'Tools')}
           </View>
-        </View>
+        </Panel>
         <Panel style={{ flex: 1, minWidth: 0, width: three ? undefined : '100%', padding: 16, gap: 10 }}>
-          <ChartHeader s={s} sub={kind} />
+          <ChartHeader s={s} sub={kind} onPick={setOwn} />
           <TfTabs tf={tf} set={setTf} />
-          <FillChart s={s} tf={tf} min={310} />
+          <FillChart s={s} tf={tf} min={320} />
         </Panel>
         <View style={{ width: three ? 230 : '100%', gap: 16 }}>
           <SentimentCard s={s} fill />
