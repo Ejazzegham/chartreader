@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PATTERN_GUIDE = void 0;
+exports.PATTERN_GUIDE = exports.PATTERN_FAMILY = void 0;
 exports.patternsAnalyze = patternsAnalyze;
 const ta_1 = require("./ta");
+const patterns2_1 = require("./patterns2");
 const at = (l, i) => (l.i2 === l.i1 ? l.p1 : l.p1 + ((l.p2 - l.p1) * (i - l.i1)) / (l.i2 - l.i1));
 function fit(pts) {
     const n = pts.length, mx = pts.reduce((s, p) => s + p.i, 0) / n, my = pts.reduce((s, p) => s + p.p, 0) / n;
@@ -67,6 +68,8 @@ function patternsAnalyze(c) {
         if (hh < 1.5 * a || price > H.p)
             continue;
         const nl = (i) => at(neck, i), broke = price < nl(last) - 0.1 * a && brokeRecently(true, nl);
+        if (nl(last) > R.p - 0.3 * a)
+            continue; // the neckline has climbed above the right shoulder: no trade
         list.push({ key: `hs${k}`, name: 'Head and shoulders', dir: 'bearish', status: broke ? 'confirmed' : 'forming', lines: [{ ...neck, i2: last, p2: nl(last), kind: 'neck' }],
             points: [{ i: L.i, p: L.p, label: 'LS' }, { i: H.i, p: H.p, label: 'H' }, { i: R.i, p: R.p, label: 'RS' }], target: nl(last) - hh, entry: broke ? nl(last) : nl(last) - 0.1 * a, sl: R.p + 0.2 * a,
             quality: 60 + (broke ? 20 : 0) + (last - R.i < 15 ? 10 : 0), note: broke ? 'Neckline broken: sell the retest' : 'Sell on a close below the neckline' });
@@ -80,6 +83,8 @@ function patternsAnalyze(c) {
         if (hh < 1.5 * a || price < H.p)
             continue;
         const nl = (i) => at(neck, i), broke = price > nl(last) + 0.1 * a && brokeRecently(false, nl);
+        if (nl(last) < R.p + 0.3 * a)
+            continue; // the neckline has dropped below the right shoulder: no trade
         list.push({ key: `ihs${k}`, name: 'Inverse head and shoulders', dir: 'bullish', status: broke ? 'confirmed' : 'forming', lines: [{ ...neck, i2: last, p2: nl(last), kind: 'neck' }],
             points: [{ i: L.i, p: L.p, label: 'LS' }, { i: H.i, p: H.p, label: 'H' }, { i: R.i, p: R.p, label: 'RS' }], target: nl(last) + hh, entry: broke ? nl(last) : nl(last) + 0.1 * a, sl: R.p - 0.2 * a,
             quality: 60 + (broke ? 20 : 0) + (last - R.i < 15 ? 10 : 0), note: broke ? 'Neckline broken: buy the retest' : 'Buy on a close above the neckline' });
@@ -109,11 +114,11 @@ function patternsAnalyze(c) {
                 dir = priorDir;
             }
             else if (conv && U > 0.4 && L > 0.4 && L > U) {
-                name = 'Bearish wedge';
+                name = 'Rising wedge';
                 dir = 'bearish';
             }
             else if (conv && U < -0.4 && L < -0.4 && U < L) {
-                name = 'Bullish wedge';
+                name = 'Falling wedge';
                 dir = 'bullish';
             }
             else if (flat(U) && flat(L) && wE > 1.2 * a && wS > 1.2 * a && H.length + Lw.length >= 5) {
@@ -211,7 +216,7 @@ function patternsAnalyze(c) {
         let sl = lL - 0.2 * a;
         if (entry - sl < 0.5 * a)
             sl = entry - 0.5 * a;
-        const name = isFlag ? (bull ? 'Bull flag' : 'Bearish flag') : bull ? 'Bullish pennant' : 'Bearish pennant';
+        const name = isFlag ? (bull ? 'Bullish flag' : 'Bearish flag') : bull ? 'Bullish pennant' : 'Bearish pennant';
         list.push({ key: (bull ? 'b' : 's') + (isFlag ? 'f' : 'p'), name, dir: bull ? 'bullish' : 'bearish', status: broke ? 'breakout' : 'forming',
             lines: [{ i1: si, p1: sg * Ll(si), i2: pi, p2: sg * top, kind: 'neck' }, { i1: pi, p1: sg * at(up, pi), i2: last, p2: sg * uL, kind: bull ? 'upper' : 'lower' }, { i1: pi, p1: sg * at(dn, pi), i2: last, p2: sg * lL, kind: bull ? 'lower' : 'upper' }],
             points: [{ i: si, p: sg * Ll(si), label: 'Pole' }, { i: pi, p: sg * top, label: '' }],
@@ -305,8 +310,31 @@ function patternsAnalyze(c) {
     cupScan(false, true);
     cupScan(true, false);
     cupScan(false, false);
-    list.sort((x, y) => y.quality - x.quality);
-    const out = { ok: true, list: list.slice(0, 4) };
+    // ---------- the rest of the sheet (channels, diamond, broadening / megaphone, island, Adam and Eve, QM, 1-2-3)
+    const extra = (0, patterns2_1.specialPatterns)(c, a, hi, lo);
+    for (const e of extra)
+        if (/^ae[tb]/.test(e.key)) { // Adam and Eve replaces the plain double top / bottom on the same two extremes
+            const k = list.findIndex((q) => (q.name === 'Double top' || q.name === 'Double bottom') && q.points[0]?.i === e.points[0].i);
+            if (k >= 0)
+                list.splice(k, 1);
+        }
+    const seen = new Set();
+    const merged = [...list, ...extra].sort((x, y) => y.quality - x.quality).filter((q) => { const id = q.name + q.dir; if (seen.has(id))
+        return false; seen.add(id); return true; });
+    for (const q of merged) {
+        q.family = q.family ?? exports.PATTERN_FAMILY[q.name] ?? 'Reversal';
+        if (q.status !== 'forming' && q.name !== 'Quasimodo (QM)' && q.name !== 'Island reversal') { // the candle that broke the trigger line, for the BREAK marker
+            const buy = q.dir === 'bullish', from = Math.max(0, ...q.points.map((p) => p.i)) + 1;
+            const tl = /^Elliott/.test(q.name) ? q.lines.find((l) => l.kind === 'neck') : q.lines.find((l) => l.kind === (buy ? 'upper' : 'lower')) ?? q.lines.find((l) => l.kind === 'neck');
+            const lvl = (i) => (tl ? at(tl, i) : q.entry);
+            for (let i = Math.max(from, last - 15); i <= last; i++)
+                if (buy ? c[i].c > lvl(i) + 0.1 * a : c[i].c < lvl(i) - 0.1 * a) {
+                    q.brk = i;
+                    break;
+                }
+        }
+    }
+    const out = { ok: true, list: merged.slice(0, 5) };
     const best = out.list[0];
     if (best) {
         out.best = best;
@@ -321,6 +349,16 @@ function patternsAnalyze(c) {
     }
     return out;
 }
+// Which family each pattern belongs to (the pattern sheet: reversal, continuation, special).
+exports.PATTERN_FAMILY = {
+    'Head and shoulders': 'Reversal', 'Inverse head and shoulders': 'Reversal', 'Double top': 'Reversal', 'Double bottom': 'Reversal', 'Triple top': 'Reversal', 'Triple bottom': 'Reversal',
+    'Rising wedge': 'Reversal', 'Falling wedge': 'Reversal', 'Rounding top': 'Reversal', 'Rounding bottom': 'Reversal', 'Diamond top': 'Reversal', 'Diamond bottom': 'Reversal',
+    'Bullish flag': 'Continuation', 'Bearish flag': 'Continuation', 'Bullish pennant': 'Continuation', 'Bearish pennant': 'Continuation', 'Ascending triangle': 'Continuation', 'Descending triangle': 'Continuation',
+    'Symmetrical triangle': 'Continuation', 'Bullish rectangle': 'Continuation', 'Bearish rectangle': 'Continuation', 'Rising channel': 'Continuation', 'Falling channel': 'Continuation',
+    'Cup and handle': 'Continuation', 'Inverse cup and handle': 'Continuation',
+    'Broadening top': 'Special', 'Broadening bottom': 'Special', 'Megaphone pattern': 'Special', 'Island reversal': 'Special', 'Adam and Eve top': 'Special', 'Adam and Eve bottom': 'Special',
+    'Quasimodo (QM)': 'Special', '1-2-3 reversal': 'Special', 'Elliott wave (impulse)': 'Special', 'Elliott wave (ABC)': 'Special',
+};
 exports.PATTERN_GUIDE = [
     { name: 'Head and shoulders', dir: 'bearish', kind: 'Reversal', shows: 'Three highs, the middle one (head) the highest, the two shoulders about equal. The neckline joins the two lows between them.', trade: 'Sell on a close below the neckline (or its retest). Stop above the right shoulder. Target = the head-to-neckline height projected down.' },
     { name: 'Inverse head and shoulders', dir: 'bullish', kind: 'Reversal', shows: 'Three lows, the middle one (head) the lowest. The neckline joins the two highs between them.', trade: 'Buy on a close above the neckline (or its retest). Stop below the right shoulder. Target = the head-to-neckline height projected up.' },
@@ -331,16 +369,30 @@ exports.PATTERN_GUIDE = [
     { name: 'Descending triangle', dir: 'bearish', kind: 'Continuation', shows: 'A flat support line with lower highs pressing on it.', trade: 'Sell on a close below the flat support. Stop above the last lower high. Target = the widest part of the triangle projected down.' },
     { name: 'Ascending triangle', dir: 'bullish', kind: 'Continuation', shows: 'A flat resistance line with higher lows pushing into it.', trade: 'Buy on a close above the flat resistance. Stop below the last higher low. Target = the widest part of the triangle projected up.' },
     { name: 'Bearish flag', dir: 'bearish', kind: 'Continuation', shows: 'A sharp drop (the pole), then a small rising channel that retraces less than half of it.', trade: 'Sell on a close below the lower flag line. Stop above the flag. Target = the pole height projected down from the break.' },
-    { name: 'Bull flag', dir: 'bullish', kind: 'Continuation', shows: 'A sharp rise (the pole), then a small falling channel that retraces less than half of it.', trade: 'Buy on a close above the upper flag line. Stop below the flag. Target = the pole height projected up from the break.' },
+    { name: 'Bullish flag', dir: 'bullish', kind: 'Continuation', shows: 'A sharp rise (the pole), then a small falling channel that retraces less than half of it.', trade: 'Buy on a close above the upper flag line. Stop below the flag. Target = the pole height projected up from the break.' },
     { name: 'Bearish pennant', dir: 'bearish', kind: 'Continuation', shows: 'A sharp drop, then a small symmetrical triangle with the lines closing in.', trade: 'Sell on a close below the lower pennant line. Stop above the pennant. Target = the pole height projected down.' },
     { name: 'Bullish pennant', dir: 'bullish', kind: 'Continuation', shows: 'A sharp rise, then a small symmetrical triangle with the lines closing in.', trade: 'Buy on a close above the upper pennant line. Stop below the pennant. Target = the pole height projected up.' },
-    { name: 'Bearish wedge', dir: 'bearish', kind: 'Reversal', shows: 'Two rising lines that close in: the rises get smaller, buyers are tiring.', trade: 'Sell on a close below the lower line. Stop above the last high. Target = the widest part of the wedge projected down.' },
-    { name: 'Bullish wedge', dir: 'bullish', kind: 'Reversal', shows: 'Two falling lines that close in: the drops get smaller, sellers are tiring.', trade: 'Buy on a close above the upper line. Stop below the last low. Target = the widest part of the wedge projected up.' },
+    { name: 'Rising wedge', dir: 'bearish', kind: 'Reversal', shows: 'Two rising lines that close in: the rises get smaller, buyers are tiring.', trade: 'Sell on a close below the lower line. Stop above the last high. Target = the widest part of the wedge projected down.' },
+    { name: 'Falling wedge', dir: 'bullish', kind: 'Reversal', shows: 'Two falling lines that close in: the drops get smaller, sellers are tiring.', trade: 'Buy on a close above the upper line. Stop below the last low. Target = the widest part of the wedge projected up.' },
     { name: 'Bearish rectangle', dir: 'bearish', kind: 'Continuation', shows: 'Price moves sideways between a flat support and a flat resistance after a downtrend.', trade: 'Sell on a close below the support. Stop above the resistance. Target = the height of the rectangle projected down.' },
     { name: 'Bullish rectangle', dir: 'bullish', kind: 'Continuation', shows: 'Price moves sideways between a flat support and a flat resistance after an uptrend.', trade: 'Buy on a close above the resistance. Stop below the support. Target = the height of the rectangle projected up.' },
-    { name: 'Inverse cup and handle', dir: 'bearish', kind: 'Reversal', shows: 'A rounded dome between two highs at the same level, then a small bounce (the handle) that stays in the lower half of the dome.', trade: 'Sell on a close below the rim after the handle. Stop above the handle. Target = the depth of the dome projected down.' },
-    { name: 'Cup and handle', dir: 'bullish', kind: 'Reversal', shows: 'A rounded U between two highs at the same level, then a small pullback (the handle) that stays in the upper half of the cup.', trade: 'Buy on a close above the rim after the handle. Stop below the handle. Target = the depth of the cup projected up.' },
+    { name: 'Inverse cup and handle', dir: 'bearish', kind: 'Continuation', shows: 'A rounded dome between two highs at the same level, then a small bounce (the handle) that stays in the lower half of the dome.', trade: 'Sell on a close below the rim after the handle. Stop above the handle. Target = the depth of the dome projected down.' },
+    { name: 'Cup and handle', dir: 'bullish', kind: 'Continuation', shows: 'A rounded U between two highs at the same level, then a small pullback (the handle) that stays in the upper half of the cup.', trade: 'Buy on a close above the rim after the handle. Stop below the handle. Target = the depth of the cup projected up.' },
     { name: 'Rounding top', dir: 'bearish', kind: 'Reversal', shows: 'A slow, rounded dome: buyers fade little by little until sellers take over.', trade: 'Sell on a close below the rim (the level where the dome began). Stop above the last high. Target = the dome height projected down.' },
     { name: 'Rounding bottom', dir: 'bullish', kind: 'Reversal', shows: 'A slow, rounded saucer: sellers fade little by little until buyers take over.', trade: 'Buy on a close above the rim (the level where the saucer began). Stop below the last low. Target = the saucer depth projected up.' },
     { name: 'Symmetrical triangle', dir: 'either', kind: 'Continuation', shows: 'Lower highs and higher lows closing in. It usually breaks in the direction of the trend before it (bullish or bearish).', trade: 'Trade the side that breaks: close above the upper line to buy, below the lower line to sell. Stop on the other side. Target = the widest part of the triangle.' },
+    { name: 'Diamond top', dir: 'bearish', kind: 'Reversal', shows: 'After a rise the range widens to a peak and a trough, then narrows again, so the whole thing looks like a diamond.', trade: 'Sell on a close below the lower right-hand edge (or its retest). Stop above the last high inside the diamond. Target = the diamond height projected down.' },
+    { name: 'Diamond bottom', dir: 'bullish', kind: 'Reversal', shows: 'After a fall the range widens to a peak and a trough, then narrows again.', trade: 'Buy on a close above the upper right-hand edge (or its retest). Stop below the last low inside the diamond. Target = the diamond height projected up.' },
+    { name: 'Rising channel', dir: 'bullish', kind: 'Continuation', shows: 'Two parallel rising lines holding price between them, at least five touches.', trade: 'Buy the bounce at the lower line, stop just under it, target the upper line. A close below the lower line flips it into a sell on the retest.' },
+    { name: 'Falling channel', dir: 'bearish', kind: 'Continuation', shows: 'Two parallel falling lines holding price between them, at least five touches.', trade: 'Sell the rejection at the upper line, stop just above it, target the lower line. A close above the upper line flips it into a buy on the retest.' },
+    { name: 'Broadening top', dir: 'bearish', kind: 'Special', shows: 'After a rise, higher highs and lower lows: the swings keep getting wider and buyers lose control.', trade: 'Sell on a close below the lower line (or its retest). Stop above the last high. Target = the width of the formation projected down.' },
+    { name: 'Broadening bottom', dir: 'bullish', kind: 'Special', shows: 'After a fall, higher highs and lower lows: the swings keep widening and sellers lose control.', trade: 'Buy on a close above the upper line (or its retest). Stop below the last low. Target = the width of the formation projected up.' },
+    { name: 'Megaphone pattern', dir: 'either', kind: 'Special', shows: 'The same widening shape with no clear trend before it. Volatile and unreliable: price swings between a rising and a falling line.', trade: 'Fade the rejection at a band with a tight stop, or trade the retest after a close beyond a band. Skip it if the bands are very wide.' },
+    { name: 'Island reversal', dir: 'either', kind: 'Special', shows: 'A cluster of candles cut off from the trend by a gap on each side. Gaps are relaxed to 0.2 ATR because forex, crypto and indices rarely gap.', trade: 'Trade the retest of the island floor (after a rise) or roof (after a fall). Stop beyond the island. Target = the larger of 2 risks or 60% of the prior leg.' },
+    { name: 'Adam and Eve top', dir: 'bearish', kind: 'Special', shows: 'A double top where the first top is a sharp spike (Adam) and the second a wide, rounded one (Eve).', trade: 'Sell on a close below the neckline (the valley). Stop above the tops. Target = the pattern height projected down.' },
+    { name: 'Adam and Eve bottom', dir: 'bullish', kind: 'Special', shows: 'A double bottom where the first low is a sharp V (Adam) and the second a wide, rounded one (Eve).', trade: 'Buy on a close above the neckline (the peak). Stop below the lows. Target = the pattern height projected up.' },
+    { name: 'Quasimodo (QM)', dir: 'either', kind: 'Special', shows: 'A trend makes a new extreme (the head) and then breaks the previous swing the other way (BOS). The left shoulder becomes the QM level.', trade: 'Wait for price to return to the left shoulder and reject it, then trade the new direction. Stop beyond the head. Target = past the swing that broke.' },
+    { name: '1-2-3 reversal', dir: 'either', kind: 'Special', shows: 'Point 1 is the extreme, point 2 the swing back, point 3 a lower high (or higher low) that fails to reach point 1.', trade: 'Enter when price breaks point 2 (or on its retest). Stop beyond point 3. Target = the 1-2 leg projected from the break.' },
+    { name: 'Elliott wave (impulse)', dir: 'either', kind: 'Special', shows: 'A trend in five waves: 1, 3 and 5 push with the trend, 2 and 4 pull back. Rules: wave 2 never goes past the start of wave 1, wave 3 is never the shortest, wave 4 never overlaps wave 1. Drawn with its 0-1-2-3-4-5 labels and a channel.', trade: 'Waves 1-4 in place: trade WITH the trend at the wave 4 pullback, target wave 5 = wave 1. All five done: wait for wave 4 to break, then trade AGAINST the trend. Target = 38% of the whole move, stop beyond wave 5.' },
+    { name: 'Elliott wave (ABC)', dir: 'either', kind: 'Special', shows: 'The 3-wave correction after a trend: A (first leg against the trend), B (a partial bounce of 30-95%), C (a new low beyond A).', trade: 'When C looks finished, trade back WITH the old trend near C with the stop just beyond it. A close beyond wave B confirms it. Target = 62% of the way back to where the correction started.' },
 ];

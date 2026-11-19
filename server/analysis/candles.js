@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GUIDE = void 0;
+exports.CANDLE_SHEET = exports.GUIDE = void 0;
 exports.candlesAnalyze = candlesAnalyze;
 exports.candleMarks = candleMarks;
 const indicators_1 = require("./indicators");
@@ -282,4 +282,9 @@ exports.GUIDE = [
     { name: 'Abandoned Baby', icon: 'A', dir: 'bullish', candles: 3, shows: 'Like a star, but the middle doji gaps away on both sides. Rarer and more reliable.', trade: 'Needs volume for a full reversal. Treat as an A-grade idea when it forms at a key level.' },
     { name: 'Three Soldiers / Crows', icon: '3', dir: 'bullish', candles: 3, shows: 'Three strong candles in the same direction from a turn: a new trend starting.', trade: 'Enter on the pullback after the third candle, not at the top of it.' },
     { name: 'Advance Block', icon: 'B', dir: 'bearish', candles: 3, shows: 'Three green candles with shrinking bodies and growing upper wicks: buyers fading at the peak.', trade: 'Bearish only after a long rise. Wait for a red candle to confirm.' },
+];
+// The candlestick sheet (bullish / bearish pairs). All of them are detected above and marked on the chart in the Candles and Patterns methods.
+exports.CANDLE_SHEET = [
+    ['Hammer', 'Hanging Man'], ['Inverted Hammer', 'Shooting Star'], ['Bullish Engulfing', 'Bearish Engulfing'], ['Morning Star', 'Evening Star'], ['Piercing Line', 'Dark Cloud Cover'],
+    ['Three White Soldiers', 'Three Black Crows'], ['Tweezer Bottom', 'Tweezer Top'], ['Bullish Harami', 'Bearish Harami'], ['Dragonfly Doji', 'Gravestone Doji'],
 ];
