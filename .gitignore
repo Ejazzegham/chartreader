@@ -9,3 +9,4 @@ server/db.json.tmp
 *.tmp
 server/db.json.media/
 __pycache__/
+server/db.json.alerts.json
