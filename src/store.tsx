@@ -648,9 +648,21 @@ export function Provider({ children }: { children: React.ReactNode }) {
   const lockNow = () => { if (lockInfo.current.pin && lockInfo.current.in) setCovered(true); };
   const enter = () => { setLoggedIn(true); setLocked(false); setCovered(false); };
   // The confirmation email: our own design, sent by the Netlify Function (not the license server).
+  // Signup already sends one email by itself. If the person then presses "Send confirmation email" a moment later we must not send a second one
+  // (that is what triggered "Too many attempts"). Within the cool-down we just say it was sent.
+  const VERIFY_COOLDOWN = 60e3;
+  const lastVerify = useRef<Record<string, number>>({});
   const sendVerifyMail = async (u: User): Promise<string | null> => {
+    const now = Date.now();
+    if (now - (lastVerify.current[u.uid] || 0) < VERIFY_COOLDOWN) return null; // sent a moment ago: nothing more to send
+    lastVerify.current[u.uid] = now;
+    const r = await sendVerifyMailNow(u);
+    if (r) { if (r === 'errMany') lastVerify.current[u.uid] = now; else delete lastVerify.current[u.uid]; } // a real failure may be retried at once
+    return r;
+  };
+  const sendVerifyMailNow = async (u: User): Promise<string | null> => {
     const idToken = await u.getIdToken().catch(() => '');
-    if (idToken) { const r = await authMail('verify', { idToken }); if (r === 'sent') return null; if (r === 'limited') return 'errMany'; }
+    if (idToken) { const r = await authMail('verify', { idToken }); if (r === 'sent') return null; }
     if (!AUTH_MAIL_FIREBASE_FALLBACK) return 'errNetwork';
     try { await sendEmailVerification(u); return null; } catch (e: any) { return errKey(e.code); }
   };

@@ -115,7 +115,7 @@ const EXTRA: Record<Lang, Record<string, string>> = {
     tabHome: "Home", tabMarkets: "Markets", tabJournal: "Journal",
     welcome: "Welcome!", createAccount: "Create account", login: "Log in", signup: "Sign up", fullName: "Full name", email: "Email", password: "Password",
     remember: "Remember me", newUser: "New user?", haveAcct: "Already have an account?",
-    errFields: "Enter a name, a valid email and a password of 6+ characters.", errLogin: "Wrong email or password.", errInUse: "That email is already registered. Log in instead.", errNetwork: "No connection. Check your internet and try again.", errMany: "Too many attempts. Try again in a few minutes.", forgotPw: "Forgot password?", resetSent: "Password reset email sent. Check your inbox.",
+    errFields: "Enter a name, a valid email and a password of 6+ characters.", errLogin: "Wrong email or password.", errInUse: "That email is already registered. Log in instead.", errNetwork: "No connection. Check your internet and try again.", errMany: "We already sent the email. Check your inbox and spam folder, then wait a few minutes before asking again.", forgotPw: "Forgot password?", resetSent: "Password reset email sent. Check your inbox.",
     pinSetupTitle: "Secure your app", pinSetupSub: "Choose a 4-digit PIN to lock the app.", pinConfirm: "Confirm your PIN", pinEnter: "Enter your PIN",
     pinMismatch: "PINs do not match. Try again.", pinWrong: "Wrong PIN.", verify: "Verify", skip: "Skip for now", logout: "Log out",
     replaceWarn: "This replaces the account stored on this phone. Continue?", cancel: "Cancel", cont: "Continue",
