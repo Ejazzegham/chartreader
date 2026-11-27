@@ -14,6 +14,7 @@ import TopDown from './TopDown';
 import Scanner from './Scanner';
 import Insight from './Insight';
 import CRAnalysis from './CRAnalysis';
+import VsaStrategies from './VsaStrategies';
 import AnalysisHome from '../AnalysisHome';
 import MethodPage from '../MethodPage';
 import { useDesktop } from '../Desktop';
@@ -369,6 +370,7 @@ export default function Analysis() {
       <View style={show('topdown')}><TopDown {...common} on={live('topdown')} /></View>
       <View style={show('scanner')}><Scanner embedded on={live('scanner')} group={market} cfg={cfg} onOpen={(id) => { setSymId(id); setMarket(groupOf(symOf(id).cat)); setAmethod('all'); }} /></View>
       <View style={show('scalp')}><Scalping {...common} on={live('scalp')} /></View>
+      <View style={show('vsabt')}><VsaStrategies {...common} on={live('vsabt')} method={m && m.host === 'vsabt' ? m.k : 'vsazone'} /></View>
       <View style={show('insight')}><Insight {...common} on={live('insight')} method={m && m.host === 'insight' ? m.k : 'liquidity'} /></View>
     </>
   );

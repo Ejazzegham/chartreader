@@ -1,3 +1,9 @@
+## Analysis methods: VSA Zone Strategy + VSA 1-Minute Scalp
+
+- Two new methods in the Analysis tab (cards "VSA Zone Strategy" and "VSA 1-Minute Scalp", new row "VSA Strategies" on the website home). Both are back-tests on the open pair's live candles (1000 candles) or on a CSV the person loads in the browser (website only). They show the win rate, average R, total R, profit factor, max drawdown, an equity curve, the latest 15 trades and, on live data, a fresh signal drawn on the chart (entry, stop, target).
+- Engines: `src/vsaStrategy.ts` (H1 FVG / order-block zones + lower-timeframe VSA, NS or CISD confirmation) and `src/vsaScalpM1.ts` (M1 retracement scalp). Screen: `src/screens/VsaStrategies.tsx`. Method entries: `src/MethodArt.tsx` (host `vsabt`). Test: `tests/vsastrategies.test.ts`.
+- Both need real volume. Pairs without volume on the chosen timeframe show a notice instead of results.
+
 ## Website look: 12 themes, 6px corners, cleanup
 
 - **12 themes** (Settings > Appearance): 6 colourful drifting backdrops (Aurora, Sunset, Emerald, Royal, Cyber, Northern) x light panels or dark panels. Colours live in `STYLES` in `src/theme.ts`; the backdrop is `src/LiveBackdrop.web.tsx` (slow motion and film grain can be switched off there). Old saved "Light" / "Dark" map to Royal light / Aurora dark.

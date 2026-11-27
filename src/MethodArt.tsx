@@ -6,8 +6,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 // Every analysis method: name, one-line help, its colour pair and its glyph. The icon is a glossy gradient tile with a white glyph.
-export type MKey = 'all' | 'cr' | 'ict' | 'smc' | 'topdown' | 'scanner' | 'vsa' | 'candle' | 'pat' | 'scalp' | 'liquidity' | 'entry' | 'momentum' | 'planner' | 'settings';
-export type Host = 'ict' | 'cr' | 'scalp' | 'topdown' | 'scanner' | 'insight' | 'tab';
+export type MKey = 'all' | 'cr' | 'ict' | 'smc' | 'topdown' | 'scanner' | 'vsa' | 'vsazone' | 'vsam1' | 'candle' | 'pat' | 'scalp' | 'liquidity' | 'entry' | 'momentum' | 'planner' | 'settings';
+export type Host = 'ict' | 'cr' | 'scalp' | 'topdown' | 'scanner' | 'insight' | 'vsabt' | 'tab';
 type Glyph = { t: 'ion' | 'mci'; n: string } | { t: 'candles' } | { t: 'candles2' } | { t: 'bars' };
 export type MDef = { k: MKey; label: string; desc: string; colors: [string, string]; glyph: Glyph; host: Host; tab?: number; score?: boolean };
 
@@ -19,6 +19,8 @@ export const MDEFS: MDef[] = [
   { k: 'topdown', label: 'Top-Down Analysis', desc: 'Multi-timeframe approach with trend, key levels and confluence.', colors: ['#FFB62E', '#FF7A18'], glyph: { t: 'ion', n: 'layers' }, host: 'topdown', score: true },
   { k: 'scanner', label: 'Market Scanner', desc: 'Scan multiple markets for high probability setups with smart filters.', colors: ['#FF5CA8', '#E11D74'], glyph: { t: 'ion', n: 'search' }, host: 'scanner', score: true },
   { k: 'vsa', label: 'VSA Analysis', desc: 'Volume spread analysis for stronger confirmation and valid setups.', colors: ['#2DD4BF', '#0E9F8E'], glyph: { t: 'bars' }, host: 'ict', score: true },
+  { k: 'vsazone', label: 'VSA Zone Strategy', desc: 'H1 volume zones (FVG and order block) with lower-timeframe VSA confirmation. Back-tested in R with entry, stop and target.', colors: ['#2DD4BF', '#0E7490'], glyph: { t: 'bars' }, host: 'vsabt', score: false },
+  { k: 'vsam1', label: 'VSA 1-Minute Scalp', desc: 'Retracement scalp: protected low, sell-volume climax, then a low-volume momentum break. Breakeven at 1R, target 1:2.', colors: ['#4C8DFF', '#1D4ED8'], glyph: { t: 'mci', n: 'timer-outline' }, host: 'vsabt', score: false },
   { k: 'candle', label: 'Candlestick Patterns', desc: 'Identify classic and advanced candlestick patterns with confirmation.', colors: ['#FF6B7A', '#E0314B'], glyph: { t: 'candles2' }, host: 'ict', score: true },
   { k: 'pat', label: 'Chart Patterns', desc: 'Triangles, flags, channels, head & shoulders and more with target projection.', colors: ['#8B6BFF', '#5B3FE0'], glyph: { t: 'mci', n: 'triangle-outline' }, host: 'ict', score: true },
   { k: 'scalp', label: 'Scalping', desc: 'Supply / demand zone, then a reversal candle, then a confirmation candle. M1 to H1. Entry, stop and exit rule.', colors: ['#4C8DFF', '#1D4ED8'], glyph: { t: 'mci', n: 'speedometer' }, host: 'scalp', score: true },

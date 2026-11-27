@@ -115,8 +115,9 @@ const ROWS: { title: string; sub: string; icon: string; keys: string[] }[] = [
   { title: 'Core Analysis', sub: 'Market structure, smart money and multi-timeframe reading', icon: 'layers', keys: ['all', 'cr', 'ict', 'smc', 'topdown'] },
   { title: 'Confirmation & Patterns', sub: 'Scan markets and confirm setups with volume, candles and patterns', icon: 'checkmark-done', keys: ['scanner', 'vsa', 'candle', 'pat', 'scalp'] },
   { title: 'Precision & Execution', sub: 'Find liquidity, time the entry and plan the trade', icon: 'locate', keys: ['liquidity', 'entry', 'momentum', 'planner'] },
+  { title: 'VSA Strategies', sub: 'Volume spread analysis rules, back-tested on the live candles or your own CSV', icon: 'bar-chart', keys: ['vsazone', 'vsam1'] },
 ];
-const TAG: Record<string, string> = { all: 'All-in-one', cr: 'Chart Reader', ict: 'Smart Money', smc: 'Structure', topdown: 'Multi-timeframe', scanner: 'Scanner', vsa: 'Volume', candle: 'Candles', pat: 'Patterns', scalp: 'M1 – H1', liquidity: 'Liquidity', entry: 'Entries', momentum: 'Momentum', planner: 'Risk & Plan' };
+const TAG: Record<string, string> = { all: 'All-in-one', cr: 'Chart Reader', ict: 'Smart Money', smc: 'Structure', topdown: 'Multi-timeframe', scanner: 'Scanner', vsa: 'Volume', candle: 'Candles', pat: 'Patterns', scalp: 'M1 – H1', vsazone: 'Volume · H1', vsam1: 'Volume · M1', liquidity: 'Liquidity', entry: 'Entries', momentum: 'Momentum', planner: 'Risk & Plan' };
 
 function MethodCard({ d, cols, onOpen }: { d: MDef; cols: number; onOpen: () => void }) {
   const P = usePal();
@@ -153,8 +154,8 @@ function Methods({ w, onOpenMethod, go }: { w: number; onOpenMethod: Props['onOp
       </View>
       {ROWS.map((r, ri) => {
         const items = r.keys.map((k) => mdef(k)).filter((d): d is MDef => !!d && match(d));
-        if (!items.length && !(ri === 2 && !t)) return null;
-        const fill = ri === 2 && !t ? 5 - items.length : 0; // last row: the Learning Center card completes the grid
+        if (!items.length && !(ri === ROWS.length - 1 && !t)) return null;
+        const fill = ri === ROWS.length - 1 && !t ? 5 - items.length : 0; // last row: the Learning Center card completes the grid
         return (
           <View key={r.title} style={{ gap: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
