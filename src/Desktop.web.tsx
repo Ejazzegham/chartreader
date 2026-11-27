@@ -16,7 +16,7 @@ import ToolsOrbit, { OrbitItem } from './ToolsOrbit.web';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['TradingView', 22, 'stats-chart-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
+const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['TradingView', 22, 'stats-chart-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Paper Trade (tabManual), which also holds the Journal; Risk & TP Planner (4) is the first entry of the Tools menu
 const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
 const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 9, 5]], ['MARKETS', [8, 13, 19, 18, 17]], ['SUPPORT', [14, 6, 'help']]]; // tab numbers from NAV; 'help' opens Help chat

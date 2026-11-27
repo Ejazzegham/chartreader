@@ -9,6 +9,7 @@ import Paywall from './src/Paywall';
 import Home from './src/screens/Home';
 import Markets from './src/screens/Markets';
 import Journal from './src/screens/Journal';
+import { useLayout } from './src/win';
 import Risk from './src/screens/Risk';
 import History from './src/screens/History';
 import Settings from './src/screens/Settings';
@@ -54,7 +55,14 @@ const GoHistory = function GoHistory() {
   useEffect(() => { if (tab === 21) setTab(5); }, [tab]);
   return null;
 };
-const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, TradeEdge, Go('topdown', 10), GoEdgeChecklist, Go('scanner', 12), News, HelpAbout, GoHelpAbout, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community, GoHistory, TradingView]; // same order as NAV in src/nav.ts
+// The Journal and Paper Trade are one page on the website (tab 16, "Paper Trade"). On a wide screen the Journal slot (3) forwards there; the phone keeps its own Journal screen.
+const JournalPage = function JournalPage() {
+  const { tab, setTab } = useApp();
+  const wide = useLayout().mode === 'desktop';
+  useEffect(() => { if (wide && tab === 3) setTab(16); }, [tab, wide]);
+  return wide ? null : <Journal />;
+};
+const COMPS = [Home, Analysis, Markets, JournalPage, Risk, History, Settings, Go('ict', 7), ForexHours, TradeEdge, Go('topdown', 10), GoEdgeChecklist, Go('scanner', 12), News, HelpAbout, GoHelpAbout, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community, GoHistory, TradingView]; // same order as NAV in src/nav.ts
 const TABS = NAV.map((n, i) => ({ key: n.key, icon: n.icon, Comp: COMPS[i] }));
 
 // Every page stays mounted (so charts keep their state). The one you open fades and rises in.

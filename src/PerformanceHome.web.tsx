@@ -290,8 +290,8 @@ export default function PerformanceHome() {
               <Text style={{ color: '#FFFFFF', fontSize: 17, fontWeight: '800' }}>Improve Your Performance</Text>
               <Text style={{ color: '#E3ECFF', fontSize: 13.5, marginTop: 3 }}>Use your trading journal, analyze your trades, and follow your plan to achieve better results.</Text>
             </View>
-            <Pressable accessibilityRole="button" onPress={() => go(3)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 46, paddingHorizontal: 22, borderRadius: 6, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: s.hovered ? 0.92 : 1 })) as any}>
-              <Text style={{ color: '#0F1E3D', fontSize: 14, fontWeight: '700' }}>View Journal</Text><Icon name="arrow-forward" size={16} color="#2F4FE0" />
+            <Pressable accessibilityRole="button" onPress={() => go(16)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 46, paddingHorizontal: 22, borderRadius: 6, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: s.hovered ? 0.92 : 1 })) as any}>
+              <Text style={{ color: '#0F1E3D', fontSize: 14, fontWeight: '700' }}>Open Paper Trade</Text><Icon name="arrow-forward" size={16} color="#2F4FE0" />
             </Pressable>
           </View>
         </LinearGradient>

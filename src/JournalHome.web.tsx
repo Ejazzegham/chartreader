@@ -1,30 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput } from 'react-native';
-import { LinearGradient } from './FlatGradient';
-import Svg, { Circle, Polyline, Path } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { useApp, Trade } from './store';
-import { Icon, confirmAction, HeroBanner } from './ui';
-import { Fineprint } from './Note';
+import { Icon, confirmAction } from './ui';
 import { Coin } from './MarketWidgets';
 import GuardBanner from './Guard';
 import { MiniRing } from './MethodArt';
 import { quotes, setWatch, symOf, chg } from './markets';
 import { useRealWindow } from './win';
-import { usePal, Panel, Footer, Btn, useGo } from './DesktopHome.web';
+import { usePal, Panel, Btn, useGo } from './DesktopHome.web';
 import { Sessions } from './AnalysisHome.web';
 import { Signal, totalR, floatR, money, fmtR, sourceName, todayPnl, stopAtBE } from './trades';
 
-// The website's Journal page, designed like the "Trading Journal" mockup: hero, performance overview, Signals / Live / Closed / Insights tabs
-// with filters and tables, and a right column with risk settings, sessions, discipline, strategy results, sentiment and a tip.
+// The journal half of the website's Paper Trade page (embedded by ManualTradeDesk.web.tsx through screens/Journal.tsx): Signals / Live / Closed / Insights tabs
+// with filters and tables, and a right column with risk settings, sessions, discipline, strategy results and sentiment.
+// The hero, the account numbers, the equity curve, win rate and per-symbol results live once, in the paper account section above it, so they are not repeated here.
 // All numbers come from the journal, the signals and the live prices. Nothing is made up.
 type Props = {
   active: boolean; px: (id: string) => number | undefined; onTake: (id: string) => void; onManage: (id: string) => void;
-  settings: React.ReactNode; showSet: boolean; toggleSet: () => void; exportCsv: () => void; equity: number; floating: number;
+  settings: React.ReactNode; showSet: boolean; toggleSet: () => void; exportCsv: () => void;
 };
 type View4 = 'signals' | 'open' | 'closed' | 'insights';
 
 const TAGS = ['Followed plan', 'Early exit', 'Late entry', 'FOMO', 'Moved stop'];
-const TIPS = ['Stick to your plan. The best trades come from patience, not prediction.', 'Protect your capital first. Profits follow.', 'One good setup beats ten forced trades.', 'Review every closed trade. The lesson is the real profit.', 'Risk small, think long.'];
 const dt = (t: number) => new Date(t).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const dayMs = 86400000;
 const tfName = (k: string) => { const n = Number(k); return !isFinite(n) || k.includes('/') ? k : n >= 86400 ? 'D1' : n >= 3600 ? `H${n / 3600}` : `M${n / 60}`; };
@@ -145,29 +143,18 @@ function Sentiment({ active }: { active: boolean }) {
   );
 }
 
-// ---------- insights (all from the closed trades)
+// ---------- insights (all from the closed trades). Win rate, equity curve, per-symbol and per-strategy results are in the paper account section and the right column.
 function Insights({ journal, desk, running, today }: { journal: Trade[]; desk: any; running: number; today: number }) {
   const P = usePal(), th = P.th;
-  const [cw, setCw] = useState(0);
   const n = journal.length;
-  if (!n) return <Empty icon="analytics-outline" title="No closed trades yet" text="Take a signal and let it finish. Your weekly results, win rate, strategies and activity fill in here." />;
+  if (!n) return <Empty icon="analytics-outline" title="No closed trades yet" text="Take a signal and let it finish. Your weekly results, habits and activity fill in here." />;
   const sorted = [...journal].sort((a, b) => a.date - b.date);
-  const wins = journal.filter((j) => j.pnl > 0).length, losses = journal.filter((j) => j.pnl < 0).length;
-  const rate = Math.round((wins / n) * 100);
   // weekly P&L, last 10 weeks (weeks start on Monday)
   const mon = new Date(); mon.setHours(0, 0, 0, 0); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
   const weeks = Array.from({ length: 10 }, (_, i) => { const s = mon.getTime() - (9 - i) * 7 * dayMs; return { s, v: journal.filter((j) => j.date >= s && j.date < s + 7 * dayMs).reduce((a, j) => a + j.pnl, 0) }; });
   const wmax = Math.max(1e-9, ...weeks.map((x) => Math.abs(x.v)));
-  // methods, symbols, mistakes
-  const by = (key: (j: Trade) => string) => { const m: Record<string, { n: number; w: number; pnl: number }> = {}; journal.forEach((j) => { const e = (m[key(j)] ??= { n: 0, w: 0, pnl: 0 }); e.n++; e.pnl += j.pnl; if (j.pnl > 0) e.w++; }); return Object.entries(m).sort((a, b) => b[1].pnl - a[1].pnl); };
-  const meth = by((j) => methodOf(j.source)).slice(0, 5), syms = by((j) => j.symbol).slice(0, 5);
   const mistakes = TAGS.filter((t) => t !== 'Followed plan').map((t) => [t, journal.filter((j) => j.tag === t).length] as const).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
-  // equity curve
-  let run = 0; const pts = [0, ...sorted.map((j) => (run += j.pnl))];
-  const emin = Math.min(...pts), emax = Math.max(...pts), erng = emax - emin || 1, W = Math.max(200, cw), H = 150;
-  const line = pts.map((v, i) => `${(i / Math.max(1, pts.length - 1)) * (W - 8) + 4},${H - 10 - ((v - emin) / erng) * (H - 22)}`).join(' ');
-  const up = pts[pts.length - 1] >= 0;
-  // activity heatmap: weekday x 4-hour block of closing time
+  // activity heatmap: weekday x 6-hour block of closing time
   const blocks = ['00-06', '06-12', '12-18', '18-24'], days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const grid = days.map(() => blocks.map(() => 0));
   journal.forEach((j) => { const d = new Date(j.date); grid[(d.getDay() + 6) % 7][Math.floor(d.getHours() / 6)]++; });
@@ -186,7 +173,6 @@ function Insights({ journal, desk, running, today }: { journal: Trade[]; desk: a
     [desk.autoLog ? 'Auto-log of setups is on' : 'Auto-log of setups is off', !!desk.autoLog],
   ];
   const card = (title: string, body: React.ReactNode, flex = 1, minWidth = 260) => <View style={{ flex, minWidth, padding: 16, gap: 10, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>{title}</Text>{body}</View>;
-  const dn = 2 * Math.PI * 52;
   return (
     <View style={{ gap: 14 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
@@ -201,38 +187,9 @@ function Insights({ journal, desk, running, today }: { journal: Trade[]; desk: a
             ))}
           </View>
         ), 1.6, 320)}
-        {card('Win / Loss Ratio', (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            <View style={{ width: 120, height: 120, alignItems: 'center', justifyContent: 'center' }}>
-              <Svg width={120} height={120} viewBox="0 0 120 120" style={{ transform: [{ rotate: '-90deg' }] } as any}>
-                <Circle cx={60} cy={60} r={52} stroke={th.sell} strokeWidth={13} fill="none" />
-                <Circle cx={60} cy={60} r={52} stroke={th.buy} strokeWidth={13} fill="none" strokeDasharray={`${(dn * wins) / Math.max(1, wins + losses)} ${dn}`} />
-              </Svg>
-              <Text style={{ position: 'absolute', color: P.head, fontSize: 22, fontWeight: '800' }}>{rate}%</Text>
-            </View>
-            <View style={{ gap: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: th.buy }} /><Text style={{ color: P.body, fontSize: 12.5 }}>Wins  <Text style={{ color: P.head, fontWeight: '800' }}>{wins}</Text></Text></View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: th.sell }} /><Text style={{ color: P.body, fontSize: 12.5 }}>Losses  <Text style={{ color: P.head, fontWeight: '800' }}>{losses}</Text></Text></View>
-            </View>
-          </View>
-        ), 1, 280)}
-        {card('Top Performing Strategies', meth.map(([k, v], i) => (
-          <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={{ color: P.body, fontSize: 12, width: 16 }}>{i + 1}</Text><Text style={{ flex: 1, color: P.head, fontSize: 12.5, fontWeight: '600' }} numberOfLines={1}>{k}</Text>
-            <Text style={{ color: v.pnl >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '800' }}>{money(v.pnl)}</Text>
-          </View>
-        )), 1, 260)}
-      </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
         {card('Common Mistakes', mistakes.length === 0 ? <Text style={{ color: P.body, fontSize: 12, lineHeight: 17 }}>Nothing tagged yet. Tag closed trades in the Closed tab to see your habits here.</Text> : mistakes.map(([t, c]) => (
           <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="warning" size={14} color={th.gold} /><Text style={{ flex: 1, color: P.head, fontSize: 12.5 }}>{t}</Text><Text style={{ color: P.head, fontWeight: '800', fontSize: 12.5 }}>{c}</Text></View>
         )), 1, 240)}
-        {card('Symbol Performance', (
-          <View style={{ gap: 7 }}>
-            <View style={{ flexDirection: 'row' }}><Text style={{ flex: 1.4, color: P.body, fontSize: 11 }}>Symbol</Text><Text style={{ flex: 1, color: P.body, fontSize: 11, textAlign: 'right' }}>P&L</Text><Text style={{ flex: 1, color: P.body, fontSize: 11, textAlign: 'right' }}>Win rate</Text></View>
-            {syms.map(([k, v]) => <View key={k} style={{ flexDirection: 'row' }}><Text style={{ flex: 1.4, color: P.head, fontSize: 12.5 }} numberOfLines={1}>{k}</Text><Text style={{ flex: 1, color: v.pnl >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700', textAlign: 'right' }}>{money(v.pnl)}</Text><Text style={{ flex: 1, color: P.head, fontSize: 12.5, textAlign: 'right' }}>{Math.round((v.w / v.n) * 100)}%</Text></View>)}
-          </View>
-        ), 1.3, 300)}
         {card('Risk Rules Checklist', rules.map(([t, ok], i) => (
           <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Icon name={ok === null ? 'ellipse-outline' : ok ? 'checkmark-circle' : 'close-circle'} size={16} color={ok === null ? P.body : ok ? th.buy : th.sell} /><Text style={{ flex: 1, color: P.head, fontSize: 12.5 }}>{t}</Text>
@@ -240,17 +197,6 @@ function Insights({ journal, desk, running, today }: { journal: Trade[]; desk: a
         )), 1, 260)}
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
-        {card('Equity Curve (closed trades)', (
-          <View onLayout={(e) => setCw(Math.round(e.nativeEvent.layout.width))}>
-            {cw > 0 && (
-              <Svg width={W} height={H}>
-                {pts.length > 1 && <Polyline points={`4,${H - 4} ${line} ${W - 4},${H - 4}`} fill={(up ? th.buy : th.sell) + '1A'} stroke="none" />}
-                <Polyline points={line} fill="none" stroke={up ? th.buy : th.sell} strokeWidth={2} />
-              </Svg>
-            )}
-            <Text style={{ color: up ? th.buy : th.sell, fontSize: 12, fontWeight: '800' }}>{money(pts[pts.length - 1])} over {n} trade{n > 1 ? 's' : ''}</Text>
-          </View>
-        ), 1.4, 320)}
         {card('Trading Activity (by closing time)', (
           <View style={{ gap: 3 }}>
             <View style={{ flexDirection: 'row', gap: 3, paddingLeft: 34 }}>{blocks.map((b) => <Text key={b} style={{ flex: 1, color: P.body, fontSize: 10, textAlign: 'center' }}>{b}</Text>)}</View>
@@ -273,7 +219,7 @@ function Insights({ journal, desk, running, today }: { journal: Trade[]; desk: a
   );
 }
 
-export default function JournalHome({ active, px, onTake, onManage, settings, showSet, toggleSet, exportCsv, equity, floating }: Props) {
+export default function JournalHome({ active, px, onTake, onManage, settings, showSet, toggleSet, exportCsv }: Props) {
   const P = usePal(), th = P.th, go = useGo();
   const w = useRealWindow().width;
   const { journal, signals, desk, skipSetup, clearSignals, closeSignal, breakEven, updateTrade, removeTrade, toast, setTab, setAsym, setHistOpen } = useApp();
@@ -282,10 +228,8 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
   const two = w >= 1180;
 
   const sigs = signals.filter((x) => x.status === 'signal'), live = signals.filter((x) => x.status !== 'signal'), running = live.filter((x) => x.status === 'open');
-  const n = journal.length, wins = journal.filter((j) => j.pnl > 0).length, losses = journal.filter((j) => j.pnl < 0).length, rate = n ? Math.round((wins / n) * 100) : 0;
-  const closedPnl = journal.reduce((a, j) => a + j.pnl, 0), today = todayPnl(journal), bal = desk.balance;
+  const n = journal.length, today = todayPnl(journal);
   const rs = journal.filter((j) => j.r !== undefined), avgR = rs.length ? rs.reduce((a, j) => a + (j.r as number), 0) / rs.length : null;
-  const pctOf = (v: number) => (bal > 0 ? `${v >= 0 ? '▲' : '▼'} ${Math.abs((v / bal) * 100).toFixed(2)}%` : '');
 
   // ---- filters
   const startToday = new Date().setHours(0, 0, 0, 0);
@@ -299,28 +243,6 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
   const shownSigs = ord(sigs.filter(okSig)), shownLive = ord(live.filter(okSig)), shownClosed = ord(journal.filter(okTr));
   const [limit, setLimit] = useState(8);
   useEffect(() => { setLimit(8); }, [view, side, q, range, strat, tfF, order]);
-
-  // ---- tiles
-  const tile = (label: string, value: string, sub: string, color: string) => (
-    <View key={label} style={{ flex: 1, minWidth: 130, padding: 14, gap: 3, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
-      <Text style={{ color: P.body, fontSize: 11.5 }}>{label}</Text>
-      <Text style={{ color, fontSize: 23, fontWeight: '800', letterSpacing: -0.5 }} numberOfLines={1}>{value}</Text>
-      <Text style={{ color: sub.startsWith('▲') ? th.buy : sub.startsWith('▼') ? th.sell : P.body, fontSize: 11 }} numberOfLines={1}>{sub || ' '}</Text>
-    </View>
-  );
-  const overview = (
-    <Panel style={{ padding: 20, gap: 14 }}>
-      <Head icon="shield-checkmark" title="Performance Overview" />
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-        {tile('Total P&L', n ? money(closedPnl) : '—', pctOf(closedPnl), closedPnl >= 0 ? th.buy : th.sell)}
-        {tile('Today’s P&L', money(today), pctOf(today), today >= 0 ? th.buy : th.sell)}
-        {tile('Win Rate', n ? `${rate}%` : '—', n ? `${wins}W / ${losses}L` : 'No closed trades', P.head)}
-        {tile('Running Trades', String(running.length), desk.maxOpen > 0 ? `of ${desk.maxOpen} allowed` : 'Active', P.head)}
-        {tile('Closed Trades', String(n), 'Completed', P.head)}
-        {tile('Average R', avgR === null ? '—' : fmtR(avgR), 'Per closed trade', avgR === null ? P.head : avgR >= 0 ? th.buy : th.sell)}
-      </View>
-    </Panel>
-  );
 
   // ---- tabs
   const TABS: [View4, string, string, number][] = [['signals', 'Signals', 'radio-outline', sigs.length], ['open', 'Live', 'pulse-outline', live.length], ['closed', 'Closed', 'checkmark-done-outline', n], ['insights', 'Insights', 'analytics-outline', 0]];
@@ -453,7 +375,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
     <Panel style={{ padding: 20, gap: 14, zIndex: 5 }}>
       {view === 'signals' && <Head icon="radio-outline" title="Recent Signals" sub={`${shownSigs.length} signals`} right={clear || undefined} />}
       {view === 'open' && <Head icon="pulse-outline" title="Live Trades" sub={`${live.length} active`} />}
-      {view === 'closed' && <Head icon="checkmark-done-outline" title="Closed Trades" sub={`${shownClosed.length} of ${n}`} right={<View style={{ flexDirection: 'row', gap: 8 }}><Btn2 label="Trade history" icon="receipt-outline" onPress={() => setHistOpen(true)} />{n > 0 && <Btn2 label="Export CSV" icon="share-outline" onPress={exportCsv} />}</View>} />}
+      {view === 'closed' && <Head icon="checkmark-done-outline" title="Closed Trades" sub={`${shownClosed.length} of ${n}${avgR === null ? '' : ` · Average R ${fmtR(avgR)}`}`} right={<View style={{ flexDirection: 'row', gap: 8 }}><Btn2 label="Trade history" icon="receipt-outline" onPress={() => setHistOpen(true)} />{n > 0 && <Btn2 label="Export CSV" icon="share-outline" onPress={exportCsv} />}</View>} />}
       {view === 'insights' && <Head icon="analytics-outline" title="Insights & Analytics" />}
       {filters}
       {view === 'signals' && (
@@ -488,14 +410,11 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
   const mmax = Math.max(1e-9, ...byMeth.map(([, v]) => Math.abs(v.pnl)));
   let best = 0, cur = 0; [...journal].sort((a, b) => a.date - b.date).forEach((j) => { cur = j.pnl > 0 ? cur + 1 : 0; best = Math.max(best, cur); });
   const followed = journal.filter((j) => j.tag === 'Followed plan').length, reviewed = journal.filter((j) => j.tag).length, score = reviewed ? Math.round((followed / reviewed) * 100) : null;
-  const tip = TIPS[Math.floor(Date.now() / dayMs) % TIPS.length];
   const right = (
     <View style={{ width: two ? 340 : '100%', gap: 20 }}>
       <Panel style={{ padding: 20, gap: 10 }}>
-        <Head icon="shield-checkmark" title="Risk & Equity Configuration" />
+        <Head icon="shield-checkmark" title="Risk Configuration" />
         <Text style={{ color: P.body, fontSize: 12.5 }}>Risk per trade: <Text style={{ color: P.head, fontWeight: '700' }}>{desk.riskPct > 0 ? `${desk.riskPct}%` : 'not set'}</Text></Text>
-        <Text style={{ color: P.body, fontSize: 12.5 }}>Account equity: <Text style={{ color: P.head, fontWeight: '700' }}>{bal > 0 ? `$${equity.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })}` : 'not set'}</Text></Text>
-        {floating !== 0 && <Text style={{ color: P.body, fontSize: 11.5 }}>Includes {money(floating)} floating.</Text>}
         <Btn2 label={showSet ? 'Close Settings' : 'Update Settings'} onPress={toggleSet} />
         {showSet && settings}
       </Panel>
@@ -521,30 +440,16 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
         ))}
       </Panel>
       <Sentiment active={active} />
-      <Panel style={{ padding: 20, gap: 8 }}>
-        <Head icon="bulb-outline" title="Trading Tip" />
-        <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>{tip}</Text>
-      </Panel>
     </View>
   );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: P.alt, display: active ? 'flex' : 'none' } as any} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: 32, paddingTop: 24, paddingBottom: 30, gap: 22 }}>
-        <HeroBanner fx="journal" icon="book" tag="Journal / Trading Tools" title="Trading Journal" subtitle="Track every setup from scanner to outcome. Improve your strategy, find strengths, fix mistakes and grow consistently." />
-        <GuardBanner />
-        <View style={{ flexDirection: two ? 'row' : 'column', gap: 22, alignItems: 'flex-start' }}>
-          <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 20 }}>{overview}{tabs}{main}</View>
-          {right}
-        </View>
-        <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 18, borderRadius: 6 }}>
-          <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: '#FFFFFF2A', alignItems: 'center', justifyContent: 'center' }}><Icon name="book" size={22} color="#FFFFFF" /></View>
-          <View style={{ flex: 1 }}><Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800' }}>Refine Your Setups. Trade Smarter.</Text><Text style={{ color: '#EAF2FFDD', fontSize: 12.5, marginTop: 2 }}>Use your journal insights to improve your strategy, reduce mistakes and grow consistently.</Text></View>
-          <Btn label="Open Analysis" onPress={() => setTab(1)} />
-        </LinearGradient>
-        <Fineprint>Paper trading on live prices. Results are a study tool, not financial advice.</Fineprint>
+    <View style={{ width: '100%', gap: 20 }}>
+      <GuardBanner />
+      <View style={{ flexDirection: two ? 'row' : 'column', gap: 22, alignItems: 'flex-start' }}>
+        <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 20 }}>{tabs}{main}</View>
+        {right}
       </View>
-      <Footer w={w} go={go} />
-    </ScrollView>
+    </View>
   );
 }

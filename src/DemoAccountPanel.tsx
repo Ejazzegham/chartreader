@@ -110,7 +110,7 @@ export default function DemoAccountPanel({ acct, setAcct, s, a, w, onReset }: { 
   const stop = a.used > 0 && a.level < 100;
   const status = a.used === 0 ? { t: 'No open risk', c: P.dim } : a.level >= 200 ? { t: 'Healthy', c: P.up } : a.level >= 100 ? { t: 'Caution', c: th.gold } : { t: 'Margin call', c: P.down };
   const customV = parseStart(custom);
-  const apply = (v: number) => confirmAction('Reset paper account', `The balance goes back to ${money(v)} and the statistics start from zero. Your old trades stay in the Journal and Trade history.`, () => { onReset(v); setCustom(''); }, 'Reset');
+  const apply = (v: number) => confirmAction('Reset paper account', `The balance goes back to ${money(v)} and the statistics start from zero. Your old trades stay in the journal and Trade history.`, () => { onReset(v); setCustom(''); }, 'Reset');
 
   const chip = (label: string, on: boolean, f: () => void, key?: string) => (
     <Pressable key={key ?? label} onPress={f} accessibilityRole="button" accessibilityState={{ selected: on }} style={((x: any) => ({ height: 36, paddingHorizontal: 14, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : P.border, backgroundColor: on ? th.accent : x.hovered ? th.accent + '14' : P.soft, ...hand })) as any}>

@@ -1,3 +1,9 @@
+## Website: Journal merged into Paper Trade
+
+- The Journal page and the Paper Trade page are now one page on the website, named **Paper Trade** (tab 16). The "Journal" entry is gone from the top bar and the footer; the old Journal slot (tab 3) forwards to Paper Trade on a wide screen. The phone and narrow windows keep their own Journal screen.
+- The journal section (Signals / Live / Closed / Insights tabs, filters, Take / Manage / Close, risk settings, sessions, discipline, performance by strategy, market sentiment) sits inside Paper Trade (`src/JournalHome.web.tsx`, hosted by `screens/Journal.tsx` with `embedded`).
+- Duplicates removed: the second hero, the Journal "Performance Overview" tiles (the account strip shows balance, equity, P/L, win rate), the "Recent Trades" card (the Closed tab lists every trade), the Insights win / loss ring, equity curve, symbol table and strategy list (shown once in the paper account section and the right column), the second equity line in the risk box, the trading tip and the repeated call-to-action banner.
+
 ## Analysis methods: VSA Zone Strategy + VSA 1-Minute Scalp
 
 - Two new methods in the Analysis tab (cards "VSA Zone Strategy" and "VSA 1-Minute Scalp", new row "VSA Strategies" on the website home). Both are back-tests on the open pair's live candles (1000 candles) or on a CSV the person loads in the browser (website only). They show the win rate, average R, total R, profit factor, max drawdown, an equity curve, the latest 15 trades and, on live data, a fresh signal drawn on the chart (entry, stop, target).

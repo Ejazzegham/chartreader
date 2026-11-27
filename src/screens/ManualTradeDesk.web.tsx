@@ -18,10 +18,11 @@ import { manualTarget, MANUAL_TAB } from '../manualTarget';
 import { useDemoAcct } from '../useDemoAcct';
 import { demoStats } from '../demoAccount';
 import DemoAccountPanel, { AccountStrip } from '../DemoAccountPanel';
+import Journal from './Journal';
 
-// PAPER TRADING dashboard for the website: hero, live chart with timeframes, market watch, open positions / recent trades,
+// PAPER TRADE page for the website (the old Journal page is merged into it): hero, live chart with timeframes, market watch, open positions / recent trades,
 // a trade panel (volume, stop loss, take profit, estimated P/L), live account stats and the feature strip.
-// Same paper-trading engine as the phone terminal: orders fill at the live price, closed trades go to the Journal and Trade history.
+// Same paper-trading engine as the phone terminal: orders fill at the live price, closed trades go to the journal section of this page and to Trade history.
 // The starting balance and leverage come from the demo account settings (src/useDemoAcct.ts, edited in the Demo Account panel > Settings).
 const CHART_H = 540; // fixed chart height (the chart card never grows or shrinks with the page)
 const isMetal = (s: { id: string }) => /XAU|XAG/.test(s.id);
@@ -149,7 +150,7 @@ export default function ManualTradeDesk() {
       <View style={{ flex: 1, width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: W < 1120 ? 16 : 32, paddingVertical: 24, gap: 20 }}>
 
         {/* ---- hero: the same banner as every other page */}
-        <HeroBanner fx="paper" icon="swap-vertical" tag="Paper Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. No real money."
+        <HeroBanner fx="paper" icon="swap-vertical" tag="Paper Trading" title="Trade Live with Confidence" subtitle="Practise on live prices with an MT5-style Buy / Sell ticket, stop loss, take profit and partial close. Signals, live trades, every closed trade and your insights are in the journal below. No real money."
           features={[{ icon: 'stats-chart-outline', title: 'Real-time charts', sub: 'Live candles' }, { icon: 'pulse-outline', title: 'Live market data', sub: 'Forex, crypto, indices' }, { icon: 'construct-outline', title: 'Advanced tools', sub: 'For better decisions' }]} />
 
         {/* ---- account summary: balance, equity, profit / loss, win rate */}
@@ -270,24 +271,6 @@ export default function ManualTradeDesk() {
                 );
               })}
             </View>
-            <View style={{ ...cardSt, padding: 16 } as any}>
-              {head('receipt-outline', 'Recent Trades', <Pressable onPress={() => setHistOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, cursor: 'pointer' } as any}><Text style={{ color: th.accent, fontSize: 12, fontWeight: '800' }}>View All</Text><Icon name="arrow-forward" size={12} color={th.accent} /></Pressable>)}
-              <View style={{ flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 10, borderRadius: 6, backgroundColor: soft }}>{th_('Symbol', 1.3)}{th_('Type')}{th_('Lots')}{th_('Open Price')}{th_('Close Price')}{th_('P/L', 1, true)}</View>
-              {demoTrades.length === 0 && <Text style={{ color: th.dim, fontSize: 13, textAlign: 'center', padding: 22 }}>Closed paper trades appear here.</Text>}
-              {[...demoTrades].reverse().slice(0, 4).map((j) => {
-                const s = SYMBOLS.find((x) => x.name === j.symbol) ?? symOf(j.symbol), c = j.pnl >= 0 ? th.buy : th.sell, d = Math.max(2, priceDec(j.exit || j.entry || 1));
-                return (
-                  <View key={j.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 11, paddingHorizontal: 10, borderBottomWidth: 1, borderBottomColor: border }}>
-                    <View style={{ flex: 1.3, flexDirection: 'row', alignItems: 'center', gap: 9 }}><Coin s={s} size={26} /><Text style={{ color: ink, fontSize: 13, fontWeight: '700' }} numberOfLines={1}>{j.symbol}</Text></View>
-                    <View style={{ flex: 1 }}>{badge(j.side)}</View>
-                    <Text style={{ flex: 1, color: ink, fontSize: 13 }}>{j.lots !== undefined ? fmtLots(j.lots) : '-'}</Text>
-                    <Text style={{ flex: 1, color: ink, fontSize: 13 }}>{Number(j.entry).toFixed(d)}</Text>
-                    <Text style={{ flex: 1, color: ink, fontSize: 13 }}>{Number(j.exit).toFixed(d)}</Text>
-                    <Text style={{ flex: 1, color: c, fontSize: 13, fontWeight: '800', textAlign: 'right' }}>{usd(j.pnl)}</Text>
-                  </View>
-                );
-              })}
-            </View>
           </View>
 
           <View style={{ ...cardSt, width: stack ? '100%' : 330, padding: 16 } as any}>
@@ -348,6 +331,9 @@ export default function ManualTradeDesk() {
             <Sparkline data={curve} color={th.accent} />
           </View>
         </View>
+
+        {/* ---- journal (merged into this page): signals to take, live trades, every closed trade with tags and filters, insights, risk settings */}
+        <Journal embedded active={active} />
 
         {/* ---- full demo account: information, performance, symbols, settings */}
         <DemoAccountPanel acct={acct} setAcct={setAcct} s={stats} a={nums} w={contentW} onReset={doReset} />

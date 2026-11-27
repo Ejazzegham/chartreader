@@ -394,10 +394,11 @@ function Empty({ icon, title, text, children }: { icon: string; title: string; t
 }
 
 // ---------------------------------------------------------------- screen
-export default function Journal() {
+// `embedded`: the website's Paper Trade page hosts the journal section (the Journal has no page of its own on a wide screen). `active` then follows the Paper Trade page.
+export default function Journal({ embedded = false, active: activeProp }: { embedded?: boolean; active?: boolean } = {}) {
   const { th, t, tab, journal, signals, desk, setDesk, takeSignal, skipSetup, closeSignal, breakEven, clearSignals, updateTrade, removeTrade, toast, setPrefill, setTab, setHistOpen } = useApp();
-  const active = tab === 3;
-  const wide = useLayout().mode === 'desktop'; // website: the Trading Journal page (src/JournalHome.web.tsx)
+  const active = activeProp ?? tab === 3;
+  const wide = useLayout().mode === 'desktop'; // website: the journal section of the Paper Trade page (src/JournalHome.web.tsx)
   useFeed(active);
   const [view, setView] = useState<TabKey>('signals');
   const [filter, setFilter] = useState<'all' | 'buy' | 'sell'>('all');
@@ -573,9 +574,10 @@ export default function Journal() {
     </>
   );
   if (wide) {
+    if (!embedded) return null; // the website has no separate Journal page: tab 3 forwards to Paper Trade (App.tsx)
     return (
       <>
-        <JournalHome active={active} px={px} onTake={(id: string) => { setTakeMode('limit'); setTaking(id); }} onManage={(id: string) => setManaging(id)} settings={settings} showSet={showSet} toggleSet={() => setShowSet(!showSet)} exportCsv={exportCsv} equity={equity} floating={floating} />
+        <JournalHome active={active} px={px} onTake={(id: string) => { setTakeMode('limit'); setTaking(id); }} onManage={(id: string) => setManaging(id)} settings={settings} showSet={showSet} toggleSet={() => setShowSet(!showSet)} exportCsv={exportCsv} />
         {sheets}
       </>
     );
