@@ -9,7 +9,7 @@ import type { Theme } from './theme';
 // The website draws an animated backdrop behind every page, so a box with only a faint tint (accent + 8% alpha) or no fill at all lets the backdrop
 // show through and dark text on a dark patch cannot be read. Every note therefore sits on a near-opaque frosted card with a coloured edge.
 export const noteSurface = (th: Theme, tone?: string): any => ({
-  backgroundColor: th.dark ? 'rgba(16,20,52,0.92)' : 'rgba(255,255,255,0.93)',
+  backgroundColor: th.solid,
   borderWidth: 1, borderColor: th.line, borderLeftWidth: 3, borderLeftColor: tone || th.accent, borderRadius: 6,
   ...glassWeb,
   ...(Platform.OS === 'web' ? { boxShadow: th.dark ? '0 14px 30px -20px rgba(0,0,0,0.7)' : '0 14px 30px -22px rgba(11,27,63,0.35)' } : null),
@@ -34,7 +34,7 @@ export function Note({ icon, title, children, tone, right, style }: { icon?: str
 export function Fineprint({ children, style }: { children: React.ReactNode; style?: any }) {
   const { th } = useApp();
   return (
-    <View style={[{ alignSelf: 'center', maxWidth: 820, paddingVertical: 9, paddingHorizontal: 16, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.dark ? 'rgba(16,20,52,0.88)' : 'rgba(255,255,255,0.9)', ...glassWeb }, style]}>
+    <View style={[{ alignSelf: 'center', maxWidth: 820, paddingVertical: 9, paddingHorizontal: 16, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.solid, ...glassWeb }, style]}>
       <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 17, textAlign: 'center' }}>{children}</Text>
     </View>
   );

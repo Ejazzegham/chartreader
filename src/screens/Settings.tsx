@@ -327,10 +327,11 @@ export default function Settings() {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
             {Object.entries(THEMES).map(([id, tm]) => {
               const on = themeId(settings.theme) === id;
+              const g = STYLES[tm.style || 'light'].glows;
               return (
-                <Pressable key={id} onPress={() => setSettings({ theme: id })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '15%' : '47%', flexGrow: 1, minWidth: 110, borderRadius: 6, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel2, padding: 8, gap: 8, opacity: pressed ? 0.85 : 1 })}>
-                  <LinearGradient colors={[tm.back, STYLES[tm.style || 'aurora'].glows[0], STYLES[tm.style || 'aurora'].glows[2]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 52, borderRadius: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
-                    {[tm.panel, tm.accent, tm.accent2].map((c, i) => <View key={i} style={{ width: i ? 14 : 26, height: 16, borderRadius: 6, backgroundColor: c, borderWidth: i ? 0 : 1, borderColor: tm.line }} />)}
+                <Pressable key={id} onPress={() => setSettings({ theme: id })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '30%' : '47%', flexGrow: 1, minWidth: 140, borderRadius: 6, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel2, padding: 8, gap: 8, opacity: pressed ? 0.85 : 1 })}>
+                  <LinearGradient colors={[tm.back, g[0], g[1]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 64, borderRadius: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
+                    {[tm.panel, tm.accent, tm.accent2].map((c, i) => <View key={i} style={{ width: i ? 14 : 34, height: 22, borderRadius: 6, backgroundColor: c, borderWidth: i ? 0 : 1, borderColor: tm.line }} />)}
                   </LinearGradient>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ color: th.text, fontWeight: '800', fontSize: 12.5 }} numberOfLines={1}>{themeLabel(id)}</Text>

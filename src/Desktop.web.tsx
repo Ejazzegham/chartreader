@@ -36,11 +36,11 @@ function TopNav() {
   const [menu, setMenu] = useState<'' | 'tools' | 'user' | 'nav'>(''), [searchOpen, setSearchOpen] = useState(false), [q, setQ] = useState(''), [editOpen, setEditOpen] = useState(false);
   const ref = useRef<TextInput>(null);
   const paid = lic.admin || lic.status === 'paid', slim = L.full < 1400, wide = L.full >= 1700; // slim: icons only on the right; wide: Admin label + Upgrade button too
-  const dk = th.dark, ink = dk ? '#FFFFFF' : NAVY, mute = dk ? '#C7D0EA' : '#4A5578', rule = dk ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.75)', soft = dk ? 'rgba(255,255,255,0.14)' : 'rgba(17,26,58,0.1)';
+  const dk = th.dark, ink = dk ? '#FFFFFF' : NAVY, mute = dk ? '#C9D3BC' : '#4A5578', rule = dk ? '#38432E' : '#D5DAEC', soft = dk ? 'rgba(255,255,255,0.14)' : 'rgba(17,26,58,0.1)';
   // Frosted glass. Lavender + ice-blue tint under the white sheen keeps the dark navy text readable on the site's backdrop; the dark theme uses a deep-violet glass instead.
-  const glassFill = dk ? 'linear-gradient(135deg, rgba(40,44,96,0.62), rgba(26,34,82,0.55))' : 'linear-gradient(135deg, rgba(232,224,255,0.66), rgba(205,224,255,0.56) 55%, rgba(244,246,255,0.64))';
-  const glassFx: any = { backdropFilter: 'blur(25px) saturate(180%)', WebkitBackdropFilter: 'blur(25px) saturate(180%)' };
-  const chip = (s: any, extra: any = {}) => ({ backgroundColor: s.hovered ? (dk ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.72)') : (dk ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.45)'), borderWidth: 1, borderColor: dk ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)', boxShadow: dk ? 'inset 0 1px 0 rgba(255,255,255,0.14)' : 'inset 0 1px 0 rgba(255,255,255,0.95), 0 6px 16px -10px rgba(60,50,140,0.4)', cursor: 'pointer', ...TRANS, ...extra }) as any;
+  const glassFill = dk ? 'linear-gradient(#161B12, #161B12)' : 'linear-gradient(#FFFFFF, #FFFFFF)'; // solid box: dark (Dark theme) or white (Light theme)
+  const glassFx: any = {};
+  const chip = (s: any, extra: any = {}) => ({ backgroundColor: s.hovered ? (dk ? '#2A3322' : '#EEF0FA') : (dk ? '#20271A' : '#F6F7FD'), borderWidth: 1, borderColor: dk ? '#38432E' : '#D5DAEC', boxShadow: dk ? 'inset 0 1px 0 rgba(255,255,255,0.06)' : '0 6px 16px -10px rgba(60,50,140,0.3)', cursor: 'pointer', ...TRANS, ...extra }) as any;
   const toolTabs = [...TOOLS.map((x) => x[0]), HIST_TAB];
   const padX = compact ? 12 : slim ? 14 : wide ? 28 : 20, radius = 6;
   useEffect(() => {
@@ -49,7 +49,7 @@ function TopNav() {
   }, []);
   const hits = q.trim().length ? SYMBOLS.filter((s) => (s.name + ' ' + s.id).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8) : [];
   const pick = (s: Sym) => { setDash({ sym: s.id, market: groupOf(s.cat) }); setTab(0); setQ(''); setSearchOpen(false); };
-  const ACTIVE = dk ? '#FFFFFF' : '#3A33D6'; // open page label: white on the dark glass, deep indigo on the light glass
+  const ACTIVE = dk ? '#A3E635' : '#3A33D6'; // open page label: lime on the dark box, deep indigo on the white box
   // Active page = no box, no pill. Just a clean label with a thin blue-to-violet underline that grows out from the centre (scaleX with an
   // ease-out curve); on hover a fainter underline previews it, and it retracts smoothly when the page changes. Same size/weight on every link
   // so nothing shifts, and a keyboard-visible focus underline comes for free through the hovered/focused state.
@@ -81,8 +81,8 @@ function TopNav() {
     const c1 = danger ? '#FF6B8A' : tone % 2 ? VIOLET : BLUE, c2 = danger ? '#E11D48' : tone % 2 ? '#A06BFF' : '#5AA2FF';
     return (
       <Pressable key={label} accessibilityRole="button" onPress={() => { setMenu(''); onPress(); }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, height: compact ? 44 : 40, paddingHorizontal: 8, borderRadius: 6, cursor: 'pointer', borderWidth: 1,
-        borderColor: on ? 'rgba(119,59,255,0.35)' : s.hovered ? (dk ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.9)') : 'transparent',
-        backgroundColor: s.hovered && !on ? (dk ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)') : 'transparent',
+        borderColor: on ? 'rgba(119,59,255,0.35)' : s.hovered ? (dk ? '#38432E' : '#D5DAEC') : 'transparent',
+        backgroundColor: s.hovered && !on ? (dk ? '#20271A' : '#EEF0FA') : 'transparent',
         backgroundImage: on ? 'linear-gradient(135deg, rgba(119,59,255,0.16), rgba(22,119,255,0.14))' : undefined, ...TRANS })) as any}>
         <View style={{ width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundImage: `linear-gradient(150deg, ${c2}, ${c1})`, boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 12px -6px ' + c1 } as any}>
           <Icon name={icon} size={14} color="#FFFFFF" />
@@ -94,7 +94,7 @@ function TopNav() {
   };
   const name = account?.name ?? '';
   const sep = <View style={{ height: 1, backgroundColor: soft, marginVertical: 6, marginHorizontal: 8 }} />;
-  const dropFill = dk ? 'linear-gradient(160deg, rgba(34,38,86,0.9), rgba(22,28,70,0.88))' : 'linear-gradient(160deg, rgba(244,241,255,0.9), rgba(232,241,255,0.88))';
+  const dropFill = dk ? 'linear-gradient(#161B12, #161B12)' : 'linear-gradient(#FFFFFF, #FFFFFF)';
   const dropBox = { position: 'absolute', zIndex: 40, borderRadius: 6, borderWidth: 1, borderColor: rule, backgroundImage: dropFill, ...glassFx, boxShadow: dk ? '0 30px 60px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.16)' : '0 30px 60px -22px rgba(60,50,140,0.45), 0 8px 20px -10px rgba(60,50,140,0.2), inset 0 1px 0 rgba(255,255,255,0.95)', padding: 8 } as any;
   const avatarEl = (size: number) => avatar ? <Image source={{ uri: avatar }} style={{ width: size, height: size, borderRadius: size / 2 }} /> : (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundImage: `linear-gradient(150deg, ${BLUE}, ${VIOLET})`, alignItems: 'center', justifyContent: 'center' } as any}><Text style={{ color: '#fff', fontSize: size * 0.42, fontWeight: '700' }}>{(name || '?').trim().charAt(0).toUpperCase()}</Text></View>
@@ -102,7 +102,7 @@ function TopNav() {
   const ring = (size: number) => ({ width: size + 6, height: size + 6, borderRadius: (size + 6) / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.9)', boxShadow: '0 0 0 2px rgba(119,59,255,0.35), 0 6px 16px -6px rgba(119,59,255,0.7)' }) as any;
   const role = lic.admin ? 'Admin' : paid ? 'Premium Trader' : lic.status === 'trial' ? 'Free trial' : 'Account';
   const count = adminBadge.chats + adminBadge.pays;
-  const plain = (s: any) => ({ width: 38, height: 38, borderRadius: 6, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: s.hovered ? (dk ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)') : 'transparent', ...TRANS }) as any;
+  const plain = (s: any) => ({ width: 38, height: 38, borderRadius: 6, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: s.hovered ? (dk ? '#20271A' : '#EEF0FA') : 'transparent', ...TRANS }) as any;
   const vdiv = <View style={{ width: 1, height: 26, backgroundColor: dk ? 'rgba(255,255,255,0.22)' : 'rgba(40,50,130,0.18)', marginHorizontal: slim ? 4 : 10 }} />;
   return (
     <View style={{ zIndex: 30, paddingTop: 12, paddingBottom: 8, alignItems: 'center' }}>
@@ -120,7 +120,7 @@ function TopNav() {
             </View>
             {L.full >= 350 && <View>
               <Text style={{ color: ink, fontSize: 17, fontWeight: '800', letterSpacing: -0.3 }} numberOfLines={1}>Chart Reader</Text>
-              {!slim && <Text style={{ color: dk ? '#C7D0EA' : '#2B3563', fontSize: 9, fontWeight: '600', letterSpacing: 2.4, marginTop: 0 }} numberOfLines={1}>TRADING ANALYSIS</Text>}
+              {!slim && <Text style={{ color: dk ? '#C9D3BC' : '#2B3563', fontSize: 9, fontWeight: '600', letterSpacing: 2.4, marginTop: 0 }} numberOfLines={1}>TRADING ANALYSIS</Text>}
             </View>}
           </Pressable>
           {!compact && (<>
@@ -137,7 +137,7 @@ function TopNav() {
           {L.full >= 640 && <>{!compact && vdiv}<LivePill dk={dk} ink={ink} slim={slim} /></>}
           <View style={{ width: 38, height: 38, alignItems: 'center', justifyContent: 'center', marginLeft: 2 }}><BellButton /></View>
           {lic.admin && !compact && <>{vdiv}
-            <Pressable accessibilityRole="button" accessibilityLabel="Admin" onPress={() => setAdminOpen(true)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 38, paddingHorizontal: slim ? 9 : 11, borderRadius: 6, cursor: 'pointer', backgroundColor: s.hovered ? (dk ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)') : 'transparent', ...TRANS })) as any}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Admin" onPress={() => setAdminOpen(true)} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 38, paddingHorizontal: slim ? 9 : 11, borderRadius: 6, cursor: 'pointer', backgroundColor: s.hovered ? (dk ? '#20271A' : '#EEF0FA') : 'transparent', ...TRANS })) as any}>
               <Icon name="shield-outline" size={18} color={ink} />{wide && <Text style={{ color: ink, fontSize: 15, fontWeight: '700' }}>Admin</Text>}
               {count > 0 && <View style={{ minWidth: 18, height: 18, borderRadius: 6, paddingHorizontal: 5, backgroundColor: th.sell, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 10.5, fontWeight: '700' }}>{count}</Text></View>}
               <Icon name="chevron-down" size={13} color={mute} />
@@ -145,7 +145,7 @@ function TopNav() {
           {!compact && vdiv}
           {!paid && wide && <Pressable onPress={() => setTab(6)} style={((s: any) => ({ height: 36, paddingHorizontal: 16, borderRadius: 6, justifyContent: 'center', marginRight: 6, backgroundImage: `linear-gradient(135deg, ${BLUE}, ${VIOLET})`, boxShadow: s.hovered ? '0 10px 24px -8px rgba(119,59,255,0.85), inset 0 1px 0 rgba(255,255,255,0.4)' : '0 8px 20px -10px rgba(119,59,255,0.7), inset 0 1px 0 rgba(255,255,255,0.35)', cursor: 'pointer', ...TRANS })) as any}><Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>Upgrade</Text></Pressable>}
           <View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Account menu" onPress={() => setMenu(menu === 'user' ? '' : 'user')} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 44, paddingLeft: 4, paddingRight: compact ? 4 : 9, borderRadius: 6, cursor: 'pointer', backgroundColor: s.hovered ? (dk ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)') : 'transparent', ...TRANS })) as any}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Account menu" onPress={() => setMenu(menu === 'user' ? '' : 'user')} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 9, height: 44, paddingLeft: 4, paddingRight: compact ? 4 : 9, borderRadius: 6, cursor: 'pointer', backgroundColor: s.hovered ? (dk ? '#20271A' : '#EEF0FA') : 'transparent', ...TRANS })) as any}>
               <View style={ring(32)}>{avatarEl(32)}<View style={{ position: 'absolute', right: 0, bottom: 0, width: 10, height: 10, borderRadius: 5, backgroundColor: '#16C784', borderWidth: 2, borderColor: '#FFFFFF' }} /></View>
               {!slim && !compact && <Text style={{ color: ink, fontSize: 15, fontWeight: '700', maxWidth: wide ? 170 : 110 }} numberOfLines={1}>{name}</Text>}
               {!compact && <Icon name="chevron-down" size={14} color={mute} />}

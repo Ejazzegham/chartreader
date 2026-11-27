@@ -3,7 +3,7 @@ import { useApp } from './store';
 import { STYLES } from './theme';
 
 // The website backdrop: a colourful multi-colour mesh (four soft colour glows on a deep base) that drifts very slowly,
-// with a fine film grain on top. The chosen theme picks the colours: aurora, sunset, emerald, royal, cyber or northern (src/theme.ts, STYLES).
+// with a fine film grain on top. The chosen theme picks the colours: Light = purple + blue, Dark = light lime green + lime yellow (src/theme.ts, STYLES).
 // Slow motion is skipped for people who ask their device for reduced motion.
 const ANIMATE = true; // false = still picture
 const GRAIN = true;   // false = no film grain
@@ -12,7 +12,7 @@ const POS = ['15% 20%', '85% 15%', '20% 90%', '90% 85%'];
 const buildCss = () => {
   const one = (name: string) => {
     const s = STYLES[name];
-    const img = s.glows.map((c, i) => `radial-gradient(circle at ${POS[i]}, ${c}cc 0, transparent 46%)`).join(',');
+    const img = s.glows.map((c, i) => `radial-gradient(circle at ${POS[i]}, ${c}ee 0, transparent 52%)`).join(',');
     return `.cr-bg-${name}{background-color:${s.base};background-image:${img}}`;
   };
   return `
@@ -32,6 +32,6 @@ export default function LiveBackdrop() {
     el.textContent = buildCss();
     document.head.appendChild(el);
   }, []);
-  const name = th.style && STYLES[th.style] ? th.style : 'aurora';
+  const name = th.style && STYLES[th.style] ? th.style : 'light';
   return React.createElement('div', { className: `cr-bg cr-bg-${name}`, 'aria-hidden': true });
 }

@@ -3,7 +3,7 @@ export type Theme = {
   accent: string; accent2: string; onAccent: string; buy: string; sell: string; gold: string; poi: string;
   panel2: string; // raised surface: inputs, tiles and chips that sit ON a card
   hair: string;   // very soft divider, lighter than `line`
-  glass: boolean;                       // translucent-panel themes (the backdrop is a calm flat colour: no gradients or glows)
+  glass: boolean;                       // always false now: every box is solid
   back: string;                         // base colour of the page backdrop (both themes use the same deep dark base)
   solid: string;                        // opaque version of `panel`: bottom sheets and pop-ups must not be see-through
   style?: string;                       // which colourful backdrop this theme uses (a key of STYLES)
@@ -28,34 +28,26 @@ const build = (b: Base): Theme => ({
   hair: b.hair ?? mix(b.panel, b.dark ? '#FFFFFF' : b.text, b.dark ? 0.08 : 0.08),
 });
 
-// 12 themes = 6 colourful backdrop styles x 2 panel looks (light panels / dark panels).
-// The backdrop (src/LiveBackdrop.web.tsx) is a drifting multi-colour mesh; the style decides its colours.
+// Two themes only: Light and Dark.
+//  Light: purple + blue backdrop, every box (cards, panels, sheets, menus) is solid white.
+//  Dark : light-lime-green + lime-yellow backdrop, every box is solid dark.
+// The backdrop (src/LiveBackdrop.web.tsx) is a slowly drifting colour mesh; STYLES holds its colours.
 // buy / sell / gold / poi stay as trading colours (green, red, amber, violet) so a buy never looks like a sell.
 export const STYLES: Record<string, { name: string; base: string; glows: string[]; light: [string, string]; dark: [string, string] }> = {
-  //            name              backdrop base  four glows                                       accent + accent2 on light panels   on dark panels
-  aurora:   { name: 'Aurora',   base: '#070A1F', glows: ['#2563EB', '#22D3EE', '#A855F7', '#EC4899'], light: ['#2563EB', '#C026D3'], dark: ['#60A5FA', '#22D3EE'] },
-  sunset:   { name: 'Sunset',   base: '#12061C', glows: ['#F97316', '#EC4899', '#8B5CF6', '#FACC15'], light: ['#EA580C', '#DB2777'], dark: ['#FB923C', '#F472B6'] },
-  emerald:  { name: 'Emerald',  base: '#03121A', glows: ['#10B981', '#06B6D4', '#3B82F6', '#84CC16'], light: ['#059669', '#0891B2'], dark: ['#34D399', '#22D3EE'] },
-  royal:    { name: 'Royal',    base: '#0B0724', glows: ['#6366F1', '#A855F7', '#F59E0B', '#2563EB'], light: ['#4F46E5', '#D97706'], dark: ['#818CF8', '#FBBF24'] },
-  cyber:    { name: 'Cyber',    base: '#050509', glows: ['#F43F5E', '#D946EF', '#06B6D4', '#6366F1'], light: ['#C026D3', '#0891B2'], dark: ['#E879F9', '#22D3EE'] },
-  northern: { name: 'Northern', base: '#04101A', glows: ['#34D399', '#6366F1', '#22D3EE', '#C084FC'], light: ['#0D9488', '#7C3AED'], dark: ['#2DD4BF', '#C084FC'] },
+  light: { name: 'Light', base: '#5B3FD9', glows: ['#7C3AED', '#2563EB', '#A855F7', '#3B82F6'], light: ['#4F46E5', '#7C3AED'], dark: ['#4F46E5', '#7C3AED'] },
+  dark:  { name: 'Dark',  base: '#B6E34A', glows: ['#A3E635', '#D9F25A', '#C6F135', '#E6F76B'], light: ['#4D7C0F', '#A16207'], dark: ['#A3E635', '#FACC15'] },
 };
 const TRADE = { light: { buy: '#059669', sell: '#E11D48', gold: '#B7791F', poi: '#7C3AED' }, dark: { buy: '#34D399', sell: '#FB7185', gold: '#F8D06A', poi: '#C084FC' } };
-const mk = (style: string, dark: boolean): Base => {
-  const s = STYLES[style], [accent, accent2] = dark ? s.dark : s.light;
-  if (!dark) return { dark: false, glass: true, style, back: s.base, bg: '#F4F6FF', panel: '#FFFFFFD6', solid: '#FFFFFF', panel2: '#1B2A5012', hair: '#1B2A5018', line: '#C9D2E8', text: '#0A1022', dim: '#2B364D', accent, accent2, onAccent: '#FFFFFF', ...TRADE.light };
-  const solid = mix(s.base, '#FFFFFF', 0.11); // dark panels are tinted with the backdrop's own colour
-  return { dark: true, glass: true, style, back: s.base, bg: mix(s.base, '#FFFFFF', 0.03), panel: solid + 'DB', solid, panel2: '#FFFFFF1A', hair: '#FFFFFF26', line: '#FFFFFF40', text: '#FFFFFF', dim: '#C7D0EA', accent, accent2, onAccent: '#06102A', ...TRADE.dark };
+const BASE: Record<string, Base> = {
+  light: { dark: false, glass: false, style: 'light', back: STYLES.light.base, bg: '#F4F6FF', panel: '#FFFFFF', solid: '#FFFFFF', panel2: '#F1F3FB', hair: '#E6E9F5', line: '#D5DAEC', text: '#0A1022', dim: '#2B364D', accent: STYLES.light.dark[0], accent2: STYLES.light.dark[1], onAccent: '#FFFFFF', ...TRADE.light },
+  dark:  { dark: true,  glass: false, style: 'dark',  back: STYLES.dark.base,  bg: '#0E120A', panel: '#161B12', solid: '#161B12', panel2: '#20271A', hair: '#2A3322', line: '#38432E', text: '#FFFFFF', dim: '#C9D3BC', accent: STYLES.dark.dark[0], accent2: STYLES.dark.dark[1], onAccent: '#0B1205', ...TRADE.dark },
 };
-const BASE: Record<string, Base> = {};
-Object.keys(STYLES).forEach((k) => { BASE[k + '-light'] = mk(k, false); BASE[k + '-dark'] = mk(k, true); });
 
 export const THEMES: Record<string, Theme> = Object.fromEntries(Object.entries(BASE).map(([k, v]) => [k, build(v)]));
-export const themeLabel = (id: string) => { const [s, m] = id.split('-'); return (STYLES[s]?.name ?? id) + ' · ' + (m === 'dark' ? 'Dark panels' : 'Light panels'); };
+export const themeLabel = (id: string) => (id === 'dark' ? 'Dark' : 'Light');
 
-// Saved choices from before the 12 themes: "light" -> Royal light, "dark" (and the older dark themes) -> Aurora dark.
-const OLD_DARK = ['dark', 'royal', 'midnight', 'ocean', 'graphite', 'sunset', 'forest', 'glassNight', 'glassAurora', 'glassObsidian'];
-export const themeId = (id?: string) => (id && THEMES[id] ? id : id && OLD_DARK.includes(id) ? 'aurora-dark' : 'royal-light');
+// Saved choices from the old 12 themes: anything dark (…-dark, "dark", midnight, ocean…) becomes Dark, everything else becomes Light.
+export const themeId = (id?: string) => (id === 'dark' || id === 'light' ? id : id && (id.endsWith('-dark') || ['midnight', 'ocean', 'graphite', 'sunset', 'forest', 'glassNight', 'glassAurora', 'glassObsidian'].includes(id)) ? 'dark' : 'light');
 export const themeFor = (id?: string): Theme => THEMES[themeId(id)];
 
 // Text colour that stays readable on top of a given background colour (price tags, chart labels, chips).

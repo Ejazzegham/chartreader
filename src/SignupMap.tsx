@@ -14,7 +14,7 @@ const HERO_BG = '/community-bg.jpg'; // '' = a drawn blue background with a glob
 const INK = '#0B1B4D', MUTED = '#5B6B8C', LINE = '#E6ECF8', BLUE = '#1F4BFF', NAVY = '#071A45', DOT = '#FF4D6D';
 const VIVID = ['#FF9F43', '#FFD93D', '#4CD97B', '#2FD3E0', '#5B9BFF', '#9B7BFF', '#E86BF0', '#FF6B8B'];
 const tone = (cc: string) => (cc.charCodeAt(0) * 31 + cc.charCodeAt(1)) % 8;
-const glass: any = { backgroundColor: 'rgba(255,255,255,0.74)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(14px)', boxShadow: '0 10px 30px rgba(40,70,160,0.14)' };
+const glass: any = { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D5DAEC', boxShadow: '0 10px 30px rgba(40,70,160,0.14)' };
 const fmt = (n: number) => n.toLocaleString('en-US');
 const ago = (t: number) => {
   if (!t) return '';

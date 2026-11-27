@@ -36,7 +36,7 @@ const CSS = `
 .to-st{position:absolute;left:50%;top:50%;width:${SW}px;height:${SH}px}
 .to-svg{position:absolute;left:0;top:0;pointer-events:none}
 .to-c{position:absolute;display:flex;align-items:center;gap:14px;width:216px;height:72px;padding:0 16px 0 12px;margin:-36px 0 0 -108px;border-radius:6px;border:1px solid var(--cb);
-  background:var(--card);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);color:var(--ink);cursor:pointer;text-align:left;font:inherit;
+  background:var(--card);color:var(--ink);cursor:pointer;text-align:left;font:inherit;
   box-shadow:0 22px 30px -16px var(--sh),0 4px 12px -6px var(--sh),inset 0 0 0 1px var(--inner),inset 0 1px 0 var(--hi),inset 0 -10px 18px var(--low);
   transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .2s,background .2s;animation:to-pop .5s cubic-bezier(.2,.8,.2,1) both,to-fl 7s ease-in-out infinite;animation-delay:var(--e),var(--d)}
 .to-c::before{content:"";position:absolute;left:3px;right:3px;top:2px;height:46%;border-radius:16px 16px 50% 50%/16px 16px 10px 10px;background:linear-gradient(180deg,var(--gloss),rgba(255,255,255,0));pointer-events:none}
@@ -116,18 +116,18 @@ export default function ToolsOrbit({ th, top, items, onClose }: { th: Theme; top
   });
   const at = (id: string) => { const i = items.findIndex((x) => x.id === id); return i < 0 ? null : pos[i]; };
   const dk = th.dark, v: any = {
-    '--ink': dk ? '#FFFFFF' : '#1B2250', '--sell': th.sell, '--tl': dk ? '#C9B8FF' : '#3B32D0',
-    '--card': dk ? 'linear-gradient(180deg,rgba(60,64,130,.56),rgba(36,40,100,.46))' : 'linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.4))',
-    '--cardh': dk ? 'linear-gradient(180deg,rgba(74,78,150,.66),rgba(46,50,114,.56))' : 'linear-gradient(180deg,rgba(255,255,255,.84),rgba(255,255,255,.56))',
-    '--cb': dk ? 'rgba(255,255,255,0.26)' : 'rgba(255,255,255,0.9)', '--inner': dk ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.45)', '--hi': dk ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,1)',
+    '--ink': dk ? '#FFFFFF' : '#1B2250', '--sell': th.sell, '--tl': dk ? '#3F6212' : '#E4E9FF',
+    '--card': dk ? 'linear-gradient(#161B12,#161B12)' : 'linear-gradient(#FFFFFF,#FFFFFF)',
+    '--cardh': dk ? 'linear-gradient(#20271A,#20271A)' : 'linear-gradient(#F4F5FD,#F4F5FD)',
+    '--cb': dk ? '#38432E' : '#D5DAEC', '--inner': dk ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.45)', '--hi': dk ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,1)',
     '--gloss': dk ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.6)', '--low': dk ? 'rgba(120,130,255,0.12)' : 'rgba(150,160,255,0.2)', '--orb': dk ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.55)',
     '--sh': dk ? 'rgba(0,0,0,0.5)' : 'rgba(80,80,170,0.38)',
     '--bub2': dk ? 'rgba(80,140,255,.3)' : 'rgba(120,170,255,.3)', '--bub3': dk ? 'rgba(119,59,255,.4)' : 'rgba(119,59,255,.2)', '--bubb': dk ? 'rgba(255,255,255,.35)' : 'rgba(255,255,255,.85)',
   };
   const bg = dk
-    ? 'radial-gradient(55% 55% at 50% 50%,rgba(119,59,255,.3),rgba(119,59,255,0) 72%),radial-gradient(40% 45% at 6% 90%,rgba(140,90,255,.3),rgba(140,90,255,0) 70%),linear-gradient(110deg,#1B1450,#14205A 55%,#0C1238)'
-    : 'radial-gradient(60% 45% at 45% 8%,rgba(255,255,255,.55),rgba(255,255,255,0) 75%),radial-gradient(45% 45% at 8% 88%,rgba(176,140,255,.55),rgba(176,140,255,0) 72%),radial-gradient(45% 50% at 50% 52%,rgba(119,59,255,.14),rgba(119,59,255,0) 75%),linear-gradient(105deg,#E3D8FF 0%,#CFC8FF 34%,#BCD0FF 68%,#A9C9FF 100%)';
-  const lineA = dk ? '#B9A6FF' : '#8D7BFF', glow = dk ? '#A98BFF' : '#FFFFFF';
+    ? 'radial-gradient(55% 55% at 50% 50%,rgba(255,255,255,.25),rgba(255,255,255,0) 72%),linear-gradient(110deg,#B6E34A,#C9F05A 55%,#E2F77A)'
+    : 'radial-gradient(60% 45% at 45% 8%,rgba(255,255,255,.55),rgba(255,255,255,0) 75%),radial-gradient(45% 45% at 8% 88%,rgba(176,140,255,.55),rgba(176,140,255,0) 72%),radial-gradient(45% 50% at 50% 52%,rgba(119,59,255,.14),rgba(119,59,255,0) 75%),linear-gradient(105deg,#7C5CFF 0%,#6D6BF5 34%,#4F86F7 68%,#3B82F6 100%)';
+  const lineA = dk ? '#4D7C0F' : '#E4E9FF', glow = dk ? '#FFFFFF' : '#FFFFFF';
   const arc = (a: { x: number; y: number }, b: { x: number; y: number }) => `M${a.x} ${a.y} Q ${(a.x + b.x) / 2 + (b.x - a.x) * 0.02} ${(a.y + b.y) / 2 + (a.y < CY ? -1 : 1) * 70 * (Math.abs(b.y - a.y) < 200 ? 0.4 : 1)} ${b.x} ${b.y}`;
   return (
     <div className="to" role="dialog" aria-label="Tools" onClick={onClose} style={{ ...v, backgroundImage: bg }}>
