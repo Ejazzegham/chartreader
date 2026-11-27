@@ -31,7 +31,7 @@ const build = (b: Base): Theme => ({
 // buy / sell / gold / poi stay as trading colours (green, red, amber, violet) so a buy never looks like a sell.
 const BASE: Record<string, Base> = {
   light: { dark: false, glass: true, back: '#0B0724', bg: '#F4F6FF', panel: '#FFFFFFD6', solid: '#FFFFFF', panel2: '#1B2A5012', hair: '#1B2A5018', line: '#C9D2E8', text: '#0A1022', dim: '#2B364D', accent: '#2563EB', accent2: '#C026D3', onAccent: '#FFFFFF', buy: '#059669', sell: '#E11D48', gold: '#B7791F', poi: '#7C3AED' },
-  dark: { dark: true, glass: true, back: '#070A1F', bg: '#0A0D26', panel: '#121634D0', solid: '#121634', panel2: '#FFFFFF12', hair: '#FFFFFF1F', line: '#FFFFFF33', text: '#FFFFFF', dim: '#C7D0EA', accent: '#60A5FA', accent2: '#22D3EE', onAccent: '#06102A', buy: '#34D399', sell: '#FB7185', gold: '#F8D06A', poi: '#C084FC' },
+  dark: { dark: true, glass: true, back: '#070A1F', bg: '#0A0D26', panel: '#171C48DB', solid: '#171C48', panel2: '#FFFFFF1A', hair: '#FFFFFF26', line: '#FFFFFF40', text: '#FFFFFF', dim: '#C7D0EA', accent: '#60A5FA', accent2: '#22D3EE', onAccent: '#06102A', buy: '#34D399', sell: '#FB7185', gold: '#F8D06A', poi: '#C084FC' },
 };
 
 export const THEMES: Record<string, Theme> = Object.fromEntries(Object.entries(BASE).map(([k, v]) => [k, build(v)]));

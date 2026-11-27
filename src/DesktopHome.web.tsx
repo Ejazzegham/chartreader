@@ -37,7 +37,7 @@ export function usePal() {
     head: th.text, body: th.dim,
     blue: th.accent, brass: th.accent2, soft: th.accent + (d ? '26' : '14'),
     shadow: d ? '#000000' : '#0B1B3F',
-    onBack: d ? '#0A1022' : '#F5F8FF', onBackDim: d ? '#2B364D' : '#C7D0EA', onBackAccent: d ? '#7C3AED' : '#F472B6', onBackLine: d ? '#0A102233' : '#FFFFFF33', // text on the bare backdrop
+    onBack: '#F5F8FF', onBackDim: '#DCE6FF', onBackAccent: '#F472B6', onBackLine: '#FFFFFF33', // text on the bare backdrop: the backdrop is dark in both themes, so this text is always light
   };
 }
 
