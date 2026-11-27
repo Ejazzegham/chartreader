@@ -17,12 +17,10 @@ import PropFirms from './src/screens/PropFirms';
 import Brokers from './src/screens/Brokers';
 import CryptoExchanges from './src/screens/CryptoExchanges';
 import Community from './src/screens/Community';
-import Performance from './src/screens/Performance';
+import TradeEdge, { GoEdgeChecklist } from './src/screens/TradeEdge';
 import Analysis from './src/screens/Analysis';
-import Checklist from './src/screens/Checklist';
 import News from './src/screens/News';
-import Guide from './src/screens/Guide';
-import About from './src/screens/About';
+import HelpAbout, { GoHelpAbout } from './src/screens/HelpAbout';
 import ManualTrade from './src/screens/ManualTrade';
 import RightSidebar from './src/RightSidebar';
 import TradeHistory from './src/TradeHistory';
@@ -56,7 +54,7 @@ const GoHistory = function GoHistory() {
   useEffect(() => { if (tab === 21) setTab(5); }, [tab]);
   return null;
 };
-const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community, GoHistory, TradingView]; // same order as NAV in src/nav.ts
+const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, TradeEdge, Go('topdown', 10), GoEdgeChecklist, Go('scanner', 12), News, HelpAbout, GoHelpAbout, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community, GoHistory, TradingView]; // same order as NAV in src/nav.ts
 const TABS = NAV.map((n, i) => ({ key: n.key, icon: n.icon, Comp: COMPS[i] }));
 
 // Every page stays mounted (so charts keep their state). The one you open fades and rises in.

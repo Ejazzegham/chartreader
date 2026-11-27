@@ -33,7 +33,7 @@ type Tool = { key: string; icon: string; tab: number; desc: string; tint: [strin
 function PhoneHome() {
   const { th, t, account, history, journal, signals, positions, desk, setTab, setAmethod, tab, settings, setHistOpen, setHelpOpen, supportUnread } = useApp();
   const guide = (CONTENT[settings.lang] ?? CONTENT.en).guide;
-  const guideTab = NAV.findIndex((n) => n.key === 'tabGuide');
+  const guideTab = NAV.findIndex((n) => n.key === 'tabHelp');
   const gradeCol: Record<string, string> = { 'A+': th.buy, A: th.accent, B: th.gold, C: th.sell };
   const { quotes, db } = useFeed(tab === 0);
   const [sel, setSel] = useState<Sym | null>(null);
@@ -76,8 +76,7 @@ function PhoneHome() {
   const grid: Tool[] = [
     { key: 'tabNews', icon: 'newspaper', tab: 13, desc: 'navDescNews', tint: [th.gold, th.sell] },
     { key: 'tabKillzones', icon: 'globe', tab: 8, desc: 'navDescKz', tint: [th.sell, th.gold] },
-    { key: 'tabPerf', icon: 'stats-chart', tab: 9, desc: 'navDescPerf', tint: [th.buy, th.accent2] },
-    { key: 'tabChecklist', icon: 'shield-checkmark', tab: 11, desc: 'navDescChecklist', tint: [th.accent, th.buy] },
+    { key: 'tabEdge', icon: 'stats-chart', tab: 9, desc: 'navDescEdge', tint: [th.buy, th.accent2] },
   ];
   const pairs: Tool[][] = [];
   for (let i = 0; i < grid.length; i += 2) pairs.push(grid.slice(i, i + 2));

@@ -17,9 +17,9 @@ import ToolsOrbit, { OrbitItem } from './ToolsOrbit.web';
 export const useDesktop = () => useLayout().mode === 'desktop';
 
 const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['TradingView', 22, 'stats-chart-outline'], ['Journal', 3, 'book-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Demo Trade (tabManual); Risk & TP Planner (4) is the first entry of the Tools menu
-const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [11, 'shield-checkmark'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
+const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
-const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 11, 9, 5]], ['MARKETS', [8, 13, 19, 18, 17]], ['SUPPORT', [14, 15, 6, 'help']]]; // tab numbers from NAV; 'help' opens Help chat
+const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 9, 5]], ['MARKETS', [8, 13, 19, 18, 17]], ['SUPPORT', [14, 6, 'help']]]; // tab numbers from NAV; 'help' opens Help chat
 const toolIcon: Record<number, string> = Object.fromEntries(TOOLS);
 
 // Premium Liquid Glass top bar: a floating frosted-glass bar (94% wide, 82 px tall, 26 px corners) with the brand on the left, the page links
@@ -212,7 +212,7 @@ function TopNav() {
       </View>
       {menu === 'tools' && !compact && <ToolsOrbit th={th} top={navH + 20} onClose={() => setMenu('')} items={TOOL_GROUPS.flatMap(([, ids]) => ids).map((id): OrbitItem => {
         const special = typeof id === 'string', icon = id === 'help' ? 'chatbubbles-outline' : toolIcon[id as number];
-        const en = lang === 'en', label = id === 'help' ? 'Help Chat' : en && id === 5 ? 'History' : en && id === 4 ? 'Risk & TP Planner' : en && id === 14 ? 'How to use' : en && id === 15 ? 'About us' : t(NAV[id as number].key);
+        const en = lang === 'en', label = id === 'help' ? 'Help Chat' : en && id === 5 ? 'History' : en && id === 4 ? 'Risk & TP Planner' : en && id === 14 ? 'Help & About' : t(NAV[id as number].key);
         const go = () => { setMenu(''); if (id === 'help') setHelpOpen(true); else setTab(id as number); };
         return { id: String(id), label, icon, on: !special && tab === id, badge: id === 'help' ? supportUnread : 0, go };
       })} />}
