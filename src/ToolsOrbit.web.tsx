@@ -35,7 +35,7 @@ const CSS = `
 .to-area{position:absolute;left:0;right:0;bottom:0}
 .to-st{position:absolute;left:50%;top:50%;width:${SW}px;height:${SH}px}
 .to-svg{position:absolute;left:0;top:0;pointer-events:none}
-.to-c{position:absolute;display:flex;align-items:center;gap:14px;width:216px;height:72px;padding:0 16px 0 12px;margin:-36px 0 0 -108px;border-radius:18px;border:1px solid var(--cb);
+.to-c{position:absolute;display:flex;align-items:center;gap:14px;width:216px;height:72px;padding:0 16px 0 12px;margin:-36px 0 0 -108px;border-radius:6px;border:1px solid var(--cb);
   background:var(--card);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);color:var(--ink);cursor:pointer;text-align:left;font:inherit;
   box-shadow:0 22px 30px -16px var(--sh),0 4px 12px -6px var(--sh),inset 0 0 0 1px var(--inner),inset 0 1px 0 var(--hi),inset 0 -10px 18px var(--low);
   transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .2s,background .2s;animation:to-pop .5s cubic-bezier(.2,.8,.2,1) both,to-fl 7s ease-in-out infinite;animation-delay:var(--e),var(--d)}
@@ -51,7 +51,7 @@ const CSS = `
 .to-t.b{--tg:rgba(22,119,255,.7);background:radial-gradient(circle at 32% 24%,#9CCBFF 0%,#3C86FF 42%,#1747DD 100%)}
 .to-t.p{--tg:rgba(119,59,255,.7);background:radial-gradient(circle at 32% 24%,#CDB9FF 0%,#8452FF 42%,#4B22D8 100%)}
 .to-l{position:relative;font-size:16px;font-weight:600;line-height:1.25;letter-spacing:-.1px}
-.to-bd{position:absolute;top:-4px;right:-4px;z-index:2;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--sell);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px rgba(255,255,255,.9)}
+.to-bd{position:absolute;top:-4px;right:-4px;z-index:2;min-width:18px;height:18px;padding:0 5px;border-radius:4px;background:var(--sell);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px rgba(255,255,255,.9)}
 .to-core{position:absolute;left:${CX - 68}px;top:${CY - 68}px;width:136px;height:136px;border-radius:50%;border:0;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(circle at 32% 24%,#C2AAFF 0%,${VIOLET} 40%,#2F5BEA 100%);
   box-shadow:0 0 0 3px rgba(255,255,255,.35),0 0 80px 18px rgba(110,70,255,.42),0 28px 44px -12px rgba(60,40,160,.6),inset 0 4px 8px rgba(255,255,255,.65),inset 0 -18px 26px rgba(20,20,130,.4);

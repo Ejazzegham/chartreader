@@ -1,86 +1,46 @@
-import React, { useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import React, { useEffect } from 'react';
 import { useApp } from './store';
 
-// The website's animated backdrop ("Premium": a slow aurora glow with fine flowing wave lines). It is the OPPOSITE of the content:
-// Light theme = deep dark backdrop under light glass content. Dark theme = light backdrop under dark glass content.
-// Scrolling any page makes the backdrop run with it. It is paused when the tab is hidden and drawn once (still) for people who ask their device for reduced motion.
+// The website backdrop: a colourful multi-colour mesh (four soft colour glows on a deep base) that drifts very slowly,
+// with a fine film grain on top. Each theme has its own colour style so the backdrop matches the theme.
+// To change a theme's look, change its name in THEME_STYLE (aurora | sunset | emerald | royal | cyber | northern).
+// Slow motion is skipped for people who ask their device for reduced motion.
+export const STYLES: Record<string, { base: string; glows: string[] }> = {
+  aurora:   { base: '#070A1F', glows: ['#2563EB', '#22D3EE', '#A855F7', '#EC4899'] },
+  sunset:   { base: '#12061C', glows: ['#F97316', '#EC4899', '#8B5CF6', '#FACC15'] },
+  emerald:  { base: '#03121A', glows: ['#10B981', '#06B6D4', '#3B82F6', '#84CC16'] },
+  royal:    { base: '#0B0724', glows: ['#6366F1', '#A855F7', '#F59E0B', '#2563EB'] },
+  cyber:    { base: '#050509', glows: ['#F43F5E', '#D946EF', '#06B6D4', '#6366F1'] },
+  northern: { base: '#04101A', glows: ['#34D399', '#6366F1', '#22D3EE', '#C084FC'] },
+};
+export const THEME_STYLE: Record<string, string> = { light: 'royal', dark: 'aurora' };
+const ANIMATE = true; // false = still picture
+const GRAIN = true;   // false = no film grain
+
+const POS = ['15% 20%', '85% 15%', '20% 90%', '90% 85%'];
+const buildCss = () => {
+  const one = (name: string) => {
+    const s = STYLES[name];
+    const img = s.glows.map((c, i) => `radial-gradient(circle at ${POS[i]}, ${c}cc 0, transparent 46%)`).join(',');
+    return `.cr-bg-${name}{background-color:${s.base};background-image:${img}}`;
+  };
+  return `
+.cr-bg{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;overflow:hidden;background-size:170% 170%;background-repeat:no-repeat;${ANIMATE ? 'animation:cr-drift 26s ease-in-out infinite alternate;' : ''}}
+${Object.keys(STYLES).map(one).join('\n')}
+@keyframes cr-drift{from{background-position:0% 0%,100% 0%,0% 100%,100% 100%}to{background-position:100% 100%,0% 100%,100% 0%,0% 0%}}
+@media (prefers-reduced-motion:reduce){.cr-bg{animation:none}}
+${GRAIN ? `.cr-bg::after{content:"";position:absolute;top:0;left:0;right:0;bottom:0;opacity:.16;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}` : ''}`;
+};
+
 export default function LiveBackdrop() {
   const { th } = useApp();
-  const ref = useRef<any>(null);
-  const cur = useRef({ back: th.back, dark: th.dark });
-  cur.current = { back: th.back, dark: th.dark };
-
   useEffect(() => {
-    const cv = ref.current as HTMLCanvasElement | null;
-    const cx = cv?.getContext('2d');
-    if (!cv || !cx) return;
-    const still = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    let W = 0, H = 0, raf = 0, sy = 0, target = 0;
-    const last = new WeakMap<object, number>();
-
-    const fit = () => {
-      const D = Math.min(window.devicePixelRatio || 1, 2), r = cv.getBoundingClientRect();
-      W = r.width; H = r.height;
-      cv.width = Math.max(1, Math.round(W * D)); cv.height = Math.max(1, Math.round(H * D));
-      cx.setTransform(D, 0, 0, D, 0, 0);
-      if (still) draw(0);
-    };
-    const onScroll = (e: Event) => { // scroll events do not bubble, so this listens in the capture phase and works for every page's scroll view
-      const el: any = e.target, y = el === document ? window.scrollY : (el?.scrollTop ?? 0), o = last.get(el) ?? y;
-      last.set(el, y); if (!still) target += y - o;
-    };
-
-    const waves = (t: number, a: string, b: string) => {
-      for (let i = 0; i < 6; i++) {
-        cx.beginPath();
-        const base = H * (0.2 + i * 0.13), amp = 26 + i * 9, f = 0.004 + i * 0.0008;
-        for (let x = 0; x <= W; x += 10) {
-          const y = base + Math.sin(x * f + t * 0.0006 * (1 + i * 0.2) + sy * 0.003 * (1 + i * 0.15)) * amp + Math.sin(x * f * 2.3 - t * 0.0004 + i) * amp * 0.4;
-          x ? cx.lineTo(x, y) : cx.moveTo(x, y);
-        }
-        cx.strokeStyle = `rgba(${i % 3 === 2 ? b : a},${0.3 + i * 0.05})`; cx.lineWidth = 1.8; cx.stroke();
-      }
-    };
-    const aurora = (t: number, a: string, b: string, dk: boolean) => {
-      [a, b, '34,211,238', '168,85,247'].forEach((c, i) => {
-        const x = W * (0.5 + 0.4 * Math.sin(t * 0.0002 * (i + 1) + i * 2 + sy * 0.0006));
-        const y = ((H * (0.2 + 0.2 * i) + sy * 0.25 * (1 + i * 0.2) + Math.cos(t * 0.00025 * (i + 1)) * 80) % (H * 1.4)) - H * 0.2;
-        const r = Math.max(W, H) * 0.5, g = cx.createRadialGradient(x, y, 0, x, y, r);
-        g.addColorStop(0, `rgba(${c},${dk ? 0.8 : 0.62})`); g.addColorStop(1, `rgba(${c},0)`);
-        cx.fillStyle = g; cx.fillRect(0, 0, W, H);
-      });
-    };
-    function draw(t: number) {
-      const { back, dark } = cur.current, onDark = !dark; // light theme -> dark backdrop
-      const a = onDark ? '96,165,250' : '37,99,235', b = onDark ? '244,114,182' : '219,39,119';
-      cx!.fillStyle = back; cx!.fillRect(0, 0, W, H);
-      aurora(t, a, b, onDark); waves(t, a, b);
-    }
-    const loop = (t: number) => {
-      sy += (target - sy) * 0.12;
-      if (!W) fit();
-      if (!document.hidden && W) draw(t);
-      raf = requestAnimationFrame(loop);
-    };
-
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null;
-    ro?.observe(cv);
-    fit();
-    window.addEventListener('resize', fit);
-    window.addEventListener('scroll', onScroll, true);
-    if (still) draw(0); else raf = requestAnimationFrame(loop);
-    return () => { ro?.disconnect(); cancelAnimationFrame(raf); window.removeEventListener('resize', fit); window.removeEventListener('scroll', onScroll, true); };
+    if (document.getElementById('cr-bg-style')) return;
+    const el = document.createElement('style');
+    el.id = 'cr-bg-style';
+    el.textContent = buildCss();
+    document.head.appendChild(el);
   }, []);
-
-  useEffect(() => { // the theme changed: repaint at once (the loop picks it up on its own when animating)
-    const cv = ref.current as HTMLCanvasElement | null;
-    if (cv && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) window.dispatchEvent(new Event('resize'));
-  }, [th.back]);
-
-  return (
-    <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, backgroundColor: th.back }}>
-      {React.createElement('canvas', { ref, style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' } })}
-    </View>
-  );
+  const name = THEME_STYLE[th.dark ? 'dark' : 'light'];
+  return React.createElement('div', { className: `cr-bg cr-bg-${STYLES[name] ? name : 'aurora'}`, 'aria-hidden': true });
 }

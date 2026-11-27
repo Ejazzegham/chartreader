@@ -91,18 +91,18 @@ export function LangPicker({ visible, value, title, onPick, onClose }: { visible
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <View style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr', paddingTop: Math.max(insets.top, StatusBar.currentHeight ?? 0, 24) + 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingBottom: 10 }}>
-          <Pressable onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
+          <Pressable onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 6, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name={rtl ? 'arrow-forward' : 'arrow-back'} size={20} color={th.text} />
           </Pressable>
           <Text accessibilityRole="header" style={{ flex: 1, color: th.text, fontSize: 17, fontWeight: '900' }} numberOfLines={1}>{title}</Text>
         </View>
         <TextInput value={q} onChangeText={setQ} placeholder={t('trSearch')} placeholderTextColor={th.dim} autoCorrect={false}
-          style={{ marginHorizontal: 14, marginBottom: 8, height: 44, backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, color: th.text, paddingHorizontal: 12, fontSize: 15 }} />
+          style={{ marginHorizontal: 14, marginBottom: 8, height: 44, backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, color: th.text, paddingHorizontal: 12, fontSize: 15 }} />
         <FlatList data={list} keyExtractor={(l) => l[0]} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: Math.max(insets.bottom, 14) + 10 }}
           renderItem={({ item }) => {
             const on = item[0] === value;
             return (
-              <Pressable onPress={() => { setQ(''); onPick(item[0]); }} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 12, marginBottom: 6, borderRadius: 8, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel, opacity: pressed ? 0.8 : 1 })}>
+              <Pressable onPress={() => { setQ(''); onPick(item[0]); }} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 12, marginBottom: 6, borderRadius: 6, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel, opacity: pressed ? 0.8 : 1 })}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: th.text, fontSize: 15, fontWeight: '800' }}>{item[2]}</Text>
                   {item[2] !== item[1] && <Text style={{ color: th.dim, fontSize: 12.5, marginTop: 1 }}>{item[1]}</Text>}
@@ -121,7 +121,7 @@ export function TrBar({ tr }: { tr: ChatTr }) {
   const { th, t } = useApp();
   const [pick, setPick] = useState(false);
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 10 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, padding: 10 }}>
       <Icon name="language-outline" size={22} color={th.accent} />
       <View style={{ flex: 1 }}>
         <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }}>{t('trTitle')}</Text>
@@ -188,7 +188,7 @@ export function TrCompose({ token, text, setText, out, setOut }: { token: string
     } catch (e: any) { setErr(e?.message ?? 'Error'); }
     setBusy(false);
   };
-  const chip = { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 5, paddingHorizontal: 10, height: 32, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg };
+  const chip = { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 5, paddingHorizontal: 10, height: 32, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg };
   return (
     <View style={{ paddingHorizontal: 10, paddingTop: 8, gap: 4 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

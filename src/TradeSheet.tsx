@@ -36,7 +36,7 @@ export function TradeActions({ s, price, onDone }: { s: Signal; price?: number; 
     closeShare(n / lotsOpen);
   };
   const chip = (label: string, share: number) => (
-    <Pressable key={label} onPress={() => closeShare(share)} disabled={!price} style={({ pressed }) => ({ flex: 1, height: 46, borderRadius: 8, borderWidth: 1, borderColor: th.accent + '88', backgroundColor: th.accent + '14', alignItems: 'center', justifyContent: 'center', opacity: !price ? 0.45 : pressed ? 0.8 : 1 })}>
+    <Pressable key={label} onPress={() => closeShare(share)} disabled={!price} style={({ pressed }) => ({ flex: 1, height: 46, borderRadius: 6, borderWidth: 1, borderColor: th.accent + '88', backgroundColor: th.accent + '14', alignItems: 'center', justifyContent: 'center', opacity: !price ? 0.45 : pressed ? 0.8 : 1 })}>
       <Text style={{ color: th.accent, fontWeight: '900' }}>{label}</Text>
       {!!s.lots && <Text style={{ color: th.dim, fontSize: 10.5 }}>{fmtLots(lotsOpen * share)} lots</Text>}
     </Pressable>
@@ -44,7 +44,7 @@ export function TradeActions({ s, price, onDone }: { s: Signal; price?: number; 
 
   return (
     <View style={{ gap: 12 }}>
-      <View style={{ backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12 }}>
+      <View style={{ backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 12 }}>
         {row('Live price', price ? f(price) : '…')}
         {row(s.done > 0 ? `Remaining ${leftPct}% · floating` : 'Floating result', price ? money(openPnl) : '…', price ? c : th.dim)}
         {s.done > 0 && row(`Booked · ${donePct}% closed`, money(booked), booked >= 0 ? th.buy : th.sell)}
@@ -60,7 +60,7 @@ export function TradeActions({ s, price, onDone }: { s: Signal; price?: number; 
       <View style={{ flexDirection: 'row', gap: 8 }}>{chip('25%', 0.25)}{chip('50%', 0.5)}{chip('75%', 0.75)}</View>
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
         <TextInput value={custom} onChangeText={setCustom} placeholder="Lots to close, e.g. 0.10" placeholderTextColor={th.dim} keyboardType="decimal-pad"
-          style={{ flex: 1, height: 46, backgroundColor: th.bg, borderColor: th.line, borderWidth: 1, borderRadius: 8, color: th.text, paddingHorizontal: 12 }} />
+          style={{ flex: 1, height: 46, backgroundColor: th.bg, borderColor: th.line, borderWidth: 1, borderRadius: 6, color: th.text, paddingHorizontal: 12 }} />
         <View style={{ width: 110 }}><Btn tone="danger" label="Close" onPress={closeLots} disabled={!custom.trim() || !price} /></View>
       </View>
 
@@ -94,7 +94,7 @@ function WhyPanel({ s }: { s: Signal }) {
   const lines = (s.why ?? []).filter(Boolean);
   const f = (n: number) => n.toFixed(s.dec);
   return (
-    <View style={{ backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12, gap: 8 }}>
+    <View style={{ backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 12, gap: 8 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Icon name="bulb-outline" size={17} color={th.accent} />
         <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 0.8 }}>WHY THIS ENTRY</Text>
@@ -131,8 +131,8 @@ export function TradeSheet({ s, price, onClose }: { s: Signal; price?: number; o
     <Modal transparent animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A', direction: rtl ? 'rtl' : 'ltr' }}>
         <Pressable style={{ flex: 1 }} onPress={onClose} />
-        <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: Math.max(insets.bottom, 12) + 16, maxHeight: '94%' }}>
-          <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 2, backgroundColor: th.line, marginBottom: 14 }} />
+        <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 6, borderTopRightRadius: 6, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: Math.max(insets.bottom, 12) + 16, maxHeight: '94%' }}>
+          <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 3, backgroundColor: th.line, marginBottom: 14 }} />
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Icon name={s.side === 'buy' ? 'trending-up' : 'trending-down'} size={22} color={bc} />
@@ -143,7 +143,7 @@ export function TradeSheet({ s, price, onClose }: { s: Signal; price?: number; o
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, paddingHorizontal: 2 }}>
               {([['Entry', f(s.fill ?? s.entry), th.accent], ['Stop', f(s.stop), th.sell], ...s.tps.map((p, i) => [`TP${i + 1}`, f(p), th.buy])] as [string, string, string][]).map(([k, v, c]) => (
                 <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <View style={{ width: 9, height: 9, borderRadius: 2, backgroundColor: c }} />
+                  <View style={{ width: 9, height: 9, borderRadius: 3, backgroundColor: c }} />
                   <Text style={{ color: th.dim, fontSize: 11.5, fontWeight: '700' }}>{k} <Text style={{ color: th.text }}>{v}</Text></Text>
                 </View>
               ))}

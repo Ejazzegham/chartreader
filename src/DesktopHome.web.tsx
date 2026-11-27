@@ -62,7 +62,7 @@ type Setup = ReturnType<typeof useSetup>;
 export function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
   const P = usePal();
   // Glass panel: frosted blur, a hairline edge, a soft lift and a thin blue-violet-pink strip along the top edge.
-  return <View style={[{ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, boxShadow: P.dark ? '0 18px 40px -22px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)' : '0 18px 40px -22px rgba(11,27,63,0.35), inset 0 1px 0 rgba(255,255,255,0.9)', backgroundImage: 'linear-gradient(90deg,#3B82F6,#A855F7,#EC4899)', backgroundSize: '100% 3px', backgroundRepeat: 'no-repeat', ...glassWeb } as any, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: P.card, borderRadius: 6, borderWidth: 1, borderColor: P.border, boxShadow: P.dark ? '0 18px 40px -22px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)' : '0 18px 40px -22px rgba(11,27,63,0.35), inset 0 1px 0 rgba(255,255,255,0.9)', backgroundImage: 'linear-gradient(90deg,#3B82F6,#A855F7,#EC4899)', backgroundSize: '100% 3px', backgroundRepeat: 'no-repeat', ...glassWeb } as any, style]}>{children}</View>;
 }
 export const Pill = ({ text, tone }: { text: string; tone?: string }) => {
   const P = usePal(), c = tone ?? P.brass;
@@ -71,7 +71,7 @@ export const Pill = ({ text, tone }: { text: string; tone?: string }) => {
 export function Btn({ label, onPress, ghost, arrow = true }: { label: string; onPress: () => void; ghost?: boolean; arrow?: boolean }) {
   const P = usePal();
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 44, paddingHorizontal: 22, borderRadius: 8, cursor: 'pointer', borderWidth: 1, borderColor: ghost ? P.border : P.blue, backgroundColor: ghost ? (s.hovered ? P.alt : 'transparent') : P.blue, opacity: !ghost && s.hovered ? 0.92 : 1 })) as any}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 44, paddingHorizontal: 22, borderRadius: 6, cursor: 'pointer', borderWidth: 1, borderColor: ghost ? P.border : P.blue, backgroundColor: ghost ? (s.hovered ? P.alt : 'transparent') : P.blue, opacity: !ghost && s.hovered ? 0.92 : 1 })) as any}>
       <Text style={{ color: ghost ? P.head : P.th.onAccent, fontSize: 14, fontWeight: '600' }}>{label}</Text>
       {arrow && <Icon name="arrow-forward" size={15} color={ghost ? P.head : P.th.onAccent} />}
     </Pressable>
@@ -148,7 +148,7 @@ export function TfTabs({ tf, set }: { tf: string; set: (k: string) => void }) {
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
       {TFB.map(([k, l]) => (
-        <Pressable key={k} onPress={() => set(k)} style={((st: any) => ({ paddingHorizontal: 11, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: tf === k ? P.soft : st.hovered ? P.alt : 'transparent', borderWidth: 1, borderColor: tf === k ? P.blue + '66' : 'transparent' })) as any}>
+        <Pressable key={k} onPress={() => set(k)} style={((st: any) => ({ paddingHorizontal: 11, height: 28, borderRadius: 6, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: tf === k ? P.soft : st.hovered ? P.alt : 'transparent', borderWidth: 1, borderColor: tf === k ? P.blue + '66' : 'transparent' })) as any}>
           <Text style={{ color: tf === k ? P.blue : P.head, fontSize: 12.5, fontWeight: tf === k ? '800' : '600' }}>{l}</Text>
         </Pressable>
       ))}
@@ -187,7 +187,7 @@ export function ChartHeader({ s, sub, price, onPick }: { s: Setup; sub?: string;
     <View ref={box} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, position: 'relative', zIndex: open ? 90 : 2 } as any}>
       {onPick ? (
         <Pressable accessibilityRole="button" accessibilityLabel="Change pair" onPress={() => (open ? close() : setOpen(true))}
-          style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1, minWidth: 0, paddingVertical: 4, paddingLeft: 4, paddingRight: 10, marginLeft: -4, borderRadius: 10, borderWidth: 1, borderColor: open || st.hovered ? P.blue + '88' : 'transparent', backgroundColor: open || st.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}>
+          style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1, minWidth: 0, paddingVertical: 4, paddingLeft: 4, paddingRight: 10, marginLeft: -4, borderRadius: 6, borderWidth: 1, borderColor: open || st.hovered ? P.blue + '88' : 'transparent', backgroundColor: open || st.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}>
           {title}
           <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} color={P.blue} />
         </Pressable>
@@ -196,19 +196,19 @@ export function ChartHeader({ s, sub, price, onPick }: { s: Setup; sub?: string;
       {price && !!s.quote && <Text style={{ color: c >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700' }}>{`${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%`}</Text>}
       <Pressable onPress={() => toggleFav(s.sym.id)} hitSlop={8} style={{ cursor: 'pointer' } as any}><Icon name={fav ? 'star' : 'star-outline'} size={19} color={fav ? th.gold : P.body} /></Pressable>
       {open && !!onPick && (
-        <View style={{ position: 'absolute', top: 48, left: 0, width: 330, maxWidth: '100%', padding: 8, gap: 8, borderRadius: 12, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? '#141943' : '#FFFFFF', zIndex: 100, boxShadow: '0 24px 50px -18px rgba(0,0,0,0.75)' } as any}>
+        <View style={{ position: 'absolute', top: 48, left: 0, width: 330, maxWidth: '100%', padding: 8, gap: 8, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? '#141943' : '#FFFFFF', zIndex: 100, boxShadow: '0 24px 50px -18px rgba(0,0,0,0.75)' } as any}>
           <TextInput value={q} onChangeText={setQ} placeholder="Search pair, coin or index…" placeholderTextColor={P.body + 'AA'} autoFocus
-            style={{ height: 38, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 13.5, outlineStyle: 'none' } as any} />
+            style={{ height: 38, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 13.5, outlineStyle: 'none' } as any} />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {PAIR_CATS.map(([k, l]) => (
-              <Pressable key={k} onPress={() => setCat(k)} style={{ paddingHorizontal: 11, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: cat === k ? P.blue : P.border, backgroundColor: cat === k ? P.soft : 'transparent', cursor: 'pointer' } as any}>
+              <Pressable key={k} onPress={() => setCat(k)} style={{ paddingHorizontal: 11, height: 26, borderRadius: 6, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: cat === k ? P.blue : P.border, backgroundColor: cat === k ? P.soft : 'transparent', cursor: 'pointer' } as any}>
                 <Text style={{ color: cat === k ? P.blue : P.head, fontSize: 12, fontWeight: '700' }}>{l}</Text>
               </Pressable>
             ))}
           </View>
           <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
             {opts.map((x) => (
-              <Pressable key={x.id} onPress={() => { onPick(x.id); close(); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 36, paddingHorizontal: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: x.id === s.sym.id ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
+              <Pressable key={x.id} onPress={() => { onPick(x.id); close(); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 36, paddingHorizontal: 8, borderRadius: 6, cursor: 'pointer', backgroundColor: x.id === s.sym.id ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
                 <Coin s={x} size={22} />
                 <Text numberOfLines={1} style={{ flex: 1, color: P.head, fontSize: 13, fontWeight: '600' }}>{x.name}</Text>
                 {db.favs.includes(x.id) && <Icon name="star" size={13} color={th.gold} />}
@@ -234,7 +234,7 @@ export function ChartBody({ s, tf, width, height }: { s: Setup; tf: string; widt
 export function FillChart({ s, tf, min }: { s: Setup; tf: string; min: number }) {
   const [sz, setSz] = useState({ w: 0, h: min });
   return (
-    <View onLayout={(e) => { const { width, height } = e.nativeEvent.layout, h = Math.max(min, Math.round(height)); setSz((o) => (Math.abs(o.w - width) < 1 && o.h === h ? o : { w: width, h })); }} style={{ flexGrow: 1, flexBasis: 0, minHeight: min, borderRadius: 8, overflow: 'hidden' }}>
+    <View onLayout={(e) => { const { width, height } = e.nativeEvent.layout, h = Math.max(min, Math.round(height)); setSz((o) => (Math.abs(o.w - width) < 1 && o.h === h ? o : { w: width, h })); }} style={{ flexGrow: 1, flexBasis: 0, minHeight: min, borderRadius: 6, overflow: 'hidden' }}>
       <ChartBody s={s} tf={tf} width={sz.w} height={sz.h} />
     </View>
   );
@@ -255,8 +255,8 @@ function Hero({ w, go }: { w: number; go: (t: number) => void }) {
             <ChartHeader s={s} sub={d.tf === '60' ? '1 minute' : TFB.find((x) => x[0] === d.tf)?.[1]} onPick={(id) => setDash({ sym: id, market: groupOf(symOf(id).cat) })} />
             <TfTabs tf={d.tf} set={(k) => setDash({ tf: k })} />
             <FillChart s={s} tf={d.tf} min={280} />
-            <Pressable onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
-              <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={17} color={P.blue} /></View>
+            <Pressable onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: P.border, cursor: 'pointer', backgroundColor: st.hovered ? P.alt : P.card })) as any}>
+              <View style={{ width: 34, height: 34, borderRadius: 6, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="analytics" size={17} color={P.blue} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: P.head, fontSize: 13, fontWeight: '600' }}>Analysis Summary</Text>
                 <Text style={{ color: P.body, fontSize: 11.5 }} numberOfLines={1}>{s.structure}</Text>
@@ -299,11 +299,11 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
   const cdlSide = cdl?.side === 'buy' ? { l: 'Buy', c: th.buy } : cdl?.side === 'sell' ? { l: 'Sell', c: th.sell } : { l: 'Neutral', c: th.gold };
   const td = s.land?.ict.trend === 'bullish' ? { l: 'Bullish', c: th.buy } : s.land?.ict.trend === 'bearish' ? { l: 'Bearish', c: th.sell } : { l: 'Neutral', c: th.gold };
   const cardBase = (onPress: () => void, children: React.ReactNode, key: string, open = false) => (
-    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', zIndex: open ? 60 : 1, shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
+    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 230, minWidth: 170, padding: 16, gap: 8, borderRadius: 6, borderWidth: 1, borderColor: st.hovered ? P.blue + '66' : P.border, backgroundColor: P.card, cursor: 'pointer', zIndex: open ? 60 : 1, shadowColor: P.shadow, shadowOpacity: st.hovered ? 0.12 : 0.05, shadowRadius: 18, shadowOffset: { width: 0, height: 6 } })) as any}>{children}</Pressable>
   );
   const head = (icon: string, name: string) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color={P.blue} /></View>
+      <View style={{ width: 38, height: 38, borderRadius: 6, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={19} color={P.blue} /></View>
       <Text numberOfLines={1} style={{ color: P.head, fontSize: 15, fontWeight: '700', flexShrink: 1 }}>{name}</Text>
     </View>
   );
@@ -331,15 +331,15 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
             return cardBase(() => go(2, g.g), (
               <>
                 {head(icon, name)}
-                <Pressable onPress={() => { setOpenG(isOpen ? null : g.g); setPq(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', height: 26, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: st.hovered || isOpen ? P.soft : 'transparent', cursor: 'pointer' })) as any}>
+                <Pressable onPress={() => { setOpenG(isOpen ? null : g.g); setPq(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', height: 26, paddingHorizontal: 8, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: st.hovered || isOpen ? P.soft : 'transparent', cursor: 'pointer' })) as any}>
                   <Text numberOfLines={1} style={{ color: P.head, fontSize: 12, fontWeight: '700', maxWidth: 130 }}>{symOf(sid).name}</Text><Icon name="chevron-down" size={12} color={P.body} />
                 </Pressable>
                 {isOpen && (
-                  <View style={{ position: 'absolute', top: 96, left: 8, right: 8, padding: 6, gap: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 70, shadowColor: P.shadow, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
-                    <TextInput value={pq} onChangeText={setPq} placeholder="Search pair…" placeholderTextColor={P.body + '99'} autoFocus style={{ height: 32, paddingHorizontal: 8, borderRadius: 8, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
+                  <View style={{ position: 'absolute', top: 96, left: 8, right: 8, padding: 6, gap: 6, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, zIndex: 70, shadowColor: P.shadow, shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 } }}>
+                    <TextInput value={pq} onChangeText={setPq} placeholder="Search pair…" placeholderTextColor={P.body + '99'} autoFocus style={{ height: 32, paddingHorizontal: 8, borderRadius: 6, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
                     <ScrollView style={{ maxHeight: 220 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
                       {opts.map((x) => (
-                        <Pressable key={x.id} onPress={() => pick(g.g, x.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, paddingHorizontal: 8, borderRadius: 8, cursor: 'pointer', backgroundColor: x.id === sid ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
+                        <Pressable key={x.id} onPress={() => pick(g.g, x.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, paddingHorizontal: 8, borderRadius: 6, cursor: 'pointer', backgroundColor: x.id === sid ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
                           <Coin s={x} size={18} /><Text numberOfLines={1} style={{ color: P.head, fontSize: 12.5, fontWeight: '600', flexShrink: 1 }}>{x.name}</Text>
                         </Pressable>
                       ))}
@@ -356,14 +356,14 @@ function Overview({ w, go }: { w: number; go: (t: number, market?: string) => vo
           {cardBase(() => go(1, 'candle'), (
             <>
               {head('bar-chart', 'Candles')}
-              <View style={{ alignSelf: 'flex-start', paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
+              <View style={{ alignSelf: 'flex-start', paddingHorizontal: 10, height: 24, borderRadius: 6, justifyContent: 'center', backgroundColor: cdlSide.c + '22' }}><Text style={{ color: cdlSide.c, fontSize: 12, fontWeight: '800' }}>{cdlSide.l}</Text></View>
               <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>{cdl?.text ?? 'Hammer, engulfing, confirmation candle'}</Text>
             </>
           ), 'candles')}
           {cardBase(() => go(1, 'topdown'), (
             <>
               {head('layers', 'Top-Down')}
-              <View style={{ alignSelf: 'flex-start', paddingHorizontal: 10, height: 24, borderRadius: 8, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
+              <View style={{ alignSelf: 'flex-start', paddingHorizontal: 10, height: 24, borderRadius: 6, justifyContent: 'center', backgroundColor: td.c + '22' }}><Text style={{ color: td.c, fontSize: 12, fontWeight: '800' }}>{td.l}</Text></View>
               <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>H4 → H1 → M15{'\n'}multi-timeframe</Text>
             </>
           ), 'topdown')}
@@ -432,8 +432,8 @@ function Why({ w }: { w: number }) {
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
           {WHY.map(([icon, title, text]) => (
-            <View key={title} style={{ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 260, minWidth: 190, padding: 20, gap: 10, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.04, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }}>
-              <View style={{ width: 46, height: 46, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={22} color={P.blue} /></View>
+            <View key={title} style={{ flexGrow: 1, flexBasis: w >= 1100 ? 170 : 260, minWidth: 190, padding: 20, gap: 10, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.2 : 0.04, shadowRadius: 16, shadowOffset: { width: 0, height: 5 } }}>
+              <View style={{ width: 46, height: 46, borderRadius: 6, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={22} color={P.blue} /></View>
               <Text style={{ color: P.head, fontSize: 15, fontWeight: '700', marginTop: 4 }}>{title}</Text>
               <Text style={{ color: P.body, fontSize: 13, lineHeight: 19 }}>{text}</Text>
             </View>
@@ -458,13 +458,13 @@ function Cta({ w, go }: { w: number; go: (t: number) => void }) {
   return (
     <View style={{ backgroundColor: P.section }}>
       <View style={{ width: '100%', maxWidth: 1280, alignSelf: 'center', paddingHorizontal: w >= 700 ? 32 : 16, paddingBottom: 48 }}>
-        <View style={{ borderRadius: 8, overflow: 'hidden', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 32, paddingHorizontal: 32 }}>
+        <View style={{ borderRadius: 6, overflow: 'hidden', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'center' : 'flex-start', gap: 22, paddingVertical: 32, paddingHorizontal: 32 }}>
           <HeroFx />
           <View style={{ flex: 1, gap: 8 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '700', letterSpacing: -0.3 }}>Ready to trade with a plan?</Text>
             <Text style={{ color: '#B4C0D8', fontSize: 14.5, lineHeight: 22, maxWidth: 560 }}>Real-time analysis, risk tools and a trading journal in one place.</Text>
           </View>
-          <Pressable accessibilityRole="button" onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 22, borderRadius: 8, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: st.hovered ? 0.92 : 1 })) as any}>
+          <Pressable accessibilityRole="button" onPress={() => go(1)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 22, borderRadius: 6, backgroundColor: '#FFFFFF', cursor: 'pointer', opacity: st.hovered ? 0.92 : 1 })) as any}>
             <Text style={{ color: HERO_BG, fontSize: 14, fontWeight: '600' }}>Get started</Text><Icon name="arrow-forward" size={15} color={HERO_BG} />
           </Pressable>
         </View>

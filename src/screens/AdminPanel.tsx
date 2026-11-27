@@ -212,7 +212,7 @@ export default function AdminPanel({ visible, onClose }: { visible: boolean; onC
   const search = (
     <View style={{ paddingHorizontal: 16, paddingBottom: 8, gap: 8 }}>
       <TextInput value={q} onChangeText={setQ} placeholder="Search email…" placeholderTextColor={th.dim} autoCapitalize="none" autoCorrect={false}
-        style={{ backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, color: th.text, padding: 12 }} />
+        style={{ backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, color: th.text, padding: 12 }} />
       {tab === 'pays' && (
         <Segment value={pfilter} onChange={(k) => setPfilter(k as any)} options={[
           { k: 'review', label: 'To review' }, { k: 'approved', label: 'Approved' }, { k: 'rejected', label: 'Rejected' }, { k: 'all', label: 'All' },

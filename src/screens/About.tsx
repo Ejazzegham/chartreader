@@ -63,7 +63,7 @@ export default function About() {
       </View>
     </View>
   );
-  const box: any = { padding: wide ? 28 : 20, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, ...glassWeb }; // text that sits on the animated backdrop gets a frosted card so it stays readable
+  const box: any = { padding: wide ? 28 : 20, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, ...glassWeb }; // text that sits on the animated backdrop gets a frosted card so it stays readable
   const who = (
     <View style={{ flexDirection: wide ? 'row' : 'column', gap: wide ? 40 : 22, alignItems: wide ? 'center' : 'stretch', paddingVertical: wide ? 18 : 4 }}>
       <View style={[{ flex: 1, gap: 14, minWidth: 0 }, box]}>
@@ -115,7 +115,7 @@ export default function About() {
         <Eyebrow>{x.contactTag}</Eyebrow>
         <Text accessibilityRole="header" style={{ color: th.text, fontSize: h2, fontWeight: '900', letterSpacing: -0.8 }}>{c.contactTitle}</Text>
         <Text style={{ color: th.dim, fontSize: 15, lineHeight: 23, maxWidth: 380 }}>{c.contactText}</Text>
-        <Pressable accessibilityRole="button" onPress={() => mail()} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 9, alignSelf: 'flex-start', height: 46, paddingHorizontal: 22, borderRadius: 23, backgroundColor: th.accent, opacity: pressed ? 0.85 : 1, marginTop: 6 }, hand]}>
+        <Pressable accessibilityRole="button" onPress={() => mail()} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 9, alignSelf: 'flex-start', height: 46, paddingHorizontal: 22, borderRadius: 6, backgroundColor: th.accent, opacity: pressed ? 0.85 : 1, marginTop: 6 }, hand]}>
           <Icon name="mail-outline" size={18} color={th.onAccent} />
           <Text style={{ color: th.onAccent, fontWeight: '800', fontSize: 14.5 }}>{c.emailBtn}</Text>
         </Pressable>
@@ -153,7 +153,7 @@ export default function About() {
     </View>
   );
   const footer = (
-    <View style={{ borderRadius: 18, overflow: 'hidden', backgroundColor: NAVY, padding: wide ? 32 : 22, gap: 26 }}>
+    <View style={{ borderRadius: 6, overflow: 'hidden', backgroundColor: NAVY, padding: wide ? 32 : 22, gap: 26 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 28, justifyContent: 'space-between' }}>
         <View style={{ gap: 12, width: wide ? 240 : '100%', maxWidth: 280 } as any}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -171,7 +171,7 @@ export default function About() {
         <View style={{ gap: 8, width: wide ? 230 : '100%', maxWidth: 300 } as any}>
           <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 }}>{x.colStay}</Text>
           <Text style={{ color: '#B8C7E6', fontSize: 12, lineHeight: 17 }}>{x.stayText}</Text>
-          <View style={{ flexDirection: 'row', height: 38, borderRadius: 8, overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
+          <View style={{ flexDirection: 'row', height: 38, borderRadius: 6, overflow: 'hidden', backgroundColor: '#FFFFFF' }}>
             <TextInput value={mailIn} onChangeText={setMailIn} placeholder={x.emailPh} placeholderTextColor="#7C89A6" autoCapitalize="none" keyboardType="email-address" onSubmitEditing={subscribe}
               style={[{ flex: 1, minWidth: 0, paddingHorizontal: 12, fontSize: 12.5, color: '#0B1B3F' }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null]} />
             <Pressable onPress={subscribe} accessibilityRole="button" style={[{ paddingHorizontal: 16, backgroundColor: th.accent, justifyContent: 'center' }, hand]}>

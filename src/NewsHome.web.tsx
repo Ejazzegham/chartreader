@@ -56,7 +56,7 @@ function Toggle({ label, on, onPress, color }: { label: string; on: boolean; onP
   const P = usePal();
   return (
     <Pressable accessibilityRole="button" accessibilityState={{ selected: on }} onPress={onPress}
-      style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: 5, borderWidth: 1, borderColor: on ? (color ?? P.blue) : P.border, backgroundColor: on ? (color ?? P.blue) + '1A' : s.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+      style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 26, borderRadius: 4, borderWidth: 1, borderColor: on ? (color ?? P.blue) : P.border, backgroundColor: on ? (color ?? P.blue) + '1A' : s.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
       {!!color && <Square c={color} size={10} />}<Text style={{ color: on ? P.head : P.body, fontSize: 11.5, fontWeight: '700' }}>{label}</Text>
     </Pressable>
   );
@@ -107,7 +107,7 @@ function NewsList({ items, now, loading, err, retry }: { items: Item[]; now: num
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, backgroundColor: P.th.sell + '12' }}>
           <Icon name="alert-circle" size={16} color={items.length ? P.th.gold : P.th.sell} />
           <Text style={{ flex: 1, color: P.head, fontSize: 12.5, lineHeight: 18 }}>{items.length ? `Showing saved stories. ${err}` : err}</Text>
-          <Pressable onPress={retry} style={{ paddingHorizontal: 12, height: 28, borderRadius: 5, backgroundColor: P.blue, justifyContent: 'center', cursor: 'pointer' } as any}><Text style={{ color: P.th.onAccent, fontSize: 12, fontWeight: '700' }}>Try again</Text></Pressable>
+          <Pressable onPress={retry} style={{ paddingHorizontal: 12, height: 28, borderRadius: 4, backgroundColor: P.blue, justifyContent: 'center', cursor: 'pointer' } as any}><Text style={{ color: P.th.onAccent, fontSize: 12, fontWeight: '700' }}>Try again</Text></Pressable>
         </View>
       )}
       {!loading && !err && !items.length && <Text style={{ color: P.body, fontSize: 13, padding: 16 }}>No stories match.</Text>}
@@ -173,7 +173,7 @@ function Calendar({ active, now, term }: { active: boolean; now: number; term: s
         {!!err && (
           <View style={{ padding: 12, gap: 6 }}>
             <Text style={{ color: cal.events.length ? th.gold : th.sell, fontSize: 12, lineHeight: 17 }}>{cal.events.length ? `Showing saved data. ${err}` : err}</Text>
-            <Pressable onPress={cal.reload} style={{ alignSelf: 'flex-start', paddingHorizontal: 12, height: 28, borderRadius: 5, backgroundColor: P.blue, justifyContent: 'center', cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12, fontWeight: '700' }}>Try again</Text></Pressable>
+            <Pressable onPress={cal.reload} style={{ alignSelf: 'flex-start', paddingHorizontal: 12, height: 28, borderRadius: 4, backgroundColor: P.blue, justifyContent: 'center', cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontSize: 12, fontWeight: '700' }}>Try again</Text></Pressable>
           </View>
         )}
         {cal.state === 'ok' && !groups.length && <Text style={{ color: P.body, fontSize: 12.5, padding: 14 }}>No events match these filters.</Text>}
@@ -266,7 +266,7 @@ export default function NewsHome({ active }: Props) {
             })}
           </View>
           <View style={{ flex: 1 }} />
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 34, paddingHorizontal: 10, marginBottom: 6, width: wide ? 320 : '100%', borderRadius: 5, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 34, paddingHorizontal: 10, marginBottom: 6, width: wide ? 320 : '100%', borderRadius: 4, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
             <Icon name="search" size={15} color={P.body} />
             <TextInput value={q} onChangeText={setQ} placeholder="Search news and events..." placeholderTextColor={P.body} style={{ flex: 1, color: P.head, fontSize: 12.5, outlineStyle: 'none' } as any} />
             {!!q && <Pressable onPress={() => setQ('')} hitSlop={8}><Icon name="close-circle" size={15} color={P.body} /></Pressable>}
@@ -285,7 +285,7 @@ export default function NewsHome({ active }: Props) {
           </View>
         </View>
 
-        <Note icon="notifications-outline" title="Never miss a high-impact release" tone={P.blue} right={<Pressable onPress={() => go(6)} style={((s: any) => ({ paddingHorizontal: 16, height: 32, borderRadius: 5, justifyContent: 'center', backgroundColor: P.blue, opacity: s.hovered ? 0.9 : 1, cursor: 'pointer' })) as any}><Text style={{ color: P.th.onAccent, fontSize: 12.5, fontWeight: '700' }}>Set News Alerts</Text></Pressable>}>Get warned before high-impact news. Turn on news alerts in Settings.</Note>
+        <Note icon="notifications-outline" title="Never miss a high-impact release" tone={P.blue} right={<Pressable onPress={() => go(6)} style={((s: any) => ({ paddingHorizontal: 16, height: 32, borderRadius: 4, justifyContent: 'center', backgroundColor: P.blue, opacity: s.hovered ? 0.9 : 1, cursor: 'pointer' })) as any}><Text style={{ color: P.th.onAccent, fontSize: 12.5, fontWeight: '700' }}>Set News Alerts</Text></Pressable>}>Get warned before high-impact news. Turn on news alerts in Settings.</Note>
         <Fineprint>The dot beside a headline is a keyword hint (green positive, red negative), not a trading signal. Hot Stories ranks recent headlines by market-moving keywords. Educational tool, not financial advice.</Fineprint>
       </View>
       <Footer w={w} go={go} />

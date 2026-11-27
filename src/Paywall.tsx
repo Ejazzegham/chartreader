@@ -48,7 +48,7 @@ export default function Paywall() {
     );
   }
 
-  const box = { backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 14 } as const;
+  const box = { backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, padding: 14 } as const;
   // a plain function, not a component: a component declared inside render is rebuilt on every keystroke and the TxID field would lose focus
   const shell = (children: React.ReactNode) => (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: th.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -81,7 +81,7 @@ export default function Paywall() {
     return shell(
       <>
         <View style={{ ...box, gap: 10, alignItems: 'center' }}>
-          <View style={{ width: 52, height: 52, borderRadius: 8, backgroundColor: th.gold + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="cloud-offline-outline" size={26} color={th.gold} /></View>
+          <View style={{ width: 52, height: 52, borderRadius: 6, backgroundColor: th.gold + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="cloud-offline-outline" size={26} color={th.gold} /></View>
           <Text accessibilityRole="header" style={{ color: th.text, fontSize: 19, fontWeight: '900', textAlign: 'center' }}>{t('pwErrTitle')}</Text>
           <Text style={{ color: th.dim, fontSize: 13.5, lineHeight: 20, textAlign: 'center' }}>{licErr}</Text>
           <View style={{ alignSelf: 'stretch', gap: 8, marginTop: 4 }}>
@@ -111,8 +111,8 @@ export default function Paywall() {
       {/* the message */}
       <View style={{ ...box, borderColor: th.sell + '66', gap: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: th.sell + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="lock-closed" size={22} color={th.sell} /></View>
-          <View style={{ backgroundColor: th.sell + '22', borderColor: th.sell + '66', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}>
+          <View style={{ width: 44, height: 44, borderRadius: 6, backgroundColor: th.sell + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="lock-closed" size={22} color={th.sell} /></View>
+          <View style={{ backgroundColor: th.sell + '22', borderColor: th.sell + '66', borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 }}>
             <Text style={{ color: th.sell, fontSize: 11, fontWeight: '900', letterSpacing: 0.6 }}>{renewal ? t('pwBadgeExpired') : t('pwBadgeTrial')}</Text>
           </View>
         </View>
@@ -131,7 +131,7 @@ export default function Paywall() {
           const on = plan === p.k;
           return (
             <Pressable key={p.k} onPress={() => setPlan(p.k)} accessibilityRole="button" accessibilityState={{ selected: on }}
-              style={({ pressed }) => ({ flex: 1, borderRadius: 8, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '14' : th.panel, padding: 12, gap: 2, opacity: pressed ? 0.85 : 1 })}>
+              style={({ pressed }) => ({ flex: 1, borderRadius: 6, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '14' : th.panel, padding: 12, gap: 2, opacity: pressed ? 0.85 : 1 })}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }}>{p.label}</Text>
                 {on && <Icon name="checkmark-circle" size={18} color={th.accent} />}
@@ -154,26 +154,26 @@ export default function Paywall() {
               const on = net === k;
               return (
                 <Pressable key={k} onPress={() => setNet(k)} accessibilityRole="button" accessibilityState={{ selected: on }}
-                  style={{ flex: 1, height: 42, borderRadius: 8, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '14' : th.panel2, alignItems: 'center', justifyContent: 'center' }}>
+                  style={{ flex: 1, height: 42, borderRadius: 6, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '14' : th.panel2, alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={{ color: th.text, fontWeight: on ? '900' : '700', fontSize: 13 }}>{label}</Text>
                 </Pressable>
               );
             })}
           </View>
         </View>
-        <View style={{ alignItems: 'center', backgroundColor: th.panel2, borderRadius: 8, borderWidth: 1, borderColor: th.line, paddingVertical: 12 }}>
+        <View style={{ alignItems: 'center', backgroundColor: th.panel2, borderRadius: 6, borderWidth: 1, borderColor: th.line, paddingVertical: 12 }}>
           <Text style={{ color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>{t('amountLabel').toUpperCase()}</Text>
           <Text style={{ color: th.accent, fontSize: 32, fontWeight: '900', marginTop: 2 }}>${PLANS[plan]} <Text style={{ fontSize: 15 }}>USDT</Text></Text>
         </View>
         <View>
           <Text style={{ color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 0.8, marginBottom: 6 }}>{t('pwAddress').toUpperCase()}</Text>
-          <View style={{ backgroundColor: th.panel2, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12 }}>
+          <View style={{ backgroundColor: th.panel2, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 12 }}>
             <Text selectable style={{ color: th.text, fontWeight: '700', fontSize: 13, lineHeight: 20, textAlign: 'center' }}>{PAY[net]}</Text>
           </View>
           <Text style={{ color: th.dim, fontSize: 11.5, textAlign: 'center', marginTop: 6 }}>{t('addrTap')}</Text>
         </View>
         <Btn ghost icon="share-outline" label={t('pwShare')} onPress={() => { shareText(PAY[net]); }} />
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: th.gold + '14', borderColor: th.gold + '55', borderWidth: 1, borderRadius: 8, padding: 10 }}>
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: th.gold + '14', borderColor: th.gold + '55', borderWidth: 1, borderRadius: 6, padding: 10 }}>
           <Icon name="warning-outline" size={18} color={th.gold} />
           <Text style={{ flex: 1, color: th.text, fontSize: 12.5, lineHeight: 18 }}>{t('pwWarn')}</Text>
         </View>

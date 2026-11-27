@@ -51,7 +51,7 @@ export default function PayBox({ plan, net }: { plan: 'weekly' | 'monthly'; net:
         <View style={{ gap: 8, marginTop: 4 }}>
           <Text style={{ color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>{t('payMine').toUpperCase()}</Text>
           {pays.map((p) => (
-            <View key={p.txid} style={{ backgroundColor: th.panel2, borderWidth: 1, borderColor: col(p.status) + '55', borderRadius: 8, padding: 10, gap: 4 }}>
+            <View key={p.txid} style={{ backgroundColor: th.panel2, borderWidth: 1, borderColor: col(p.status) + '55', borderRadius: 6, padding: 10, gap: 4 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Badge label={lab(p.status)} color={col(p.status)} />
                 <Text style={{ color: th.dim, fontSize: 12, flex: 1, textAlign: 'right' }}>{p.network} · {new Date(p.at).toLocaleDateString()}</Text>

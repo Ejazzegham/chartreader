@@ -28,7 +28,7 @@ function Diagnostics({ open, onClose }: { open: boolean; onClose: () => void }) 
   return (
     <Modal visible={open} animationType="slide" transparent onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' }}>
-        <View style={{ backgroundColor: th.bg, padding: 20, gap: 12, borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+        <View style={{ backgroundColor: th.bg, padding: 20, gap: 12, borderTopLeftRadius: 6, borderTopRightRadius: 6 }}>
           <Text style={{ color: th.text, fontSize: 18, fontWeight: '700' }}>{t('diag')}</Text>
           {!res && <ActivityIndicator color={th.accent} />}
           {res?.map((r) => (
@@ -79,7 +79,7 @@ export default function Markets() {
 
   return (
     <Screen fx="markets" icon="pulse" title={t('tabMarkets')} subtitle={`${catalog.loaded ? catalog.count : 0} Deriv · ${bnState.loaded ? bnState.count : 0} crypto pairs`}>
-      <Pressable onPress={() => setDiag(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, alignSelf: 'flex-start', backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 7 }}>
+      <Pressable onPress={() => setDiag(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14, alignSelf: 'flex-start', backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 7 }}>
         <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: live ? th.buy : status === 'connecting' ? th.gold : th.sell }} />
         <Text style={{ color: live ? th.buy : th.dim, fontWeight: '800', fontSize: 12 }}>{live ? t('live') : status === 'connecting' ? t('connecting') : t('offline')}</Text>
         <Text style={{ color: th.dim }}>·</Text>
@@ -113,7 +113,7 @@ export default function Markets() {
         </View>
       )}
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 14, marginBottom: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingHorizontal: 14, marginBottom: 12 }}>
         <Icon name="search" size={18} color={th.dim} />
         <TextInput value={q} onChangeText={setQ} placeholder={`${t('search')} (${SYMBOLS.length})`} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, padding: 13 }} />
         {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
@@ -126,7 +126,7 @@ export default function Markets() {
       {crypto && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12, flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
           {['ALL', ...QUOTES, 'DERIV'].map((k) => (
-            <Pressable key={k} onPress={() => setQuote(k)} style={{ paddingHorizontal: 12, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: quote === k ? th.accent + '26' : 'transparent', borderWidth: 1, borderColor: quote === k ? th.accent : th.line }}>
+            <Pressable key={k} onPress={() => setQuote(k)} style={{ paddingHorizontal: 12, height: 32, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: quote === k ? th.accent + '26' : 'transparent', borderWidth: 1, borderColor: quote === k ? th.accent : th.line }}>
               <Text style={{ color: quote === k ? th.accent : th.dim, fontWeight: '800', fontSize: 12 }}>{k === 'ALL' ? 'All pairs' : k === 'DERIV' ? 'Deriv crypto' : k}</Text>
             </Pressable>
           ))}
@@ -160,7 +160,7 @@ export default function Markets() {
                   <View style={{ direction: 'ltr' }}><Spark pts={x?.pts ?? []} color={col} /></View>
                   <View style={{ alignItems: 'flex-end', minWidth: 84 }}>
                     <Text style={{ color: x?.dir ? (x.dir > 0 ? th.buy : th.sell) : th.text, fontWeight: '900', fontSize: 15.5 }} numberOfLines={1}>{x ? x.price.toFixed(x.dec) : '—'}</Text>
-                    {x && <View style={{ backgroundColor: col + '1F', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 1, marginTop: 3 }}><Text style={{ color: col, fontSize: 11.5, fontWeight: '800' }}>{c >= 0 ? '+' : ''}{c.toFixed(2)}%</Text></View>}
+                    {x && <View style={{ backgroundColor: col + '1F', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 1, marginTop: 3 }}><Text style={{ color: col, fontSize: 11.5, fontWeight: '800' }}>{c >= 0 ? '+' : ''}{c.toFixed(2)}%</Text></View>}
                   </View>
                   <Pressable onPress={() => toggleFav(s.id)} hitSlop={10}>
                     <Icon name={fav ? 'star' : 'star-outline'} size={20} color={fav ? th.gold : th.dim} />

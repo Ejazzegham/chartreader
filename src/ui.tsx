@@ -58,7 +58,7 @@ export const MenuButton = () => {
   const { th, setMenu } = useApp();
   return (
     <Pressable accessibilityRole="button" accessibilityLabel="Menu" accessibilityHint="Opens the sidebar" onPress={() => setMenu(true)} hitSlop={6}
-      style={({ pressed }) => ({ width: 42, height: 42, borderRadius: 8, borderWidth: 1, borderColor: pressed ? th.accent : th.line, backgroundColor: pressed ? th.accent + '1F' : th.panel, alignItems: 'center', justifyContent: 'center', direction: 'ltr' })}>
+      style={({ pressed }) => ({ width: 42, height: 42, borderRadius: 6, borderWidth: 1, borderColor: pressed ? th.accent : th.line, backgroundColor: pressed ? th.accent + '1F' : th.panel, alignItems: 'center', justifyContent: 'center', direction: 'ltr' })}>
       <Svg width={22} height={22} viewBox="0 0 24 24">
         <Line x1="4" y1="7" x2="20" y2="7" stroke={th.text} strokeWidth="2.2" strokeLinecap="round" />
         <Line x1="4" y1="12" x2="20" y2="12" stroke={th.text} strokeWidth="2.2" strokeLinecap="round" />
@@ -76,7 +76,7 @@ export const BellButton = () => {
     <Pressable accessibilityRole="button" accessibilityLabel={t('tabNotifications')} onPress={() => setNotesOpen(true)} hitSlop={8} style={({ pressed }) => ({ width: 38, height: 38, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.7 : 1 })}>
       <Icon name={unread ? 'notifications' : 'notifications-outline'} size={24} color={th.text} />
       {unread > 0 && (
-        <View style={{ position: 'absolute', top: 2, right: 0, minWidth: 17, height: 17, borderRadius: 8, paddingHorizontal: 4, backgroundColor: th.sell, borderWidth: 1.5, borderColor: th.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ position: 'absolute', top: 2, right: 0, minWidth: 17, height: 17, borderRadius: 6, paddingHorizontal: 4, backgroundColor: th.sell, borderWidth: 1.5, borderColor: th.bg, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: '#fff', fontSize: 9.5, fontWeight: '900' }}>{unread > 9 ? '9+' : unread}</Text>
         </View>
       )}
@@ -96,7 +96,7 @@ export const AppHeader = () => {
         <Text accessibilityRole="header" style={{ color: th.accent, fontSize: 21, fontWeight: '900', letterSpacing: -0.4 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>Chart Reader</Text>
         <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '700', letterSpacing: 1.2 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65}>ANALYZE • LEARN • TRADE</Text>
       </View>}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 28, paddingHorizontal: 9, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '1F' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 28, paddingHorizontal: 9, borderRadius: 6, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '1F' }}>
         <MaterialCommunityIcons name="crown" size={13} color={th.gold} />
         <Text style={{ color: th.gold, fontSize: 10, fontWeight: '900', letterSpacing: 0.6 }}>PRO</Text>
       </View>
@@ -129,7 +129,7 @@ export const HeroBanner = ({ title, subtitle, icon, features, right, tag, fx }: 
     </View>
   );
   return (
-    <View style={{ borderRadius: 8, overflow: 'hidden', direction: 'ltr', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', ...(wide ? { height: HERO_H } : null) }}>
+    <View style={{ borderRadius: 6, overflow: 'hidden', direction: 'ltr', backgroundColor: HERO_BG, borderWidth: 1, borderColor: '#1C2E56', ...(wide ? { height: HERO_H } : null) }}>
       <HeroFx kind={fx} />
       <View style={{ padding: wide ? 32 : 20, paddingVertical: wide ? 26 : 20, gap: 14, ...(wide ? { height: HERO_H, justifyContent: 'center' } : null) }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 24, direction: rtl ? 'rtl' : 'ltr' }}>
@@ -156,7 +156,7 @@ export const PageHero = ({ title, subtitle, icon, right, tag, fx, features }: { 
   const desk = useLayout().mode === 'desktop';
   if (desk) return <HeroBanner title={title} subtitle={subtitle} icon={icon} right={right} tag={tag} fx={fx} features={features} />;
   return (
-    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, padding: 16, gap: 10, direction: rtl ? 'rtl' : 'ltr' }}>
+    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, padding: 16, gap: 10, direction: rtl ? 'rtl' : 'ltr' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         {!!icon && <IconTile icon={icon} size={44} />}
         <View style={{ flex: 1 }}>
@@ -201,7 +201,7 @@ export const Card = ({ children, style, glow }: { children: React.ReactNode; sty
   const { th } = useApp();
   const desk = useLayout().mode === 'desktop';
   return (
-    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: desk ? 12 : 8, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.dark ? 0.16 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 0 }, style]}>
+    <View style={[{ backgroundColor: th.panel, borderColor: glow ? th.accent + '66' : th.line, borderWidth: 1, borderRadius: desk ? 6 : 6, padding: 16, shadowColor: glow ? th.accent : '#000', shadowOpacity: th.dark ? 0.16 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 0 }, style]}>
       {children}
     </View>
   );
@@ -212,7 +212,7 @@ export const IconTile = ({ icon, size = 44 }: { icon: string; size?: number; col
   const { th } = useApp();
   const desk = useLayout().mode === 'desktop';
   return (
-    <View style={{ width: size, height: size, borderRadius: desk ? 10 : 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + (th.dark ? '2A' : '12'), borderWidth: 1, borderColor: th.accent + (th.dark ? '44' : '24') }}>
+    <View style={{ width: size, height: size, borderRadius: desk ? 6 : 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + (th.dark ? '2A' : '12'), borderWidth: 1, borderColor: th.accent + (th.dark ? '44' : '24') }}>
       <Icon name={icon} size={size * 0.48} color={th.dark ? th.text : th.accent} />
     </View>
   );
@@ -226,7 +226,7 @@ export const SectionHeader = ({ title, icon, action, onAction }: { title: string
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
         {desk && !!icon ? <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={16} color={th.accent} /></View> : <>
-        <View style={{ width: 3, height: 16, borderRadius: 2, backgroundColor: th.accent }} />
+        <View style={{ width: 3, height: 16, borderRadius: 3, backgroundColor: th.accent }} />
         {!!icon && <Icon name={icon} size={16} color={th.accent} />}</>}
         <Text accessibilityRole="header" style={{ color: th.text, fontSize: 17, fontWeight: desk ? '900' : '800', letterSpacing: -0.2 }}>{title}</Text>
       </View>
@@ -240,7 +240,7 @@ export const Chip = ({ label, on, onPress, icon, count }: { label: string; on: b
   const { th } = useApp();
   const desk = useLayout().mode === 'desktop';
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 38, borderRadius: desk ? 10 : 8, backgroundColor: on ? th.accent : th.panel, borderWidth: 1, borderColor: on ? th.accent : th.line, opacity: pressed ? 0.85 : 1 })}>
+    <Pressable onPress={onPress} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 38, borderRadius: desk ? 6 : 6, backgroundColor: on ? th.accent : th.panel, borderWidth: 1, borderColor: on ? th.accent : th.line, opacity: pressed ? 0.85 : 1 })}>
       {!!icon && <Icon name={icon} size={14} color={on ? th.onAccent : th.gold} />}
       <Text style={{ color: on ? th.onAccent : th.text, fontWeight: '800', fontSize: 13 }}>{label}</Text>
       {count !== undefined && <Text style={{ color: on ? th.onAccent + 'CC' : th.dim, fontWeight: '700', fontSize: 11 }}>{count}</Text>}
@@ -253,7 +253,7 @@ export const SectionTitle = ({ icon, children }: { icon?: string; children: Reac
   const desk = useLayout().mode === 'desktop';
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
-      {!!icon && <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={15} color={th.accent} /></View>}
+      {!!icon && <View style={{ width: 28, height: 28, borderRadius: 6, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={15} color={th.accent} /></View>}
       <Text style={{ color: th.text, fontSize: desk ? 16 : 15, fontWeight: desk ? '900' : '800', letterSpacing: desk ? 0 : 0.2, flexShrink: 1 }}>{children}</Text>
     </View>
   );
@@ -262,7 +262,7 @@ export const SectionTitle = ({ icon, children }: { icon?: string; children: Reac
 export const Badge = ({ label, color }: { label: string; color?: string }) => {
   const { th } = useApp();
   const c = color ?? th.accent;
-  return <View style={{ backgroundColor: c + '24', borderColor: c + '66', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}><Text style={{ color: c, fontSize: 11, fontWeight: '900', letterSpacing: 0.6 }}>{label}</Text></View>;
+  return <View style={{ backgroundColor: c + '24', borderColor: c + '66', borderWidth: 1, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 }}><Text style={{ color: c, fontSize: 11, fontWeight: '900', letterSpacing: 0.6 }}>{label}</Text></View>;
 };
 
 export const StatTile = ({ label, value, color, icon }: { label: string; value: string; color?: string; icon?: string }) => {
@@ -304,9 +304,9 @@ export const Btn = ({ label, onPress, ghost, busy, disabled, icon, danger, tone 
     </View>
   );
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!(busy || disabled), busy: !!busy }} onPress={onPress} disabled={busy || disabled} style={({ pressed }) => ({ borderRadius: 8, overflow: flat ? 'hidden' : 'visible', opacity: busy || disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }], borderWidth: flat ? 1 : 0, borderColor: warn ? th.gold + '88' : danger ? th.sell + '66' : th.line, shadowColor: base, shadowOpacity: flat || disabled ? 0 : th.dark ? 0.4 : 0.25, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: flat || disabled ? 0 : 5 })}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!(busy || disabled), busy: !!busy }} onPress={onPress} disabled={busy || disabled} style={({ pressed }) => ({ borderRadius: 6, overflow: flat ? 'hidden' : 'visible', opacity: busy || disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }], borderWidth: flat ? 1 : 0, borderColor: warn ? th.gold + '88' : danger ? th.sell + '66' : th.line, shadowColor: base, shadowOpacity: flat || disabled ? 0 : th.dark ? 0.4 : 0.25, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: flat || disabled ? 0 : 5 })}>
       {flat ? <View style={{ minHeight: 50, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: warn ? th.gold + '16' : th.panel2 }}>{inner}</View> : (
-        <LinearGradient colors={solid ? [base, base + 'CC'] : [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ minHeight: 52, borderRadius: 8, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <LinearGradient colors={solid ? [base, base + 'CC'] : [th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ minHeight: 52, borderRadius: 6, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           {inner}
         </LinearGradient>
       )}
@@ -328,7 +328,7 @@ export const ActionBtn = ({ label, icon, onPress, tone = 'neutral', disabled, fl
   );
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled }} onPress={onPress} disabled={disabled}
-      style={({ pressed }) => ({ flex, borderRadius: 8, overflow: 'hidden', opacity: disabled && tone !== 'done' ? 0.45 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }], borderWidth: solid ? 0 : 1, borderColor: tone === 'neutral' ? th.line : c + '77', shadowColor: c, shadowOpacity: solid && !disabled ? 0.4 : 0, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: solid && !disabled ? 5 : 0 })}>
+      style={({ pressed }) => ({ flex, borderRadius: 6, overflow: 'hidden', opacity: disabled && tone !== 'done' ? 0.45 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }], borderWidth: solid ? 0 : 1, borderColor: tone === 'neutral' ? th.line : c + '77', shadowColor: c, shadowOpacity: solid && !disabled ? 0.4 : 0, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: solid && !disabled ? 5 : 0 })}>
       {solid ? (
         <LinearGradient colors={[c, c + 'D0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
           {inner}
@@ -347,7 +347,7 @@ export const Field = ({ label, right, onFocus, onBlur, ...p }: { label: string; 
       <View>
         <TextInput {...p} accessibilityLabel={label} placeholderTextColor={th.dim + 'AA'} selectionColor={th.accent}
           onFocus={(e) => { setFocus(true); onFocus?.(e); }} onBlur={(e) => { setFocus(false); onBlur?.(e); }}
-          style={{ backgroundColor: th.dark ? th.bg : th.panel2, borderColor: focus ? th.accent : th.line, borderWidth: focus ? 1.5 : 1, borderRadius: 8, color: th.text, paddingHorizontal: focus ? 13.5 : 14, paddingVertical: focus ? 13.5 : 14, fontSize: 15, paddingEnd: right ? 46 : 14 }} />
+          style={{ backgroundColor: th.dark ? th.bg : th.panel2, borderColor: focus ? th.accent : th.line, borderWidth: focus ? 1.5 : 1, borderRadius: 6, color: th.text, paddingHorizontal: focus ? 13.5 : 14, paddingVertical: focus ? 13.5 : 14, fontSize: 15, paddingEnd: right ? 46 : 14 }} />
         {right && <View style={{ position: 'absolute', end: 12, top: 0, bottom: 0, justifyContent: 'center' }}>{right}</View>}
       </View>
     </View>
@@ -362,14 +362,14 @@ export const Segment = ({ value, options, onChange }: { value: string; options: 
   useEffect(() => { Animated.spring(x, { toValue: i, damping: 18, stiffness: 230, useNativeDriver: true }).start(); }, [i]);
   const cw = options.length ? (w - 8 - (options.length - 1) * 4) / options.length : 0;
   return (
-    <View onLayout={(e) => setW(e.nativeEvent.layout.width)} style={{ flexDirection: 'row', borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 4, backgroundColor: th.bg, gap: 4, direction: 'ltr' }}>
+    <View onLayout={(e) => setW(e.nativeEvent.layout.width)} style={{ flexDirection: 'row', borderWidth: 1, borderColor: th.line, borderRadius: 6, padding: 4, backgroundColor: th.bg, gap: 4, direction: 'ltr' }}>
       {w > 0 && options.length > 1 && (
-        <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 4, bottom: 4, left: 4, width: cw, borderRadius: 8, backgroundColor: th.accent, shadowColor: th.accent, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3, transform: [{ translateX: x.interpolate({ inputRange: options.map((_, k) => k), outputRange: options.map((_, k) => k * (cw + 4)) }) }] }} />
+        <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 4, bottom: 4, left: 4, width: cw, borderRadius: 6, backgroundColor: th.accent, shadowColor: th.accent, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3, transform: [{ translateX: x.interpolate({ inputRange: options.map((_, k) => k), outputRange: options.map((_, k) => k * (cw + 4)) }) }] }} />
       )}
       {options.map((o) => {
         const on = value === o.k;
         return (
-          <Pressable key={o.k} onPress={() => onChange(o.k)} style={{ flex: 1, minHeight: 44, paddingVertical: 10, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center', borderRadius: 8, backgroundColor: options.length < 2 && on ? th.accent : 'transparent' }}>
+          <Pressable key={o.k} onPress={() => onChange(o.k)} style={{ flex: 1, minHeight: 44, paddingVertical: 10, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center', borderRadius: 6, backgroundColor: options.length < 2 && on ? th.accent : 'transparent' }}>
             <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={{ color: on ? th.onAccent : th.dim, fontWeight: '800', fontSize: 14, textAlign: 'center' }}>{o.label}</Text>
           </Pressable>
         );
@@ -395,7 +395,7 @@ export const TimeframeBar = ({ value, options, onChange }: { value: string; opti
       {options.map((o) => {
         const on = value === o.k;
         return (
-          <Pressable key={o.k} onPress={() => onChange(o.k)} style={{ minWidth: 52, height: 38, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', borderRadius: 8, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
+          <Pressable key={o.k} onPress={() => onChange(o.k)} style={{ minWidth: 52, height: 38, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', borderRadius: 6, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
             <Text style={{ color: on ? th.onAccent : th.text, fontWeight: on ? '900' : '600', fontSize: 13, letterSpacing: 0.3 }}>{o.label}</Text>
           </Pressable>
         );

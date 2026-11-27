@@ -13,8 +13,8 @@ export default function GuardBanner() {
   if (g.level === 'ok') return null;
   const c = g.level === 'stop' ? th.sell : th.gold;
   return (
-    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: c + '16', borderColor: c + '66', borderWidth: 1, borderRadius: 8, padding: 12 }}>
-      <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: c + '26', alignItems: 'center', justifyContent: 'center' }}><Icon name={g.level === 'stop' ? 'hand-left' : 'alert-circle'} size={18} color={c} /></View>
+    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: c + '16', borderColor: c + '66', borderWidth: 1, borderRadius: 6, padding: 12 }}>
+      <View style={{ width: 34, height: 34, borderRadius: 6, backgroundColor: c + '26', alignItems: 'center', justifyContent: 'center' }}><Icon name={g.level === 'stop' ? 'hand-left' : 'alert-circle'} size={18} color={c} /></View>
       <View style={{ flex: 1 }}>
         <Text style={{ color: c, fontWeight: '900', fontSize: 13.5 }}>{g.title}</Text>
         <Text style={{ color: th.text, fontSize: 12.5, lineHeight: 18, marginTop: 1 }}>{g.text}</Text>

@@ -41,8 +41,8 @@ function ToastCard({ x, onClose }: { x: Toast; onClose: () => void }) {
   const icon = x.kind === 'good' ? 'checkmark-circle' : x.kind === 'bad' ? 'close-circle' : 'notifications';
   return (
     <Animated.View style={{ opacity: v, transform: [{ translateY: v.interpolate({ inputRange: [0, 1], outputRange: [-18, 0] }) }] }}>
-      <Pressable onPress={() => { onClose(); if (x.go) openNote(x.go === true ? {} : x.go); }} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.panel, borderRadius: 8, borderWidth: 1, borderColor: c + '88', paddingVertical: 11, paddingHorizontal: 12, shadowColor: c, shadowOpacity: 0.4, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 10 }}>
-        <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: c }} />
+      <Pressable onPress={() => { onClose(); if (x.go) openNote(x.go === true ? {} : x.go); }} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.panel, borderRadius: 6, borderWidth: 1, borderColor: c + '88', paddingVertical: 11, paddingHorizontal: 12, shadowColor: c, shadowOpacity: 0.4, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 10 }}>
+        <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 3, backgroundColor: c }} />
         <Icon name={icon} size={22} color={c} />
         <Text style={{ flex: 1, color: th.text, fontSize: 13, fontWeight: '700', lineHeight: 18 }}>{x.text}</Text>
         {!!x.go && <Icon name={rtl ? 'chevron-back' : 'chevron-forward'} size={18} color={th.dim} />}

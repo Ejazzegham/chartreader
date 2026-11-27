@@ -76,7 +76,7 @@ function StatCard({ kind, value, label, pct, wide }: { kind: 'members' | 'countr
   const col = m ? '#5B3FD6' : '#E85D00', bg = m ? 'linear-gradient(115deg,rgba(255,255,255,0.92) 0%,#E6DEFF 100%)' : 'linear-gradient(115deg,rgba(255,255,255,0.92) 0%,#FFE2C8 100%)';
   const up = (pct ?? 0) >= 0, ic = wide ? 44 : 34;
   return (
-    <View style={{ flexGrow: 1, flexBasis: wide ? 230 : 0, minWidth: 0, maxWidth: wide ? 270 : undefined, flexDirection: 'row', alignItems: 'center', gap: wide ? 12 : 8, paddingVertical: wide ? 9 : 8, paddingHorizontal: wide ? 13 : 10, borderRadius: 18, backgroundImage: bg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', boxShadow: '0 8px 22px rgba(60,70,170,0.16)' } as any}>
+    <View style={{ flexGrow: 1, flexBasis: wide ? 230 : 0, minWidth: 0, maxWidth: wide ? 270 : undefined, flexDirection: 'row', alignItems: 'center', gap: wide ? 12 : 8, paddingVertical: wide ? 9 : 8, paddingHorizontal: wide ? 13 : 10, borderRadius: 6, backgroundImage: bg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', boxShadow: '0 8px 22px rgba(60,70,170,0.16)' } as any}>
       <View style={{ width: ic, height: ic, borderRadius: ic / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: m ? '#DDD3FF' : '#FF9A3D' }}>
         <Ico n={m ? 'people' : 'globe'} s={wide ? 22 : 18} c={m ? col : '#FFFFFF'} />
       </View>
@@ -85,7 +85,7 @@ function StatCard({ kind, value, label, pct, wide }: { kind: 'members' | 'countr
         <Text numberOfLines={1} style={{ color: INK, fontSize: wide ? 13 : 11.5, fontWeight: '500' }}>{label}</Text>
       </View>
       {wide && typeof pct === 'number' ? (
-        <View accessibilityLabel={'Change in the last 30 days'} style={{ flexDirection: 'row', alignItems: 'center', gap: 3, paddingVertical: 4, paddingHorizontal: 8, borderRadius: 999, backgroundColor: m ? '#E7E0FF' : '#FFE4D0' }}>
+        <View accessibilityLabel={'Change in the last 30 days'} style={{ flexDirection: 'row', alignItems: 'center', gap: 3, paddingVertical: 4, paddingHorizontal: 8, borderRadius: 6, backgroundColor: m ? '#E7E0FF' : '#FFE4D0' }}>
           <Ico n={up ? 'up' : 'down'} s={12} c={col} w={2.4} />
           <Text style={{ color: col, fontSize: 12.5, fontWeight: '800' }}>{(up ? '+' : '') + pct + '%'}</Text>
         </View>
@@ -102,7 +102,7 @@ function RoundBtn({ n, onPress, label }: { n: string; onPress: () => void; label
   );
 }
 
-const inputCss: any = { padding: '9px 11px', borderRadius: 8, border: '1px solid ' + LINE, fontSize: 14, color: INK, fontFamily: 'inherit', width: '100%', boxSizing: 'border-box', background: '#fff' };
+const inputCss: any = { padding: '9px 11px', borderRadius: 6, border: '1px solid ' + LINE, fontSize: 14, color: INK, fontFamily: 'inherit', width: '100%', boxSizing: 'border-box', background: '#fff' };
 
 function Inner() {
   const [map, setMap] = useState<MapData | null>(mapCache);
@@ -175,7 +175,7 @@ function Inner() {
   }), []);
 
   const dbg = DEBUG ? <Text style={{ color: '#B4235A', fontSize: 11, fontFamily: 'monospace' as any }}>{`map debug: map file: ${mapDiag} | numbers: ${getSignupMapDiag()}`}</Text> : null;
-  if (!map || !data) return dbg ? <View style={{ gap: 6, backgroundColor: '#FFF', padding: 14, borderRadius: 8 }}><Text style={{ color: INK, fontSize: 15, fontWeight: '700' }}>Our community around the world</Text>{dbg}</View> : null; // server or map file not reachable: show nothing rather than a broken box (add ?mapdebug to the address to see why)
+  if (!map || !data) return dbg ? <View style={{ gap: 6, backgroundColor: '#FFF', padding: 14, borderRadius: 6 }}><Text style={{ color: INK, fontSize: 15, fontWeight: '700' }}>Our community around the world</Text>{dbg}</View> : null; // server or map file not reachable: show nothing rather than a broken box (add ?mapdebug to the address to see why)
 
   const v = vb || target, unit = v[2] / 1000; // one on-screen pixel stays the same size at every zoom
   zoomed.current = v[2] < full[2] * 0.96;
@@ -218,7 +218,7 @@ function Inner() {
         </Text>
       </View>
       {sel ? (
-        <Pressable onPress={() => select(null)} accessibilityRole="button" style={{ paddingVertical: 9, paddingHorizontal: 16, borderRadius: 999, backgroundColor: BLUE }}>
+        <Pressable onPress={() => select(null)} accessibilityRole="button" style={{ paddingVertical: 9, paddingHorizontal: 16, borderRadius: 6, backgroundColor: BLUE }}>
           <Text style={{ color: '#FFFFFF', fontSize: 13.5, fontWeight: '800' }}>‹ World</Text>
         </Pressable>
       ) : null}
@@ -228,29 +228,29 @@ function Inner() {
   // ── Counters + period filter ──
   const filters = (
     <View style={{ zIndex: 30 }}>
-      <View style={[glass, { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4, padding: 7, borderRadius: 26 }]}>
+      <View style={[glass, { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4, padding: 7, borderRadius: 6 }]}>
         {PERIODS.map(([k, label]) => {
           const on = period === k;
           return (
-            <Pressable key={k} onPress={() => { setPeriod(k); setPicker(false); }} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ paddingVertical: 10, paddingHorizontal: wide ? 18 : 13, borderRadius: 999, backgroundColor: on ? BLUE : 'transparent', boxShadow: on ? '0 6px 16px rgba(31,75,255,0.4)' : undefined } as any}>
+            <Pressable key={k} onPress={() => { setPeriod(k); setPicker(false); }} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ paddingVertical: 10, paddingHorizontal: wide ? 18 : 13, borderRadius: 6, backgroundColor: on ? BLUE : 'transparent', boxShadow: on ? '0 6px 16px rgba(31,75,255,0.4)' : undefined } as any}>
               <Text style={{ color: on ? '#FFFFFF' : INK, fontSize: wide ? 15.5 : 13.5, fontWeight: on ? '800' : '600' }}>{label}</Text>
             </Pressable>
           );
         })}
-        <Pressable onPress={() => { setDraft(custom); setPicker((o) => !o); }} accessibilityRole="button" accessibilityLabel="Choose dates" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 9, paddingHorizontal: 13, borderRadius: 999, backgroundColor: '#FFFFFF', borderWidth: period === 'custom' ? 2 : 0, borderColor: BLUE }}>
+        <Pressable onPress={() => { setDraft(custom); setPicker((o) => !o); }} accessibilityRole="button" accessibilityLabel="Choose dates" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 9, paddingHorizontal: 13, borderRadius: 6, backgroundColor: '#FFFFFF', borderWidth: period === 'custom' ? 2 : 0, borderColor: BLUE }}>
           <Ico n="calendar" s={22} c={BLUE} w={2} />
           <Ico n="chev" s={16} c={INK} />
         </Pressable>
       </View>
       {picker ? (
-        <View style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 260, padding: 14, gap: 8, borderRadius: 8, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: LINE, boxShadow: '0 18px 44px rgba(20,40,110,0.28)', zIndex: 40 } as any}>
+        <View style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, width: 260, padding: 14, gap: 8, borderRadius: 6, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: LINE, boxShadow: '0 18px 44px rgba(20,40,110,0.28)', zIndex: 40 } as any}>
           <Text style={{ color: INK, fontSize: 13, fontWeight: '800' }}>From</Text>
           <input type="date" value={draft.from} max={draft.to || undefined} onChange={(e: any) => setDraft({ ...draft, from: e.target.value })} style={inputCss} />
           <Text style={{ color: INK, fontSize: 13, fontWeight: '800', marginTop: 4 }}>To</Text>
           <input type="date" value={draft.to} min={draft.from || undefined} onChange={(e: any) => setDraft({ ...draft, to: e.target.value })} style={inputCss} />
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-            <Pressable onPress={() => { setCustom({ from: '', to: '' }); setPeriod('all'); setPicker(false); }} accessibilityRole="button" style={{ flex: 1, paddingVertical: 9, borderRadius: 999, alignItems: 'center', borderWidth: 1, borderColor: LINE }}><Text style={{ color: MUTED, fontWeight: '700', fontSize: 13.5 }}>Clear</Text></Pressable>
-            <Pressable onPress={() => { if (!draft.from && !draft.to) return; setCustom(draft); setPeriod('custom'); setPicker(false); }} accessibilityRole="button" style={{ flex: 1, paddingVertical: 9, borderRadius: 999, alignItems: 'center', backgroundColor: BLUE }}><Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 }}>Apply</Text></Pressable>
+            <Pressable onPress={() => { setCustom({ from: '', to: '' }); setPeriod('all'); setPicker(false); }} accessibilityRole="button" style={{ flex: 1, paddingVertical: 9, borderRadius: 6, alignItems: 'center', borderWidth: 1, borderColor: LINE }}><Text style={{ color: MUTED, fontWeight: '700', fontSize: 13.5 }}>Clear</Text></Pressable>
+            <Pressable onPress={() => { if (!draft.from && !draft.to) return; setCustom(draft); setPeriod('custom'); setPicker(false); }} accessibilityRole="button" style={{ flex: 1, paddingVertical: 9, borderRadius: 6, alignItems: 'center', backgroundColor: BLUE }}><Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13.5 }}>Apply</Text></Pressable>
           </View>
         </View>
       ) : null}
@@ -269,7 +269,7 @@ function Inner() {
 
   // ── Latest members ──
   const side = (
-    <View style={[glass, { width: wide ? 350 : '100%', borderRadius: 24, padding: wide ? 22 : 16 }]}>
+    <View style={[glass, { width: wide ? 350 : '100%', borderRadius: 6, padding: wide ? 22 : 16 }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Ico n="bolt" s={26} c={BLUE} />
         <Text style={{ color: INK, fontSize: wide ? 22 : 19, fontWeight: '800' }}>{sel ? 'Members from ' + nameOf(sel) : 'Latest Members'}</Text>
@@ -286,7 +286,7 @@ function Inner() {
         </Pressable>
       )) : <Text style={{ color: MUTED, fontSize: 14, paddingVertical: 10, borderTopWidth: 1, borderTopColor: LINE }}>{sel ? 'No recent members to list for this country.' : 'No members in this period yet.'}</Text>}
       {recentAll.length > 5 ? (
-        <Pressable onPress={() => setShowAll((a) => !a)} accessibilityRole="button" style={{ marginTop: 12, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 9, paddingVertical: 12, paddingHorizontal: 26, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.9)', borderWidth: 1.5, borderColor: '#BFD0FF', boxShadow: '0 6px 16px rgba(31,75,255,0.12)' } as any}>
+        <Pressable onPress={() => setShowAll((a) => !a)} accessibilityRole="button" style={{ marginTop: 12, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 9, paddingVertical: 12, paddingHorizontal: 26, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.9)', borderWidth: 1.5, borderColor: '#BFD0FF', boxShadow: '0 6px 16px rgba(31,75,255,0.12)' } as any}>
           <Ico n="people" s={20} c={BLUE} />
           <Text style={{ color: BLUE, fontSize: 15.5, fontWeight: '800' }}>{showAll ? 'Show Less' : 'View All Members'}</Text>
           {showAll ? null : <Ico n="right" s={18} c={BLUE} w={2.4} />}
@@ -297,7 +297,7 @@ function Inner() {
           <Text style={{ color: INK, fontSize: 15, fontWeight: '800' }}>Cities</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {cities.slice(0, 10).map((p, i) => (
-              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#FFE3E8' }}>
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 6, backgroundColor: '#FFE3E8' }}>
                 <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: DOT }} />
                 <Text style={{ color: INK, fontSize: 12.5, fontWeight: '600' }}>{(p.city || 'Unknown city') + (p.n > 1 ? '  ' + p.n : '')}</Text>
               </View>
@@ -309,9 +309,9 @@ function Inner() {
   );
 
   // ── Dark "Community Reach" map card ──
-  const pill: any = { flexDirection: 'row', alignItems: 'center', gap: 9, paddingVertical: 9, paddingHorizontal: 16, borderRadius: 999, backgroundColor: 'rgba(10,26,74,0.85)', borderWidth: 1, borderColor: 'rgba(120,160,255,0.35)', backdropFilter: 'blur(8px)' };
+  const pill: any = { flexDirection: 'row', alignItems: 'center', gap: 9, paddingVertical: 9, paddingHorizontal: 16, borderRadius: 6, backgroundColor: 'rgba(10,26,74,0.85)', borderWidth: 1, borderColor: 'rgba(120,160,255,0.35)', backdropFilter: 'blur(8px)' };
   const mapView = (
-    <View style={{ flex: wide ? 1 : undefined, minWidth: 0, width: wide ? undefined : '100%', borderRadius: 26, overflow: 'hidden', padding: wide ? 22 : 14, gap: 10, borderWidth: 1, borderColor: 'rgba(120,160,255,0.3)', backgroundImage: `radial-gradient(120% 90% at 50% 0%, #10306F 0%, ${NAVY} 70%)`, boxShadow: '0 20px 50px rgba(8,25,80,0.45)' } as any}>
+    <View style={{ flex: wide ? 1 : undefined, minWidth: 0, width: wide ? undefined : '100%', borderRadius: 6, overflow: 'hidden', padding: wide ? 22 : 14, gap: 10, borderWidth: 1, borderColor: 'rgba(120,160,255,0.3)', backgroundImage: `radial-gradient(120% 90% at 50% 0%, #10306F 0%, ${NAVY} 70%)`, boxShadow: '0 20px 50px rgba(8,25,80,0.45)' } as any}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Ico n="pin" s={32} c="#FFFFFF" hole="#2B4EFF" />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -351,7 +351,7 @@ function Inner() {
             </View>
           ) : null}
         </View>
-        <View style={[glass, { position: 'absolute', top: 0, right: 0, width: 48, paddingVertical: 4, alignItems: 'center', borderRadius: 24, gap: 0, backgroundColor: 'rgba(255,255,255,0.94)' }] as any}>
+        <View style={[glass, { position: 'absolute', top: 0, right: 0, width: 48, paddingVertical: 4, alignItems: 'center', borderRadius: 6, gap: 0, backgroundColor: 'rgba(255,255,255,0.94)' }] as any}>
           <RoundBtn n="plus" onPress={() => zoomBy(1.7)} label="Zoom in" />
           <View style={{ width: 26, height: 1, backgroundColor: LINE }} />
           <RoundBtn n="minus" onPress={() => zoomBy(1 / 1.7)} label="Zoom out" />

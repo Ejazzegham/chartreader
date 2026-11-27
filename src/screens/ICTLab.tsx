@@ -119,7 +119,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
       <View style={{ gap: 12 }}>
         <NewsBanner symId={symId} active={active} />
         {!symProp && (<>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12 }}>
           <Icon name="search" size={18} color={th.dim} />
           <TextInput value={q} onChangeText={setQ} placeholder={t('search')} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, padding: 12 }} />
           {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
@@ -137,7 +137,7 @@ export default function ICTLab({ embedded, on, symId: symProp, setSymId: setSymP
           {chips.map((id) => {
             const on = id === symId;
             return (
-              <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
+              <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 6, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
                 <Text style={{ color: on ? th.onAccent : th.dim, fontWeight: '700', fontSize: 13 }}>{symOf(id).name}</Text>
               </Pressable>
             );

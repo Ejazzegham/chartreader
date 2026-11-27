@@ -70,7 +70,7 @@ export default function Help() {
     <Modal visible={helpOpen && !covered} animationType="slide" onRequestClose={close} statusBarTranslucent>
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr' }} behavior="padding">
         <View style={{ paddingTop: Math.max(insets.top, StatusBar.currentHeight ?? 0, 24) + 14, paddingBottom: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: th.line, backgroundColor: th.panel, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
+          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 6, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name={rtl ? 'arrow-forward' : 'arrow-back'} size={20} color={th.text} />
           </Pressable>
           <View style={{ flex: 1 }}>
@@ -81,18 +81,18 @@ export default function Help() {
 
         <ScrollView ref={scroller} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 14, gap: 10 }}>
           {!live && (
-            <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: th.gold + '14', borderColor: th.gold + '55', borderWidth: 1, borderRadius: 8, padding: 12 }}>
+            <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: th.gold + '14', borderColor: th.gold + '55', borderWidth: 1, borderRadius: 6, padding: 12 }}>
               <Icon name="lock-closed-outline" size={18} color={th.gold} /><Text style={{ flex: 1, color: th.text, fontSize: 13, lineHeight: 19 }}>{t('helpEnded')}</Text>
             </View>
           )}
-          <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 12, gap: 8 }}>
+          <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, padding: 12, gap: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Icon name="mail-outline" size={20} color={th.accent} />
               <View style={{ flex: 1 }}>
                 <Text style={{ color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 0.8 }}>{t('helpEmailTitle').toUpperCase()}</Text>
                 <Text selectable style={{ color: th.text, fontSize: 14, fontWeight: '800', marginTop: 1 }}>{SUPPORT_EMAIL}</Text>
               </View>
-              <Pressable onPress={mail} accessibilityRole="button" style={({ pressed }) => ({ paddingHorizontal: 12, height: 36, borderRadius: 8, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1 })}>
+              <Pressable onPress={mail} accessibilityRole="button" style={({ pressed }) => ({ paddingHorizontal: 12, height: 36, borderRadius: 6, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.85 : 1 })}>
                 <Text style={{ color: th.onAccent, fontWeight: '800', fontSize: 12.5 }}>{t('helpEmailBtn')}</Text>
               </Pressable>
             </View>
@@ -107,7 +107,7 @@ export default function Help() {
               <Text style={{ color: th.dim, fontSize: 13.5, lineHeight: 20, textAlign: 'center' }}>{t('helpEmpty')}</Text>
               <View style={{ gap: 8, alignSelf: 'stretch', marginTop: 6 }}>
                 {quick.map((q) => (
-                  <Pressable key={q} onPress={() => setText(q)} accessibilityRole="button" style={({ pressed }) => ({ borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, borderRadius: 8, padding: 11, opacity: pressed ? 0.8 : 1 })}>
+                  <Pressable key={q} onPress={() => setText(q)} accessibilityRole="button" style={({ pressed }) => ({ borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, borderRadius: 6, padding: 11, opacity: pressed ? 0.8 : 1 })}>
                     <Text style={{ color: th.text, fontSize: 13, fontWeight: '600' }}>{q}</Text>
                   </Pressable>
                 ))}

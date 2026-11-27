@@ -102,7 +102,7 @@ export default function TopDown({ embedded, on, symId: symProp, setSymId: setSym
       <View style={{ gap: 12 }}>
         <NewsBanner symId={symId} active={active} />
         {!symProp && (<>
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12 }}>
           <Icon name="search" size={18} color={th.dim} />
           <TextInput value={q} onChangeText={setQ} placeholder={t('search')} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, padding: 12 }} />
           {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
@@ -120,7 +120,7 @@ export default function TopDown({ embedded, on, symId: symProp, setSymId: setSym
           {chips.map((id) => {
             const on = id === symId;
             return (
-              <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
+              <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 6, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
                 <Text style={{ color: on ? th.onAccent : th.dim, fontWeight: '700', fontSize: 13 }}>{symOf(id).name}</Text>
               </Pressable>
             );
@@ -138,7 +138,7 @@ export default function TopDown({ embedded, on, symId: symProp, setSymId: setSym
             {PRESETS.map((p) => {
               const on = p.k === preset;
               return (
-                <Pressable key={p.k} onPress={() => setTfs(p.tfs)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.bg }}>
+                <Pressable key={p.k} onPress={() => setTfs(p.tfs)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 6, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.bg }}>
                   <Text style={{ color: on ? th.onAccent : th.dim, fontWeight: '800', fontSize: 12.5 }}>{p.label}</Text>
                   <Text style={{ color: th.dim, fontSize: 10.5 }}>{p.tfs.map(tfName).join(' · ')}</Text>
                 </Pressable>
@@ -179,7 +179,7 @@ export default function TopDown({ embedded, on, symId: symProp, setSymId: setSym
               {[[L[0], td.h4.direction ? true : false, td.h4.direction ? (td.h4.direction === 'buy' ? 'Bullish' : 'Bearish') : 'Mixed'],
                 [L[1], !!td.h1.poi?.near, td.h1.poi ? (td.h1.poi.near ? 'Zone near' : 'Zone far') : 'No zone'],
                 [L[2], td.m15.confirmed, td.m15.confirmed ? 'Confirmed' : `${td.m15.count}/4`]].map(([k, ok, txt]) => (
-                <View key={String(k)} style={{ flex: 1, borderRadius: 8, borderWidth: 1, borderColor: (ok ? th.buy : th.line), backgroundColor: ok ? th.buy + '14' : th.bg, paddingVertical: 8, alignItems: 'center' }}>
+                <View key={String(k)} style={{ flex: 1, borderRadius: 6, borderWidth: 1, borderColor: (ok ? th.buy : th.line), backgroundColor: ok ? th.buy + '14' : th.bg, paddingVertical: 8, alignItems: 'center' }}>
                   <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800' }}>{String(k)}</Text>
                   <Text style={{ color: ok ? th.buy : th.text, fontWeight: '800', fontSize: 12.5 }}>{String(txt)}</Text>
                 </View>

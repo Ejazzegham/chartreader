@@ -89,7 +89,7 @@ export default function PinScreen({ mode, onDone, onSkip }: { mode: 'setup' | 'u
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', width: key * 3 + 24, gap: 12, direction: 'ltr' }}>
             {keys.map((k, i) => (
               <Pressable key={i} disabled={!k && !(useBio && i === 9)} onPress={() => (i === 9 ? scan() : k === '<' ? setP(pin.slice(0, -1)) : press(k))}
-                style={{ width: key, height: 52, borderRadius: 8, backgroundColor: k || (useBio && i === 9) ? th.panel : 'transparent', borderWidth: k || (useBio && i === 9) ? 1 : 0, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
+                style={{ width: key, height: 52, borderRadius: 6, backgroundColor: k || (useBio && i === 9) ? th.panel : 'transparent', borderWidth: k || (useBio && i === 9) ? 1 : 0, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
                 {i === 9 ? (useBio ? <Icon name="finger-print" size={26} color={th.accent} /> : null) : k === '<' ? <Icon name="backspace-outline" /> : <Text style={{ color: th.text, fontSize: 20, fontWeight: '600' }}>{k}</Text>}
               </Pressable>
             ))}

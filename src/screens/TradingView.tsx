@@ -40,7 +40,7 @@ const PRESETS: { label: string; layout: Layout; ids: string[] }[] = [
 ];
 
 const Glyph = ({ k, color }: { k: Layout; color: string }) => {
-  const box = (key: number) => <View key={key} style={{ flex: 1, borderWidth: 1.5, borderColor: color, borderRadius: 2 }} />;
+  const box = (key: number) => <View key={key} style={{ flex: 1, borderWidth: 1.5, borderColor: color, borderRadius: 3 }} />;
   const rowOf = (key: number) => <View key={key} style={{ flex: 1, flexDirection: 'row', gap: 2 }}>{[0, 1].map(box)}</View>;
   return (
     <View style={{ width: 20, height: 15, flexDirection: k === '2v' ? 'column' : 'row', gap: 2 }}>
@@ -153,14 +153,14 @@ export default function TradingView() {
   // ---- pieces ----
   const hov = (on: boolean, st: any) => ({ backgroundColor: on ? th.accent + '26' : st.hovered ? th.panel2 : 'transparent', borderColor: on ? th.accent : th.hair });
   const tool = (icon: string, label: string, on: boolean, onPress: () => void, badge?: string) => (
-    <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 36, paddingHorizontal: 12, borderRadius: 9, borderWidth: 1, cursor: 'pointer', ...hov(on, st) })) as any}>
+    <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, height: 36, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, cursor: 'pointer', ...hov(on, st) })) as any}>
       <Icon name={icon} size={16} color={on ? th.accent : th.text} />
       <Text style={{ color: on ? th.accent : th.text, fontSize: 12.5, fontWeight: '700' }}>{label}</Text>
-      {!!badge && <View style={{ minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 10.5, fontWeight: '800' }}>{badge}</Text></View>}
+      {!!badge && <View style={{ minWidth: 18, height: 18, borderRadius: 6, paddingHorizontal: 5, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 10.5, fontWeight: '800' }}>{badge}</Text></View>}
     </Pressable>
   );
   const chipBtn = (key: string, label: string, on: boolean, onPress: () => void, icon?: string) => (
-    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, cursor: 'pointer', ...hov(on, st) })) as any}>
+    <Pressable key={key} onPress={onPress} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, cursor: 'pointer', ...hov(on, st) })) as any}>
       {!!icon && <Icon name={icon} size={15} color={on ? th.accent : th.dim} />}
       <Text style={{ color: on ? th.accent : th.text, fontSize: 12.5, fontWeight: '700' }}>{label}</Text>
     </Pressable>
@@ -170,7 +170,7 @@ export default function TradingView() {
   const row = (s: Sym) => {
     const r = quotes[s.id], d = chg(s.id), rc = d >= 0 ? th.buy : th.sell, on = cells.slice(0, n).includes(s.id), cur = s.id === symId, fav = db.favs.includes(s.id);
     return (
-      <Pressable key={s.id} accessibilityRole="button" onPress={() => pickSym(s.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 9, borderRadius: 8, borderWidth: 1, borderColor: cur ? th.accent : 'transparent', backgroundColor: cur ? th.accent + '1F' : st.hovered ? th.panel2 : 'transparent', cursor: 'pointer' })) as any}>
+      <Pressable key={s.id} accessibilityRole="button" onPress={() => pickSym(s.id)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 9, borderRadius: 6, borderWidth: 1, borderColor: cur ? th.accent : 'transparent', backgroundColor: cur ? th.accent + '1F' : st.hovered ? th.panel2 : 'transparent', cursor: 'pointer' })) as any}>
         <Coin s={s} size={30} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text numberOfLines={1} style={{ color: th.text, fontWeight: '700', fontSize: 13.5 }}>{s.name}</Text>
@@ -192,14 +192,14 @@ export default function TradingView() {
           {eyebrow('CHANGING CHART')}
           <View style={{ flexDirection: 'row', gap: 6 }}>
             {cells.slice(0, n).map((id, i) => (
-              <Pressable key={i} onPress={() => setAct(i)} style={((st: any) => ({ flex: 1, height: 34, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hov(i === act, st) })) as any}>
+              <Pressable key={i} onPress={() => setAct(i)} style={((st: any) => ({ flex: 1, height: 34, borderRadius: 6, borderWidth: 1, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hov(i === act, st) })) as any}>
                 <Text numberOfLines={1} style={{ color: i === act ? th.accent : th.text, fontSize: 11.5, fontWeight: '800' }}>{i + 1} · {lookSym(id).name.split(' ')[0]}</Text>
               </Pressable>
             ))}
           </View>
         </View>
       )}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.panel2, borderColor: th.hair, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.panel2, borderColor: th.hair, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12 }}>
         <Icon name="search" size={17} color={th.dim} />
         <TextInput value={q} onChangeText={setQ} placeholder={`Search ${universe.length} markets`} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, paddingVertical: 11, fontSize: 14, outlineStyle: 'none' } as any} />
         {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={17} color={th.dim} /></Pressable>}
@@ -224,12 +224,12 @@ export default function TradingView() {
             </React.Fragment>
           ))}
         {all.length > list.length && (
-          <Pressable onPress={() => setLimit(limit + PAGE)} style={((st: any) => ({ height: 38, marginTop: 6, borderRadius: 8, borderWidth: 1, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hov(false, st) })) as any}>
+          <Pressable onPress={() => setLimit(limit + PAGE)} style={((st: any) => ({ height: 38, marginTop: 6, borderRadius: 6, borderWidth: 1, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hov(false, st) })) as any}>
             <Text style={{ color: th.accent, fontSize: 12.5, fontWeight: '800' }}>Show more ({all.length - list.length} left)</Text>
           </Pressable>
         )}
         {term.length >= 2 && (
-          <Pressable onPress={() => { pickSym(TVX + q.trim().toUpperCase().replace(/\s+/g, '')); setQ(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8, padding: 10, borderRadius: 8, borderWidth: 1, borderStyle: 'dashed', cursor: 'pointer', ...hov(false, st) })) as any}>
+          <Pressable onPress={() => { pickSym(TVX + q.trim().toUpperCase().replace(/\s+/g, '')); setQ(''); }} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8, padding: 10, borderRadius: 6, borderWidth: 1, borderStyle: 'dashed', cursor: 'pointer', ...hov(false, st) })) as any}>
             <Icon name="globe-outline" size={20} color={th.accent} />
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text numberOfLines={1} style={{ color: th.text, fontSize: 13, fontWeight: '700' }}>Open “{q.trim().toUpperCase()}” on TradingView</Text>
@@ -264,11 +264,11 @@ export default function TradingView() {
       {TF_GROUPS.map((g) => (
         <View key={g.g} style={{ gap: 4 }}>
           <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '800', letterSpacing: 1.4, paddingLeft: 4 }}>{g.g}</Text>
-          <View style={{ flexDirection: 'row', padding: 3, gap: 2, borderRadius: 11, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
+          <View style={{ flexDirection: 'row', padding: 3, gap: 2, borderRadius: 6, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
             {g.items.map(([k, label]) => {
               const on = tfs[act] === k;
               return (
-                <Pressable key={k} accessibilityRole="button" accessibilityLabel={label} onPress={() => setTf(k)} style={((st: any) => ({ minWidth: 40, height: 32, paddingHorizontal: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? th.accent : st.hovered ? th.accent + '22' : 'transparent', boxShadow: on ? `0 6px 16px -6px ${th.accent}` : 'none', transitionProperty: 'background-color, box-shadow', transitionDuration: '160ms' })) as any}>
+                <Pressable key={k} accessibilityRole="button" accessibilityLabel={label} onPress={() => setTf(k)} style={((st: any) => ({ minWidth: 40, height: 32, paddingHorizontal: 10, borderRadius: 6, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? th.accent : st.hovered ? th.accent + '22' : 'transparent', boxShadow: on ? `0 6px 16px -6px ${th.accent}` : 'none', transitionProperty: 'background-color, box-shadow', transitionDuration: '160ms' })) as any}>
                   <Text style={{ color: on ? th.onAccent : th.text, fontSize: 12.5, fontWeight: on ? '800' : '600' }}>{label}</Text>
                 </Pressable>
               );
@@ -281,11 +281,11 @@ export default function TradingView() {
 
   const actions = (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-      <View style={{ flexDirection: 'row', padding: 3, gap: 2, borderRadius: 11, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
+      <View style={{ flexDirection: 'row', padding: 3, gap: 2, borderRadius: 6, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
         {LAYOUTS.filter((l) => desk || l.k !== '2h').map((l) => {
           const on = layout === l.k;
           return (
-            <Pressable key={l.k} accessibilityRole="button" accessibilityLabel={l.label} onPress={() => setLayout(l.k)} style={((st: any) => ({ width: 38, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? th.accent + '2E' : st.hovered ? th.accent + '14' : 'transparent' })) as any}>
+            <Pressable key={l.k} accessibilityRole="button" accessibilityLabel={l.label} onPress={() => setLayout(l.k)} style={((st: any) => ({ width: 38, height: 32, borderRadius: 6, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', backgroundColor: on ? th.accent + '2E' : st.hovered ? th.accent + '14' : 'transparent' })) as any}>
               <Glyph k={l.k} color={on ? th.accent : th.dim} />
             </Pressable>
           );
@@ -303,7 +303,7 @@ export default function TradingView() {
   );
 
   const panelBody = panel === '' ? null : (
-    <View style={{ gap: 10, padding: 12, borderRadius: 10, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
+    <View style={{ gap: 10, padding: 12, borderRadius: 6, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
       {panel === 'style' && (<>{eyebrow('CHART STYLE')}<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{TV_STYLES.map((s) => chipBtn(s.k, s.label, cstyle === s.k, () => setCstyle(s.k), s.icon))}</View></>)}
       {panel === 'tz' && (<>{eyebrow('TIME ZONE OF THE CHARTS')}<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{ZONES.map(([k, label]) => chipBtn(k, label, tz === k, () => setTz(k)))}</View></>)}
       {panel === 'cmp' && (<>
@@ -339,7 +339,7 @@ export default function TradingView() {
           const solid = dk ? (on ? '#141C42' : '#0E1431') : (on ? '#FFFFFF' : '#FBFBFF');
           return (
             <Pressable key={it.i} accessibilityRole="button" onPress={() => setAct(it.i)} style={((st: any) => ({
-              flex: desk ? 1 : undefined, minWidth: 0, gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, borderWidth: on ? 1.5 : 1, cursor: 'pointer', overflow: 'hidden',
+              flex: desk ? 1 : undefined, minWidth: 0, gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 6, borderWidth: on ? 1.5 : 1, cursor: 'pointer', overflow: 'hidden',
               borderColor: on ? th.accent : st.hovered ? th.accent + '88' : (dk ? 'rgba(255,255,255,0.14)' : 'rgba(40,50,130,0.16)'),
               backgroundColor: solid,
               boxShadow: on ? `0 14px 30px -14px ${th.accent}CC, inset 0 1px 0 rgba(255,255,255,${dk ? 0.1 : 0.9})` : (dk ? '0 10px 24px -16px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 10px 24px -16px rgba(60,50,140,0.45), inset 0 1px 0 rgba(255,255,255,0.9)'),
@@ -347,7 +347,7 @@ export default function TradingView() {
             })) as any}>
               {on && <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundImage: `linear-gradient(90deg, ${th.accent}, ${th.accent}33)` } as any} />}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 26, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : (dk ? 'rgba(255,255,255,0.12)' : 'rgba(40,50,130,0.1)'), boxShadow: on ? `0 6px 12px -6px ${th.accent}` : 'none' } as any}>
+                <View style={{ width: 26, height: 26, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : (dk ? 'rgba(255,255,255,0.12)' : 'rgba(40,50,130,0.1)'), boxShadow: on ? `0 6px 12px -6px ${th.accent}` : 'none' } as any}>
                   <Text style={{ color: on ? th.onAccent : (dk ? '#DCE3FF' : '#2B3563'), fontSize: 12.5, fontWeight: '800' }}>{it.i + 1}</Text>
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
@@ -358,12 +358,12 @@ export default function TradingView() {
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                 <Text numberOfLines={1} style={{ color: dk ? '#FFFFFF' : '#111A3A', fontSize: 21, fontWeight: '800', letterSpacing: 0.2, fontVariant: ['tabular-nums'] }}>{it.r ? it.r.price.toFixed(it.r.dec) : '—'}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, height: 24, borderRadius: 8, backgroundColor: cc + '22', borderWidth: 1, borderColor: cc + '55' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, height: 24, borderRadius: 6, backgroundColor: cc + '22', borderWidth: 1, borderColor: cc + '55' }}>
                   <Icon name={up ? 'caret-up' : 'caret-down'} size={12} color={cc} />
                   <Text style={{ color: cc, fontSize: 12.5, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{up ? '+' : ''}{it.c.toFixed(2)}%</Text>
                 </View>
               </View>
-              <View style={{ height: 4, borderRadius: 2, backgroundColor: dk ? 'rgba(255,255,255,0.1)' : 'rgba(40,50,130,0.1)', overflow: 'hidden' }}><View style={{ width: `${Math.max(6, (Math.abs(it.c) / max) * 100)}%`, height: 4, borderRadius: 2, backgroundColor: cc }} /></View>
+              <View style={{ height: 4, borderRadius: 3, backgroundColor: dk ? 'rgba(255,255,255,0.1)' : 'rgba(40,50,130,0.1)', overflow: 'hidden' }}><View style={{ width: `${Math.max(6, (Math.abs(it.c) / max) * 100)}%`, height: 4, borderRadius: 3, backgroundColor: cc }} /></View>
             </Pressable>
           );
         })}
@@ -374,7 +374,7 @@ export default function TradingView() {
   const cell = (i: number) => {
     const id = cells[i], tvs = tvOf(lookSym(id)) ?? 'FX:EURUSD', on = n > 1 && i === act;
     return (
-      <View key={i} style={{ flex: 1, minWidth: 0, minHeight: 0, borderRadius: 10, overflow: 'hidden', borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel }}>
+      <View key={i} style={{ flex: 1, minWidth: 0, minHeight: 0, borderRadius: 6, overflow: 'hidden', borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel }}>
         {seen && <ChartWeb key={`${id}-${tfs[i]}-${cstyle}-${studyIds.join('')}-${tz}-${th.bg}-${reload}`} html={tvHtml(tvs, tfs[i], th.dark, th.bg, studyIds, cstyle, tz)} />}
       </View>
     );

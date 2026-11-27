@@ -251,7 +251,7 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
               const on = picked.includes(m.k);
               return (
                 <Pressable key={m.k} onPress={() => toggle(m.k)} accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={m.label}
-                  style={{ width: '48%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 8, borderWidth: on ? 1.5 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '18' : th.bg }}>
+                  style={{ width: '48%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 6, borderWidth: on ? 1.5 : 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '18' : th.bg }}>
                   <Icon name={on ? 'checkbox' : 'square-outline'} size={20} color={on ? th.accent : th.dim} />
                   <Text style={{ color: th.text, fontSize: 13, fontWeight: on ? '800' : '600', flexShrink: 1 }} numberOfLines={1}>{m.label}</Text>
                 </Pressable>
@@ -262,20 +262,20 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
           {!full && picked.length > 0 && <Dim>The combined entry and its alarm need ICT, SMC, VSA, chart pattern and candlestick all ticked. With fewer, you get each ticked method's own setups and no alarm or push.</Dim>}
         </Card>
 
-        <LinearGradient colors={[th.accent + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, borderWidth: 1, borderColor: th.accent + '55', padding: 16 }}>
+        <LinearGradient colors={[th.accent + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 6, borderWidth: 1, borderColor: th.accent + '55', padding: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={{ color: th.dim, fontWeight: '800', fontSize: 11, letterSpacing: 1.2 }}>{GROUPS.find((g) => g.k === group)?.label.toUpperCase()} · {tfLabel}</Text>
             {busy ? <Badge label={`SCANNING ${pct}%`} color={th.accent} /> : at ? <Badge label={`DONE ${localTime(at)}`} color={th.buy} /> : null}
           </View>
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
             {[['BUY', nBuy, th.buy], ['SELL', nSell, th.sell], ['LIVE', liveHits.length, th.text]].map(([k, v, c]) => (
-              <View key={String(k)} style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 10 }}>
+              <View key={String(k)} style={{ flex: 1, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 10 }}>
                 <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800', letterSpacing: 0.8 }}>{String(k)}</Text>
                 <Text style={{ color: String(c), fontSize: 22, fontWeight: '900' }}>{String(v)}</Text>
               </View>
             ))}
           </View>
-          {busy && <View style={{ height: 4, borderRadius: 2, backgroundColor: th.line, marginTop: 12, overflow: 'hidden' }}><View style={{ width: `${pct}%`, height: 4, backgroundColor: th.accent }} /></View>}
+          {busy && <View style={{ height: 4, borderRadius: 3, backgroundColor: th.line, marginTop: 12, overflow: 'hidden' }}><View style={{ width: `${pct}%`, height: 4, backgroundColor: th.accent }} /></View>}
         </LinearGradient>
 
         <Btn label={busy ? `Scanning ${done}/${total}…` : picked.length ? 'Scan now' : 'Tick at least one method'} icon="radio" onPress={scan} busy={busy} disabled={!picked.length} />
@@ -309,7 +309,7 @@ export default function Scanner({ embedded, on, onOpen, group: groupProp, cfg }:
             <Pressable key={h.id} onPress={() => setOpen(isOpen ? '' : h.id)}>
               <Card style={{ padding: 12, borderColor: top ? bc + '88' : th.line }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: bc + '22', alignItems: 'center', justifyContent: 'center' }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 6, backgroundColor: bc + '22', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon name={bias === 'buy' ? 'trending-up' : bias === 'sell' ? 'trending-down' : 'remove'} size={22} color={bc} />
                   </View>
                   <View style={{ flex: 1 }}>

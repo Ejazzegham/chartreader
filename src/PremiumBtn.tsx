@@ -27,7 +27,7 @@ export default function PremiumBtn({ kind, label, icon, onPress, disabled, busy,
     return (
       <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} disabled={off} onPress={onPress}
         style={((st: any) => ({
-          ...(flex ? { flex } : null), height, minWidth: 96, borderRadius: 12, borderWidth: 1.5, borderColor: st.hovered ? edge : edge + 'CC',
+          ...(flex ? { flex } : null), height, minWidth: 96, borderRadius: 6, borderWidth: 1.5, borderColor: st.hovered ? edge : edge + 'CC',
           backgroundColor: th.dark ? (st.hovered ? '#1B2150' : '#141943') : (st.hovered ? '#FFF1F4' : '#FFFFFF'),
           alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 16, opacity: off ? 0.5 : st.pressed ? 0.85 : 1,
           cursor: 'pointer', ...(web ? { boxShadow: th.dark ? '0 10px 24px -14px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)' : '0 10px 24px -16px rgba(11,27,63,0.45)', transition: 'all 140ms ease' } : null),
@@ -43,7 +43,7 @@ export default function PremiumBtn({ kind, label, icon, onPress, disabled, busy,
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={{ disabled: off, busy: !!busy }} disabled={off} onPress={onPress}
       style={((st: any) => ({
-        ...(flex ? { flex } : null), height, borderRadius: 12, overflow: 'hidden', backgroundColor: g[1], borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)',
+        ...(flex ? { flex } : null), height, borderRadius: 6, overflow: 'hidden', backgroundColor: g[1], borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)',
         opacity: off ? 0.55 : st.pressed ? 0.9 : 1, cursor: 'pointer', transform: [{ scale: st.pressed ? 0.985 : 1 }],
         ...(web ? {
           backgroundImage: `linear-gradient(135deg, ${g.join(', ')})`,

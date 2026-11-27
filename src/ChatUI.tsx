@@ -11,8 +11,8 @@ import { ChatTr, TrBody } from './ChatTranslate';
 
 // The look of the support chat (user Help screen and admin Chats tab): message bubbles, day dividers, photo / video attachments, and the
 // message box. It only draws; the sending and translating logic stays in Help.tsx / AdminPanel.tsx / ChatTranslate.tsx.
-// Chat bubbles are rounder than the rest of the app (R = 8): change BUBBLE_R to 8 to make them match the cards again.
-const BUBBLE_R = 18, TAIL_R = 5, MB = 1048576, MAX_IMAGE = 8 * MB, MAX_VIDEO = 25 * MB;
+// Chat bubbles use the same big-shape radius as the cards (6); the tail corner is a small shape (3).
+const BUBBLE_R = 6, TAIL_R = 3, MB = 1048576, MAX_IMAGE = 8 * MB, MAX_VIDEO = 25 * MB;
 const clock = (at: number) => new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 export const dayKey = (at: number) => new Date(at).toDateString();
 export const mbText = (n: number) => (n >= MB ? (n / MB).toFixed(n >= 10 * MB ? 0 : 1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB');
@@ -29,7 +29,7 @@ export function DayDivider({ at }: { at: number }) {
   const { th, t, settings } = useApp();
   return (
     <View style={{ alignItems: 'center', marginVertical: 6 }}>
-      <View style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
+      <View style={{ paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
         <Text style={{ color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 0.3 }}>{dayLabel(at, settings.lang, t)}</Text>
       </View>
     </View>
@@ -57,7 +57,7 @@ function MediaTile({ media }: { media: ChatMedia }) {
   if (media.kind === 'video') {
     return (
       <Pressable onPress={() => Linking.openURL(url).catch(() => {})} accessibilityRole="button" accessibilityLabel={t('chVideo')} style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
-        <LinearGradient colors={['#0B1220', '#1B2A4A']} style={{ width: TILE_W, height: 132, borderRadius: 8, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        <LinearGradient colors={['#0B1220', '#1B2A4A']} style={{ width: TILE_W, height: 132, borderRadius: 6, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: '#FFFFFF2E', borderWidth: 1, borderColor: '#FFFFFF55', alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="play" size={24} color="#FFFFFF" />
           </View>
@@ -70,11 +70,11 @@ function MediaTile({ media }: { media: ChatMedia }) {
     <>
       <Pressable onPress={() => setOpen(true)} accessibilityRole="imagebutton" accessibilityLabel={t('chPhoto')} style={({ pressed }) => ({ opacity: pressed ? 0.88 : 1 })}>
         {bad ? (
-          <View style={{ width: TILE_W, height: 120, borderRadius: 8, backgroundColor: th.panel2, alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          <View style={{ width: TILE_W, height: 120, borderRadius: 6, backgroundColor: th.panel2, alignItems: 'center', justifyContent: 'center', gap: 6 }}>
             <Icon name="image-outline" size={28} color={th.dim} /><Text style={{ color: th.dim, fontSize: 12 }}>{t('chPhoto')} · {mbText(media.size)}</Text>
           </View>
         ) : (
-          <Image source={{ uri: url, headers: MEDIA_HEADERS }} onError={() => setBad(true)} resizeMode="cover" style={{ width: TILE_W, height: 172, borderRadius: 8, backgroundColor: th.panel2 }} />
+          <Image source={{ uri: url, headers: MEDIA_HEADERS }} onError={() => setBad(true)} resizeMode="cover" style={{ width: TILE_W, height: 172, borderRadius: 6, backgroundColor: th.panel2 }} />
         )}
       </Pressable>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)} statusBarTranslucent>
@@ -141,7 +141,7 @@ export function useAttach(onError: (m: string) => void) {
     try { const p = await pickFile(src, t); if (p) { setPending(p); onError(''); } } catch (e: any) { onError(e?.message ?? 'Error'); }
   }, [t, onError]);
   const row = (icon: string, label: string, on: () => void) => (
-    <Pressable onPress={on} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 8, backgroundColor: pressed ? th.panel2 : 'transparent' })}>
+    <Pressable onPress={on} accessibilityRole="button" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 6, backgroundColor: pressed ? th.panel2 : 'transparent' })}>
       <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={th.accent} /></View>
       <Text style={{ color: th.text, fontSize: 15.5, fontWeight: '700' }}>{label}</Text>
     </Pressable>
@@ -149,8 +149,8 @@ export function useAttach(onError: (m: string) => void) {
   const sheet = (
     <Modal visible={show} transparent animationType="fade" onRequestClose={() => setShow(false)} statusBarTranslucent>
       <Pressable onPress={() => setShow(false)} style={{ flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' }}>
-        <Pressable onPress={() => {}} style={{ backgroundColor: th.solid, borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1, borderColor: th.hair, paddingTop: 10, paddingHorizontal: 10, paddingBottom: Math.max(insets.bottom, 12) + 6 }}>
-          <View style={{ alignSelf: 'center', width: 38, height: 4, borderRadius: 2, backgroundColor: th.line, marginBottom: 8 }} />
+        <Pressable onPress={() => {}} style={{ backgroundColor: th.solid, borderTopLeftRadius: 6, borderTopRightRadius: 6, borderWidth: 1, borderColor: th.hair, paddingTop: 10, paddingHorizontal: 10, paddingBottom: Math.max(insets.bottom, 12) + 6 }}>
+          <View style={{ alignSelf: 'center', width: 38, height: 4, borderRadius: 3, backgroundColor: th.line, marginBottom: 8 }} />
           {row('images-outline', t('chGallery'), () => pick('gallery'))}
           {row('camera-outline', t('chCamera'), () => pick('camera'))}
           {row('close-outline', t('chCancel'), () => setShow(false))}
@@ -185,10 +185,10 @@ export function Composer({ top, text, setText, placeholder, busy, busyLabel, pen
     <View style={{ backgroundColor: th.solid, borderTopWidth: 1, borderTopColor: th.hair, shadowColor: '#000', shadowOpacity: th.dark ? 0.3 : 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: -4 }, elevation: 8 }}>
       {top}
       {!!pending && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginTop: 10, padding: 8, borderRadius: 8, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 12, marginTop: 10, padding: 8, borderRadius: 6, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
           {pending.kind === 'image'
-            ? <Image source={{ uri: pending.uri }} style={{ width: 52, height: 52, borderRadius: 8, backgroundColor: th.panel }} />
-            : <LinearGradient colors={['#0B1220', '#1B2A4A']} style={{ width: 52, height: 52, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}><Icon name="play" size={22} color="#FFFFFF" /></LinearGradient>}
+            ? <Image source={{ uri: pending.uri }} style={{ width: 52, height: 52, borderRadius: 6, backgroundColor: th.panel }} />
+            : <LinearGradient colors={['#0B1220', '#1B2A4A']} style={{ width: 52, height: 52, borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Icon name="play" size={22} color="#FFFFFF" /></LinearGradient>}
           <View style={{ flex: 1 }}>
             <Text style={{ color: th.text, fontSize: 13.5, fontWeight: '800' }} numberOfLines={1}>{pending.kind === 'video' ? t('chVideo') : t('chPhoto')}{pending.size ? ` · ${mbText(pending.size)}` : ''}</Text>
             <Text style={{ color: th.dim, fontSize: 12 }} numberOfLines={1}>{busy && busyLabel ? busyLabel : pending.name}</Text>
@@ -206,7 +206,7 @@ export function Composer({ top, text, setText, placeholder, busy, busyLabel, pen
           <Icon name="attach" size={24} color={th.accent} />
         </Pressable>
         <TextInput value={text} onChangeText={setText} placeholder={placeholder} placeholderTextColor={th.dim} multiline maxLength={2000}
-          style={{ flex: 1, maxHeight: 130, minHeight: 46, backgroundColor: th.panel2, borderColor: th.hair, borderWidth: 1, borderRadius: 23, color: th.text, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontSize: 15.5, textAlignVertical: 'center' }} />
+          style={{ flex: 1, maxHeight: 130, minHeight: 46, backgroundColor: th.panel2, borderColor: th.hair, borderWidth: 1, borderRadius: 6, color: th.text, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontSize: 15.5, textAlignVertical: 'center' }} />
         <Pressable onPress={onSend} disabled={!can} accessibilityRole="button" accessibilityLabel={t('helpSend')} style={({ pressed }) => ({ opacity: !can ? 0.4 : pressed ? 0.85 : 1 })}>
           <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', shadowColor: th.accent, shadowOpacity: can ? 0.4 : 0, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: can ? 3 : 0 }}>
             {busy ? <ActivityIndicator color={th.onAccent} /> : <Icon name="send" size={20} color={th.onAccent} />}

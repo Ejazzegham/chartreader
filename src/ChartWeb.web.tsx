@@ -8,7 +8,7 @@ import { useApp } from './store';
 export default function ChartWeb({ uri, html, height }: { uri?: string; html?: string; height?: number; onSymbol?: (raw: string) => void; fallbackHtml?: string; onAnalysis?: () => void; onTouching?: (on: boolean) => void }) {
   const { th, t } = useApp();
   const [n, setN] = useState(0);
-  const box = { height, flex: height ? undefined : 1, backgroundColor: th.bg, borderRadius: 8, overflow: 'hidden' as const };
+  const box = { height, flex: height ? undefined : 1, backgroundColor: th.bg, borderRadius: 6, overflow: 'hidden' as const };
   return (
     <View style={box}>
       {React.createElement('iframe', {

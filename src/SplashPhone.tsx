@@ -127,7 +127,7 @@ export default function AnimatedSplash({ done, onGone, duration = 3600 }: { done
 
       {/* progress + status */}
       <Animated.View style={{ position: 'absolute', top: L.y1 + 26, left: 0, right: 0, alignItems: 'center', opacity: progIn }}>
-        <View style={{ width: bar, height: 3, borderRadius: 2, backgroundColor: TRACK, overflow: 'hidden' }}>
+        <View style={{ width: bar, height: 3, borderRadius: 3, backgroundColor: TRACK, overflow: 'hidden' }}>
           <Animated.View style={{ width: bar, height: 3, backgroundColor: BLUE, transform: [{ translateX: prog.interpolate({ inputRange: [0, 1], outputRange: [-bar, 0] }) }] }} />
         </View>
         <Text style={{ marginTop: 11, color: MUTE, fontSize: 10.5, letterSpacing: 1, fontWeight: '500' }}>{msg.toUpperCase()}</Text>

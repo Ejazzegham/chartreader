@@ -21,7 +21,7 @@ function usePalC() {
     soft: th.accent + (d ? '26' : '14'), shadow: d ? '#000000' : '#0F1B33',
   };
 }
-const card = (P: ReturnType<typeof usePalC>, extra?: any) => ({ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, ...extra });
+const card = (P: ReturnType<typeof usePalC>, extra?: any) => ({ backgroundColor: P.card, borderRadius: 6, borderWidth: 1, borderColor: P.border, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.035, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, ...extra });
 const ptr: any = { cursor: 'pointer' };
 const noOutline: any = Platform.OS === 'web' ? { outlineStyle: 'none' } : {};
 
@@ -32,11 +32,11 @@ function Avatar({ name, size = 38 }: { name: string; size?: number }) {
 function Flag({ cc }: { cc: string }) {
   const [bad, setBad] = useState(false);
   if (Platform.OS !== 'web' || !cc || bad) return null;
-  return <Image source={{ uri: '/flags/' + cc.toLowerCase() + '.svg' }} onError={() => setBad(true)} resizeMode="cover" style={{ width: 18, height: 12, borderRadius: 2, borderWidth: 1, borderColor: '#00000018' }} />;
+  return <Image source={{ uri: '/flags/' + cc.toLowerCase() + '.svg' }} onError={() => setBad(true)} resizeMode="cover" style={{ width: 18, height: 12, borderRadius: 3, borderWidth: 1, borderColor: '#00000018' }} />;
 }
 function Tag({ text, color, icon }: { text: string; color: string; icon?: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 3, paddingHorizontal: 8, borderRadius: 999, backgroundColor: color + '1F' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 3, paddingHorizontal: 8, borderRadius: 6, backgroundColor: color + '1F' }}>
       {icon ? <Icon name={icon} size={12} color={color} /> : null}
       <Text style={{ color, fontSize: 11, fontWeight: '700', letterSpacing: 0.2 }}>{text}</Text>
     </View>
@@ -45,7 +45,7 @@ function Tag({ text, color, icon }: { text: string; color: string; icon?: string
 function Ghost({ icon, label, onPress, color, busy }: { icon: string; label?: string; onPress: () => void; color?: string; busy?: boolean }) {
   const P = usePalC();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} disabled={busy} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 7, paddingHorizontal: 10, borderRadius: 8, backgroundColor: s.hovered ? P.alt : 'transparent', opacity: busy ? 0.5 : 1, ...ptr })) as any}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} disabled={busy} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 7, paddingHorizontal: 10, borderRadius: 6, backgroundColor: s.hovered ? P.alt : 'transparent', opacity: busy ? 0.5 : 1, ...ptr })) as any}>
       <Icon name={icon} size={16} color={color || P.body} />
       {label ? <Text style={{ color: color || P.body, fontSize: 12.5, fontWeight: '600' }}>{label}</Text> : null}
     </Pressable>
@@ -54,14 +54,14 @@ function Ghost({ icon, label, onPress, color, busy }: { icon: string; label?: st
 function Button({ label, onPress, ghost, disabled, busy, small }: { label: string; onPress: () => void; ghost?: boolean; disabled?: boolean; busy?: boolean; small?: boolean }) {
   const P = usePalC();
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} disabled={disabled || busy} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: small ? 36 : 42, paddingHorizontal: small ? 14 : 20, borderRadius: 8, borderWidth: 1, borderColor: ghost ? P.border : P.blue, backgroundColor: ghost ? (s.hovered ? P.alt : 'transparent') : P.blue, opacity: disabled ? 0.45 : s.hovered ? 0.92 : 1, ...ptr })) as any}>
+    <Pressable accessibilityRole="button" onPress={onPress} disabled={disabled || busy} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: small ? 36 : 42, paddingHorizontal: small ? 14 : 20, borderRadius: 6, borderWidth: 1, borderColor: ghost ? P.border : P.blue, backgroundColor: ghost ? (s.hovered ? P.alt : 'transparent') : P.blue, opacity: disabled ? 0.45 : s.hovered ? 0.92 : 1, ...ptr })) as any}>
       {busy ? <ActivityIndicator size="small" color={ghost ? P.head : P.th.onAccent} /> : <Text style={{ color: ghost ? P.head : P.th.onAccent, fontSize: 13.5, fontWeight: '700' }}>{label}</Text>}
     </Pressable>
   );
 }
 function Field(props: any) {
   const P = usePalC();
-  return <TextInput placeholderTextColor={P.body + 'AA'} {...props} style={[{ backgroundColor: P.alt, borderWidth: 1, borderColor: P.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: P.head, fontSize: 14, ...noOutline }, props.style]} />;
+  return <TextInput placeholderTextColor={P.body + 'AA'} {...props} style={[{ backgroundColor: P.alt, borderWidth: 1, borderColor: P.border, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 10, color: P.head, fontSize: 14, ...noOutline }, props.style]} />;
 }
 
 // ---------- a shared trade idea
@@ -69,7 +69,7 @@ function AnalysisCard({ a, symbol }: { a: C.CAnalysis; symbol: C.CSymbol | null 
   const P = usePalC(), buy = a.side === 'buy', col = buy ? P.buy : P.sell;
   const rows: { k: string; v: number; c: string; r?: number }[] = [{ k: 'Entry', v: a.entry, c: P.head }, { k: 'Stop loss', v: a.sl, c: P.sell }, ...a.tps.map((t, i) => ({ k: 'Take profit ' + (i + 1), v: t, c: P.buy, r: C.rr(a, t) }))];
   return (
-    <View style={{ borderWidth: 1, borderColor: P.border, borderRadius: 8, backgroundColor: P.alt, overflow: 'hidden' }}>
+    <View style={{ borderWidth: 1, borderColor: P.border, borderRadius: 6, backgroundColor: P.alt, overflow: 'hidden' }}>
       <View style={{ height: 3, backgroundColor: col }} />
       <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, padding: 12, paddingBottom: 8 }}>
         <Icon name="stats-chart" size={16} color={P.blue} />
@@ -81,7 +81,7 @@ function AnalysisCard({ a, symbol }: { a: C.CAnalysis; symbol: C.CSymbol | null 
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12, paddingTop: 4 }}>
         {rows.map((r) => (
-          <View key={r.k} style={{ flexGrow: 1, flexBasis: 120, minWidth: 110, backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, paddingVertical: 8, paddingHorizontal: 10 }}>
+          <View key={r.k} style={{ flexGrow: 1, flexBasis: 120, minWidth: 110, backgroundColor: P.card, borderRadius: 6, borderWidth: 1, borderColor: P.border, paddingVertical: 8, paddingHorizontal: 10 }}>
             <Text style={{ color: P.body, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.5 }}>{r.k.toUpperCase()}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 2 }}>
               <Text style={{ color: r.c, fontSize: 15, fontWeight: '800' }}>{C.fmtLevel(r.v, a.dec)}</Text>
@@ -119,7 +119,7 @@ function Thread({ post, token, me, onCount, flash }: { post: C.CPost; token: str
         <View key={c.id} style={{ flexDirection: 'row', gap: 10, opacity: c.hidden ? 0.55 : 1 }}>
           <Avatar name={c.author.name} size={30} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <View style={{ backgroundColor: P.alt, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 }}>
+            <View style={{ backgroundColor: P.alt, borderRadius: 6, paddingVertical: 8, paddingHorizontal: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
                 <Text style={{ color: P.head, fontSize: 13, fontWeight: '700' }}>{c.author.name}</Text>
                 <Flag cc={c.author.cc} />
@@ -164,7 +164,7 @@ function PostCard({ post, token, me, onChange, onGone, flash, onSymbol }: { post
   return (
     <View style={card(P, { padding: 16, gap: 12, opacity: post.hidden ? 0.75 : 1, borderColor: post.pinned ? P.brass + '88' : P.border })}>
       {post.hidden ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: P.sell + '18', borderRadius: 8, padding: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: P.sell + '18', borderRadius: 6, padding: 10 }}>
           <Icon name="eye-off-outline" size={16} color={P.sell} />
           <Text style={{ flex: 1, color: P.sell, fontSize: 12.5, fontWeight: '600' }}>Hidden after {post.reports} reports. Only moderators can see this post.</Text>
         </View>
@@ -193,7 +193,7 @@ function PostCard({ post, token, me, onChange, onGone, flash, onSymbol }: { post
         <View style={{ gap: 7 }}>
           <Text selectable style={{ color: P.head, fontSize: 16.5, fontWeight: '800', lineHeight: 23, letterSpacing: -0.2 }}>{post.title}</Text>
           {post.symbol ? (
-            <Pressable onPress={() => onSymbol(post.symbol!.id)} accessibilityRole="button" style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 3, paddingHorizontal: 9, borderRadius: 999, backgroundColor: P.soft, ...ptr } as any}>
+            <Pressable onPress={() => onSymbol(post.symbol!.id)} accessibilityRole="button" style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 3, paddingHorizontal: 9, borderRadius: 6, backgroundColor: P.soft, ...ptr } as any}>
               <Icon name="pricetag" size={12} color={P.blue} /><Text style={{ color: P.blue, fontSize: 12, fontWeight: '700' }}>{post.symbol.name}</Text>
             </Pressable>
           ) : null}
@@ -225,13 +225,13 @@ function SymbolPicker({ value, onChange }: { value: C.CSymbol | null; onChange: 
   const list = SYMBOLS.filter((s) => !q || (s.name + ' ' + s.id).toLowerCase().includes(q.toLowerCase())).slice(0, 8);
   return (
     <View style={{ gap: 6 }}>
-      <Pressable accessibilityRole="button" onPress={() => setOpen(!open)} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, height: 42, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt, ...ptr } as any}>
+      <Pressable accessibilityRole="button" onPress={() => setOpen(!open)} style={{ flexDirection: 'row', alignItems: 'center', gap: 9, height: 42, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt, ...ptr } as any}>
         <Icon name="pricetag-outline" size={16} color={P.blue} />
         <Text style={{ flex: 1, color: value ? P.head : P.body, fontSize: 14, fontWeight: value ? '700' : '400' }}>{value ? value.name : 'Pair (optional)'}</Text>
         {value ? <Pressable onPress={() => onChange(null)} hitSlop={8}><Icon name="close-circle" size={17} color={P.body} /></Pressable> : <Icon name="chevron-down" size={14} color={P.body} />}
       </Pressable>
       {open ? (
-        <View style={{ borderWidth: 1, borderColor: P.border, borderRadius: 8, backgroundColor: P.card, padding: 6, gap: 4 }}>
+        <View style={{ borderWidth: 1, borderColor: P.border, borderRadius: 6, backgroundColor: P.card, padding: 6, gap: 4 }}>
           <Field value={q} onChangeText={setQ} placeholder="Search pair…" autoCapitalize="none" style={{ paddingVertical: 8 }} />
           {list.map((s) => <Pressable key={s.id} onPress={() => { onChange({ id: s.id, name: s.name }); setOpen(false); setQ(''); }} style={((st: any) => ({ paddingVertical: 8, paddingHorizontal: 10, borderRadius: 6, backgroundColor: st.hovered ? P.alt : 'transparent', ...ptr })) as any}><Text style={{ color: P.head, fontSize: 13.5 }}>{s.name}</Text></Pressable>)}
           {!list.length ? <Text style={{ color: P.body, fontSize: 13, padding: 8 }}>No pair found.</Text> : null}
@@ -281,7 +281,7 @@ function Composer({ token, me, onPosted, flash, startKind, onClose }: { token: s
       </View>
       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
         {KINDS.map((k) => { const on = kind === k, col = C.KIND_COLOR[k]; return (
-          <Pressable key={k} onPress={() => setKind(k)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: on ? col : P.border, backgroundColor: on ? col + '1A' : 'transparent', ...ptr } as any}>
+          <Pressable key={k} onPress={() => setKind(k)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 6, borderWidth: 1, borderColor: on ? col : P.border, backgroundColor: on ? col + '1A' : 'transparent', ...ptr } as any}>
             <Icon name={C.KIND_ICON[k]} size={15} color={on ? col : P.body} /><Text style={{ color: on ? col : P.body, fontSize: 13, fontWeight: '700' }}>{C.KIND_LABEL[k]}</Text>
           </Pressable>); })}
       </View>
@@ -295,18 +295,18 @@ function Composer({ token, me, onPosted, flash, startKind, onClose }: { token: s
       </View>
       <SymbolPicker value={sym} onChange={setSym} />
       {kind === 'analysis' ? (
-        <View style={{ gap: 12, borderWidth: 1, borderColor: P.border, borderRadius: 8, padding: 12, backgroundColor: P.alt }}>
+        <View style={{ gap: 12, borderWidth: 1, borderColor: P.border, borderRadius: 6, padding: 12, backgroundColor: P.alt }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="trending-up" size={16} color={P.blue} /><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>Trade levels</Text><Text style={{ color: P.body, fontSize: 12 }}>(recommended)</Text></View>
           {mine.length ? (
             <View style={{ gap: 6 }}>
               <Text style={{ color: P.body, fontSize: 11.5, fontWeight: '700', letterSpacing: 0.4 }}>IMPORT FROM MY ANALYSES</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                {mine.map((s: any) => <Pressable key={s.id} onPress={() => pick(s)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 999, backgroundColor: P.card, borderWidth: 1, borderColor: P.border, ...ptr } as any}><View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: s.side === 'buy' ? P.buy : P.sell }} /><Text style={{ color: P.head, fontSize: 12, fontWeight: '600' }}>{s.name} · {s.side === 'buy' ? 'BUY' : 'SELL'} · {s.tf}</Text></Pressable>)}
+                {mine.map((s: any) => <Pressable key={s.id} onPress={() => pick(s)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 6, backgroundColor: P.card, borderWidth: 1, borderColor: P.border, ...ptr } as any}><View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: s.side === 'buy' ? P.buy : P.sell }} /><Text style={{ color: P.head, fontSize: 12, fontWeight: '600' }}>{s.name} · {s.side === 'buy' ? 'BUY' : 'SELL'} · {s.tf}</Text></Pressable>)}
               </View>
             </View>
           ) : null}
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            {(['buy', 'sell'] as const).map((s) => { const on = side === s, col = s === 'buy' ? P.buy : P.sell; return <Pressable key={s} onPress={() => setSide(s)} accessibilityRole="button" style={{ flex: 1, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: on ? col : P.border, backgroundColor: on ? col : 'transparent', ...ptr } as any}><Text style={{ color: on ? '#FFFFFF' : P.body, fontWeight: '800', fontSize: 13.5, letterSpacing: 0.6 }}>{s === 'buy' ? 'BUY' : 'SELL'}</Text></Pressable>; })}
+            {(['buy', 'sell'] as const).map((s) => { const on = side === s, col = s === 'buy' ? P.buy : P.sell; return <Pressable key={s} onPress={() => setSide(s)} accessibilityRole="button" style={{ flex: 1, height: 40, borderRadius: 6, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: on ? col : P.border, backgroundColor: on ? col : 'transparent', ...ptr } as any}><Text style={{ color: on ? '#FFFFFF' : P.body, fontWeight: '800', fontSize: 13.5, letterSpacing: 0.6 }}>{s === 'buy' ? 'BUY' : 'SELL'}</Text></Pressable>; })}
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {([['entry', 'Entry'], ['sl', 'Stop loss'], ['tp1', 'Take profit 1'], ['tp2', 'TP 2 (optional)'], ['tp3', 'TP 3 (optional)']] as const).map(([k, l]) => (
@@ -317,11 +317,11 @@ function Composer({ token, me, onPosted, flash, startKind, onClose }: { token: s
             ))}
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-            {TFS.map((x) => <Pressable key={x} onPress={() => setTf(x)} accessibilityRole="button" style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, backgroundColor: tf === x ? P.blue : P.card, borderWidth: 1, borderColor: tf === x ? P.blue : P.border, ...ptr } as any}><Text style={{ color: tf === x ? P.th.onAccent : P.body, fontSize: 12.5, fontWeight: '700' }}>{x}</Text></Pressable>)}
+            {TFS.map((x) => <Pressable key={x} onPress={() => setTf(x)} accessibilityRole="button" style={{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6, backgroundColor: tf === x ? P.blue : P.card, borderWidth: 1, borderColor: tf === x ? P.blue : P.border, ...ptr } as any}><Text style={{ color: tf === x ? P.th.onAccent : P.body, fontSize: 12.5, fontWeight: '700' }}>{x}</Text></Pressable>)}
           </View>
         </View>
       ) : null}
-      {msg ? <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: P.sell + '14', borderRadius: 8, padding: 10 }}><Icon name="alert-circle" size={16} color={P.sell} /><Text style={{ flex: 1, color: P.sell, fontSize: 13, fontWeight: '600', lineHeight: 18 }}>{msg}</Text></View> : null}
+      {msg ? <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start', backgroundColor: P.sell + '14', borderRadius: 6, padding: 10 }}><Icon name="alert-circle" size={16} color={P.sell} /><Text style={{ flex: 1, color: P.sell, fontSize: 13, fontWeight: '600', lineHeight: 18 }}>{msg}</Text></View> : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <Text style={{ flex: 1, minWidth: 200, color: P.body, fontSize: 11.5, lineHeight: 16 }}>Educational discussion only, not financial advice. No signal selling, groups or guaranteed profits.</Text>
         <Button ghost small label="Cancel" onPress={onClose} />
@@ -371,23 +371,23 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
   const gone = (id: number) => setPosts((l) => l.filter((x) => x.id !== id));
   const posted = (p: C.CPost) => { setComposer(null); if (!f.mine && !f.symbol && (!f.kind || f.kind === p.kind)) setPosts((l) => [p, ...l.filter((x) => x.id !== p.id)]); load(true); };
   const pill = (label: string, on: boolean, onPress: () => void, icon?: string) => (
-    <Pressable key={label} onPress={onPress} accessibilityRole="button" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 7, paddingHorizontal: 13, borderRadius: 999, backgroundColor: on ? P.blue : s.hovered ? P.alt : 'transparent', borderWidth: 1, borderColor: on ? P.blue : P.border, ...ptr })) as any}>
+    <Pressable key={label} onPress={onPress} accessibilityRole="button" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 7, paddingHorizontal: 13, borderRadius: 6, backgroundColor: on ? P.blue : s.hovered ? P.alt : 'transparent', borderWidth: 1, borderColor: on ? P.blue : P.border, ...ptr })) as any}>
       {icon ? <Icon name={icon} size={14} color={on ? P.th.onAccent : P.body} /> : null}<Text style={{ color: on ? P.th.onAccent : P.body, fontSize: 13, fontWeight: '700' }}>{label}</Text>
     </Pressable>
   );
 
   const feedCol = (
     <View style={{ flex: wide ? 1 : undefined, minWidth: 0, width: wide ? undefined : '100%', gap: 14 }}>
-      {note ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9, padding: 12, borderRadius: 8, backgroundColor: note.k === 'ok' ? P.buy + '1A' : P.sell + '16', borderWidth: 1, borderColor: note.k === 'ok' ? P.buy + '55' : P.sell + '55' }}><Icon name={note.k === 'ok' ? 'checkmark-circle' : 'alert-circle'} size={18} color={note.k === 'ok' ? P.buy : P.sell} /><Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '600' }}>{note.m}</Text></View> : null}
+      {note ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 9, padding: 12, borderRadius: 6, backgroundColor: note.k === 'ok' ? P.buy + '1A' : P.sell + '16', borderWidth: 1, borderColor: note.k === 'ok' ? P.buy + '55' : P.sell + '55' }}><Icon name={note.k === 'ok' ? 'checkmark-circle' : 'alert-circle'} size={18} color={note.k === 'ok' ? P.buy : P.sell} /><Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '600' }}>{note.m}</Text></View> : null}
 
       {composer ? <Composer token={token} me={me} onPosted={posted} flash={flash} startKind={composer} onClose={() => setComposer(null)} /> : (
         <View style={card(P, { padding: 14, gap: 12 })}>
           <Pressable onPress={() => setComposer('discussion')} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 12, ...ptr } as any}>
             <Avatar name={me?.name || '?'} />
-            <View style={{ flex: 1, height: 44, borderRadius: 22, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt, justifyContent: 'center', paddingHorizontal: 16 }}><Text style={{ color: P.body, fontSize: 14 }} numberOfLines={1}>Share an idea, an analysis or a question…</Text></View>
+            <View style={{ flex: 1, height: 44, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt, justifyContent: 'center', paddingHorizontal: 16 }}><Text style={{ color: P.body, fontSize: 14 }} numberOfLines={1}>Share an idea, an analysis or a question…</Text></View>
           </Pressable>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {(['analysis', 'discussion', 'question'] as C.CKind[]).map((k) => <Pressable key={k} onPress={() => setComposer(k)} accessibilityRole="button" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 7, paddingHorizontal: 12, borderRadius: 8, backgroundColor: s.hovered ? C.KIND_COLOR[k] + '22' : C.KIND_COLOR[k] + '12', ...ptr })) as any}><Icon name={C.KIND_ICON[k]} size={15} color={C.KIND_COLOR[k]} /><Text style={{ color: C.KIND_COLOR[k], fontSize: 12.5, fontWeight: '700' }}>{k === 'analysis' ? 'Share analysis' : k === 'question' ? 'Ask a question' : 'Start a discussion'}</Text></Pressable>)}
+            {(['analysis', 'discussion', 'question'] as C.CKind[]).map((k) => <Pressable key={k} onPress={() => setComposer(k)} accessibilityRole="button" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 7, paddingHorizontal: 12, borderRadius: 6, backgroundColor: s.hovered ? C.KIND_COLOR[k] + '22' : C.KIND_COLOR[k] + '12', ...ptr })) as any}><Icon name={C.KIND_ICON[k]} size={15} color={C.KIND_COLOR[k]} /><Text style={{ color: C.KIND_COLOR[k], fontSize: 12.5, fontWeight: '700' }}>{k === 'analysis' ? 'Share analysis' : k === 'question' ? 'Ask a question' : 'Start a discussion'}</Text></Pressable>)}
           </View>
         </View>
       )}
@@ -400,23 +400,23 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
           {pill('My posts', f.mine, () => setF({ ...f, mine: !f.mine, kind: '' }), 'person')}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <View style={{ flex: 1, minWidth: 180, flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
+          <View style={{ flex: 1, minWidth: 180, flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt }}>
             <Icon name="search" size={16} color={P.body} />
             <TextInput value={text} onChangeText={setText} placeholder="Search posts…" placeholderTextColor={P.body + 'AA'} style={{ flex: 1, color: P.head, fontSize: 14, ...noOutline }} />
             {text ? <Pressable onPress={() => setText('')} hitSlop={8}><Icon name="close-circle" size={16} color={P.body} /></Pressable> : null}
           </View>
-          {f.symbol ? <Pressable onPress={() => setF({ ...f, symbol: '' })} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: P.soft, ...ptr } as any}><Icon name="pricetag" size={13} color={P.blue} /><Text style={{ color: P.blue, fontSize: 12.5, fontWeight: '700' }}>{side?.trending?.find((t) => t.id === f.symbol)?.name || posts.find((p) => p.symbol?.id === f.symbol)?.symbol?.name || f.symbol}</Text><Icon name="close" size={13} color={P.blue} /></Pressable> : null}
-          <View style={{ flexDirection: 'row', borderRadius: 8, borderWidth: 1, borderColor: P.border, overflow: 'hidden' }}>
+          {f.symbol ? <Pressable onPress={() => setF({ ...f, symbol: '' })} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6, backgroundColor: P.soft, ...ptr } as any}><Icon name="pricetag" size={13} color={P.blue} /><Text style={{ color: P.blue, fontSize: 12.5, fontWeight: '700' }}>{side?.trending?.find((t) => t.id === f.symbol)?.name || posts.find((p) => p.symbol?.id === f.symbol)?.symbol?.name || f.symbol}</Text><Icon name="close" size={13} color={P.blue} /></Pressable> : null}
+          <View style={{ flexDirection: 'row', borderRadius: 6, borderWidth: 1, borderColor: P.border, overflow: 'hidden' }}>
             {(['new', 'top'] as const).map((s) => <Pressable key={s} onPress={() => setF({ ...f, sort: s })} accessibilityRole="button" style={{ paddingVertical: 9, paddingHorizontal: 14, backgroundColor: f.sort === s ? P.soft : 'transparent', ...ptr } as any}><Text style={{ color: f.sort === s ? P.blue : P.body, fontSize: 13, fontWeight: '700' }}>{s === 'new' ? 'Latest' : 'Top'}</Text></Pressable>)}
           </View>
         </View>
-        {!wide && side?.trending?.length ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{side.trending.map((t) => <Pressable key={t.id} onPress={() => setF({ ...f, symbol: f.symbol === t.id ? '' : t.id })} accessibilityRole="button" style={{ paddingVertical: 4, paddingHorizontal: 10, borderRadius: 999, backgroundColor: f.symbol === t.id ? P.blue : P.soft, ...ptr } as any}><Text style={{ color: f.symbol === t.id ? P.th.onAccent : P.blue, fontSize: 12, fontWeight: '700' }}>{t.name}</Text></Pressable>)}</View> : null}
+        {!wide && side?.trending?.length ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>{side.trending.map((t) => <Pressable key={t.id} onPress={() => setF({ ...f, symbol: f.symbol === t.id ? '' : t.id })} accessibilityRole="button" style={{ paddingVertical: 4, paddingHorizontal: 10, borderRadius: 6, backgroundColor: f.symbol === t.id ? P.blue : P.soft, ...ptr } as any}><Text style={{ color: f.symbol === t.id ? P.th.onAccent : P.blue, fontSize: 12, fontWeight: '700' }}>{t.name}</Text></Pressable>)}</View> : null}
       </View>
 
       {err && !posts.length ? (
         <View style={card(P, { padding: 22, alignItems: 'center', gap: 10 })}><Icon name="cloud-offline-outline" size={30} color={P.body} /><Text style={{ color: P.head, fontSize: 14.5, fontWeight: '700', textAlign: 'center' }}>{err}</Text>{!!errInfo && <Text selectable style={{ color: P.body, fontSize: 11.5, textAlign: 'center', opacity: 0.8 }}>{errInfo}</Text>}<Button ghost small label="Try again" onPress={() => load(true)} /></View>
       ) : !loaded ? (
-        [0, 1, 2].map((i) => <View key={i} style={card(P, { padding: 16, gap: 12 })}><View style={{ flexDirection: 'row', gap: 11, alignItems: 'center' }}><View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.alt }} /><View style={{ gap: 6 }}><View style={{ width: 120, height: 11, borderRadius: 6, backgroundColor: P.alt }} /><View style={{ width: 70, height: 9, borderRadius: 5, backgroundColor: P.alt }} /></View></View><View style={{ width: '70%', height: 14, borderRadius: 7, backgroundColor: P.alt }} /><View style={{ width: '95%', height: 10, borderRadius: 5, backgroundColor: P.alt }} /><View style={{ width: '60%', height: 10, borderRadius: 5, backgroundColor: P.alt }} /></View>)
+        [0, 1, 2].map((i) => <View key={i} style={card(P, { padding: 16, gap: 12 })}><View style={{ flexDirection: 'row', gap: 11, alignItems: 'center' }}><View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.alt }} /><View style={{ gap: 6 }}><View style={{ width: 120, height: 11, borderRadius: 6, backgroundColor: P.alt }} /><View style={{ width: 70, height: 9, borderRadius: 4, backgroundColor: P.alt }} /></View></View><View style={{ width: '70%', height: 14, borderRadius: 6, backgroundColor: P.alt }} /><View style={{ width: '95%', height: 10, borderRadius: 4, backgroundColor: P.alt }} /><View style={{ width: '60%', height: 10, borderRadius: 4, backgroundColor: P.alt }} /></View>)
       ) : posts.length === 0 ? (
         <View style={card(P, { padding: 30, alignItems: 'center', gap: 10 })}>
           <View style={{ width: 54, height: 54, borderRadius: 27, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name="chatbubbles" size={26} color={P.blue} /></View>
@@ -433,7 +433,7 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
     </View>
   );
 
-  const stat = (icon: string, color: string, v: number, l: string) => <View key={l} style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 10, borderRadius: 8, backgroundColor: color + '14' }}><Icon name={icon} size={16} color={color} /><Text style={{ color: P.head, fontSize: 18, fontWeight: '800' }}>{v.toLocaleString('en-US')}</Text><Text style={{ color: P.body, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.4 }}>{l}</Text></View>;
+  const stat = (icon: string, color: string, v: number, l: string) => <View key={l} style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 10, borderRadius: 6, backgroundColor: color + '14' }}><Icon name={icon} size={16} color={color} /><Text style={{ color: P.head, fontSize: 18, fontWeight: '800' }}>{v.toLocaleString('en-US')}</Text><Text style={{ color: P.body, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.4 }}>{l}</Text></View>;
   const sideCol = (
     <View style={{ width: 320, gap: 14 }}>
       <View style={card(P, { padding: 16, gap: 12 })}>
@@ -444,7 +444,7 @@ export default function CommunityView({ tabIndex = 20 }: { tabIndex?: number }) 
         <View style={card(P, { padding: 16, gap: 10 })}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Icon name="trending-up" size={16} color={P.blue} /><Text style={{ color: P.head, fontSize: 14.5, fontWeight: '800' }}>Trending pairs</Text></View>
           {side.trending.map((t, i) => (
-            <Pressable key={t.id} onPress={() => setF({ ...f, symbol: f.symbol === t.id ? '' : t.id, mine: false })} accessibilityRole="button" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, paddingHorizontal: 6, borderRadius: 8, backgroundColor: f.symbol === t.id ? P.soft : s.hovered ? P.alt : 'transparent', ...ptr })) as any}>
+            <Pressable key={t.id} onPress={() => setF({ ...f, symbol: f.symbol === t.id ? '' : t.id, mine: false })} accessibilityRole="button" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, paddingHorizontal: 6, borderRadius: 6, backgroundColor: f.symbol === t.id ? P.soft : s.hovered ? P.alt : 'transparent', ...ptr })) as any}>
               <Text style={{ width: 18, color: P.body, fontSize: 12, fontWeight: '800' }}>{i + 1}</Text>
               <Text style={{ flex: 1, color: P.head, fontSize: 13.5, fontWeight: '600' }} numberOfLines={1}>{t.name}</Text>
               <Text style={{ color: P.body, fontSize: 12 }}>{t.n} {t.n === 1 ? 'post' : 'posts'}</Text>

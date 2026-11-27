@@ -66,14 +66,14 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
     const cc = c ?? th.accent;
     return (
       <Pressable key={label} onPress={press} accessibilityRole="button" accessibilityState={{ selected: on }}
-        style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: on ? cc : th.line, backgroundColor: on ? cc : th.panel }}>
+        style={{ paddingHorizontal: 12, height: 34, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: on ? cc : th.line, backgroundColor: on ? cc : th.panel }}>
         <Text style={{ color: on ? th.onAccent : th.dim, fontSize: 12.5, fontWeight: '800' }}>{label}</Text>
       </Pressable>
     );
   };
 
   const stat = (label: string, value: string, c: string) => (
-    <View key={label} style={{ flexBasis: '31%', flexGrow: 1, backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 12 }}>
+    <View key={label} style={{ flexBasis: '31%', flexGrow: 1, backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, paddingVertical: 10, paddingHorizontal: 12 }}>
       <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800', letterSpacing: 0.8 }} numberOfLines={1}>{label.toUpperCase()}</Text>
       <Text style={{ color: c, fontSize: 17, fontWeight: '900', marginTop: 4 }} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
     </View>
@@ -86,10 +86,10 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
     <>
           {journal.length === 0 ? (
             <View style={{ alignItems: 'center', gap: 10, paddingVertical: 48, paddingHorizontal: 20 }}>
-              <View style={{ width: 60, height: 60, borderRadius: 8, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt-outline" size={28} color={th.accent} /></View>
+              <View style={{ width: 60, height: 60, borderRadius: 6, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt-outline" size={28} color={th.accent} /></View>
               <Text style={{ color: th.text, fontSize: 17, fontWeight: '900', textAlign: 'center' }}>{t('thEmpty')}</Text>
               <Text style={{ color: th.dim, fontSize: 13.5, lineHeight: 20, textAlign: 'center' }}>{t('thEmptyText')}</Text>
-              <Pressable onPress={() => { close(); setTab(3); }} accessibilityRole="button" style={{ marginTop: 6, height: 44, paddingHorizontal: 20, borderRadius: 8, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 }}>
+              <Pressable onPress={() => { close(); setTab(3); }} accessibilityRole="button" style={{ marginTop: 6, height: 44, paddingHorizontal: 20, borderRadius: 6, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 }}>
                 <Icon name="book" size={17} color={th.onAccent} />
                 <Text style={{ color: th.onAccent, fontWeight: '900' }}>{t('thOpenJournal')}</Text>
               </Pressable>
@@ -109,7 +109,7 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
 
               {/* filters */}
               <View style={{ gap: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, paddingHorizontal: 12 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, paddingHorizontal: 12 }}>
                   <Icon name="search" size={17} color={th.dim} />
                   <TextInput value={q} onChangeText={setQ} placeholder={t('thSearch')} placeholderTextColor={th.dim} autoCapitalize="none" autoCorrect={false}
                     style={{ flex: 1, color: th.text, fontSize: 14, paddingVertical: 0, textAlign: rtl ? 'right' : 'left' }} />
@@ -141,9 +141,9 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
                   {g.items.map((j) => {
                     const c = col(j.pnl);
                     return (
-                      <View key={j.id} style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, overflow: 'hidden' }}>
+                      <View key={j.id} style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, overflow: 'hidden' }}>
                         <Pressable onPress={() => setOpen(j.id)} accessibilityRole="button" accessibilityLabel={`${j.symbol} ${t(j.side)} ${money(j.pnl)}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 }}>
-                          <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: c }} />
+                          <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 3, backgroundColor: c }} />
                           <View style={{ flex: 1 }}>
                             <Text style={{ color: th.text, fontWeight: '900', fontSize: 14.5 }} numberOfLines={1}>{j.symbol} · <Text style={{ color: j.side === 'buy' ? th.buy : th.sell }}>{t(j.side).toUpperCase()}</Text></Text>
                             <Text style={{ color: th.dim, fontSize: 11.5, marginTop: 2 }} numberOfLines={1}>{why(j)}{j.source ? ` · ${j.source.split(' · ')[0]}` : ''} · {new Date(j.date).toLocaleTimeString(settings.lang, { hour: '2-digit', minute: '2-digit' })}</Text>
@@ -166,7 +166,7 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
 
   if (page) {
     const exportBtn = journal.length > 0 ? (
-      <Pressable onPress={exportCsv} accessibilityRole="button" accessibilityLabel={t('thExport')} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, paddingHorizontal: 16, borderRadius: 8, borderWidth: 1, borderColor: '#FFFFFF55', backgroundColor: st.hovered ? '#FFFFFF2E' : '#FFFFFF1A', cursor: 'pointer' })) as any}>
+      <Pressable onPress={exportCsv} accessibilityRole="button" accessibilityLabel={t('thExport')} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, paddingHorizontal: 16, borderRadius: 6, borderWidth: 1, borderColor: '#FFFFFF55', backgroundColor: st.hovered ? '#FFFFFF2E' : '#FFFFFF1A', cursor: 'pointer' })) as any}>
         <Icon name="share-outline" size={17} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>{t('thExport')}</Text>
       </Pressable>
     ) : undefined;
@@ -175,7 +175,7 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
         <Screen fx="tradehistory" icon="receipt" tag="Journal / Trading Tools" title={settings.lang === 'en' ? 'Trade History' : t('tabTradeHistory')} right={exportBtn}
           subtitle={settings.lang === 'en' ? `Every closed trade in one place, from the Journal and the paper desk. Filter by period, result and side, search a pair, see totals and a per-day result, open any trade for its full story and export everything to CSV${journal.length ? ` · ${journal.length} closed ${journal.length === 1 ? 'trade' : 'trades'}` : ''}.` : `${journal.length} ${t('closedTradesWord')}`}
           features={settings.lang === 'en' ? [{ icon: 'funnel-outline', title: 'Filter and search', sub: 'Period, result, side and pair' }, { icon: 'calendar-outline', title: 'Daily results', sub: 'Trades grouped by day with totals' }, { icon: 'download-outline', title: 'Export to CSV', sub: 'Take your records anywhere' }] : undefined}>
-          <View style={{ gap: 12, padding: 16, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, direction: rtl ? 'rtl' : 'ltr', ...glassWeb }}>{content}</View>
+          <View style={{ gap: 12, padding: 16, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, direction: rtl ? 'rtl' : 'ltr', ...glassWeb }}>{content}</View>
         </Screen>
         {openTrade && <TradeDetail key={openTrade.id} j={openTrade} onClose={() => setOpen(null)} />}
       </>
@@ -188,7 +188,7 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
       <View style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr' }}>
         {/* header */}
         <View style={{ paddingTop: Math.max(insets.top, StatusBar.currentHeight ?? 0, 24) + 14, paddingBottom: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: th.line, backgroundColor: th.panel, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
+          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 6, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name={rtl ? 'arrow-forward' : 'arrow-back'} size={20} color={th.text} />
           </Pressable>
           <View style={{ flex: 1 }}>
@@ -196,7 +196,7 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
             <Text style={{ color: th.dim, fontSize: 11.5 }} numberOfLines={1}>{journal.length} {t('closedTradesWord')}</Text>
           </View>
           {journal.length > 0 && (
-            <Pressable onPress={exportCsv} hitSlop={6} accessibilityRole="button" accessibilityLabel={t('thExport')} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: th.accent + '88', backgroundColor: th.accent + '1A' }}>
+            <Pressable onPress={exportCsv} hitSlop={6} accessibilityRole="button" accessibilityLabel={t('thExport')} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: th.accent + '88', backgroundColor: th.accent + '1A' }}>
               <Icon name="share-outline" size={17} color={th.accent} />
               <Text style={{ color: th.accent, fontWeight: '800', fontSize: 12.5 }}>{t('thExport')}</Text>
             </Pressable>

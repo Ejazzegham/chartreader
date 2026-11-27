@@ -59,7 +59,7 @@ export default function Performance() {
           <View style={{ height: 8 }} />
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {([[t('buy'), B, th.buy], [t('sell'), S, th.sell]] as const).map(([k, v, c]) => (
-              <View key={k} style={{ flex: 1, borderWidth: 1, borderColor: c + '55', backgroundColor: c + '12', borderRadius: 8, padding: 12 }}>
+              <View key={k} style={{ flex: 1, borderWidth: 1, borderColor: c + '55', backgroundColor: c + '12', borderRadius: 6, padding: 12 }}>
                 <Text style={{ color: c, fontWeight: '800' }}>{k} · {v.n}</Text>
                 <Text style={{ color: v.pnl >= 0 ? th.buy : th.sell, fontWeight: '800', fontSize: 18 }}>{v.pnl >= 0 ? '+' : ''}{f(v.pnl)}</Text>
               </View>
@@ -84,7 +84,7 @@ export default function Performance() {
           {gTotal === 0 ? <Dim>{t('ictGradesEmpty')}</Dim> : (
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {Object.entries(grades).map(([g, c]) => (
-                <View key={g} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: th.line }}>
+                <View key={g} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 6, borderWidth: 1, borderColor: th.line }}>
                   <Text style={{ color: g === 'A+' || g === 'A' ? th.buy : g === 'B' ? th.gold : th.sell, fontWeight: '900', fontSize: 18 }}>{g}</Text>
                   <Text style={{ color: th.dim, fontSize: 12 }}>{c}</Text>
                 </View>

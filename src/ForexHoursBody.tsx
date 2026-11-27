@@ -37,13 +37,13 @@ const LEVEL_TEXT: Record<Level, string> = { closed: 'The market is closed for th
 const LEVEL_NAME: Record<Level, string> = { closed: 'Closed', low: 'Low', medium: 'Moderate', high: 'High' };
 
 function Box({ P, children, style }: { P: Pal; children: React.ReactNode; style?: any }) {
-  return <View style={[{ backgroundColor: P.card, borderRadius: 8, borderWidth: 1, borderColor: P.border, padding: 20, gap: 16, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: P.card, borderRadius: 6, borderWidth: 1, borderColor: P.border, padding: 20, gap: 16, shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } }, style]}>{children}</View>;
 }
 function Head({ P, icon, title, sub, right }: { P: Pal; icon: string; title: string; sub?: string; right?: React.ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1, minWidth: 220 }}>
-        <View style={{ width: 42, height: 42, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>
+        <View style={{ width: 42, height: 42, borderRadius: 6, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>
         <View style={{ flexShrink: 1 }}>
           <Text accessibilityRole="header" style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>{title}</Text>
           {!!sub && <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, marginTop: 1 }}>{sub}</Text>}
@@ -56,14 +56,14 @@ function Head({ P, icon, title, sub, right }: { P: Pal; icon: string; title: str
 function Chip({ P, label, on, onPress, kind = 'radio' }: { P: Pal; label: string; on: boolean; onPress: () => void; kind?: 'radio' | 'button' }) {
   return (
     <Pressable onPress={onPress} accessibilityRole={kind as any} accessibilityState={{ selected: on, checked: on }}
-      style={((s: any) => ({ height: 36, paddingHorizontal: 14, borderRadius: 18, justifyContent: 'center', borderWidth: 1, borderColor: on ? P.blue : P.border, backgroundColor: on ? P.blue : s.hovered ? P.soft : P.alt, ...hand })) as any}>
+      style={((s: any) => ({ height: 36, paddingHorizontal: 14, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: on ? P.blue : P.border, backgroundColor: on ? P.blue : s.hovered ? P.soft : P.alt, ...hand })) as any}>
       <Text style={{ color: on ? P.th.onAccent : P.head, fontSize: 13, fontWeight: on ? '800' : '600' }}>{label}</Text>
     </Pressable>
   );
 }
 function Status({ color, text }: { color: string; text: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 8, backgroundColor: color + '1F', borderWidth: 1, borderColor: color + '55' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 6, backgroundColor: color + '1F', borderWidth: 1, borderColor: color + '55' }}>
       <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color }} />
       <Text style={{ color, fontSize: 11.5, fontWeight: '800' }}>{text}</Text>
     </View>
@@ -87,7 +87,7 @@ const OVERLAP_INFO: Record<string, { name: string; tag: string; body: string }> 
 type Col = { t: string; flex: number; align?: 'left' | 'right' | 'center' };
 function Table({ P, cols, rows, min = 560 }: { P: Pal; cols: Col[]; rows: React.ReactNode[][]; min?: number }) {
   return (
-    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }}>
+    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
         <View style={{ flexGrow: 1, minWidth: min }}>
           <View style={{ flexDirection: 'row', backgroundColor: P.alt, borderBottomWidth: 1, borderBottomColor: P.border }}>
@@ -158,7 +158,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
   const utcHrs = (s: typeof FX_SESSIONS[number]) => `${fmtClock(zoned(s, s.open), 'UTC', true)} – ${fmtClock(zoned(s, s.close), 'UTC', true)}`;
   const nowLine = <View pointerEvents="none" style={{ position: 'absolute', top: 0, bottom: 0, left: `${nowPos * 100}%`, width: 2, marginLeft: -1, backgroundColor: P.head } as any} />;
   const track = (children: React.ReactNode, h = 40, first = false) => (
-    <View onLayout={first ? (e) => setTrackW(e.nativeEvent.layout.width) : undefined} style={{ height: h, borderRadius: 8, backgroundColor: P.alt, borderWidth: 1, borderColor: P.border, overflow: 'hidden' }}>
+    <View onLayout={first ? (e) => setTrackW(e.nativeEvent.layout.width) : undefined} style={{ height: h, borderRadius: 6, backgroundColor: P.alt, borderWidth: 1, borderColor: P.border, overflow: 'hidden' }}>
       {[3, 6, 9, 12, 15, 18, 21].map((hh) => <View key={hh} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(hh / 24) * 100}%`, width: 1, backgroundColor: P.border }} />)}
       {children}{nowLine}
     </View>
@@ -198,7 +198,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
         </View>
 
         {/* session table: one row per city, with its own 24 hour bar */}
-        <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }} accessible accessibilityLabel={`Forex sessions today in ${where}. Open now: ${openNames.join(', ') || 'none'}.`}>
+        <View style={{ borderRadius: 6, borderWidth: 1, borderColor: P.border, overflow: 'hidden', backgroundColor: P.card }} accessible accessibilityLabel={`Forex sessions today in ${where}. Open now: ${openNames.join(', ') || 'none'}.`}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', backgroundColor: P.alt, borderBottomWidth: 1, borderBottomColor: P.border, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 8, gap: 14 }}>
             {wide && <><Text style={[hd(P), { width: 160 - 14 }]}>Session</Text><Text style={[hd(P), { width: 200 - 14 }]}>Local time</Text><Text style={[hd(P), { width: 150 - 14 }]}>Status</Text></>}
             <View style={{ flex: 1, minWidth: 0 }}><Text style={hd(P)}>{wide ? '' : 'Sessions · '}24 hour timeline in {where}</Text>{axis()}</View>
@@ -208,7 +208,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
             const info = (
               <>
                 <View style={{ width: wide ? 160 - 14 : undefined, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <View style={{ width: 4, height: 34, borderRadius: 2, backgroundColor: s.color }} />
+                  <View style={{ width: 4, height: 34, borderRadius: 3, backgroundColor: s.color }} />
                   <View><Text style={{ color: P.head, fontSize: 15, fontWeight: '800' }}>{s.city}</Text><Text style={{ color: P.body, fontSize: 11.5 }}>{s.pairs}</Text></View>
                 </View>
                 <View style={{ width: wide ? 200 - 14 : undefined }}>
@@ -270,7 +270,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
             right={onGuide ? <Pressable onPress={onGuide} accessibilityRole="link" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, opacity: s.hovered ? 0.8 : 1, ...hand })) as any}><Text style={{ color: P.blue, fontSize: 13, fontWeight: '700' }}>View Full Guide</Text><Icon name="arrow-forward" size={14} color={P.blue} /></Pressable> : undefined} />
           <View style={{ gap: 10 }}>
             {STEPS.map((s, i) => (
-              <View key={s.title} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+              <View key={s.title} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
                 <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: th.accent2 + '1A', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.accent2, fontSize: 14, fontWeight: '900' }}>{i + 1}</Text></View>
                 <View style={{ flex: 1, minWidth: 0, gap: 2 }}><Text style={{ color: P.head, fontSize: 14, fontWeight: '800' }}>{s.title}</Text><Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18 }}>{s.body}</Text></View>
               </View>
@@ -304,7 +304,7 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
           {faq.map((f, i) => {
             const on = open === i;
             return (
-              <View key={f.q} style={{ borderRadius: 8, borderWidth: 1, borderColor: on ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, overflow: 'hidden' }}>
+              <View key={f.q} style={{ borderRadius: 6, borderWidth: 1, borderColor: on ? P.blue + '66' : P.border, backgroundColor: on ? P.soft : P.card, overflow: 'hidden' }}>
                 <Pressable onPress={() => setOpen(on ? -1 : i)} accessibilityRole="button" accessibilityState={{ expanded: on }} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: 14, opacity: s.hovered ? 0.9 : 1, ...hand })) as any}>
                   <Text style={{ color: P.head, fontSize: 14, fontWeight: '700', flex: 1 }}>{f.q}</Text>
                   <Icon name={on ? 'chevron-up' : 'chevron-down'} size={18} color={P.blue} />
@@ -323,10 +323,10 @@ export default function ForexHoursBody({ active, w, onAnalysis, onGuide }: { act
           <Text style={{ color: P.body, fontSize: 13.5, lineHeight: 20, maxWidth: 560 }}>Pick the hours that suit you, then analyze a pair from a session that is open. Looking for ICT killzones? They are part of the ICT analysis.</Text>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-          <Pressable accessibilityRole="button" onPress={() => onAnalysis()} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 24, borderRadius: 8, backgroundColor: P.blue, opacity: s.hovered ? 0.92 : 1, ...hand })) as any}>
+          <Pressable accessibilityRole="button" onPress={() => onAnalysis()} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 24, borderRadius: 6, backgroundColor: P.blue, opacity: s.hovered ? 0.92 : 1, ...hand })) as any}>
             <Icon name="stats-chart" size={16} color={th.onAccent} /><Text style={{ color: th.onAccent, fontSize: 14.5, fontWeight: '700' }}>Open Analysis</Text>
           </Pressable>
-          <Pressable accessibilityRole="button" onPress={() => onAnalysis('ict')} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 22, borderRadius: 8, borderWidth: 1.5, borderColor: P.blue + '66', backgroundColor: s.hovered ? P.soft : 'transparent', ...hand })) as any}>
+          <Pressable accessibilityRole="button" onPress={() => onAnalysis('ict')} style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, height: 48, paddingHorizontal: 22, borderRadius: 6, borderWidth: 1.5, borderColor: P.blue + '66', backgroundColor: s.hovered ? P.soft : 'transparent', ...hand })) as any}>
             <Text style={{ color: P.blue, fontSize: 14.5, fontWeight: '700' }}>ICT Killzones</Text><Icon name="arrow-forward" size={16} color={P.blue} />
           </Pressable>
         </View>

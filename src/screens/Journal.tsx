@@ -46,12 +46,12 @@ function Pill({ label, icon, on, onPress, count, live }: { label: string; icon: 
   return (
     <Pressable onPress={onPress} accessibilityRole="tab" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flex: 1, opacity: pressed ? 0.85 : 1 })}>
       {on ? (
-        <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 54, borderRadius: 8, alignItems: 'center', justifyContent: 'center', gap: 3, shadowColor: th.accent, shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 }}>{body}</LinearGradient>
+        <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 54, borderRadius: 6, alignItems: 'center', justifyContent: 'center', gap: 3, shadowColor: th.accent, shadowOpacity: 0.35, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 }}>{body}</LinearGradient>
       ) : (
-        <View style={{ height: 54, borderRadius: 8, alignItems: 'center', justifyContent: 'center', gap: 3 }}>{body}</View>
+        <View style={{ height: 54, borderRadius: 6, alignItems: 'center', justifyContent: 'center', gap: 3 }}>{body}</View>
       )}
       {count !== undefined && count > 0 && (
-        <View style={{ position: 'absolute', top: 4, right: 6, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.onAccent + '33' : th.accent }}>
+        <View style={{ position: 'absolute', top: 4, right: 6, minWidth: 16, height: 16, borderRadius: 6, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.onAccent + '33' : th.accent }}>
           <Text style={{ color: th.onAccent, fontSize: 9.5, fontWeight: '900' }}>{count > 99 ? '99+' : count}</Text>
         </View>
       )}
@@ -62,7 +62,7 @@ function Pill({ label, icon, on, onPress, count, live }: { label: string; icon: 
 function Level({ label, value, color, sub }: { label: string; value: string; color: string; sub?: string }) {
   const { th } = useApp();
   return (
-    <View style={{ flex: 1, minWidth: 0, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, paddingVertical: 8, paddingHorizontal: 8 }}>
+    <View style={{ flex: 1, minWidth: 0, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, paddingVertical: 8, paddingHorizontal: 8 }}>
       <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.6 }}>{label}</Text>
       <Text style={{ color, fontWeight: '900', fontSize: 13, marginTop: 1 }} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
       {!!sub && <Text style={{ color: th.dim, fontSize: 9.5 }} numberOfLines={1}>{sub}</Text>}
@@ -75,7 +75,7 @@ function Head({ s, right }: { s: Signal; right?: React.ReactNode }) {
   const bc = s.side === 'buy' ? th.buy : th.sell;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: bc + '22', borderWidth: 1, borderColor: bc + '66', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: 40, height: 40, borderRadius: 6, backgroundColor: bc + '22', borderWidth: 1, borderColor: bc + '66', alignItems: 'center', justifyContent: 'center' }}>
         <Icon name={s.side === 'buy' ? 'trending-up' : 'trending-down'} size={20} color={bc} />
       </View>
       <View style={{ flex: 1 }}>
@@ -133,8 +133,8 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
     <Modal transparent animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A', direction: rtl ? 'rtl' : 'ltr' }}>
         <Pressable style={{ flex: 1 }} onPress={onClose} />
-        <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: Math.max(insets.bottom, 12) + 16, maxHeight: '92%' }}>
-          <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 2, backgroundColor: th.line, marginBottom: 14 }} />
+        <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 6, borderTopRightRadius: 6, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: Math.max(insets.bottom, 12) + 16, maxHeight: '92%' }}>
+          <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 3, backgroundColor: th.line, marginBottom: 14 }} />
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 12 }}>
             <Head s={s} />
             <Segment value={mode} onChange={(m) => setMode(m as any)} options={[{ k: 'limit', label: 'Limit at entry' }, { k: 'market', label: 'Market now' }]} />
@@ -144,10 +144,10 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
             <View style={{ gap: 8 }}>
               <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 0.8 }}>HOW MUCH DO YOU WANT TO TRADE? ({spec.label.toUpperCase()} LOTS)</Text>
               <TextInput value={lotsTxt} onChangeText={(v) => { setLotsTxt(v); }} placeholder={`Lots, e.g. ${fmtLots(spec.chips[1] ?? spec.min)}`} placeholderTextColor={th.dim} keyboardType="decimal-pad" autoFocus={!lastLots[mk]}
-                style={{ height: 54, backgroundColor: th.bg, borderColor: lotsTxt && !lotsOk ? th.sell : th.accent, borderWidth: 1.5, borderRadius: 8, color: th.text, paddingHorizontal: 14, fontSize: 22, fontWeight: '900' }} />
+                style={{ height: 54, backgroundColor: th.bg, borderColor: lotsTxt && !lotsOk ? th.sell : th.accent, borderWidth: 1.5, borderRadius: 6, color: th.text, paddingHorizontal: 14, fontSize: 22, fontWeight: '900' }} />
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                 {chips.map((v) => (
-                  <Pressable key={v} onPress={() => setLotsTxt(String(v))} style={{ paddingHorizontal: 12, height: 32, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: v === sugg ? th.buy : th.line, backgroundColor: v === sugg ? th.buy + '18' : th.bg }}>
+                  <Pressable key={v} onPress={() => setLotsTxt(String(v))} style={{ paddingHorizontal: 12, height: 32, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: v === sugg ? th.buy : th.line, backgroundColor: v === sugg ? th.buy + '18' : th.bg }}>
                     <Text style={{ color: v === sugg ? th.buy : th.dim, fontWeight: '800', fontSize: 12 }}>{fmtLots(v)}{v === sugg ? `  · ${desk.riskPct}% risk` : ''}</Text>
                   </Pressable>
                 ))}
@@ -158,14 +158,14 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
             </View>
 
             {/* ---------- take profit plan: how much to close at TP1, TP2, TP3 ---------- */}
-            <View style={{ gap: 10, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12 }}>
+            <View style={{ gap: 10, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 12 }}>
               <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 0.8 }}>{t('cpTitle').toUpperCase()}</Text>
               <Text style={{ color: th.dim, fontSize: 12, lineHeight: 17 }}>{t('cpHint')}</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {s.tps.map((p, i) => (
                   <View key={i} style={{ flex: 1, gap: 4 }}>
                     <Text style={{ color: th.buy, fontSize: 11.5, fontWeight: '900' }}>TP{i + 1}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', height: 46, borderRadius: 8, borderWidth: 1.5, borderColor: plan ? th.line : th.sell, backgroundColor: th.solid, paddingHorizontal: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', height: 46, borderRadius: 6, borderWidth: 1.5, borderColor: plan ? th.line : th.sell, backgroundColor: th.solid, paddingHorizontal: 10 }}>
                       <TextInput value={pct[i]} onChangeText={(v) => setPctAt(i, v)} keyboardType="decimal-pad" selectTextOnFocus accessibilityLabel={`TP${i + 1} %`} style={{ flex: 1, color: th.text, fontSize: 18, fontWeight: '900', paddingVertical: 0, textAlign: 'center' }} />
                       <Text style={{ color: th.dim, fontWeight: '800' }}>%</Text>
                     </View>
@@ -177,7 +177,7 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                   <Text style={{ color: th.dim, fontSize: 11.5, fontWeight: '800' }}>{t('cpPresets')}:</Text>
                   {PLAN_PRESETS.map((pr) => { const on = pr.every((v, i) => pctNum[i] === v); return (
-                    <Pressable key={pr.join('/')} onPress={() => setPct(pr.map(String))} accessibilityRole="button" style={{ paddingHorizontal: 10, height: 30, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.solid }}>
+                    <Pressable key={pr.join('/')} onPress={() => setPct(pr.map(String))} accessibilityRole="button" style={{ paddingHorizontal: 10, height: 30, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.solid }}>
                       <Text style={{ color: on ? th.onAccent : th.dim, fontSize: 12, fontWeight: '800' }}>{pr.join(' / ')}</Text>
                     </Pressable>
                   ); })}
@@ -191,14 +191,14 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
                     <Text style={{ color: th.text, fontWeight: '800', fontSize: 14 }}>{t(title)}</Text>
                     <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16, marginTop: 1 }}>{t(sub)}</Text>
                   </View>
-                  <View style={{ width: 46, height: 26, borderRadius: 8, backgroundColor: on ? th.accent : th.line, padding: 3, alignItems: on ? 'flex-end' : 'flex-start' }}>
+                  <View style={{ width: 46, height: 26, borderRadius: 6, backgroundColor: on ? th.accent : th.line, padding: 3, alignItems: on ? 'flex-end' : 'flex-start' }}>
                     <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: on ? th.onAccent : th.dim }} />
                   </View>
                 </Pressable>
               ))}
             </View>
 
-            <View style={{ backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12 }}>
+            <View style={{ backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 12 }}>
               {row(mode === 'market' ? 'Entry (live)' : 'Entry (limit)', f(fill), th.accent)}
               {row('Stop loss', f(s.sl), th.sell)}
               {row('Execution amount', lotsOk ? `${fmtLots(lots)} lots` : '-')}
@@ -207,7 +207,7 @@ export function TakeSheet({ s, price, desk, equity, running, today, journalRows,
               {s.tps.map((p, i) => row(`TP${i + 1}  (${rr[i].toFixed(1)}R)${plan ? `  ·  ${pctNum[i]}%` : ''}`, lotsOk ? `+$${(pp * Math.abs(p - fill)).toFixed(2)}   ${f(p)}` : f(p), th.buy, `tp${i}`))}
             </View>
             {warns.map((w, i) => (
-              <View key={i} style={{ flexDirection: 'row', gap: 8, backgroundColor: w.c + '16', borderColor: w.c + '55', borderWidth: 1, borderRadius: 8, padding: 10 }}>
+              <View key={i} style={{ flexDirection: 'row', gap: 8, backgroundColor: w.c + '16', borderColor: w.c + '55', borderWidth: 1, borderRadius: 6, padding: 10 }}>
                 <Icon name="warning-outline" size={16} color={w.c} />
                 <Text style={{ flex: 1, color: th.text, fontSize: 12.5, lineHeight: 18 }}>{w.t}</Text>
               </View>
@@ -233,7 +233,7 @@ function SignalCard({ s, price, onTake, onCancel, onRisk }: { s: Signal; price?:
     <Card glow={near} style={{ gap: 12 }}>
       <Head s={s} right={
         <View style={{ alignItems: 'flex-end', gap: 4 }}>
-          <View style={{ backgroundColor: gradeCol(th, s.grade) + '22', borderColor: gradeCol(th, s.grade) + '77', borderWidth: 1, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+          <View style={{ backgroundColor: gradeCol(th, s.grade) + '22', borderColor: gradeCol(th, s.grade) + '77', borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
             <Text style={{ color: gradeCol(th, s.grade), fontWeight: '900', fontSize: 12 }}>{s.grade} · {s.score}</Text>
           </View>
           {s.armed && <Badge label="WAIT" color={th.gold} />}
@@ -266,7 +266,7 @@ function Ladder({ s, price }: { s: Signal; price?: number }) {
   const mark = (v: number, c: string, key: string) => <View key={key} style={{ position: 'absolute', left: pos(v), top: 5, height: 24, width: 2, marginLeft: -1, backgroundColor: c }} />;
   return (
     <View style={{ height: 34, justifyContent: 'center', direction: 'ltr' }}>
-      <View style={{ height: 10, borderRadius: 5, backgroundColor: th.line, overflow: 'hidden' }}>
+      <View style={{ height: 10, borderRadius: 4, backgroundColor: th.line, overflow: 'hidden' }}>
         <View style={{ position: 'absolute', left: pos(Math.min(fill, s.sl)), width: `${Math.abs(fill - s.sl) / rng * 100}%` as any, top: 0, bottom: 0, backgroundColor: th.sell + '55' }} />
         <View style={{ position: 'absolute', left: pos(Math.min(fill, last)), width: `${Math.abs(last - fill) / rng * 100}%` as any, top: 0, bottom: 0, backgroundColor: th.buy + '55' }} />
         {s.status === 'open' && stopAtBE(s) && <View style={{ position: 'absolute', left: pos(s.stop), width: 3, marginLeft: -1, top: 0, bottom: 0, backgroundColor: th.gold }} />}
@@ -289,7 +289,7 @@ function OpenCard({ s, price, onManage, onClose, onBE, onCancel }: { s: Signal; 
     <Card glow={running} style={{ gap: 12 }}>
       <Head s={s} right={<Badge label={running ? (s.tpAlert ? `TP${s.tpAlert} · DECIDE` : 'RUNNING') : 'PENDING'} color={running ? (s.tpAlert ? th.gold : th.buy) : th.gold} />} />
       {running && !!s.tpAlert && (
-        <Pressable onPress={onManage} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.gold + '18', borderColor: th.gold + '88', borderWidth: 1, borderRadius: 8, padding: 10 }}>
+        <Pressable onPress={onManage} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.gold + '18', borderColor: th.gold + '88', borderWidth: 1, borderRadius: 6, padding: 10 }}>
           <Icon name="notifications" size={18} color={th.gold} />
           <Text style={{ flex: 1, color: th.text, fontSize: 12.5, lineHeight: 18, fontWeight: '700' }}>TP{s.tpAlert} was reached. The trade is still open. Tap to close all, close part, move the stop or hold.</Text>
         </Pressable>
@@ -351,7 +351,7 @@ function ClosedCard({ j, onTag, onDelete }: { j: Trade; onTag: (t: string) => vo
     <Card style={{ gap: 8, padding: 14 }}>
       <Pressable onPress={() => setOpen(!open)} style={{ gap: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: c }} />
+          <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 3, backgroundColor: c }} />
           <View style={{ flex: 1 }}>
             <Text style={{ color: th.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>{j.symbol} · <Text style={{ color: j.side === 'buy' ? th.buy : th.sell }}>{j.side.toUpperCase()}</Text></Text>
             <Text style={{ color: th.dim, fontSize: 11.5 }} numberOfLines={1}>{why}{j.source ? ` · ${j.source}` : ''} · {new Date(j.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}{dur(j.openedAt, j.date) ? ` · ${dur(j.openedAt, j.date)}` : ''}</Text>
@@ -367,13 +367,13 @@ function ClosedCard({ j, onTag, onDelete }: { j: Trade; onTag: (t: string) => vo
           <Dim>{j.lots ? `${fmtLots(j.lots)} lots · ` : ''}{j.entry.toFixed(d)} → {j.exit.toFixed(d)}{j.hits ? ` · ${j.hits} take profit${j.hits > 1 ? 's' : ''} hit` : ''}{j.mfe !== undefined ? ` · best ${fmtR(j.mfe)} / worst ${fmtR(j.mae ?? 0)}` : ''}</Dim>
           {j.r !== undefined && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {TAGS.map((tg) => { const on = j.tag === tg; return (
-              <Pressable key={tg} onPress={() => onTag(on ? '' : tg)} style={{ paddingHorizontal: 10, height: 30, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.bg }}>
+              <Pressable key={tg} onPress={() => onTag(on ? '' : tg)} style={{ paddingHorizontal: 10, height: 30, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.bg }}>
                 <Text style={{ color: on ? th.onAccent : th.dim, fontSize: 11.5, fontWeight: '800' }}>{tg}</Text>
               </Pressable>
             ); })}
           </View>}
           <TextInput value={note} onChangeText={setNote} onEndEditing={() => updateTrade(j.id, { note: note.trim() })} placeholder="Add a note: what did you learn?" placeholderTextColor={th.dim} multiline
-            style={{ minHeight: 44, backgroundColor: th.bg, borderColor: th.line, borderWidth: 1, borderRadius: 8, color: th.text, padding: 10, fontSize: 13.5 }} />
+            style={{ minHeight: 44, backgroundColor: th.bg, borderColor: th.line, borderWidth: 1, borderRadius: 6, color: th.text, padding: 10, fontSize: 13.5 }} />
           <Pressable onPress={onDelete} style={{ alignSelf: 'flex-start' }}><Text style={{ color: th.sell, fontSize: 12.5, fontWeight: '800' }}>Delete this trade</Text></Pressable>
         </View>
       )}
@@ -385,7 +385,7 @@ function Empty({ icon, title, text, children }: { icon: string; title: string; t
   const { th } = useApp();
   return (
     <Card style={{ alignItems: 'center', gap: 10, paddingVertical: 28 }}>
-      <View style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={26} color={th.accent} /></View>
+      <View style={{ width: 56, height: 56, borderRadius: 6, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={26} color={th.accent} /></View>
       <Text style={{ color: th.text, fontSize: 16, fontWeight: '900' }}>{title}</Text>
       <Text style={{ color: th.dim, fontSize: 13, lineHeight: 19, textAlign: 'center' }}>{text}</Text>
       {children}
@@ -419,7 +419,7 @@ export default function Journal() {
   const takingSig = signals.find((x) => x.id === taking);
 
   const hero = (
-    <LinearGradient colors={[th.accent + (th.dark ? '55' : '33'), th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, borderWidth: 1, borderColor: th.accent + '55', padding: 16, gap: 12 }}>
+    <LinearGradient colors={[th.accent + (th.dark ? '55' : '33'), th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 6, borderWidth: 1, borderColor: th.accent + '55', padding: 16, gap: 12 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <View>
           <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '900', letterSpacing: 1 }}>{desk.balance > 0 ? 'PAPER EQUITY' : 'CLOSED + OPEN RESULT'}</Text>
@@ -432,13 +432,13 @@ export default function Journal() {
             <Text style={{ color: closedPnl + floating >= 0 ? th.buy : th.sell, fontSize: 32, fontWeight: '900', letterSpacing: -0.8 }}>{money(closedPnl + floating)}</Text>
           )}
         </View>
-        <Pressable onPress={() => setShowSet(!showSet)} hitSlop={8} style={{ width: 40, height: 40, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable onPress={() => setShowSet(!showSet)} hitSlop={8} style={{ width: 40, height: 40, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name={showSet ? 'close' : 'options-outline'} size={19} color={th.accent} />
         </Pressable>
       </View>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {([['TODAY', money(today), today >= 0 ? th.buy : th.sell], ['WIN RATE', `${rate}%`, th.accent], ['RUNNING', desk.maxOpen > 0 ? `${running.length}/${desk.maxOpen}` : String(running.length), desk.maxOpen > 0 && running.length >= desk.maxOpen ? th.gold : th.text], ['TRADES', String(n), th.text]] as const).map(([k, v, c]) => (
-          <View key={k} style={{ flex: 1, backgroundColor: th.bg + 'CC', borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 8 }}>
+          <View key={k} style={{ flex: 1, backgroundColor: th.bg + 'CC', borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 8 }}>
             <Text style={{ color: th.dim, fontSize: 9, fontWeight: '900', letterSpacing: 0.6 }}>{k}</Text>
             <Text style={{ color: c, fontWeight: '900', fontSize: 14 }} numberOfLines={1} adjustsFontSizeToFit>{v}</Text>
           </View>
@@ -455,7 +455,7 @@ export default function Journal() {
         </View>
       </View>
       ) : (
-        <Pressable onPress={() => setShowSet(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 8, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: th.accent + '14', padding: 10 }}>
+        <Pressable onPress={() => setShowSet(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 6, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: th.accent + '14', padding: 10 }}>
           <Icon name="options-outline" size={16} color={th.accent} />
           <Text style={{ flex: 1, color: th.text, fontSize: 12.5, lineHeight: 18 }}>{ready ? 'Optional: set a daily loss limit and a trade limit.' : 'Enter your account balance and risk % to size trades and track your equity.'}</Text>
           <Icon name="chevron-forward" size={16} color={th.dim} />
@@ -515,7 +515,7 @@ export default function Journal() {
               const col = c.v === undefined ? th.line.slice(0, 7) + '66' : (c.v >= 0 ? th.buy : th.sell) + Math.round(40 + (Math.abs(c.v) / mx) * 190).toString(16).padStart(2, '0');
               return (
                 <View key={i} style={{ width: `${100 / 7}%`, padding: 2 }}>
-                  <View style={{ height: 34, borderRadius: 8, backgroundColor: col, alignItems: 'center', justifyContent: 'center', opacity: c.future ? 0.35 : 1 }}>
+                  <View style={{ height: 34, borderRadius: 6, backgroundColor: col, alignItems: 'center', justifyContent: 'center', opacity: c.future ? 0.35 : 1 }}>
                     <Text style={{ color: c.v === undefined ? th.dim : th.text, fontSize: 9.5, fontWeight: '800' }}>{c.d.getDate()}</Text>
                   </View>
                 </View>
@@ -588,7 +588,7 @@ export default function Journal() {
         <GuardBanner />
         {showSet && settings}
 
-        <View accessibilityRole="tablist" style={{ flexDirection: 'row', backgroundColor: th.panel, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 4, gap: 4 }}>
+        <View accessibilityRole="tablist" style={{ flexDirection: 'row', backgroundColor: th.panel, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 4, gap: 4 }}>
           <Pill label="Signals" icon="radio-outline" on={view === 'signals'} onPress={() => setView('signals')} count={sigs.length} />
           <Pill label="Live" icon="pulse-outline" on={view === 'open'} onPress={() => setView('open')} count={live.length} live={running.length > 0} />
           <Pill label="Closed" icon="checkmark-done-outline" on={view === 'closed'} onPress={() => setView('closed')} />
@@ -600,7 +600,7 @@ export default function Journal() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {(['all', 'buy', 'sell'] as const).map((k) => {
                 const on = filter === k, c = k === 'buy' ? th.buy : k === 'sell' ? th.sell : th.accent;
-                return <Pressable key={k} onPress={() => setFilter(k)} style={{ paddingHorizontal: 14, height: 34, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: on ? c : th.line, backgroundColor: on ? c + '22' : th.panel }}><Text style={{ color: on ? c : th.dim, fontWeight: '900', fontSize: 12 }}>{k === 'all' ? 'All' : k === 'buy' ? 'Buy' : 'Sell'}</Text></Pressable>;
+                return <Pressable key={k} onPress={() => setFilter(k)} style={{ paddingHorizontal: 14, height: 34, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: on ? c : th.line, backgroundColor: on ? c + '22' : th.panel }}><Text style={{ color: on ? c : th.dim, fontWeight: '900', fontSize: 12 }}>{k === 'all' ? 'All' : k === 'buy' ? 'Buy' : 'Sell'}</Text></Pressable>;
               })}
               <View style={{ flex: 1 }} />
               {sigs.length > 0 && <Pressable onPress={() => confirmAction('Clear all setups?', 'Setups that are still waiting will be removed. Trades you already took are not touched.', clearSignals, 'Clear')} hitSlop={8}><Text style={{ color: th.sell, fontWeight: '800', fontSize: 12.5 }}>Clear all</Text></Pressable>}
@@ -630,8 +630,8 @@ export default function Journal() {
 
         {view === 'closed' && (
           <>
-            <Pressable onPress={() => setHistOpen(true)} accessibilityRole="button" accessibilityLabel={t('tabTradeHistory')} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: pressed ? th.accent + '26' : th.accent + '14' })}>
-              <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt" size={19} color={th.onAccent} /></View>
+            <Pressable onPress={() => setHistOpen(true)} accessibilityRole="button" accessibilityLabel={t('tabTradeHistory')} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: pressed ? th.accent + '26' : th.accent + '14' })}>
+              <View style={{ width: 36, height: 36, borderRadius: 6, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt" size={19} color={th.onAccent} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: th.text, fontWeight: '900', fontSize: 14.5 }}>{t('tabTradeHistory')}</Text>
                 <Text style={{ color: th.dim, fontSize: 11.5, marginTop: 1 }} numberOfLines={1}>{n} {t('closedTradesWord')} · {t('navDescTradeHistory')}</Text>

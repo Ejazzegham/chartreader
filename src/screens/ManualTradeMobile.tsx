@@ -122,7 +122,7 @@ export default function ManualTrade() {
         <Pressable onPress={() => toggleFav(symId)} hitSlop={6} accessibilityRole="button" accessibilityLabel="Watchlist" style={{ width: 38, height: 40, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name={db.favs.includes(symId) ? 'star' : 'star-outline'} size={20} color={db.favs.includes(symId) ? th.gold : th.dim} />
         </Pressable>
-        <Pressable onPress={() => setWheelKey((k) => k + 1)} hitSlop={6} accessibilityRole="button" accessibilityLabel="Timeframe" style={{ height: 34, minWidth: 48, paddingHorizontal: 8, marginRight: 4, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4 }}>
+        <Pressable onPress={() => setWheelKey((k) => k + 1)} hitSlop={6} accessibilityRole="button" accessibilityLabel="Timeframe" style={{ height: 34, minWidth: 48, paddingHorizontal: 8, marginRight: 4, borderRadius: 6, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4 }}>
           <Icon name="radio-button-on-outline" size={14} color={th.accent} />
           <Text style={{ color: th.text, fontWeight: '900', fontSize: 13 }}>{TFS.find((t) => t.k === String(gran))?.label ?? `${gran}s`}</Text>
         </Pressable>
@@ -152,7 +152,7 @@ export default function ManualTrade() {
         <Pressable onPress={() => setListOpen((v) => !v)} accessibilityRole="button" accessibilityState={{ expanded: listOpen }} style={{ height: 42, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12 }}>
           <Icon name="swap-vertical" size={17} color={th.accent} />
           <Text style={{ color: th.text, fontWeight: '900', fontSize: 13.5 }}>Trade</Text>
-          {positions.length > 0 && <View style={{ minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 5, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 11, fontWeight: '900' }}>{positions.length}</Text></View>}
+          {positions.length > 0 && <View style={{ minWidth: 20, height: 20, borderRadius: 6, paddingHorizontal: 5, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 11, fontWeight: '900' }}>{positions.length}</Text></View>}
           <View style={{ flex: 1 }} />
           <Text style={{ color: th.dim, fontSize: 11, fontWeight: '700' }}>{positions.length ? 'Floating' : `Today ${usd(todayPnl(journal))}`}</Text>
           {positions.length > 0 && <Text style={{ color: floatTotal >= 0 ? th.buy : th.sell, fontSize: 15, fontWeight: '900' }}>{usd(floatTotal)}</Text>}
@@ -175,7 +175,7 @@ export default function ManualTrade() {
                         </View>
                         <Text style={{ color: th.dim, fontSize: 11 }} numberOfLines={1}>{p.open.toFixed(d)} → {m !== undefined ? m.toFixed(d) : '…'}{p.sl !== undefined ? `  SL ${p.sl.toFixed(d)}` : ''}{p.tp !== undefined ? `  TP ${p.tp.toFixed(d)}` : ''}</Text>
                       </Pressable>
-                      <Pressable onPress={() => setSheet({ id: p.id })} hitSlop={6} accessibilityRole="button" accessibilityLabel={`Manage ${p.name}`} style={{ minWidth: 92, height: 36, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: c, backgroundColor: c + '1A', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4 }}>
+                      <Pressable onPress={() => setSheet({ id: p.id })} hitSlop={6} accessibilityRole="button" accessibilityLabel={`Manage ${p.name}`} style={{ minWidth: 92, height: 36, paddingHorizontal: 10, borderRadius: 6, borderWidth: 1, borderColor: c, backgroundColor: c + '1A', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 4 }}>
                         <Text style={{ color: c, fontWeight: '900', fontSize: 13.5 }}>{usd(pnl)}</Text>
                         <Icon name="options-outline" size={13} color={c} />
                       </Pressable>
@@ -210,23 +210,23 @@ function PairPicker({ onClose, onPick }: { onClose: () => void; onPick: (id: str
     <Modal transparent animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A', direction: rtl ? 'rtl' : 'ltr' }}>
         <Pressable style={{ flex: 0.08 }} onPress={onClose} />
-        <View style={{ flex: 0.92, backgroundColor: th.solid, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: th.line, padding: 14, paddingBottom: Math.max(insets.bottom, 12) + 8, gap: 10 }}>
+        <View style={{ flex: 0.92, backgroundColor: th.solid, borderTopLeftRadius: 6, borderTopRightRadius: 6, borderWidth: 1, borderColor: th.line, padding: 14, paddingBottom: Math.max(insets.bottom, 12) + 8, gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ flex: 1, color: th.text, fontSize: 18, fontWeight: '900' }}>Choose a pair</Text>
             <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close"><Icon name="close" size={24} color={th.dim} /></Pressable>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg, paddingHorizontal: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.bg, paddingHorizontal: 12 }}>
             <Icon name="search" size={18} color={th.dim} />
             <TextInput value={q} onChangeText={setQ} placeholder="Search any pair, e.g. EURUSD, gold, BTC, Step Index" placeholderTextColor={th.dim} autoCapitalize="none" autoCorrect={false} style={{ flex: 1, color: th.text, fontSize: 15, paddingVertical: 0 }} />
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }} style={{ flexGrow: 0 }}>
-            {CATS.map((c) => { const on = cat === c.k; return <Pressable key={c.k} onPress={() => setCat(c.k)} style={{ paddingHorizontal: 12, height: 34, borderRadius: 8, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '26' : th.panel }}><Text style={{ color: on ? th.accent : th.dim, fontWeight: '800', fontSize: 12.5 }}>{c.label}</Text></Pressable>; })}
+            {CATS.map((c) => { const on = cat === c.k; return <Pressable key={c.k} onPress={() => setCat(c.k)} style={{ paddingHorizontal: 12, height: 34, borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '26' : th.panel }}><Text style={{ color: on ? th.accent : th.dim, fontWeight: '800', fontSize: 12.5 }}>{c.label}</Text></Pressable>; })}
           </ScrollView>
           <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 12 }}>
             {list.map((s) => {
               const lq = quotes[s.id], star = db.favs.includes(s.id);
               return (
-                <Pressable key={s.id} onPress={() => onPick(s.id)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: pressed ? th.accent + '18' : th.panel })}>
+                <Pressable key={s.id} onPress={() => onPick(s.id)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: pressed ? th.accent + '18' : th.panel })}>
                   {star ? <Icon name="star" size={15} color={th.gold} /> : <View style={{ width: 15 }} />}
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: th.text, fontWeight: '800', fontSize: 14.5 }} numberOfLines={1}>{s.name}</Text>

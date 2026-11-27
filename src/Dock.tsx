@@ -67,7 +67,7 @@ export default function Dock() {
                   <View style={{ width: 46, height: 28, alignItems: 'center', justifyContent: 'center' }}>
                     <Icon name={on ? icon : icon + '-outline'} size={23} color={on ? onIcon : off} />
                     {nBadge > 0 && (
-                      <View style={{ position: 'absolute', top: -3, right: 2, minWidth: 16, height: 16, borderRadius: 8, paddingHorizontal: 4, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: bar }}>
+                      <View style={{ position: 'absolute', top: -3, right: 2, minWidth: 16, height: 16, borderRadius: 6, paddingHorizontal: 4, backgroundColor: th.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: bar }}>
                         <Text style={{ color: th.onAccent, fontSize: 9.5, fontWeight: '900' }}>{nBadge > 9 ? '9+' : nBadge}</Text>
                       </View>
                     )}

@@ -142,7 +142,7 @@ function Art({ kind }: { kind: Kind }) {
       </G>; break;
   }
   return (
-    <View style={{ height: 118, overflow: 'hidden', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+    <View style={{ height: 118, overflow: 'hidden', borderTopLeftRadius: 6, borderTopRightRadius: 6 }}>
       <LinearGradient colors={[d ? th.accent + '1F' : '#EAF1FF', d ? th.accent2 + '14' : '#F3F0FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Svg width="100%" height="118" viewBox="0 0 290 112" preserveAspectRatio="xMidYMid meet" style={{ direction: 'ltr' } as any}>{art}</Svg>
       </LinearGradient>
@@ -155,7 +155,7 @@ function StepCard({ s, i, width, onOpen }: { s: Step; i: number; width: number |
   const P = usePal(), th = P.th;
   return (
     <Pressable accessibilityRole="link" accessibilityLabel={`${i + 1}. ${s.title}`} onPress={onOpen}
-      style={((st: any) => ({ width, flexGrow: 1, minWidth: 0, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? P.blue + '88' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : st.hovered ? 0.14 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } })) as any}>
+      style={((st: any) => ({ width, flexGrow: 1, minWidth: 0, borderRadius: 6, borderWidth: 1, borderColor: st.hovered ? P.blue + '88' : P.border, backgroundColor: P.card, cursor: 'pointer', shadowColor: P.shadow, shadowOpacity: P.dark ? 0.3 : st.hovered ? 0.14 : 0.07, shadowRadius: 22, shadowOffset: { width: 0, height: 8 } })) as any}>
       <Art kind={s.kind} />
       <View style={{ padding: 16, paddingTop: 14, gap: 8, flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -174,18 +174,18 @@ function StepCard({ s, i, width, onOpen }: { s: Step; i: number; width: number |
 function GroupHead({ g, count, unit }: { g: { n: number; title: string; sub: string }; count: number; unit: string }) {
   const P = usePal(), th = P.th;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, ...glassWeb }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: 14, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, ...glassWeb }}>
       <View style={{ flexDirection: 'row', gap: 14, flexShrink: 1 }}>
         <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: P.blue, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.onAccent, fontSize: 17, fontWeight: '800' }}>{g.n}</Text></View>
         <View style={{ flexShrink: 1, gap: 2 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <Text accessibilityRole="header" style={{ color: P.head, fontSize: 21, fontWeight: '800', letterSpacing: -0.3 }}>{g.title}</Text>
-            <View style={{ width: 28, height: 2, borderRadius: 1, backgroundColor: P.blue + '66' }} />
+            <View style={{ width: 28, height: 2, borderRadius: 3, backgroundColor: P.blue + '66' }} />
           </View>
           <Text style={{ color: P.body, fontSize: 13.5, lineHeight: 20 }}>{g.sub}</Text>
         </View>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, paddingHorizontal: 14, borderRadius: 8, backgroundColor: P.soft }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, paddingHorizontal: 14, borderRadius: 6, backgroundColor: P.soft }}>
         <Icon name="grid" size={13} color={P.blue} /><Text style={{ color: P.blue, fontSize: 12.5, fontWeight: '700' }}>{count} {unit}</Text>
       </View>
     </View>
@@ -248,12 +248,12 @@ export default function GuideHome({ active }: Props) {
         })}
 
         {/* support & help */}
-        <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.blue + '22', backgroundColor: P.dark ? th.panel : th.accent2 + '0D', padding: 20, gap: 16 }}>
+        <View style={{ borderRadius: 6, borderWidth: 1, borderColor: P.blue + '22', backgroundColor: P.dark ? th.panel : th.accent2 + '0D', padding: 20, gap: 16 }}>
           <GroupHead g={{ n: 4, title: 'Support & Help', sub: "Need assistance? We're here to help you 24/7." }} count={help.length} unit="Options" />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
             {help.map((h) => (
               <Pressable key={h.title} accessibilityRole="button" onPress={h.onPress}
-                style={((st: any) => ({ flexBasis: basis(cols3), flexGrow: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 16, padding: 18, borderRadius: 8, borderWidth: 1, borderColor: st.hovered ? P.blue + '88' : P.border, backgroundColor: P.card, cursor: 'pointer' })) as any}>
+                style={((st: any) => ({ flexBasis: basis(cols3), flexGrow: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 16, padding: 18, borderRadius: 6, borderWidth: 1, borderColor: st.hovered ? P.blue + '88' : P.border, backgroundColor: P.card, cursor: 'pointer' })) as any}>
                 <View style={{ width: 54, height: 54, borderRadius: 27, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={h.icon} size={26} color={P.blue} /></View>
                 <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
                   <Text style={{ color: P.head, fontSize: 15, fontWeight: '800' }}>{h.title}</Text>

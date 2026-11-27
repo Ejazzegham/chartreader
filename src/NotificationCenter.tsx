@@ -32,7 +32,7 @@ export default function NotificationCenter() {
     <Modal animationType="slide" onRequestClose={close} statusBarTranslucent>
       <View style={{ flex: 1, backgroundColor: th.bg, direction: rtl ? 'rtl' : 'ltr' }}>
         <View style={{ paddingTop: Math.max(insets.top, StatusBar.currentHeight ?? 0, 24) + 14, paddingBottom: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: th.line, backgroundColor: th.panel, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
+          <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('thClose')} style={{ width: 38, height: 38, borderRadius: 6, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name={rtl ? 'arrow-forward' : 'arrow-back'} size={20} color={th.text} />
           </Pressable>
           <View style={{ flex: 1 }}>
@@ -41,7 +41,7 @@ export default function NotificationCenter() {
           </View>
           {notes.length > 0 && (
             <Pressable onPress={() => confirmAction(t('notifClearQ'), t('notifClearText'), clearNotes, t('notifClear'), t('cancel'))} hitSlop={6} accessibilityRole="button" accessibilityLabel={t('notifClear')}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: th.sell + '88', backgroundColor: th.sell + '14' }}>
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: th.sell + '88', backgroundColor: th.sell + '14' }}>
               <Icon name="trash-outline" size={16} color={th.sell} />
               <Text style={{ color: th.sell, fontWeight: '800', fontSize: 12.5 }}>{t('notifClear')}</Text>
             </Pressable>
@@ -51,7 +51,7 @@ export default function NotificationCenter() {
         <ScrollView contentContainerStyle={{ padding: 14, gap: 8, paddingBottom: insets.bottom + 28 }}>
           {notes.length === 0 ? (
             <View style={{ alignItems: 'center', gap: 10, paddingVertical: 56, paddingHorizontal: 24 }}>
-              <View style={{ width: 60, height: 60, borderRadius: 8, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name="notifications-off-outline" size={28} color={th.accent} /></View>
+              <View style={{ width: 60, height: 60, borderRadius: 6, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}><Icon name="notifications-off-outline" size={28} color={th.accent} /></View>
               <Text style={{ color: th.text, fontSize: 17, fontWeight: '900', textAlign: 'center' }}>{t('notifEmpty')}</Text>
               <Text style={{ color: th.dim, fontSize: 13.5, lineHeight: 20, textAlign: 'center' }}>{t('notifEmptyText')}</Text>
             </View>
@@ -59,8 +59,8 @@ export default function NotificationCenter() {
             const c = colOf(n.kind), isNew = fresh.has(n.id), guess = hasTarget(n) ? '' : guessSym(n.text, SYMBOLS), go = hasTarget(n) || !!guess, target = guess ? { type: 'trade', sym: guess } : n;
             return (
               <Pressable key={n.id} disabled={!go} onPress={() => openNote(target)} accessibilityRole={go ? 'button' : undefined}
-                style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: isNew ? c + '12' : th.panel, borderWidth: 1, borderColor: isNew ? c + '66' : th.line, borderRadius: 8, padding: 12, opacity: go && pressed ? 0.7 : 1 })}>
-                <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: c }} />
+                style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: isNew ? c + '12' : th.panel, borderWidth: 1, borderColor: isNew ? c + '66' : th.line, borderRadius: 6, padding: 12, opacity: go && pressed ? 0.7 : 1 })}>
+                <View style={{ width: 4, alignSelf: 'stretch', borderRadius: 3, backgroundColor: c }} />
                 <Icon name={iconOf(n.kind)} size={22} color={c} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: th.text, fontSize: 13.5, lineHeight: 19, fontWeight: isNew ? '800' : '600' }}>{n.text}</Text>

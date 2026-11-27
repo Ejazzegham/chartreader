@@ -185,7 +185,7 @@ export function IctSettings({ params, set, reset, custom }: ReturnType<typeof us
           {FIELDS.map((x) => {
             const v = params[x.k];
             const btn = (sign: 1 | -1) => (
-              <Pressable onPress={() => set({ [x.k]: Math.round((v + sign * x.step) * 100) / 100 } as Partial<IctParams>)} hitSlop={8} style={{ width: 38, height: 38, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel2, alignItems: 'center', justifyContent: 'center' }}>
+              <Pressable onPress={() => set({ [x.k]: Math.round((v + sign * x.step) * 100) / 100 } as Partial<IctParams>)} hitSlop={8} style={{ width: 38, height: 38, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel2, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={{ color: th.text, fontSize: 20, fontWeight: '800', marginTop: -2 }}>{sign > 0 ? '+' : '−'}</Text>
               </Pressable>
             );
@@ -232,7 +232,7 @@ export function IctGuide() {
             return (
               <Card key={l.id} style={{ padding: 0 }}>
                 <Pressable onPress={() => setLesson(on ? '' : l.id)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 }}>
-                  <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={l.icon} size={16} color={th.accent} /></View>
+                  <View style={{ width: 30, height: 30, borderRadius: 6, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={l.icon} size={16} color={th.accent} /></View>
                   <Text style={{ flex: 1, color: th.text, fontWeight: '800', fontSize: 14 }}>{l.title}</Text>
                   <Icon name={on ? 'chevron-up' : 'chevron-down'} size={18} color={th.dim} />
                 </Pressable>
@@ -257,7 +257,7 @@ export function IctGuide() {
           })}
           <Card style={{ padding: 0 }}>
             <Pressable onPress={() => setGloss(!gloss)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 }}>
-              <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="book-outline" size={16} color={th.accent} /></View>
+              <View style={{ width: 30, height: 30, borderRadius: 6, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="book-outline" size={16} color={th.accent} /></View>
               <Text style={{ flex: 1, color: th.text, fontWeight: '800', fontSize: 14 }}>13. A to Z glossary</Text>
               <Icon name={gloss ? 'chevron-up' : 'chevron-down'} size={18} color={th.dim} />
             </Pressable>

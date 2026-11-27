@@ -263,7 +263,7 @@ export function ChartHud({ z, top, right = 8, vol }: { z: Zoom; top: number; rig
   return (
     <View onTouchStart={stop} onTouchEnd={stop} style={{ position: 'absolute', top, right, flexDirection: 'row', alignItems: 'center', gap: 6, direction: 'ltr' }}>
       {!!vol && (
-        <Pressable onPress={vol.toggle} hitSlop={6} accessibilityRole="button" accessibilityLabel="Volume" style={{ height: 28, paddingHorizontal: 9, borderRadius: 8, borderWidth: 1, borderColor: vol.on ? th.accent : th.line, backgroundColor: vol.on ? th.accent : th.solid + 'E6', alignItems: 'center', justifyContent: 'center' }}>
+        <Pressable onPress={vol.toggle} hitSlop={6} accessibilityRole="button" accessibilityLabel="Volume" style={{ height: 28, paddingHorizontal: 9, borderRadius: 6, borderWidth: 1, borderColor: vol.on ? th.accent : th.line, backgroundColor: vol.on ? th.accent : th.solid + 'E6', alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: vol.on ? th.onAccent : th.dim, fontSize: 11, fontWeight: '900' }}>Vol</Text>
         </Pressable>
       )}
@@ -310,14 +310,14 @@ export function Readout({ c, prev, dec, vol, onAlert, onClose }: { c: { o: numbe
   const up = c.c >= c.o, col = up ? th.buy : th.sell, base = prev ?? c.o, pct = base ? ((c.c - base) / base) * 100 : 0;
   const cell = (k: string, v: number) => <Text key={k} style={{ color: th.dim, fontSize: 10.5, fontWeight: '700' }}>{k} <Text style={{ color: col, fontWeight: '900' }}>{v.toFixed(dec)}</Text></Text>;
   return (
-    <View onTouchStart={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 4, left: 4, right: 4, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: th.solid + 'F2', borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 8 }}>
+    <View onTouchStart={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 4, left: 4, right: 4, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: th.solid + 'F2', borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingVertical: 6, paddingHorizontal: 8 }}>
       <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 1 }}>
         {cell('O', c.o)}{cell('H', c.h)}{cell('L', c.l)}{cell('C', c.c)}
         {vol !== undefined && vol > 0 && <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '700' }}>V <Text style={{ color: col, fontWeight: '900' }}>{fmtVol(vol)}</Text></Text>}
         <Text style={{ color: col, fontSize: 10.5, fontWeight: '900' }}>{pct >= 0 ? '+' : ''}{pct.toFixed(2)}%</Text>
       </View>
       {!!onAlert && (
-        <Pressable onPress={onAlert} hitSlop={6} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 26, paddingHorizontal: 8, borderRadius: 8, backgroundColor: th.gold + '26', borderWidth: 1, borderColor: th.gold + '88' }}>
+        <Pressable onPress={onAlert} hitSlop={6} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 26, paddingHorizontal: 8, borderRadius: 6, backgroundColor: th.gold + '26', borderWidth: 1, borderColor: th.gold + '88' }}>
           <Icon name="notifications-outline" size={13} color={th.gold} /><Text style={{ color: th.gold, fontSize: 10.5, fontWeight: '900' }}>Alert</Text>
         </Pressable>
       )}

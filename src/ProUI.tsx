@@ -11,7 +11,7 @@ export function TpLadder({ rows }: { rows: { label: string; price: string; split
   return (
     <View style={{ gap: 8 }}>
       {rows.map((x, i) => (
-        <View key={x.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.buy + '12', borderColor: th.buy + '44', borderWidth: 1, borderRadius: 8, padding: 10 }}>
+        <View key={x.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: th.buy + '12', borderColor: th.buy + '44', borderWidth: 1, borderRadius: 6, padding: 10 }}>
           <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: th.buy, alignItems: 'center', justifyContent: 'center' }}>
             <Text style={{ color: th.dark ? '#08110E' : '#FFFFFF', fontWeight: '900', fontSize: 12 }}>{x.label}</Text>
           </View>

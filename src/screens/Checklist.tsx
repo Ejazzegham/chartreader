@@ -182,11 +182,11 @@ export default function Checklist() {
 
   const h2 = { color: th.text, fontWeight: '800' as const, fontSize: 17 };
   const soft = th.accent + (th.dark ? '1F' : '0F');   // pale tint used by the inner tiles
-  const tile = { backgroundColor: soft, borderColor: th.accent + (th.dark ? '33' : '1F'), borderWidth: 1, borderRadius: 8 };
+  const tile = { backgroundColor: soft, borderColor: th.accent + (th.dark ? '33' : '1F'), borderWidth: 1, borderRadius: 6 };
 
   // ---------- pieces ----------
   const hero = (
-    <LinearGradient colors={['#0F1E3D', '#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 18, overflow: 'hidden', padding: mid ? 28 : 20, minHeight: mid ? 200 : undefined, justifyContent: 'center', direction: 'ltr' }}>
+    <LinearGradient colors={['#0F1E3D', '#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 6, overflow: 'hidden', padding: mid ? 28 : 20, minHeight: mid ? 200 : undefined, justifyContent: 'center', direction: 'ltr' }}>
       <View pointerEvents="none" style={{ position: 'absolute', right: -40, top: -50, width: 280, height: 280, borderRadius: 140, backgroundColor: '#FFFFFF12' }} />
       {mid && <View pointerEvents="none" style={{ position: 'absolute', right: 28, top: 0, bottom: 0, justifyContent: 'center' }}><HeroArt /></View>}
       <View style={{ gap: 8, maxWidth: mid ? 520 : undefined }}>
@@ -194,9 +194,9 @@ export default function Checklist() {
         <Text accessibilityRole="header" style={{ color: '#FFFFFF', fontSize: mid ? 38 : 28, fontWeight: '900', letterSpacing: -1 }}>Trade Checklist</Text>
         <Text style={{ color: '#E5EAFF', fontSize: 15, lineHeight: 22 }}>Follow a step-by-step trading checklist to stay disciplined, reduce emotional trades, and increase your chances of success.</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
-          <View style={{ backgroundColor: '#FBBF24', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 }}><Text style={{ color: '#3B2A00', fontWeight: '900', fontSize: 12 }}>PRO</Text></View>
+          <View style={{ backgroundColor: '#FBBF24', borderRadius: 6, paddingHorizontal: 14, paddingVertical: 6 }}><Text style={{ color: '#3B2A00', fontWeight: '900', fontSize: 12 }}>PRO</Text></View>
           <View style={{ width: 1, height: 22, backgroundColor: '#FFFFFF55' }} />
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFFFFF1F', borderColor: '#FFFFFF4D', borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFFFFF1F', borderColor: '#FFFFFF4D', borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6 }}>
             <Icon name="shield-checkmark" size={14} color="#FFFFFF" />
             <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12 }}>Build Better Trading Habits</Text>
           </View>
@@ -206,7 +206,7 @@ export default function Checklist() {
   );
 
   const stat = (icon: string, c: string, label: string, value: string, sub: string) => (
-    <View key={label} style={{ flexBasis: mid ? '22%' : '46%', flexGrow: 1, minWidth: 140, flexDirection: 'row', gap: 10, padding: 12, backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 8 }}>
+    <View key={label} style={{ flexBasis: mid ? '22%' : '46%', flexGrow: 1, minWidth: 140, flexDirection: 'row', gap: 10, padding: 12, backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 6 }}>
       <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: c + '26', alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={c} /></View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={{ color: th.dim, fontSize: 12, fontWeight: '600' }} numberOfLines={1}>{label}</Text>
@@ -257,14 +257,14 @@ export default function Checklist() {
         const tl = TILES[i % TILES.length], on = checked[i];
         return (
           <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} onPress={() => toggle(i)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: mid ? 14 : 10, padding: mid ? 14 : 10, backgroundColor: on ? th.buy + '14' : th.panel2, borderColor: on ? th.buy + '66' : th.line, borderWidth: 1, borderRadius: 8, cursor: 'pointer' } as any}>
+            <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} onPress={() => toggle(i)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: mid ? 14 : 10, padding: mid ? 14 : 10, backgroundColor: on ? th.buy + '14' : th.panel2, borderColor: on ? th.buy + '66' : th.line, borderWidth: 1, borderRadius: 6, cursor: 'pointer' } as any}>
               <IconTile icon={tl.icon} size={mid ? 48 : 40} colors={tl.c} />
               <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: th.accent + '1A', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.accent, fontWeight: '800', fontSize: 11.5 }}>{i + 1}</Text></View>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ color: th.text, fontWeight: '800', fontSize: 14.5 }}>{it.t}</Text>
                 {!!it.d && <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18, marginTop: 2 }}>{it.d}</Text>}
               </View>
-              <View style={{ width: 24, height: 24, borderRadius: 7, borderWidth: 1.5, borderColor: on ? th.buy : th.dim + '88', backgroundColor: on ? th.buy : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ width: 24, height: 24, borderRadius: 6, borderWidth: 1.5, borderColor: on ? th.buy : th.dim + '88', backgroundColor: on ? th.buy : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
                 {on && <Icon name="checkmark" size={16} color={th.dark ? '#08110E' : '#FFFFFF'} />}
               </View>
             </Pressable>
@@ -278,15 +278,15 @@ export default function Checklist() {
         <View style={[tile, { padding: 14, gap: 10 }]}>
           <Text style={{ color: th.text, fontWeight: '800', fontSize: 14 }}>Add your own rule</Text>
           <TextInput value={text} onChangeText={setText} placeholder="e.g. Wait for the 15m candle close" placeholderTextColor={th.dim} onSubmitEditing={add}
-            style={{ backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 8, color: th.text, padding: 12 }} />
+            style={{ backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 6, color: th.text, padding: 12 }} />
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            <Pressable onPress={add} disabled={!text.trim()} style={{ backgroundColor: th.accent, opacity: text.trim() ? 1 : 0.45, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10, cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontWeight: '800' }}>Add rule</Text></Pressable>
+            <Pressable onPress={add} disabled={!text.trim()} style={{ backgroundColor: th.accent, opacity: text.trim() ? 1 : 0.45, borderRadius: 6, paddingHorizontal: 18, paddingVertical: 10, cursor: 'pointer' } as any}><Text style={{ color: th.onAccent, fontWeight: '800' }}>Add rule</Text></Pressable>
             <Pressable onPress={restore}><Text style={{ color: th.accent, fontWeight: '700' }}>Restore default rules</Text></Pressable>
           </View>
         </View>
       )}
 
-      <Pressable accessibilityRole="button" disabled={confirmed} onPress={go ? confirm : markAll} style={{ borderRadius: 8, overflow: 'hidden', opacity: confirmed ? 0.7 : 1, cursor: confirmed ? 'default' : 'pointer' } as any}>
+      <Pressable accessibilityRole="button" disabled={confirmed} onPress={go ? confirm : markAll} style={{ borderRadius: 6, overflow: 'hidden', opacity: confirmed ? 0.7 : 1, cursor: confirmed ? 'default' : 'pointer' } as any}>
         <LinearGradient colors={confirmed ? [th.buy, th.buy] : ['#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <Icon name={confirmed ? 'checkmark-done' : 'checkmark'} size={16} color="#FFFFFF" />
           <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>{confirmed ? 'Done today' : go ? 'Confirm day' : 'Mark All as Complete'}</Text>
@@ -305,7 +305,7 @@ export default function Checklist() {
     <Card style={{ padding: 18, gap: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}><Icon name="flash" size={20} color={th.accent} /><Text style={h2}>Quick Actions</Text></View>
       {quick.map((q) => (
-        <Pressable key={q.t} accessibilityRole="button" onPress={() => setTab(q.tab)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 8, cursor: 'pointer' } as any}>
+        <Pressable key={q.t} accessibilityRole="button" onPress={() => setTab(q.tab)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 6, cursor: 'pointer' } as any}>
           <IconTile icon={q.icon} size={44} colors={q.c} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={{ color: th.text, fontWeight: '800', fontSize: 13.5 }} numberOfLines={1}>{q.t}</Text>
@@ -330,12 +330,12 @@ export default function Checklist() {
   );
 
   const cta = (
-    <LinearGradient colors={['#3B5B93', '#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, padding: 20, gap: 10, overflow: 'hidden', direction: 'ltr' }}>
+    <LinearGradient colors={['#3B5B93', '#3B5B93', '#3B5B93']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 6, padding: 20, gap: 10, overflow: 'hidden', direction: 'ltr' }}>
       <View pointerEvents="none" style={{ position: 'absolute', right: -50, bottom: -60, width: 200, height: 200, borderRadius: 100, backgroundColor: '#FFFFFF14' }} />
-      <View style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: '#FFFFFF26', alignItems: 'center', justifyContent: 'center' }}><Icon name="trophy" size={22} color="#FFFFFF" /></View>
+      <View style={{ width: 44, height: 44, borderRadius: 6, backgroundColor: '#FFFFFF26', alignItems: 'center', justifyContent: 'center' }}><Icon name="trophy" size={22} color="#FFFFFF" /></View>
       <Text style={{ color: '#FFFFFF', fontSize: 19, fontWeight: '900' }}>Trade with Confidence</Text>
       <Text style={{ color: '#EDE9FE', fontSize: 13, lineHeight: 19 }}>The checklist helps you stay focused, reduce mistakes, and build consistent trading habits.</Text>
-      <Pressable accessibilityRole="button" onPress={() => setTab(1)} style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 8, paddingHorizontal: 18, paddingVertical: 11, marginTop: 6, cursor: 'pointer' } as any}>
+      <Pressable accessibilityRole="button" onPress={() => setTab(1)} style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FFFFFF', borderRadius: 6, paddingHorizontal: 18, paddingVertical: 11, marginTop: 6, cursor: 'pointer' } as any}>
         <Text style={{ color: '#4338CA', fontWeight: '800', fontSize: 13.5 }}>Start Trading</Text>
         <Icon name="arrow-forward" size={15} color="#4338CA" />
       </Pressable>

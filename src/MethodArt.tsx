@@ -72,7 +72,7 @@ function Art({ g, size }: { g: Glyph; size: number }) {
 export function MethodIcon({ def, size = 52 }: { def: MDef; size?: number }) {
   const { th } = useApp();
   return (
-    <View style={{ width: size, height: size, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.dark ? th.accent : '#1F3A68', direction: 'ltr' }}>
+    <View style={{ width: size, height: size, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.dark ? th.accent : '#1F3A68', direction: 'ltr' }}>
       <Art g={def.glyph} size={size * 0.52} />
     </View>
   );

@@ -16,7 +16,7 @@ export default function VsaCard({ vsa, f }: { vsa: VSA; f: (n: number) => string
   return (
     <Card style={{ gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <View style={{ width: 36, height: 36, borderRadius: 8, backgroundColor: col + '22', borderWidth: 1, borderColor: col + '66', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: 36, height: 36, borderRadius: 6, backgroundColor: col + '22', borderWidth: 1, borderColor: col + '66', alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="git-compare-outline" size={19} color={col} />
         </View>
         <View style={{ flex: 1 }}>
@@ -26,7 +26,7 @@ export default function VsaCard({ vsa, f }: { vsa: VSA; f: (n: number) => string
         {r && <Badge label={r.stage === 'confirmed' ? 'EXECUTE' : 'WAIT'} color={r.stage === 'confirmed' ? th.buy : th.gold} />}
       </View>
 
-      <View style={{ backgroundColor: th.accent + '12', borderColor: th.accent + '44', borderWidth: 1, borderRadius: 8, padding: 10 }}>
+      <View style={{ backgroundColor: th.accent + '12', borderColor: th.accent + '44', borderWidth: 1, borderRadius: 6, padding: 10 }}>
         <Text style={{ color: th.text, fontSize: 12.5, lineHeight: 18, fontWeight: '700' }}>{VSA_RULE}</Text>
       </View>
 
@@ -52,11 +52,11 @@ export default function VsaCard({ vsa, f }: { vsa: VSA; f: (n: number) => string
             ))}
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 8 }}>
+            <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 8 }}>
               <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.6 }}>KEY LEVEL</Text>
               <Text style={{ color: th.gold, fontWeight: '900', fontSize: 14 }}>{f(r.level)}</Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 8 }}>
+            <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 8 }}>
               <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.6 }}>SETUP FAILS AT</Text>
               <Text style={{ color: th.sell, fontWeight: '900', fontSize: 14 }}>{f(r.invalidAt)}</Text>
             </View>

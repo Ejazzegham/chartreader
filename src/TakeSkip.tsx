@@ -28,7 +28,7 @@ export default function TakeSkip({ symId, name, tf, dec, setup }: { symId: strin
   const live = signals.filter((x) => x.status !== 'signal').length;
 
   const box = (c: string, icon: string, text: string, action?: { label: string; onPress: () => void }) => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: c + '14', borderColor: c + '66', borderWidth: 1, borderRadius: 8, padding: 12 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: c + '14', borderColor: c + '66', borderWidth: 1, borderRadius: 6, padding: 12 }}>
       <Icon name={icon} size={20} color={c} />
       <Text style={{ flex: 1, color: th.text, fontSize: 13, lineHeight: 18, fontWeight: '600' }}>{text}</Text>
       {action && <Pressable onPress={action.onPress} hitSlop={8}><Text style={{ color: c, fontWeight: '900', fontSize: 12.5 }}>{action.label}</Text></Pressable>}

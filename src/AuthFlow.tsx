@@ -190,7 +190,7 @@ export default function AuthFlow() {
       <Field label={t('password')} value={pw} onChangeText={setPw} secureTextEntry={!show} autoCapitalize="none" right={eye} />
       <Text style={{ color: th.dim, fontSize: 12, marginTop: -4, marginBottom: 12 }}>Use at least 6 characters.</Text>
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agree }} onPress={() => { setAgree(!agree); if (!agree) setErr(''); }} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14, cursor: 'pointer' } as any}>
-        <View style={{ width: 20, height: 20, marginTop: 1, borderRadius: 5, borderWidth: 1.5, borderColor: agree ? th.accent : th.dim, backgroundColor: agree ? th.accent : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: 20, height: 20, marginTop: 1, borderRadius: 4, borderWidth: 1.5, borderColor: agree ? th.accent : th.dim, backgroundColor: agree ? th.accent : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
           {agree && <Icon name="checkmark" size={14} color={th.onAccent} />}
         </View>
         <Text style={{ flex: 1, color: th.dim, fontSize: 12.5, lineHeight: 18 }}>

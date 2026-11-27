@@ -315,7 +315,7 @@ export default function MethodChart({ data, all, method, width: fullW, dec, heig
         {pat.list.map((q) => {
           const on = q.key === cur?.key, col = q.dir === 'bullish' ? th.buy : th.sell;
           return (
-            <Pressable key={q.key} onPress={() => setPatKey(q.key)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, borderWidth: 1.2, borderColor: on ? col : th.hair, backgroundColor: on ? col + '22' : 'transparent' }}>
+            <Pressable key={q.key} onPress={() => setPatKey(q.key)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, borderWidth: 1.2, borderColor: on ? col : th.hair, backgroundColor: on ? col + '22' : 'transparent' }}>
               <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: col }} />
               <Text style={{ color: on ? th.text : th.dim, fontSize: 11.5, fontWeight: on ? '800' : '600' }}>{q.name}</Text>
               <Text style={{ color: col, fontSize: 10.5, fontWeight: '800' }}>{q.dir === 'bullish' ? 'BUY' : 'SELL'} {Math.round(q.quality)}%</Text>

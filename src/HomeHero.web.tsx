@@ -45,7 +45,7 @@ const CSS = `
 .hh-tg b{position:absolute;left:14px;top:10px;white-space:nowrap;padding:4px 9px;border-radius:3px;background:rgba(6,13,32,.9);border:1px solid rgba(200,169,106,.55);color:#E6D3A3;font:600 10.5px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em}
 @keyframes hh-pop{0%{opacity:0;transform:scale(.6)}70%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
 .hh-ctr{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px}
-.hh-chip{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:999px;border:1px solid rgba(200,169,106,.45);background:rgba(200,169,106,.08);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#E6D3A3;max-width:100%}
+.hh-chip{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:6px;border:1px solid rgba(200,169,106,.45);background:rgba(200,169,106,.08);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#E6D3A3;max-width:100%}
 .hh-chip i{flex:none;width:8px;height:8px;border-radius:50%;background:#34D399;animation:hh-beat 1.8s infinite}
 @keyframes hh-beat{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
 .hh h1{margin:0;font-weight:800;line-height:1.06;letter-spacing:-.035em;white-space:nowrap;color:#fff}
@@ -59,7 +59,7 @@ const CSS = `
 @keyframes hh-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes hh-fade{from{opacity:0}to{opacity:1}}
 .hh-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:14px}
-.hh-b{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:8px;font:600 14.5px Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}
+.hh-b{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:6px;font:600 14.5px Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}
 .hh-b1{background:#fff;color:${NAVY};border:0}.hh-b1:hover{transform:translateY(-2px);box-shadow:0 10px 30px -8px rgba(200,169,106,.8)}
 .hh-b2{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)}.hh-b2:hover{background:rgba(255,255,255,.09);transform:translateY(-2px)}
 .hh-b:focus-visible{outline:2px solid ${GOLD};outline-offset:3px}
@@ -118,7 +118,7 @@ export default function HomeHero({ go }: { go: (t: number) => void }) {
   const gap = big ? 18 : 14;
 
   return (
-    <div ref={ref} className={mid ? 'hh' : 'hh hh-sm'} data-off={off ? '1' : '0'} style={{ height: H, borderRadius: 8, border: '1px solid #1C2E56', boxShadow: '0 24px 50px -28px rgba(6,13,32,.9)' }}>
+    <div ref={ref} className={mid ? 'hh' : 'hh hh-sm'} data-off={off ? '1' : '0'} style={{ height: H, borderRadius: 6, border: '1px solid #1C2E56', boxShadow: '0 24px 50px -28px rgba(6,13,32,.9)' }}>
       <div className="hh-bg" />
       <div className="hh-sun" style={{ top: hy - 100 }} />
       <div className="hh-sk" aria-hidden="true" style={{ left: pad, right: pad, top: hy - Math.round(100 * k), height: Math.round(100 * k) }}>

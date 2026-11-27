@@ -41,7 +41,7 @@ export default function Killzones() {
         <Card>
           <SectionTitle icon="analytics-outline">{t('kzTimeline')}</SectionTitle>
           <View style={{ height: 14 }} />
-          <View style={{ height: 22, borderRadius: 5, backgroundColor: th.bg, borderWidth: 1, borderColor: th.line, overflow: 'hidden', direction: 'ltr' }}>
+          <View style={{ height: 22, borderRadius: 4, backgroundColor: th.bg, borderWidth: 1, borderColor: th.line, overflow: 'hidden', direction: 'ltr' }}>
             {killzonesFor(new Date()).map((k, i) => (
               <View key={k.key} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(k.from / 24) * 100}%`, width: `${((k.to - k.from) / 24) * 100}%`, backgroundColor: colors[i] + (cur?.key === k.key ? 'CC' : '66') }} />
             ))}
@@ -58,7 +58,7 @@ export default function Killzones() {
           return (
             <Card key={k.key} style={{ borderColor: on ? colors[i] : th.line }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 10, height: 44, borderRadius: 5, backgroundColor: colors[i] }} />
+                <View style={{ width: 10, height: 44, borderRadius: 4, backgroundColor: colors[i] }} />
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text style={{ color: th.text, fontWeight: '800', fontSize: 15 }}>{k.name}</Text>

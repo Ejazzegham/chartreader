@@ -56,7 +56,7 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
     <View style={{ gap: 6, direction: 'ltr' }}>
       {/* one dock: quick timeframes (grouped by a thin divider) + a More button */}
       {/* solid-ish fill: this bar sits on the animated backdrop, a see-through one made M1 / M5 / H1 hard to read */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.dark ? '#1A2050F2' : '#FFFFFFF5', borderWidth: 1, borderColor: th.dark ? '#FFFFFF4D' : th.line, borderRadius: 8, padding: 3, gap: 4 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.dark ? '#1A2050F2' : '#FFFFFFF5', borderWidth: 1, borderColor: th.dark ? '#FFFFFF4D' : th.line, borderRadius: 6, padding: 3, gap: 4 }}>
         <ScrollView ref={sc} horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" onLayout={(e) => { wRef.current = e.nativeEvent.layout.width; }} contentContainerStyle={{ alignItems: 'center', gap: 3, paddingRight: 4 }} style={{ flex: 1 }}>
           {quick.map((o, i) => {
             const on = value === o.k, newGroup = i > 0 && groupOf(Number(o.k)) !== groupOf(Number(quick[i - 1].k));
@@ -65,11 +65,11 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
                 {newGroup && <View style={{ width: 1, height: 18, backgroundColor: th.line, marginHorizontal: 3, opacity: 0.8 }} />}
                 <Pressable onLayout={(e) => { xs.current[o.k] = e.nativeEvent.layout.x; }} onPress={() => onChange(o.k)} accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={fullName(Number(o.k))} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
                   {on ? (
-                    <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ minWidth: 48, height: 36, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', borderRadius: 8, shadowColor: th.accent, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 }}>
+                    <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ minWidth: 48, height: 36, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', borderRadius: 6, shadowColor: th.accent, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 }}>
                       <Text style={{ color: th.onAccent, fontWeight: '900', fontSize: 13, letterSpacing: 0.3 }}>{o.label}</Text>
                     </LinearGradient>
                   ) : (
-                    <View style={{ minWidth: 44, height: 36, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
+                    <View style={{ minWidth: 44, height: 36, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center', borderRadius: 6 }}>
                       <Text style={{ color: th.dark ? '#E4E9F8' : '#1E2A4A', fontWeight: '700', fontSize: 13, letterSpacing: 0.3 }}>{o.label}</Text>
                     </View>
                   )}
@@ -78,14 +78,14 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
             );
           })}
         </ScrollView>
-        <Pressable onPress={() => setOpen(true)} hitSlop={6} accessibilityRole="button" accessibilityLabel="All timeframes" style={({ pressed }) => ({ height: 36, paddingHorizontal: 10, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: th.accent + '1A', opacity: pressed ? 0.8 : 1 })}>
+        <Pressable onPress={() => setOpen(true)} hitSlop={6} accessibilityRole="button" accessibilityLabel="All timeframes" style={({ pressed }) => ({ height: 36, paddingHorizontal: 10, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: th.accent + '66', backgroundColor: th.accent + '1A', opacity: pressed ? 0.8 : 1 })}>
           <Ionicons name="grid-outline" size={15} color={th.accent} />
           <Text style={{ color: th.accent, fontWeight: '900', fontSize: 12 }}>More</Text>
         </Pressable>
       </View>
       {/* what the chosen timeframe means, in one quiet line */}
       {!!cur && isFinite(curS) && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 28, borderRadius: 8, backgroundColor: th.dark ? '#1A2050E6' : '#FFFFFFEB', borderWidth: 1, borderColor: th.dark ? '#FFFFFF33' : th.line }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 28, borderRadius: 6, backgroundColor: th.dark ? '#1A2050E6' : '#FFFFFFEB', borderWidth: 1, borderColor: th.dark ? '#FFFFFF33' : th.line }}>
           <Ionicons name={GROUPS[Math.max(0, groupOf(curS))].icon as any} size={12} color={th.accent} />
           <Text numberOfLines={1} style={{ color: th.dark ? '#D5DCF2' : '#2B364D', fontSize: 11.5, flex: 1 }}>
             <Text style={{ color: th.dark ? '#FFFFFF' : '#0A1022', fontWeight: '800' }}>{fullName(curS)}</Text>{'  ·  '}{perDay(curS)}{'  ·  '}{useFor(curS)}
@@ -97,14 +97,14 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
         <Modal transparent animationType="slide" onRequestClose={() => setOpen(false)}>
           <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A' }}>
             <Pressable style={{ flex: 1 }} onPress={() => setOpen(false)} />
-            <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: 30, maxHeight: '84%' }}>
-              <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 2, backgroundColor: th.line, marginBottom: 12 }} />
+            <View style={{ backgroundColor: th.solid, borderTopLeftRadius: 6, borderTopRightRadius: 6, borderWidth: 1, borderColor: th.line, padding: 18, paddingBottom: 30, maxHeight: '84%' }}>
+              <View style={{ alignSelf: 'center', width: 42, height: 4, borderRadius: 3, backgroundColor: th.line, marginBottom: 12 }} />
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
                 <View>
                   <Text style={{ color: th.text, fontSize: 19, fontWeight: '900' }}>Timeframe</Text>
                   {!!cur && <Text style={{ color: th.dim, fontSize: 12, marginTop: 2 }}>Now showing <Text style={{ color: th.accent, fontWeight: '800' }}>{fullName(curS)}</Text></Text>}
                 </View>
-                <Pressable onPress={() => setOpen(false)} hitSlop={10} style={{ width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}><Ionicons name="close" size={18} color={th.dim} /></Pressable>
+                <Pressable onPress={() => setOpen(false)} hitSlop={10} style={{ width: 34, height: 34, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}><Ionicons name="close" size={18} color={th.dim} /></Pressable>
               </View>
               <Text style={{ color: th.dim, fontSize: 12, marginTop: 8, marginBottom: 12 }}>Tap one to switch. Tap the star to pin it to the quick bar.</Text>
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 16 }}>
@@ -114,7 +114,7 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
                   return (
                     <View key={g.name}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 9 }}>
-                        <View style={{ width: 24, height: 24, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22' }}><Ionicons name={g.icon as any} size={13} color={th.accent} /></View>
+                        <View style={{ width: 24, height: 24, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22' }}><Ionicons name={g.icon as any} size={13} color={th.accent} /></View>
                         <Text style={{ color: th.text, fontWeight: '900', fontSize: 13.5 }}>{g.name}</Text>
                         <Text style={{ color: th.dim, fontSize: 11.5, flex: 1 }} numberOfLines={1}>{g.hint}</Text>
                       </View>
@@ -122,8 +122,8 @@ export function TfBar({ value, options, onChange }: { value: string; options: Op
                         {list.map((o) => {
                           const on = value === o.k, pin = fav.includes(o.k), sec = Number(o.k);
                           return (
-                            <Pressable key={o.k} onPress={() => { onChange(o.k); setOpen(false); }} style={{ width: '31%', flexGrow: 1, borderRadius: 8, overflow: 'hidden' }}>
-                              <LinearGradient colors={on ? [th.accent, th.accent2] : [th.panel2, th.panel2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingVertical: 11, paddingHorizontal: 12, borderWidth: 1, borderColor: on ? th.accent : th.hair, borderRadius: 8 }}>
+                            <Pressable key={o.k} onPress={() => { onChange(o.k); setOpen(false); }} style={{ width: '31%', flexGrow: 1, borderRadius: 6, overflow: 'hidden' }}>
+                              <LinearGradient colors={on ? [th.accent, th.accent2] : [th.panel2, th.panel2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingVertical: 11, paddingHorizontal: 12, borderWidth: 1, borderColor: on ? th.accent : th.hair, borderRadius: 6 }}>
                                 <Text style={{ color: on ? th.onAccent : th.text, fontWeight: '900', fontSize: 19, letterSpacing: 0.3 }}>{o.label}</Text>
                                 <Text style={{ color: on ? th.onAccent : th.dim, opacity: on ? 0.9 : 1, fontSize: 11, marginTop: 1, fontWeight: '700' }} numberOfLines={1}>{fullName(sec)}</Text>
                                 <Text style={{ color: on ? th.onAccent : th.dim, opacity: on ? 0.75 : 0.85, fontSize: 10, marginTop: 4 }} numberOfLines={1}>{useFor(sec)}</Text>

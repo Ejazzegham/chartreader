@@ -34,7 +34,7 @@ export default function Guide() {
             {c.grades.map((g) => {
               const col = gradeColor[g.grade] ?? th.accent;
               return (
-                <View key={g.grade} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: col + '14', borderColor: col + '55', borderWidth: 1, borderRadius: 8, padding: 10 }}>
+                <View key={g.grade} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: col + '14', borderColor: col + '55', borderWidth: 1, borderRadius: 6, padding: 10 }}>
                   <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: col, alignItems: 'center', justifyContent: 'center' }}>
                     <Text style={{ color: th.dark ? '#08110E' : '#FFFFFF', fontWeight: '900', fontSize: 16 }}>{g.grade}</Text>
                   </View>
@@ -82,7 +82,7 @@ export default function Guide() {
           <Card style={{ gap: 12 }}>
             {NAV.filter((n) => n.group !== 'hidden' && c.pages[n.key]).map((n) => (
               <View key={n.key} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-                <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}>
+                <View style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name={n.icon} size={16} color={th.accent} />
                 </View>
                 <View style={{ flex: 1 }}>

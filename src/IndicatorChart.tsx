@@ -79,15 +79,15 @@ export default function IndicatorChart({ data: all, width: fullW, dec, height = 
     <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 8, direction: 'ltr' }}>
       <Mt5Bar tfLabel={tfs?.find((x) => x.k === String(gran))?.label} onWheel={() => setWheel(true)} crossMode={z.crossMode} onCross={() => z.setCrossMode(!z.crossMode)} onFit={() => z.reset()} fitOn={z.vzoomed} />
       {([['candle', 'stats-chart-outline'], ['ha', 'layers-outline'], ['line', 'trending-up']] as [ChartType, string][]).map(([k, ic]) => (
-        <Pressable key={k} onPress={() => save({ ...st, type: k })} style={{ width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: st.type === k ? th.accent + '26' : 'transparent', borderWidth: 1, borderColor: st.type === k ? th.accent : th.line }}>
+        <Pressable key={k} onPress={() => save({ ...st, type: k })} style={{ width: 34, height: 34, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: st.type === k ? th.accent + '26' : 'transparent', borderWidth: 1, borderColor: st.type === k ? th.accent : th.line }}>
           <Icon name={ic} size={16} color={st.type === k ? th.accent : th.dim} />
         </Pressable>
       ))}
-      <Pressable onPress={() => save({ ...st, hidden: !st.hidden })} hitSlop={6} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 9, borderRadius: 8, borderWidth: 1, borderColor: st.hidden ? th.gold : th.line, backgroundColor: st.hidden ? th.gold + '1F' : 'transparent' }}>
+      <Pressable onPress={() => save({ ...st, hidden: !st.hidden })} hitSlop={6} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 9, borderRadius: 6, borderWidth: 1, borderColor: st.hidden ? th.gold : th.line, backgroundColor: st.hidden ? th.gold + '1F' : 'transparent' }}>
         <Icon name={st.hidden ? 'eye-off-outline' : 'eye-outline'} size={16} color={st.hidden ? th.gold : th.text} />
         <Text style={{ color: st.hidden ? th.gold : th.text, fontWeight: '800', fontSize: 12 }}>{st.hidden ? 'Show' : 'Hide'}</Text>
       </Pressable>
-      <Pressable onPress={() => setPanel(!panel)} style={{ flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 10, borderRadius: 8, backgroundColor: panel ? th.accent : th.accent + '22' }}>
+      <Pressable onPress={() => setPanel(!panel)} style={{ flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 10, borderRadius: 6, backgroundColor: panel ? th.accent : th.accent + '22' }}>
         <Icon name="options-outline" size={16} color={panel ? th.onAccent : th.accent} />
         <Text style={{ color: panel ? th.onAccent : th.accent, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>{st.on.length ? `Indicators (${st.on.length})` : 'Indicators'}</Text>
       </Pressable>
@@ -95,10 +95,10 @@ export default function IndicatorChart({ data: all, width: fullW, dec, height = 
   );
 
   const Panel = panel ? (
-    <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 12, marginBottom: 10, backgroundColor: th.bg, gap: 10 }}>
+    <View style={{ borderWidth: 1, borderColor: th.line, borderRadius: 6, padding: 12, marginBottom: 10, backgroundColor: th.bg, gap: 10 }}>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {[['Select all', () => save({ ...st, hidden: false, on: INDICATORS.filter((d) => !d.needsVolume || vol).map((d) => d.id) })], ['Clear all', () => save({ ...st, on: [] })], ['Reset', () => save(DEFAULT)]].map(([l, f]: any) => (
-          <Pressable key={l} onPress={f} style={{ flex: 1, height: 34, borderRadius: 8, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel }}>
+          <Pressable key={l} onPress={f} style={{ flex: 1, height: 34, borderRadius: 6, borderWidth: 1, borderColor: th.line, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel }}>
             <Text style={{ color: th.text, fontWeight: '800', fontSize: 12 }}>{l}</Text>
           </Pressable>
         ))}
@@ -110,7 +110,7 @@ export default function IndicatorChart({ data: all, width: fullW, dec, height = 
             {INDICATORS.filter((d) => d.group === g).map((d) => {
               const a = st.on.includes(d.id), dis = !!d.needsVolume && !(d.id === 'vol' ? volAny : vol);
               return (
-                <Pressable key={d.id} onPress={() => !dis && toggle(d.id)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, height: 34, borderRadius: 8, borderWidth: 1, borderColor: a ? th.accent : th.line, backgroundColor: a ? th.accent + '22' : th.panel, opacity: dis ? 0.4 : 1 }}>
+                <Pressable key={d.id} onPress={() => !dis && toggle(d.id)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, height: 34, borderRadius: 6, borderWidth: 1, borderColor: a ? th.accent : th.line, backgroundColor: a ? th.accent + '22' : th.panel, opacity: dis ? 0.4 : 1 }}>
                   {a && <Icon name="checkmark" size={13} color={th.accent} />}
                   <Text style={{ color: a ? th.text : th.dim, fontWeight: '700', fontSize: 12 }}>{d.label}</Text>
                 </Pressable>

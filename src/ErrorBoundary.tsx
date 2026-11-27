@@ -12,7 +12,7 @@ export default class ErrorBoundary extends React.Component<{ children: React.Rea
       <View style={{ flex: 1, backgroundColor: '#101828', justifyContent: 'center', padding: 24 }}>
         <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '800', marginBottom: 8 }}>Something went wrong</Text>
         <ScrollView style={{ maxHeight: 160, marginBottom: 16 }}><Text selectable style={{ color: '#CBD5E1', lineHeight: 20 }}>{String(this.state.err.message || this.state.err)}</Text></ScrollView>
-        <Pressable onPress={() => { this.setState({ err: null }); this.props.onReset?.(); }} style={{ backgroundColor: '#D4AF37', borderRadius: 8, padding: 14, alignItems: 'center' }}>
+        <Pressable onPress={() => { this.setState({ err: null }); this.props.onReset?.(); }} style={{ backgroundColor: '#D4AF37', borderRadius: 6, padding: 14, alignItems: 'center' }}>
           <Text style={{ color: '#1A1405', fontWeight: '800' }}>Try again</Text>
         </Pressable>
       </View>

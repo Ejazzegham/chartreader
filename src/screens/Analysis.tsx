@@ -63,7 +63,7 @@ function RunningAlert(_: { active: boolean }) {
 
   return (
     <View accessible accessibilityRole="alert" accessibilityLabel="Do not anti-trade on any Boom, Crash, or Spike pairs" onLayout={(e) => setBoxW(e.nativeEvent.layout.width)}
-      style={{ height: 42, borderRadius: 8, overflow: 'hidden', justifyContent: 'center', backgroundColor: ALERT_RED, borderWidth: 1, borderColor: '#FF5A68', paddingHorizontal: still ? 14 : 0 }}>
+      style={{ height: 42, borderRadius: 6, overflow: 'hidden', justifyContent: 'center', backgroundColor: ALERT_RED, borderWidth: 1, borderColor: '#FF5A68', paddingHorizontal: still ? 14 : 0 }}>
       <Animated.View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', transform: [{ translateX: x }] }}>
         {Array.from({ length: still ? 1 : copies }).map((_, i) => item(i, i === 0))}
       </Animated.View>
@@ -140,7 +140,7 @@ export default function Analysis() {
     return (
       <Pressable key={d.k} onPress={() => openMethod(d)} accessibilityRole="button" accessibilityLabel={`${d.label}. ${d.desc}`} style={({ pressed }) => ({ width: cols === 2 ? '48.9%' : '100%', opacity: pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.99 : 1 }] })}>
         <LinearGradient colors={[d.colors[0] + (th.dark ? '1C' : '14'), th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={{ borderRadius: 8, borderWidth: rec ? 1.6 : 1, borderColor: rec ? accent2 : d.colors[0] + '44', padding: 11, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+          style={{ borderRadius: 6, borderWidth: rec ? 1.6 : 1, borderColor: rec ? accent2 : d.colors[0] + '44', padding: 11, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
           <MethodIcon def={d} size={52} />
           <View style={{ flex: 1, gap: 3 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -150,13 +150,13 @@ export default function Analysis() {
           </View>
           <Icon name="chevron-forward" size={16} color={th.dim} />
         </LinearGradient>
-        {rec && <LinearGradient colors={[th.accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: -8, right: 14, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2.5 }}><Text style={{ color: '#FFFFFF', fontSize: 9.5, fontWeight: '800' }}>Recommended</Text></LinearGradient>}
+        {rec && <LinearGradient colors={[th.accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', top: -8, right: 14, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2.5 }}><Text style={{ color: '#FFFFFF', fontSize: 9.5, fontWeight: '800' }}>Recommended</Text></LinearGradient>}
       </Pressable>
     );
   };
 
   const choose = (
-    <View style={{ backgroundColor: th.panel, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 12, gap: 12, shadowColor: th.accent, shadowOpacity: th.dark ? 0.2 : 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
+    <View style={{ backgroundColor: th.panel, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 12, gap: 12, shadowColor: th.accent, shadowOpacity: th.dark ? 0.2 : 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 2 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: th.accent + '1F', alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="compass-outline" size={24} color={th.accent} />
@@ -166,7 +166,7 @@ export default function Analysis() {
           <Text style={{ color: th.dim, fontSize: 11.5, lineHeight: 16 }}>Pick a method to analyze the chart. You choose the market and pair inside it.</Text>
         </View>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel2, borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12 }}>
         <Icon name="search" size={18} color={th.dim} />
         <TextInput value={mq} onChangeText={setMq} placeholder="Search method..." placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, padding: 11 }} />
         {!!mq && <Pressable onPress={() => setMq('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
@@ -182,7 +182,7 @@ export default function Analysis() {
   // Background scanner card: the server scans while the app is closed and pushes a notification. One master switch, four optional alert types.
   const optRow = (icon: string, tint: string, title: string, sub: string, value: boolean, onChange: (b: boolean) => void, last?: boolean) => (
     <View key={title} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 11, borderBottomWidth: last ? 0 : 1, borderBottomColor: th.hair }}>
-      <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: tint + '22', borderWidth: 1, borderColor: tint + '55', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: 34, height: 34, borderRadius: 6, backgroundColor: tint + '22', borderWidth: 1, borderColor: tint + '55', alignItems: 'center', justifyContent: 'center' }}>
         <Icon name={icon} size={17} color={tint} />
       </View>
       <View style={{ flex: 1 }}>
@@ -193,16 +193,16 @@ export default function Analysis() {
     </View>
   );
   const bgCard = (
-    <View style={{ borderRadius: 8, borderWidth: 1, borderColor: bgOn ? th.accent + '99' : th.line, backgroundColor: th.panel, overflow: 'hidden', shadowColor: th.accent, shadowOpacity: bgOn ? (th.dark ? 0.32 : 0.14) : 0, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: bgOn ? 4 : 1 }}>
+    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: bgOn ? th.accent + '99' : th.line, backgroundColor: th.panel, overflow: 'hidden', shadowColor: th.accent, shadowOpacity: bgOn ? (th.dark ? 0.32 : 0.14) : 0, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: bgOn ? 4 : 1 }}>
       <LinearGradient colors={[th.accent + (bgOn ? '30' : '12'), th.accent2 + (bgOn ? '10' : '06'), th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 14, gap: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <LinearGradient colors={bgOn ? [th.accent, th.accent2] : [th.line, th.line]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 46, height: 46, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}>
+          <LinearGradient colors={bgOn ? [th.accent, th.accent2] : [th.line, th.line]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 46, height: 46, borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name={bgOn ? 'radio' : 'notifications-off-outline'} size={23} color={bgOn ? '#FFFFFF' : th.dim} />
           </LinearGradient>
           <View style={{ flex: 1 }}>
             <Text style={{ color: th.text, fontSize: 15.5, fontWeight: '900', letterSpacing: -0.2 }} numberOfLines={1}>Smart Alert Scanner</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, height: 20, borderRadius: 8, backgroundColor: (bgOn ? th.buy : th.dim) + '22', borderWidth: 1, borderColor: (bgOn ? th.buy : th.dim) + '66' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, height: 20, borderRadius: 6, backgroundColor: (bgOn ? th.buy : th.dim) + '22', borderWidth: 1, borderColor: (bgOn ? th.buy : th.dim) + '66' }}>
                 <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: bgOn ? th.buy : th.dim }} />
                 <Text style={{ color: bgOn ? th.buy : th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 1 }}>{bgOn ? 'ACTIVE' : 'OFF'}</Text>
               </View>
@@ -256,9 +256,9 @@ export default function Analysis() {
             return (
               <Pressable key={p} onPress={() => setC({ minProb: p })} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ flex: 1 }}>
                 {on ? (
-                  <LinearGradient colors={[th.accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12.5 }}>{p}%</Text></LinearGradient>
+                  <LinearGradient colors={[th.accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 32, borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12.5 }}>{p}%</Text></LinearGradient>
                 ) : (
-                  <View style={{ height: 32, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.text, fontWeight: '700', fontSize: 12.5 }}>{p}%</Text></View>
+                  <View style={{ height: 32, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: th.text, fontWeight: '700', fontSize: 12.5 }}>{p}%</Text></View>
                 )}
               </Pressable>
             );
@@ -274,7 +274,7 @@ export default function Analysis() {
     <View style={{ gap: 10 }}>
       {/* selected method heading first (back button, icon, name), then two boxes: 1) choose analysis method  2) select market */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <Pressable onPress={() => setAmethod('')} accessibilityRole="button" accessibilityLabel="Back to Analysis" hitSlop={8} style={({ pressed }) => ({ width: 40, height: 40, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.8 : 1 })}>
+        <Pressable onPress={() => setAmethod('')} accessibilityRole="button" accessibilityLabel="Back to Analysis" hitSlop={8} style={({ pressed }) => ({ width: 40, height: 40, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.8 : 1 })}>
           <Icon name="chevron-back" size={20} color={th.accent} />
         </Pressable>
         <MethodIcon def={m} size={44} />
@@ -283,7 +283,7 @@ export default function Analysis() {
           <Text style={{ color: th.dim, fontSize: 11 }} numberOfLines={2}>{m.desc}</Text>
         </View>
       </View>
-      <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 10, gap: 8 }}>
+      <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, padding: 10, gap: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Icon name="compass-outline" size={16} color={th.accent} />
           <Text style={{ color: th.text, fontSize: 14, fontWeight: '800' }}>Choose Analysis Method</Text>
@@ -292,7 +292,7 @@ export default function Analysis() {
           {strip.map((d) => {
             const on = d.k === m.k;
             return (
-              <Pressable key={d.k} onPress={() => openMethod(d)} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingLeft: 5, paddingRight: 12, height: 38, borderRadius: 8, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
+              <Pressable key={d.k} onPress={() => openMethod(d)} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ flexDirection: 'row', alignItems: 'center', gap: 7, paddingLeft: 5, paddingRight: 12, height: 38, borderRadius: 6, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
                 <MethodIcon def={d} size={26} />
                 <Text style={{ color: on ? th.onAccent : th.dim, fontWeight: '800', fontSize: 12.5 }}>{d.label.replace(' Analysis', '')}</Text>
               </Pressable>
@@ -300,7 +300,7 @@ export default function Analysis() {
           })}
         </ScrollView>
       </View>
-      <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 8, padding: 10, gap: 8 }}>
+      <View style={{ backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, borderRadius: 6, padding: 10, gap: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Icon name="globe-outline" size={16} color={th.accent} />
           <Text style={{ color: th.text, fontSize: 14, fontWeight: '800' }}>Select Market</Text>
@@ -309,7 +309,7 @@ export default function Analysis() {
           {MARKETS.map((x) => {
             const on = market === x.k;
             return (
-              <Pressable key={x.k} onPress={() => pickMarket(x.k)} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 8, backgroundColor: on ? th.accent : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.line }}>
+              <Pressable key={x.k} onPress={() => pickMarket(x.k)} accessibilityRole="button" accessibilityState={{ selected: on }} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 6, backgroundColor: on ? th.accent : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.line }}>
                 <Icon name={x.icon} size={15} color={on ? '#FFFFFF' : th.dim} />
                 <Text style={{ color: on ? '#FFFFFF' : th.text, fontWeight: '700', fontSize: 12 }}>{x.label}</Text>
               </Pressable>
@@ -320,7 +320,7 @@ export default function Analysis() {
       {m.host === 'scanner' && scanSetup}
       {m.host !== 'scanner' && (
         <>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12 }}>
             <Icon name="search" size={18} color={th.dim} />
             <TextInput value={q} onChangeText={setQ} placeholder="Search any pair" placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, padding: 12 }} />
             {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
@@ -339,13 +339,13 @@ export default function Analysis() {
             {chips.map((id) => {
               const on = id === symId;
               return (
-                <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
+                <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 6, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
                   <Text style={{ color: on ? th.onAccent : th.dim, fontWeight: '700', fontSize: 13 }}>{symOf(id).name}</Text>
                 </Pressable>
               );
             })}
             {!chips.includes(symId) && (
-              <View style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1.5, borderColor: th.accent, backgroundColor: th.accent + '22' }}>
+              <View style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 6, borderWidth: 1.5, borderColor: th.accent, backgroundColor: th.accent + '22' }}>
                 <Text style={{ color: th.text, fontWeight: '700', fontSize: 13 }}>{sym.name}</Text>
               </View>
             )}
@@ -374,7 +374,7 @@ export default function Analysis() {
   );
 
   // Website: market and pair pickers inside the method header (the method itself is chosen in the card grid above).
-  const chip = (on: boolean) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 32, borderRadius: 8, borderWidth: 1, borderColor: on ? th.accent + '88' : th.line, backgroundColor: on ? th.accent + '1A' : th.panel, cursor: 'pointer' } as any);
+  const chip = (on: boolean) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 32, borderRadius: 6, borderWidth: 1, borderColor: on ? th.accent + '88' : th.line, backgroundColor: on ? th.accent + '1A' : th.panel, cursor: 'pointer' } as any);
   const deskControls = (
     <View style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
@@ -388,7 +388,7 @@ export default function Analysis() {
           );
         })}
         {m && m.host !== 'scanner' && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, minWidth: 220, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel2, marginLeft: 'auto' } as any}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 32, minWidth: 220, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel2, marginLeft: 'auto' } as any}>
             <Icon name="search" size={14} color={th.dim} />
             <TextInput value={q} onChangeText={setQ} placeholder="Search any pair" placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, fontSize: 12.5, outlineStyle: 'none' } as any} />
             {!!q && <Pressable onPress={() => setQ('')} hitSlop={8}><Icon name="close-circle" size={14} color={th.dim} /></Pressable>}

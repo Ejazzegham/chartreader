@@ -40,13 +40,13 @@ function Select({ value, options, onChange, icon, width = 150, label, fill }: { 
   return (
     <View style={{ zIndex: open ? 50 : 1, gap: 5, ...(fill ? { flexGrow: 1, flexBasis: 170, minWidth: 150 } : null) }}>
       {!!label && <Text style={{ color: P.body, fontSize: 10.5, fontWeight: '700', letterSpacing: 0.9 }}>{label.toUpperCase()}</Text>}
-      <Pressable accessibilityRole="button" accessibilityLabel={label ? `${label}: ${cur}` : cur} onPress={() => setOpen((v) => !v)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, minWidth: fill ? 0 : width, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: open ? P.blue : st.hovered ? P.blue + '88' : P.border, backgroundColor: P.th.solid, cursor: 'pointer' })) as any}>
+      <Pressable accessibilityRole="button" accessibilityLabel={label ? `${label}: ${cur}` : cur} onPress={() => setOpen((v) => !v)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 8, height: 40, minWidth: fill ? 0 : width, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: open ? P.blue : st.hovered ? P.blue + '88' : P.border, backgroundColor: P.th.solid, cursor: 'pointer' })) as any}>
         {!!icon && <Icon name={icon} size={15} color={P.blue} />}
         <Text style={{ flex: 1, color: P.head, fontSize: 13, fontWeight: '600' }} numberOfLines={1}>{cur}</Text>
         <Icon name={open ? 'chevron-up' : 'chevron-down'} size={14} color={P.body} />
       </Pressable>
       {open && (
-        <View style={{ position: 'absolute', top: label ? 70 : 44, left: 0, right: fill ? 0 : undefined, minWidth: Math.max(width, 170), padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid, zIndex: 60, shadowColor: P.shadow, shadowOpacity: 0.2, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } }}>
+        <View style={{ position: 'absolute', top: label ? 70 : 44, left: 0, right: fill ? 0 : undefined, minWidth: Math.max(width, 170), padding: 6, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid, zIndex: 60, shadowColor: P.shadow, shadowOpacity: 0.2, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } }}>
           {options.map(([k, l]) => (
             <Pressable key={k} onPress={() => { onChange(k); setOpen(false); }} style={((st: any) => ({ height: 36, paddingHorizontal: 10, borderRadius: 6, flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', backgroundColor: k === value ? P.soft : st.hovered ? P.alt : 'transparent' })) as any}>
               <Text style={{ flex: 1, color: k === value ? P.blue : P.head, fontSize: 13, fontWeight: k === value ? '700' : '500' }} numberOfLines={1}>{l}</Text>
@@ -64,7 +64,7 @@ function SideChip({ side }: { side: 'buy' | 'sell' }) {
   return <View style={{ alignSelf: 'flex-start', paddingHorizontal: 9, height: 22, borderRadius: 6, justifyContent: 'center', backgroundColor: c + '22' }}><Text style={{ color: c, fontSize: 11, fontWeight: '800' }}>{side.toUpperCase()}</Text></View>;
 }
 function StatusChip({ text, color }: { text: string; color: string }) {
-  return <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 22, borderRadius: 8, backgroundColor: color + '1F' }}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color }} /><Text style={{ color, fontSize: 11, fontWeight: '700' }}>{text}</Text></View>;
+  return <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 22, borderRadius: 6, backgroundColor: color + '1F' }}><View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: color }} /><Text style={{ color, fontSize: 11, fontWeight: '700' }}>{text}</Text></View>;
 }
 function Btn2({ label, onPress, solid, tone, icon, disabled }: { label: string; onPress: () => void; solid?: boolean; tone?: string; icon?: string; disabled?: boolean }) {
   const P = usePal(), c = tone ?? P.blue, d = P.dark;
@@ -72,7 +72,7 @@ function Btn2({ label, onPress, solid, tone, icon, disabled }: { label: string; 
   // so the label never sits on a see-through fill over the animated backdrop.
   return (
     <Pressable disabled={disabled} onPress={onPress} style={((st: any) => ({
-      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, height: 38, paddingHorizontal: 16, borderRadius: 10, borderWidth: solid ? 1 : 1.5,
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, height: 38, paddingHorizontal: 16, borderRadius: 6, borderWidth: solid ? 1 : 1.5,
       borderColor: solid ? 'rgba(255,255,255,0.28)' : c + 'CC',
       backgroundColor: solid ? '#2563EB' : d ? (st.hovered ? '#1B2150' : '#141943') : (st.hovered ? '#F1F5FF' : '#FFFFFF'),
       ...(solid ? { backgroundImage: 'linear-gradient(135deg,#2563EB,#7C3AED,#C026D3)', boxShadow: '0 10px 22px -12px rgba(124,58,237,0.9), inset 0 1px 0 rgba(255,255,255,0.22)', filter: st.hovered ? 'brightness(1.08)' : 'none' } : { boxShadow: d ? '0 8px 18px -12px rgba(0,0,0,0.8)' : '0 8px 18px -14px rgba(11,27,63,0.5)' }),
@@ -108,7 +108,7 @@ const Cell = ({ flex, children, align }: { flex: number; children: React.ReactNo
 function Empty({ icon, title, text, children }: { icon: string; title: string; text: string; children?: React.ReactNode }) {
   const P = usePal();
   return (
-    <View style={{ alignItems: 'center', gap: 8, paddingVertical: 34, paddingHorizontal: 20, borderRadius: 8, backgroundColor: P.alt }}>
+    <View style={{ alignItems: 'center', gap: 8, paddingVertical: 34, paddingHorizontal: 20, borderRadius: 6, backgroundColor: P.alt }}>
       <Icon name={icon} size={28} color={P.blue} />
       <Text style={{ color: P.head, fontSize: 15, fontWeight: '800' }}>{title}</Text>
       <Text style={{ color: P.body, fontSize: 12.5, lineHeight: 18, textAlign: 'center', maxWidth: 480 }}>{text}</Text>
@@ -185,7 +185,7 @@ function Insights({ journal, desk, running, today }: { journal: Trade[]; desk: a
     [desk.maxOpen > 0 ? `${running} of ${desk.maxOpen} trades running` : 'Set a limit for trades at once', desk.maxOpen > 0 ? running <= desk.maxOpen : null],
     [desk.autoLog ? 'Auto-log of setups is on' : 'Auto-log of setups is off', !!desk.autoLog],
   ];
-  const card = (title: string, body: React.ReactNode, flex = 1, minWidth = 260) => <View style={{ flex, minWidth, padding: 16, gap: 10, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>{title}</Text>{body}</View>;
+  const card = (title: string, body: React.ReactNode, flex = 1, minWidth = 260) => <View style={{ flex, minWidth, padding: 16, gap: 10, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}><Text style={{ color: P.head, fontSize: 13.5, fontWeight: '800' }}>{title}</Text>{body}</View>;
   const dn = 2 * Math.PI * 52;
   return (
     <View style={{ gap: 14 }}>
@@ -302,7 +302,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
 
   // ---- tiles
   const tile = (label: string, value: string, sub: string, color: string) => (
-    <View key={label} style={{ flex: 1, minWidth: 130, padding: 14, gap: 3, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+    <View key={label} style={{ flex: 1, minWidth: 130, padding: 14, gap: 3, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
       <Text style={{ color: P.body, fontSize: 11.5 }}>{label}</Text>
       <Text style={{ color, fontSize: 23, fontWeight: '800', letterSpacing: -0.5 }} numberOfLines={1}>{value}</Text>
       <Text style={{ color: sub.startsWith('▲') ? th.buy : sub.startsWith('▼') ? th.sell : P.body, fontSize: 11 }} numberOfLines={1}>{sub || ' '}</Text>
@@ -329,10 +329,10 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
       {TABS.map(([k, l, ic, c]) => {
         const on = view === k;
         return (
-          <Pressable key={k} onPress={() => setView(k)} accessibilityRole="tab" accessibilityState={{ selected: on }} style={((st: any) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 44, borderRadius: 8, backgroundColor: on ? P.blue : st.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
+          <Pressable key={k} onPress={() => setView(k)} accessibilityRole="tab" accessibilityState={{ selected: on }} style={((st: any) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 44, borderRadius: 6, backgroundColor: on ? P.blue : st.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}>
             <Icon name={ic} size={16} color={on ? th.onAccent : P.body} />
             <Text style={{ color: on ? th.onAccent : P.body, fontSize: 13.5, fontWeight: on ? '800' : '600' }}>{l}</Text>
-            {c > 0 && <View style={{ minWidth: 20, height: 18, borderRadius: 8, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? '#FFFFFF33' : P.soft }}><Text style={{ color: on ? th.onAccent : P.blue, fontSize: 10.5, fontWeight: '800' }}>{c}</Text></View>}
+            {c > 0 && <View style={{ minWidth: 20, height: 18, borderRadius: 6, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? '#FFFFFF33' : P.soft }}><Text style={{ color: on ? th.onAccent : P.blue, fontSize: 10.5, fontWeight: '800' }}>{c}</Text></View>}
           </Pressable>
         );
       })}
@@ -341,17 +341,17 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
   const filtersOn = side !== 'all' || !!q.trim() || range !== 'all' || strat !== 'all' || tfF !== 'all' || order !== 'new';
   const resetFilters = () => { setSide('all'); setQ(''); setRange('all'); setStrat('all'); setTfF('all'); setOrder('new'); };
   const filters = view !== 'insights' && (
-    <View style={{ gap: 14, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt, zIndex: 20 }}>
+    <View style={{ gap: 14, padding: 14, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.alt, zIndex: 20 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
-        <View style={{ flexGrow: 1, flexBasis: 280, minWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid }}>
+        <View style={{ flexGrow: 1, flexBasis: 280, minWidth: 220, flexDirection: 'row', alignItems: 'center', gap: 10, height: 44, paddingHorizontal: 14, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid }}>
           <Icon name="search" size={16} color={P.body} />
           <TextInput value={q} onChangeText={setQ} placeholder="Search by symbol or strategy" placeholderTextColor={P.body} accessibilityLabel="Search signals" style={{ flex: 1, minWidth: 0, color: P.head, fontSize: 13.5, outlineStyle: 'none' } as any} />
           {!!q && <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => setQ('')} hitSlop={8} style={{ cursor: 'pointer' } as any}><Icon name="close-circle" size={16} color={P.body} /></Pressable>}
         </View>
-        <View style={{ flexDirection: 'row', padding: 3, gap: 3, borderRadius: 10, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid }}>
+        <View style={{ flexDirection: 'row', padding: 3, gap: 3, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.th.solid }}>
           {(['all', 'buy', 'sell'] as const).map((k) => {
             const on = side === k, c = k === 'buy' ? th.buy : k === 'sell' ? th.sell : P.blue;
-            return <Pressable key={k} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => setSide(k)} style={((st: any) => ({ height: 36, minWidth: 64, paddingHorizontal: 16, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? c : st.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}><Text style={{ color: on ? '#FFFFFF' : P.head, fontSize: 13, fontWeight: '700' }}>{k === 'all' ? 'All' : k === 'buy' ? 'Buy' : 'Sell'}</Text></Pressable>;
+            return <Pressable key={k} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => setSide(k)} style={((st: any) => ({ height: 36, minWidth: 64, paddingHorizontal: 16, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? c : st.hovered ? P.alt : 'transparent', cursor: 'pointer' })) as any}><Text style={{ color: on ? '#FFFFFF' : P.head, fontSize: 13, fontWeight: '700' }}>{k === 'all' ? 'All' : k === 'buy' ? 'Buy' : 'Sell'}</Text></Pressable>;
           })}
         </View>
       </View>
@@ -360,7 +360,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
         <Select fill label="Strategy" value={strat} options={[['all', 'All Strategies'], ...methods.map((m) => [m, m] as [string, string])]} onChange={setStrat} icon="layers-outline" />
         <Select fill label="Timeframe" value={tfF} options={[['all', 'All Timeframes'], ...tfs.map((t) => [t, tfName(t)] as [string, string])]} onChange={setTfF} icon="time-outline" />
         <Select fill label="Sort by" value={order} options={[['new', 'Newest First'], ['old', 'Oldest First']]} onChange={setOrder} icon="swap-vertical-outline" />
-        {filtersOn && <Pressable accessibilityRole="button" onPress={resetFilters} style={((st: any) => ({ height: 40, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 8, backgroundColor: st.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}><Icon name="refresh" size={14} color={P.blue} /><Text style={{ color: P.blue, fontSize: 13, fontWeight: '700' }}>Reset filters</Text></Pressable>}
+        {filtersOn && <Pressable accessibilityRole="button" onPress={resetFilters} style={((st: any) => ({ height: 40, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 6, backgroundColor: st.hovered ? P.soft : 'transparent', cursor: 'pointer' })) as any}><Icon name="refresh" size={14} color={P.blue} /><Text style={{ color: P.blue, fontSize: 13, fontWeight: '700' }}>Reset filters</Text></Pressable>}
       </View>
     </View>
   );
@@ -370,7 +370,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
     const f = (v: number) => v.toFixed(s.dec), price = px(s.symId), sc = s.score >= 70 ? th.buy : s.score >= 50 ? th.gold : th.sell;
     const lv = (label: string, v: string, c: string) => <View style={{ flex: 1, minWidth: 0 }}><Text style={{ color: P.body, fontSize: 11 }}>{label}</Text><Text style={{ color: c, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] }} numberOfLines={1}>{v}</Text></View>;
     return (
-      <View key={s.id} style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 14, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+      <View key={s.id} style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 14, padding: 14, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, width: 200 }}>
           <Coin s={symOf(s.symId)} size={38} />
           <View style={{ gap: 3, flex: 1, minWidth: 0 }}>
@@ -458,7 +458,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
       {filters}
       {view === 'signals' && (
         <View style={{ gap: 10 }}>
-          {!desk.autoLog && <View style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '14' }}><Text style={{ color: P.head, fontSize: 12.5 }}>Auto-log is off. Turn it on in the settings on the right to receive setups.</Text></View>}
+          {!desk.autoLog && <View style={{ padding: 12, borderRadius: 6, borderWidth: 1, borderColor: th.gold + '88', backgroundColor: th.gold + '14' }}><Text style={{ color: P.head, fontSize: 12.5 }}>Auto-log is off. Turn it on in the settings on the right to receive setups.</Text></View>}
           {shownSigs.length === 0 && <Empty icon="radio-outline" title={sigs.length ? 'No signals match your filters' : 'Waiting for setups'} text={sigs.length ? 'Change or clear a filter to see them.' : `Open Analysis (Scanner, Top-Down, ICT, SMC, VSA, candlesticks, scalping). Any setup scoring ${desk.minScore}+ is saved here with its entry, stop and targets.`}>
             {!sigs.length && <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}><Btn2 label="Open Analysis" solid onPress={() => setTab(1)} /><Btn2 label="Open Scanner" onPress={() => setTab(12)} /></View>}
           </Empty>}
@@ -537,7 +537,7 @@ export default function JournalHome({ active, px, onTake, onManage, settings, sh
           <View style={{ flex: 1, minWidth: 0, width: '100%', gap: 20 }}>{overview}{tabs}{main}</View>
           {right}
         </View>
-        <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 18, borderRadius: 8 }}>
+        <LinearGradient colors={['#0F1E3D', '#0F1E3D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: w >= 760 ? 'row' : 'column', alignItems: w >= 760 ? 'center' : 'flex-start', gap: 16, padding: 18, borderRadius: 6 }}>
           <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: '#FFFFFF2A', alignItems: 'center', justifyContent: 'center' }}><Icon name="book" size={22} color="#FFFFFF" /></View>
           <View style={{ flex: 1 }}><Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '800' }}>Refine Your Setups. Trade Smarter.</Text><Text style={{ color: '#EAF2FFDD', fontSize: 12.5, marginTop: 2 }}>Use your journal insights to improve your strategy, reduce mistakes and grow consistently.</Text></View>
           <Btn label="Open Analysis" onPress={() => setTab(1)} />

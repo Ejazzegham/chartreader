@@ -16,7 +16,7 @@ export default function NewsBanner({ symId, active = true }: { symId?: string; a
   if (r.level === 'clear' || !r.event) return null;
   const danger = r.level === 'danger', col = danger ? th.sell : th.gold, e = r.event;
   return (
-    <Pressable onPress={() => setTab(13)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: col + '1A', borderColor: col + '77', borderWidth: 1, borderRadius: 8, padding: 12 }}>
+    <Pressable onPress={() => setTab(13)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: col + '1A', borderColor: col + '77', borderWidth: 1, borderRadius: 6, padding: 12 }}>
       <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: col, alignItems: 'center', justifyContent: 'center' }}>
         <Icon name={danger ? 'warning' : 'newspaper'} size={20} color={th.dark ? '#16110A' : '#FFFFFF'} />
       </View>

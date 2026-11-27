@@ -115,7 +115,7 @@ function PhoneHome() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 14, justifyContent: 'space-between' }}>
           {actions.map((a) => (
             <Pressable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label} style={({ pressed }) => ({ width: '23.5%', alignItems: 'center', gap: 7, opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] })}>
-              <LinearGradient colors={[th.accent, th.accent]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 56, height: 56, borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: a.colors[1], shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 3, direction: 'ltr' }}>
+              <LinearGradient colors={[th.accent, th.accent]} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ width: 56, height: 56, borderRadius: 6, alignItems: 'center', justifyContent: 'center', shadowColor: a.colors[1], shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 3, direction: 'ltr' }}>
                 <Icon name={a.icon} size={26} color="#FFFFFF" />
               </LinearGradient>
               <Text style={{ color: th.text, fontSize: 11.5, fontWeight: '800' }} numberOfLines={1}>{a.label}</Text>
@@ -129,7 +129,7 @@ function PhoneHome() {
           return (
             <Pressable onPress={() => setTab(MANUAL_TAB)} accessibilityRole="button" accessibilityLabel="Paper Trade" style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
               <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderColor: th.accent + '77' }}>
-                <LinearGradient colors={[th.buy, th.sell]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 48, height: 48, borderRadius: 8, alignItems: 'center', justifyContent: 'center', direction: 'ltr' }}>
+                <LinearGradient colors={[th.buy, th.sell]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 48, height: 48, borderRadius: 6, alignItems: 'center', justifyContent: 'center', direction: 'ltr' }}>
                   <Icon name="swap-vertical" size={26} color="#FFFFFF" />
                 </LinearGradient>
                 <View style={{ flex: 1 }}>
@@ -145,14 +145,14 @@ function PhoneHome() {
 
         {/* ---------- hero ---------- */}
         <Pressable onPress={() => setTab(1)} style={({ pressed }) => ({ opacity: pressed ? 0.94 : 1 })}>
-          <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, padding: 20, overflow: 'hidden', shadowColor: th.accent, shadowOpacity: 0.45, shadowRadius: 22, shadowOffset: { width: 0, height: 10 }, elevation: 8 }}>
+          <LinearGradient colors={[th.accent, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 6, padding: 20, overflow: 'hidden', shadowColor: th.accent, shadowOpacity: 0.45, shadowRadius: 22, shadowOffset: { width: 0, height: 10 }, elevation: 8 }}>
             <View style={{ position: 'absolute', right: -40, top: -40, width: 170, height: 170, borderRadius: 85, backgroundColor: th.onAccent + '14' }} />
             <View style={{ position: 'absolute', right: 30, bottom: -60, width: 130, height: 130, borderRadius: 65, backgroundColor: th.onAccent + '0E' }} />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={{ backgroundColor: th.onAccent + '26', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}>
+              <View style={{ backgroundColor: th.onAccent + '26', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 }}>
                 <Text style={{ color: th.onAccent, fontSize: 10.5, fontWeight: '900', letterSpacing: 1 }}>LIVE SIGNALS</Text>
               </View>
-              <View style={{ backgroundColor: th.onAccent, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+              <View style={{ backgroundColor: th.onAccent, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 }}>
                 <Text style={{ color: th.accent, fontSize: 10.5, fontWeight: '900', letterSpacing: 1 }}>CRT</Text>
               </View>
             </View>
@@ -173,7 +173,7 @@ function PhoneHome() {
 
         <Pressable onPress={() => setHistOpen(true)} accessibilityRole="button" accessibilityLabel={t('tabTradeHistory')} style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
           <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 }}>
-            <View style={{ width: 38, height: 38, borderRadius: 8, backgroundColor: th.gold + '26', alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt" size={20} color={th.gold} /></View>
+            <View style={{ width: 38, height: 38, borderRadius: 6, backgroundColor: th.gold + '26', alignItems: 'center', justifyContent: 'center' }}><Icon name="receipt" size={20} color={th.gold} /></View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: th.text, fontWeight: '900', fontSize: 14.5 }}>{t('tabTradeHistory')}</Text>
               <Text style={{ color: th.dim, fontSize: 11.5, marginTop: 1 }} numberOfLines={1}>{journal.length} {t('closedTradesWord')}</Text>
@@ -194,7 +194,7 @@ function PhoneHome() {
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {([['SETUPS', String(waiting.length), waiting.length ? th.gold : th.dim, 'Waiting for you'], ['RUNNING', desk.maxOpen > 0 ? `${runningT.length}/${desk.maxOpen}` : String(runningT.length), runningT.length ? th.buy : th.dim, floatMoney ? money(floatMoney) : 'Live trades'], ['TODAY', money(todayMoney), todayMoney >= 0 ? th.buy : th.sell, 'Closed result']] as const).map(([k, v, c, sub]) => (
-                <View key={k} style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 10 }}>
+                <View key={k} style={{ flex: 1, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 10 }}>
                   <Text style={{ color: th.dim, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.7 }}>{k}</Text>
                   <Text style={{ color: c, fontSize: 18, fontWeight: '900', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>{v}</Text>
                   <Text style={{ color: th.dim, fontSize: 10.5 }} numberOfLines={1}>{sub}</Text>
@@ -218,7 +218,7 @@ function PhoneHome() {
                   <Card style={{ padding: 14 }}>
                     <Text style={{ color: th.dim, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }} numberOfLines={1}>{nameOf(id).toUpperCase()}</Text>
                     <Text style={{ color: th.text, fontSize: 19, fontWeight: '900', marginTop: 6, letterSpacing: -0.3 }} numberOfLines={1} adjustsFontSizeToFit>{x ? x.price.toFixed(x.dec) : '—'}</Text>
-                    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 8, backgroundColor: col + '1F', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3 }}>
+                    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 8, backgroundColor: col + '1F', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 }}>
                       <Icon name={c >= 0 ? 'caret-up' : 'caret-down'} size={11} color={col} />
                       <Text style={{ color: col, fontSize: 11.5, fontWeight: '800' }}>{x ? `${Math.abs(c).toFixed(2)}%` : '—'}</Text>
                     </View>
@@ -265,7 +265,7 @@ function PhoneHome() {
               const buy = x.side === 'buy', c = buy ? th.buy : th.sell;
               return (
                 <Pressable key={x.id} onPress={() => setTab(3)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: i === recent.length - 1 ? 0 : 1, borderBottomColor: th.hair, opacity: pressed ? 0.8 : 1 })}>
-                  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: c + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={buy ? 'trending-up' : 'trending-down'} size={20} color={c} /></View>
+                  <View style={{ width: 40, height: 40, borderRadius: 6, backgroundColor: c + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={buy ? 'trending-up' : 'trending-down'} size={20} color={c} /></View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: th.text, fontSize: 14, fontWeight: '800' }} numberOfLines={1}>{x.name}</Text>
                     <Text style={{ color: th.dim, fontSize: 11.5 }} numberOfLines={1}>{x.source} · {new Date(x.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</Text>
@@ -285,7 +285,7 @@ function PhoneHome() {
         <Card style={{ padding: 14 }}>
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {([['TRADES', String(journal.length), th.text], ['PROFIT FACTOR', journal.length ? (isFinite(pf) ? pf.toFixed(2) : '∞') : '-', pf >= 1 ? th.buy : th.sell], ['AVG TRADE', journal.length ? money(avg) : '-', avg >= 0 ? th.buy : th.sell], ['BEST', journal.length ? money(best) : '-', th.buy]] as [string, string, string][]).map(([k, v, c]) => (
-              <View key={k} style={{ flex: 1, backgroundColor: th.panel2, borderRadius: 8, borderWidth: 1, borderColor: th.hair, paddingVertical: 10, paddingHorizontal: 8 }}>
+              <View key={k} style={{ flex: 1, backgroundColor: th.panel2, borderRadius: 6, borderWidth: 1, borderColor: th.hair, paddingVertical: 10, paddingHorizontal: 8 }}>
                 <Text style={{ color: th.dim, fontSize: 8.5, fontWeight: '900', letterSpacing: 0.6 }} numberOfLines={1}>{k}</Text>
                 <Text style={{ color: c, fontSize: 15, fontWeight: '900', marginTop: 3 }} numberOfLines={1} adjustsFontSizeToFit>{v}</Text>
               </View>
@@ -346,7 +346,7 @@ function PhoneHome() {
           <Card glow style={{ gap: 12 }}>
             {guide.steps.map((s, i) => (
               <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={s.icon} size={15} color={th.accent} /></View>
+                <View style={{ width: 28, height: 28, borderRadius: 6, backgroundColor: th.accent + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name={s.icon} size={15} color={th.accent} /></View>
                 <Text style={{ flex: 1, color: th.text, fontSize: 13.5, fontWeight: '700' }}>{s.title}</Text>
               </View>
             ))}
@@ -354,7 +354,7 @@ function PhoneHome() {
             <Text style={{ color: th.dim, fontSize: 12, fontWeight: '800', letterSpacing: 0.6 }}>{guide.gradeTitle}</Text>
             <View style={{ flexDirection: 'row', gap: 6 }}>
               {guide.grades.map((g) => (
-                <View key={g.grade} style={{ flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 8, backgroundColor: (gradeCol[g.grade] ?? th.accent) + '1A', borderWidth: 1, borderColor: (gradeCol[g.grade] ?? th.accent) + '66' }}>
+                <View key={g.grade} style={{ flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 6, backgroundColor: (gradeCol[g.grade] ?? th.accent) + '1A', borderWidth: 1, borderColor: (gradeCol[g.grade] ?? th.accent) + '66' }}>
                   <Text style={{ color: gradeCol[g.grade] ?? th.accent, fontWeight: '900', fontSize: 15 }}>{g.grade}</Text>
                   <Text style={{ color: th.text, fontSize: 10.5, fontWeight: '700', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>{g.label}</Text>
                   <Text style={{ color: th.dim, fontSize: 9.5, fontVariant: ['tabular-nums'] }} numberOfLines={1}>{g.range}</Text>
@@ -377,7 +377,7 @@ function PhoneHome() {
           ))}
         </View>
         <Card style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
-          <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: th.gold + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="bulb-outline" size={20} color={th.gold} /></View>
+          <View style={{ width: 40, height: 40, borderRadius: 6, backgroundColor: th.gold + '22', alignItems: 'center', justifyContent: 'center' }}><Icon name="bulb-outline" size={20} color={th.gold} /></View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: th.text, fontSize: 14, fontWeight: '900' }}>Trading tip of the day</Text>
             <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18, marginTop: 3 }}>{tip}</Text>

@@ -30,7 +30,7 @@ export function Sessions() {
         {SESSIONS.map((s) => {
           const on = !closed && sessionOpen(h, s.s, s.e);
           return (
-            <View key={s.n} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: on ? th.buy : th.line, backgroundColor: on ? th.buy + '22' : 'transparent' }}>
+            <View key={s.n} style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 6, borderWidth: 1, borderColor: on ? th.buy : th.line, backgroundColor: on ? th.buy + '22' : 'transparent' }}>
               <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: on ? th.buy : th.dim, marginBottom: 6 }} />
               <Text style={{ color: on ? th.text : th.dim, fontSize: 11, fontWeight: '700' }}>{s.n}</Text>
             </View>
@@ -49,7 +49,7 @@ type Level = { label: string; price: number; color: string };
 function TradeThisPair({ symId, onClose }: { symId: string; onClose: () => void }) {
   const { th, setTab } = useApp();
   return (
-    <Pressable onPress={() => { manualTarget.sym = symId; onClose(); setTab(MANUAL_TAB); }} accessibilityRole="button" accessibilityLabel="Trade this pair" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, borderRadius: 8, paddingHorizontal: 14, backgroundColor: th.accent + '1A', borderWidth: 1, borderColor: th.accent + '77', opacity: pressed ? 0.85 : 1 })}>
+    <Pressable onPress={() => { manualTarget.sym = symId; onClose(); setTab(MANUAL_TAB); }} accessibilityRole="button" accessibilityLabel="Trade this pair" style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, height: 48, borderRadius: 6, paddingHorizontal: 14, backgroundColor: th.accent + '1A', borderWidth: 1, borderColor: th.accent + '77', opacity: pressed ? 0.85 : 1 })}>
       <Icon name="swap-vertical" size={20} color={th.accent} />
       <Text style={{ flex: 1, color: th.text, fontWeight: '900', fontSize: 14 }}>Trade this pair · SELL / BUY</Text>
       <Icon name="chevron-forward" size={16} color={th.dim} />
@@ -133,7 +133,7 @@ export const Coin = ({ s, size = 42 }: { s: Sym; size?: number }) => {
   const base = s.name.split('/')[0].replace(/[^A-Za-z0-9]/g, '') || s.id, c = tint(base);
   const label = s.cat === 'deriv' ? base.slice(0, 1) + (s.name.match(/\d+/)?.[0]?.slice(0, 3) ?? '') : base.slice(0, 4).toUpperCase();
   return (
-    <View style={{ width: size, height: size, borderRadius: 8, backgroundColor: c + '22', borderWidth: 1, borderColor: c + '55', alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: size, height: size, borderRadius: 6, backgroundColor: c + '22', borderWidth: 1, borderColor: c + '55', alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ color: c, fontWeight: '900', fontSize: label.length > 3 ? size * 0.25 : size * 0.3 }} numberOfLines={1} adjustsFontSizeToFit>{label}</Text>
     </View>
   );
@@ -143,7 +143,7 @@ export const Coin = ({ s, size = 42 }: { s: Sym; size?: number }) => {
 const GlassTile = ({ icon, onPress, color, disabled }: { icon: string; onPress: () => void; color?: string; disabled?: boolean }) => {
   const { th } = useApp();
   return (
-    <Pressable onPress={onPress} disabled={disabled} hitSlop={6} style={({ pressed }) => ({ width: 42, height: 42, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, opacity: pressed ? 0.8 : 1 })}>
+    <Pressable onPress={onPress} disabled={disabled} hitSlop={6} style={({ pressed }) => ({ width: 42, height: 42, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, opacity: pressed ? 0.8 : 1 })}>
       <Icon name={icon} size={22} color={color ?? th.text} />
     </Pressable>
   );
@@ -162,7 +162,7 @@ const Stat = ({ icon, label, value, color }: { icon: string; label: string; valu
   const { th } = useApp();
   return (
     <Card style={{ flex: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <View style={{ width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: (color ?? th.accent) + '22' }}><Icon name={icon} size={17} color={color ?? th.accent} /></View>
+      <View style={{ width: 34, height: 34, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: (color ?? th.accent) + '22' }}><Icon name={icon} size={17} color={color ?? th.accent} /></View>
       <View style={{ flex: 1 }}>
         <Text style={{ color: th.dim, fontSize: 10.5, fontWeight: '800', letterSpacing: 0.8 }} numberOfLines={1}>{label.toUpperCase()}</Text>
         <Text style={{ color: color ?? th.text, fontSize: 16.5, fontWeight: '900', fontVariant: ['tabular-nums'] }} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
@@ -187,7 +187,7 @@ function PairPicker({ current, onPick, onClose }: { current: string; onPick: (s:
       <GlassBackdrop />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <GlassTile icon="chevron-back" onPress={onClose} />
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, height: 42 }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, height: 42 }}>
           <Icon name="search" size={18} color={th.dim} />
           <TextInput autoFocus value={q} onChangeText={setQ} placeholder={t('search')} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, paddingHorizontal: 10, paddingVertical: 0 }} />
           {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
@@ -307,7 +307,7 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
         {/* header: back, pair (tap to switch), star */}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 48, paddingBottom: 10 }}>
           <GlassTile icon="chevron-back" onPress={onClose} />
-          <Pressable disabled={!canPick} onPress={() => setPick(true)} style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, height: 42, paddingHorizontal: 8, borderRadius: 8, backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, opacity: pressed ? 0.85 : 1 })}>
+          <Pressable disabled={!canPick} onPress={() => setPick(true)} style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, height: 42, paddingHorizontal: 8, borderRadius: 6, backgroundColor: th.panel, borderWidth: 1, borderColor: th.line, opacity: pressed ? 0.85 : 1 })}>
             <Coin s={sym} size={28} />
             <View style={{ flex: 1 }}>
               <Text numberOfLines={1} style={{ color: th.text, fontSize: 15.5, fontWeight: '900', letterSpacing: -0.2 }}>{sym.name}</Text>
@@ -333,7 +333,7 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
               <View style={{ flex: 1, gap: 8 }}>
                 <Text style={{ color: th.text, fontSize: 36, fontWeight: '900', letterSpacing: -1, fontVariant: ['tabular-nums'] }} numberOfLines={1} adjustsFontSizeToFit>{shownPrice}</Text>
                 {!!spr && <Text style={{ color: th.dim, fontSize: 12, fontWeight: '700', fontVariant: ['tabular-nums'] }} numberOfLines={1}>Bid {q!.bid!.toFixed(dec)} · Ask {q!.ask!.toFixed(dec)} · Spread {spr.text}</Text>}
-                <View style={{ flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 4, backgroundColor: col + '24', borderColor: col + '55', borderWidth: 1, borderRadius: 8, paddingHorizontal: 9, paddingVertical: 4 }}>
+                <View style={{ flexDirection: 'row', alignSelf: 'flex-start', alignItems: 'center', gap: 4, backgroundColor: col + '24', borderColor: col + '55', borderWidth: 1, borderRadius: 6, paddingHorizontal: 9, paddingVertical: 4 }}>
                   <Icon name={up ? 'trending-up' : 'trending-down'} size={15} color={col} />
                   <Text style={{ color: col, fontWeight: '900', fontSize: 13 }}>{up ? '+' : ''}{c.toFixed(2)}%</Text>
                 </View>
@@ -355,7 +355,7 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
                   height={Math.round(height * 0.66)} onFull={() => setFull(true)} onSymbol={follow} onTouching={setLock} />
               ) : (
                 <>
-                  <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', backgroundColor: th.panel }}>
+                  <View style={{ borderRadius: 6, borderWidth: 1, borderColor: th.line, overflow: 'hidden', backgroundColor: th.panel }}>
                     <ChartWeb key={`${wkey}-${mode}-${th.bg}`} {...web} {...webExtra} onSymbol={follow} onTouching={setLock} height={Math.round(height * 0.62)} />
                   </View>
                   <Btn ghost icon="expand-outline" label={t('fullScreen')} onPress={() => setFull(true)} />
@@ -387,7 +387,7 @@ export function SymbolSheet({ sym: picked, onClose }: { sym: Sym | null; onClose
               <View style={{ flex: 1 }}><Btn ghost icon="arrow-down" label={t('alertBelow')} onPress={() => setAlert('below')} /></View>
             </View>
             {mine.map((a) => (
-              <View key={a.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingHorizontal: 12, height: 42, borderRadius: 8, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
+              <View key={a.id} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, paddingHorizontal: 12, height: 42, borderRadius: 6, backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Icon name={a.dir === 'above' ? 'arrow-up' : 'arrow-down'} size={16} color={a.dir === 'above' ? th.buy : th.sell} />
                   <Text style={{ color: th.text, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{a.level}</Text>

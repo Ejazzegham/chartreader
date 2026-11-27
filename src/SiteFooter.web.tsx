@@ -40,7 +40,7 @@ export function Footer({ w, go }: { w: number; go: (t: number, market?: string) 
           <View style={{ width: w >= 900 ? 230 : '100%', gap: 10 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>Stay Updated</Text>
             <Text style={{ color: '#DCE6FFCC', fontSize: 12.5, lineHeight: 18 }}>Get the latest market insights and updates.</Text>
-            <Pressable onPress={() => go(13)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 38, borderRadius: 8, backgroundColor: '#1F5FE8', cursor: 'pointer', opacity: st.hovered ? 0.9 : 1 })) as any}>
+            <Pressable onPress={() => go(13)} style={((st: any) => ({ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 38, borderRadius: 6, backgroundColor: '#1F5FE8', cursor: 'pointer', opacity: st.hovered ? 0.9 : 1 })) as any}>
               <Icon name="newspaper" size={15} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontSize: 12.5, fontWeight: '700' }}>Open Market News</Text>
             </Pressable>
           </View>

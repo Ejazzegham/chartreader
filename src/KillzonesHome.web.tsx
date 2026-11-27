@@ -81,8 +81,8 @@ function PanelHead({ icon, title, sub, right, bar }: { icon?: string; title: str
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 }}>
-        {!!icon && <View style={{ width: 42, height: 42, borderRadius: 8, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>}
-        {bar && <View style={{ width: 3, height: 18, borderRadius: 2, backgroundColor: P.blue }} />}
+        {!!icon && <View style={{ width: 42, height: 42, borderRadius: 6, backgroundColor: P.soft, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={20} color={P.blue} /></View>}
+        {bar && <View style={{ width: 3, height: 18, borderRadius: 3, backgroundColor: P.blue }} />}
         <View style={{ flexShrink: 1 }}>
           <Text accessibilityRole="header" style={{ color: P.head, fontSize: 16, fontWeight: '800' }}>{title}</Text>
           {!!sub && <Text style={{ color: P.body, fontSize: 12.5, marginTop: 1 }}>{sub}</Text>}
@@ -146,13 +146,13 @@ export default function KillzonesHome({ active }: Props) {
                 right={
                   <View style={{ alignItems: 'flex-end', flexDirection: 'row', gap: 10 }}>
                     <Text style={{ color: P.body, fontSize: 13, fontVariant: ['tabular-nums'] } as any}>UTC {pad(now.getUTCHours())}:{pad(now.getUTCMinutes())}:{pad(now.getUTCSeconds())}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 8, backgroundColor: status.color + '1F', borderWidth: 1, borderColor: status.color + '55' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, height: 24, borderRadius: 6, backgroundColor: status.color + '1F', borderWidth: 1, borderColor: status.color + '55' }}>
                       <Dot color={status.color} live />
                       <Text style={{ color: status.color, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }}>{status.text}</Text>
                     </View>
                   </View>
                 } />
-              <View style={{ borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#F8FAFF', padding: 20, gap: 16 }}>
+              <View style={{ borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? th.panel2 : '#F8FAFF', padding: 20, gap: 16 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 20 }}>
                   <AnalogClock now={now} />
                   <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
@@ -172,7 +172,7 @@ export default function KillzonesHome({ active }: Props) {
             {/* 24 hour timeline (two lanes: the big windows, then the Silver Bullet hours) */}
             <Panel style={{ padding: 20, gap: 12 }}>
               <PanelHead icon="analytics-outline" title="24 hour UTC timeline" sub="Where each window sits in the day" />
-              <View style={{ height: 40, borderRadius: 8, backgroundColor: P.alt, borderWidth: 1, borderColor: P.border, overflow: 'hidden', direction: 'ltr' } as any}>
+              <View style={{ height: 40, borderRadius: 6, backgroundColor: P.alt, borderWidth: 1, borderColor: P.border, overflow: 'hidden', direction: 'ltr' } as any}>
                 {zones.map((k) => {
                   const lane = LANE_ONE.includes(k.key) ? 4 : 22, on = inside(k), c = KZ_COLOR[k.key] ?? P.blue;
                   return <View key={k.key} style={{ position: 'absolute', top: lane, height: 14, borderRadius: 4, left: `${(k.from / 24) * 100}%`, width: `${((k.to - k.from) / 24) * 100}%`, backgroundColor: c + (on ? 'E6' : '88') } as any} />;
@@ -198,14 +198,14 @@ export default function KillzonesHome({ active }: Props) {
               {zones.map((k) => {
                 const on = inside(k), c = KZ_COLOR[k.key] ?? P.blue;
                 return (
-                  <View key={k.key} style={{ flexDirection: 'row', alignItems: 'stretch', borderRadius: 8, borderWidth: 1, borderColor: on ? c + '88' : P.border, backgroundColor: on ? c + '12' : P.card, overflow: 'hidden' }}>
+                  <View key={k.key} style={{ flexDirection: 'row', alignItems: 'stretch', borderRadius: 6, borderWidth: 1, borderColor: on ? c + '88' : P.border, backgroundColor: on ? c + '12' : P.card, overflow: 'hidden' }}>
                     <View style={{ width: 5, backgroundColor: c }} />
                     <View style={{ flex: 1, flexDirection: wideRows ? 'row' : 'column', alignItems: wideRows ? 'center' : 'flex-start', gap: wideRows ? 18 : 6, paddingVertical: 14, paddingHorizontal: 16 }}>
                       <View style={{ width: wideRows ? 210 : undefined, gap: 3 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                           <Dot color={c} />
                           <Text style={{ color: P.head, fontSize: 14, fontWeight: '800', flexShrink: 1 }}>{k.name}</Text>
-                          {on && <View style={{ paddingHorizontal: 7, height: 18, borderRadius: 8, backgroundColor: th.buy + '24', justifyContent: 'center' }}><Text style={{ color: th.buy, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.5 }}>LIVE</Text></View>}
+                          {on && <View style={{ paddingHorizontal: 7, height: 18, borderRadius: 6, backgroundColor: th.buy + '24', justifyContent: 'center' }}><Text style={{ color: th.buy, fontSize: 9.5, fontWeight: '900', letterSpacing: 0.5 }}>LIVE</Text></View>}
                         </View>
                         <Text style={{ color: P.body, fontSize: 12.5, fontVariant: ['tabular-nums'] } as any}>UTC {utcTxt(k.from)} - {utcTxt(k.to)}</Text>
                         <Text style={{ color: P.body, fontSize: 11, opacity: 0.8, fontVariant: ['tabular-nums'] } as any}>{t('kzYourTime')} {local(k.from)} - {local(k.to)}</Text>
@@ -225,7 +225,7 @@ export default function KillzonesHome({ active }: Props) {
             right={<Pressable onPress={() => go(14)} accessibilityRole="link" style={((s: any) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, opacity: s.hovered ? 0.8 : 1, cursor: 'pointer' })) as any}><Text style={{ color: P.blue, fontSize: 13, fontWeight: '700' }}>View Full Guide</Text><Icon name="arrow-forward" size={14} color={P.blue} /></Pressable>} />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
             {STEPS.map((s, i) => (
-              <View key={s.title} style={{ flexGrow: 1, flexBasis: stepCols === 3 ? '30%' : stepCols === 2 ? '45%' : '100%', minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, paddingLeft: 18, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
+              <View key={s.title} style={{ flexGrow: 1, flexBasis: stepCols === 3 ? '30%' : stepCols === 2 ? '45%' : '100%', minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, paddingLeft: 18, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card }}>
                 <View style={{ position: 'absolute', top: -8, left: -8, width: 24, height: 24, borderRadius: 12, backgroundColor: th.accent2, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800' }}>{i + 1}</Text></View>
                 <View style={{ width: 54, height: 54, borderRadius: 27, backgroundColor: th.accent2 + '1A', alignItems: 'center', justifyContent: 'center' }}><Icon name={s.icon} size={26} color={th.accent2} /></View>
                 <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
@@ -239,14 +239,14 @@ export default function KillzonesHome({ active }: Props) {
 
         {/* call to action */}
         <LinearGradient colors={[P.blue + (P.dark ? '26' : '14'), th.accent2 + (P.dark ? '26' : '14')]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-          style={{ borderRadius: 8, borderWidth: 1, borderColor: P.blue + '22', padding: 22, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 22, overflow: 'hidden' }}>
+          style={{ borderRadius: 6, borderWidth: 1, borderColor: P.blue + '22', padding: 22, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 22, overflow: 'hidden' }}>
           <AnalogClock now={now} size={76} />
           <View style={{ flex: 1, minWidth: 240, gap: 4 }}>
             <Text style={{ color: P.head, fontSize: 20, fontWeight: '900' }}>Trade the Best Time</Text>
             <Text style={{ color: P.body, fontSize: 13.5, lineHeight: 20, maxWidth: 560 }}>Killzones give you the edge. Use the right time, right tools and better analysis to improve your trading results.</Text>
           </View>
-          <Pressable accessibilityRole="button" onPress={() => go(1, 'ict')} style={((s: any) => ({ borderRadius: 8, opacity: s.hovered ? 0.92 : 1, cursor: 'pointer', shadowColor: P.blue, shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } })) as any}>
-            <LinearGradient colors={[P.blue, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 50, paddingHorizontal: 28, borderRadius: 8 }}>
+          <Pressable accessibilityRole="button" onPress={() => go(1, 'ict')} style={((s: any) => ({ borderRadius: 6, opacity: s.hovered ? 0.92 : 1, cursor: 'pointer', shadowColor: P.blue, shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } })) as any}>
+            <LinearGradient colors={[P.blue, th.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, height: 50, paddingHorizontal: 28, borderRadius: 6 }}>
               <Icon name="stats-chart" size={16} color="#FFFFFF" /><Text style={{ color: '#FFFFFF', fontSize: 14.5, fontWeight: '700' }}>Open Analysis</Text><Icon name="arrow-forward" size={16} color="#FFFFFF" />
             </LinearGradient>
           </Pressable>

@@ -101,7 +101,7 @@ export default function Scalping({ embedded, on, symId: symProp, setSymId: setSy
         <GuardBanner />
         {!symProp && (<>
         {/* ---------- search + symbols ---------- */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: th.panel, borderColor: th.line, borderWidth: 1, borderRadius: 6, paddingHorizontal: 12 }}>
           <Icon name="search" size={18} color={th.dim} />
           <TextInput value={q} onChangeText={setQ} placeholder={t('search')} placeholderTextColor={th.dim} autoCapitalize="none" style={{ flex: 1, color: th.text, padding: 12 }} />
           {!!q && <Pressable onPress={() => setQ('')} hitSlop={10}><Icon name="close-circle" size={18} color={th.dim} /></Pressable>}
@@ -119,7 +119,7 @@ export default function Scalping({ embedded, on, symId: symProp, setSymId: setSy
           {chips.map((id) => {
             const on = id === symId;
             return (
-              <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
+              <Pressable key={id} onPress={() => setSymId(id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 6, borderWidth: 1.5, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
                 <Text style={{ color: on ? th.onAccent : th.dim, fontWeight: '700', fontSize: 13 }}>{symOf(id).name}</Text>
               </Pressable>
             );
@@ -131,13 +131,13 @@ export default function Scalping({ embedded, on, symId: symProp, setSymId: setSy
         <Segment value={view} onChange={(k) => setView(k as any)} options={[{ k: 'scalp', label: 'Scalp' }, { k: 'candle', label: 'Candle' }, { k: 'div', label: 'Divergence' }]} />
 
         {/* ---------- live signal hero ---------- */}
-        <LinearGradient colors={[bc + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, borderWidth: 1, borderColor: bc + '66', padding: 16 }}>
+        <LinearGradient colors={[bc + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 6, borderWidth: 1, borderColor: bc + '66', padding: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Icon name="flash" size={16} color={th.gold} />
               <Text style={{ color: th.dim, fontWeight: '800', fontSize: 11, letterSpacing: 1.2 }}>{sym.name} · {tfLabel}</Text>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: th.bg, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: th.line }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: th.bg, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: th.line }}>
               <Icon name="timer-outline" size={13} color={th.accent} />
               <Text style={{ color: th.text, fontWeight: '800', fontSize: 12, fontVariant: ['tabular-nums'] }}>{fmtLeft(left)}</Text>
             </View>
@@ -154,14 +154,14 @@ export default function Scalping({ embedded, on, symId: symProp, setSymId: setSy
             {([['candle', 'Candles', 'bar-chart-outline'], ['ha', 'Heikin Ashi', 'swap-vertical-outline']] as const).map(([k, label, ic]) => {
               const on = style === k;
               return (
-                <Pressable key={k} onPress={() => setStyle(k)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 30, borderRadius: 8, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.bg }}>
+                <Pressable key={k} onPress={() => setStyle(k)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 30, borderRadius: 6, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.bg }}>
                   <Icon name={ic} size={13} color={on ? th.onAccent : th.dim} />
                   <Text style={{ color: on ? th.onAccent : th.dim, fontSize: 11.5, fontWeight: '800' }}>{label}</Text>
                 </Pressable>
               );
             })}
             <View style={{ flex: 1 }} />
-            <Pressable onPress={() => setPats(!pats)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 30, borderRadius: 8, borderWidth: 1, borderColor: pats ? th.gold : th.line, backgroundColor: pats ? th.gold + '22' : th.bg }}>
+            <Pressable onPress={() => setPats(!pats)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, height: 30, borderRadius: 6, borderWidth: 1, borderColor: pats ? th.gold : th.line, backgroundColor: pats ? th.gold + '22' : th.bg }}>
               <Icon name={pats ? 'eye' : 'eye-off'} size={13} color={pats ? th.gold : th.dim} />
               <Text style={{ color: pats ? th.text : th.dim, fontSize: 11.5, fontWeight: '800' }}>Patterns</Text>
             </Pressable>
@@ -252,7 +252,7 @@ export default function Scalping({ embedded, on, symId: symProp, setSymId: setSy
           {crt.c1 ? (
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {[[`${crt.htfLabel} High`, crt.c1.h, th.sell], ['50%', crt.c1.eq, th.accent2], [`${crt.htfLabel} Low`, crt.c1.l, th.buy]].map(([k, v, c]: any) => (
-                <View key={k} style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 10 }}>
+                <View key={k} style={{ flex: 1, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 10 }}>
                   <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800' }}>{k}</Text>
                   <Text style={{ color: c, fontWeight: '900', marginTop: 2 }} numberOfLines={1} adjustsFontSizeToFit>{f(v)}</Text>
                 </View>
@@ -274,11 +274,11 @@ export default function Scalping({ embedded, on, symId: symProp, setSymId: setSy
             </View>
             <View style={{ height: 8 }} />
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
-              <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 10 }}>
+              <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 10 }}>
                 <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800' }}>TREND INTO NOW</Text>
                 <Text style={{ color: cdl.trend === 'up' ? th.buy : cdl.trend === 'down' ? th.sell : th.dim, fontWeight: '900', marginTop: 2 }}>{cdl.trend === 'up' ? 'Rising' : cdl.trend === 'down' ? 'Falling' : 'Sideways'}</Text>
               </View>
-              <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 8, borderWidth: 1, borderColor: th.line, padding: 10 }}>
+              <View style={{ flex: 1, backgroundColor: th.bg, borderRadius: 6, borderWidth: 1, borderColor: th.line, padding: 10 }}>
                 <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800' }}>CANDLE BIAS</Text>
                 <Text style={{ color: cdl.bias === 'bullish' ? th.buy : cdl.bias === 'bearish' ? th.sell : th.gold, fontWeight: '900', marginTop: 2 }}>{cdl.bias === 'bullish' ? 'Bullish' : cdl.bias === 'bearish' ? 'Bearish' : 'Neutral'}</Text>
               </View>

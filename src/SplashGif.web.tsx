@@ -48,7 +48,7 @@ const CSS = `
 .sp-wave{fill:none;stroke-linecap:round;stroke-width:1.3;stroke-dasharray:1 1;stroke-dashoffset:1;filter:drop-shadow(0 0 3px #3C8CFF);animation:sp-draw 1.3s 1.75s cubic-bezier(.3,.6,.3,1) forwards}
 .sp-wave.s2{stroke-width:.8;opacity:.6;animation-delay:1.9s}
 @keyframes sp-draw{to{stroke-dashoffset:0}}
-.sp-logo{position:absolute;left:${SW / 2 - 49}px;top:76px;width:98px;height:98px;opacity:0;border-radius:22px;animation:sp-pop .85s 1.15s cubic-bezier(.2,.9,.3,1.2) forwards}
+.sp-logo{position:absolute;left:${SW / 2 - 49}px;top:76px;width:98px;height:98px;opacity:0;border-radius:6px;animation:sp-pop .85s 1.15s cubic-bezier(.2,.9,.3,1.2) forwards}
 .sp-logo>div{box-shadow:0 0 22px 3px rgba(120,185,255,.8),0 0 60px 12px rgba(50,130,255,.55),0 0 120px 30px rgba(30,100,255,.3);animation:sp-glow 3.6s 2.1s ease-in-out infinite}
 @keyframes sp-pop{0%{opacity:0;transform:scale(.55)}65%{opacity:1;transform:scale(1.07)}100%{opacity:1;transform:scale(1)}}
 @keyframes sp-glow{50%{box-shadow:0 0 16px 2px rgba(120,185,255,.6),0 0 46px 8px rgba(50,130,255,.4),0 0 100px 22px rgba(30,100,255,.22)}}

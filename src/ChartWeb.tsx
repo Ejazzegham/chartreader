@@ -41,7 +41,7 @@ export default function ChartWeb({ uri, html, height, onSymbol, fallbackHtml, on
   const [fb, setFb] = useState(false);
   const netErr = /ERR_NAME_NOT_RESOLVED|ERR_INTERNET|ERR_CONNECTION|ERR_TIMED_OUT|ERR_NETWORK|ERR_PROXY|ERR_TUNNEL|ERR_ADDRESS/i.test(err);
   const fail = (msg: string) => { if (fallbackHtml && !fb) { setFb(true); setN((x) => x + 1); } else setErr(msg); };
-  const box = { height, flex: height ? undefined : 1, backgroundColor: th.bg, borderRadius: 8, overflow: 'hidden' as const };
+  const box = { height, flex: height ? undefined : 1, backgroundColor: th.bg, borderRadius: 6, overflow: 'hidden' as const };
   if (err) {
     return (
       <View style={{ ...box, padding: 16, gap: 12, justifyContent: 'center' }}>

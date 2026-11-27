@@ -65,7 +65,7 @@ export function RadialWheel({ w, h, tfs, current, onTf, actions, onClose }: { w:
 // The small bar above the chart: timeframe chip (opens the wheel), crosshair mode, fit / reset. Extra buttons go in `extra`.
 export function Mt5Bar({ tfLabel, onWheel, crossMode, onCross, onFit, fitOn, extra }: { tfLabel?: string; onWheel: () => void; crossMode: boolean; onCross: () => void; onFit?: () => void; fitOn?: boolean; extra?: React.ReactNode }) {
   const { th } = useApp();
-  const btn = (on: boolean) => ({ height: 34, minWidth: 34, paddingHorizontal: 8, borderRadius: 8, alignItems: 'center' as const, justifyContent: 'center' as const, flexDirection: 'row' as const, gap: 5, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '26' : 'transparent' });
+  const btn = (on: boolean) => ({ height: 34, minWidth: 34, paddingHorizontal: 8, borderRadius: 6, alignItems: 'center' as const, justifyContent: 'center' as const, flexDirection: 'row' as const, gap: 5, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent + '26' : 'transparent' });
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap', direction: 'ltr' }}>
       {!!tfLabel && (

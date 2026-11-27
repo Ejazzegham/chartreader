@@ -29,10 +29,10 @@ export default function PropFirmsBody({ w }: { w: number }) {
   return (
     <View style={{ gap: 20 }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-        <View accessibilityRole={'tablist' as any} style={{ flexDirection: 'row', gap: 8, padding: 6, borderRadius: 8, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, flexGrow: 1 }}>
+        <View accessibilityRole={'tablist' as any} style={{ flexDirection: 'row', gap: 8, padding: 6, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.card, flexGrow: 1 }}>
           {TABS.map((t) => { const on = tab === t.id; return (
             <Pressable key={t.id} onPress={() => setTab(t.id)} accessibilityRole={'tab' as any} accessibilityState={{ selected: on }}
-              style={((s: any) => ({ flex: 1, minWidth: 96, height: 42, borderRadius: 8, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? P.blue : s.hovered ? P.soft : 'transparent', ...hand })) as any}>
+              style={((s: any) => ({ flex: 1, minWidth: 96, height: 42, borderRadius: 6, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? P.blue : s.hovered ? P.soft : 'transparent', ...hand })) as any}>
               <Icon name={t.icon} size={16} color={on ? P.th.onAccent : P.head} />
               <Text style={{ color: on ? P.th.onAccent : P.head, fontSize: 14, fontWeight: '800' }}>{t.label}</Text>
             </Pressable>); })}

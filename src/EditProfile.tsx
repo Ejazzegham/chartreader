@@ -48,7 +48,7 @@ export default function EditProfile({ visible, onClose }: { visible: boolean; on
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: th.glass ? th.solid : th.bg, paddingTop: insets.top }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: th.hair }}>
-          <Pressable onPress={onClose} hitSlop={10} style={{ width: 38, height: 38, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}><Icon name="chevron-back" size={20} color={th.text} /></Pressable>
+          <Pressable onPress={onClose} hitSlop={10} style={{ width: 38, height: 38, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}><Icon name="chevron-back" size={20} color={th.text} /></Pressable>
           <Text style={{ flex: 1, color: th.text, fontSize: 18, fontWeight: '900' }}>Edit profile</Text>
         </View>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -79,7 +79,7 @@ export default function EditProfile({ visible, onClose }: { visible: boolean; on
 
             <Card>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <View style={{ width: 40, height: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22' }}><Icon name="cloud-done-outline" size={21} color={th.accent} /></View>
+                <View style={{ width: 40, height: 40, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22' }}><Icon name="cloud-done-outline" size={21} color={th.accent} /></View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: th.text, fontSize: 15, fontWeight: '900' }}>Cloud backup</Text>
                   <Text style={{ color: sCol, fontSize: 12.5, marginTop: 2 }}>{status}</Text>

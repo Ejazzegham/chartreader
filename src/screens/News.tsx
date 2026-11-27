@@ -45,7 +45,7 @@ function Calendar({ active }: { active: boolean }) {
   return (
     <>
       <View style={{ gap: 12 }}>
-        <LinearGradient colors={[heroCol + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 8, borderWidth: 1, borderColor: heroCol + '66', padding: 16 }}>
+        <LinearGradient colors={[heroCol + '33', th.panel]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: 6, borderWidth: 1, borderColor: heroCol + '66', padding: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Icon name={risk.level === 'clear' ? 'shield-checkmark' : 'warning'} size={18} color={heroCol} />
             <Text style={{ color: heroCol, fontWeight: '900', fontSize: 16, flex: 1 }}>{heroTitle}</Text>
@@ -83,7 +83,7 @@ function Calendar({ active }: { active: boolean }) {
               {items.map((e, i) => {
                 const mins = (e.t - now) / 60000, past = mins < -15, hot = !past && e.impact === 'High' && mins <= 30;
                 return (
-                  <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderTopWidth: i ? 1 : 0, borderColor: th.line, opacity: past ? 0.5 : 1, backgroundColor: hot ? th.sell + '14' : 'transparent', borderRadius: hot ? 8 : 0 }}>
+                  <View key={e.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderTopWidth: i ? 1 : 0, borderColor: th.line, opacity: past ? 0.5 : 1, backgroundColor: hot ? th.sell + '14' : 'transparent', borderRadius: hot ? 6 : 0 }}>
                     <View style={{ width: 8, height: 36, borderRadius: 4, backgroundColor: icol(e.impact) }} />
                     <View style={{ width: 46 }}>
                       <Text style={{ color: th.text, fontWeight: '800', fontSize: 13 }}>{localTime(e.t)}</Text>
@@ -124,7 +124,7 @@ function Story({ h, now }: { h: { id: string; title: string; link: string; sourc
   return (
     <Pressable onPress={() => safeHttpUrl(h.link) && Linking.openURL(h.link).catch(() => {})} style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
       <Card style={{ padding: 14, flexDirection: 'row', gap: 12 }}>
-        <View style={{ width: 4, borderRadius: 2, backgroundColor: col }} />
+        <View style={{ width: 4, borderRadius: 3, backgroundColor: col }} />
         <View style={{ flex: 1 }}>
           <Text style={{ color: th.text, fontWeight: '800', fontSize: 14.5, lineHeight: 20 }} numberOfLines={3}>{h.title}</Text>
           {!!h.summary && <Text style={{ color: th.dim, fontSize: 12.5, lineHeight: 18, marginTop: 4 }} numberOfLines={2}>{h.summary}</Text>}

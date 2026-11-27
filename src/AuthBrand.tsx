@@ -33,20 +33,20 @@ export default function AuthBrand({ mode }: { mode: 'login' | 'signup' }) {
       <HeroFx />
       <View style={{ flex: 1, justifyContent: 'space-between', paddingHorizontal: 56, paddingVertical: 44 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <LogoMark size={48} radius={11} />
+          <LogoMark size={48} radius={6} />
           <View>
             <Text style={{ color: tx, fontSize: 21, fontWeight: '700', letterSpacing: -0.2 }}>Chart Reader</Text>
             <Text style={{ color: HERO_BRASS, fontSize: 10, fontWeight: '700', letterSpacing: 2.2 }}>ANALYZE · LEARN · TRADE</Text>
           </View>
         </View>
         <View style={{ gap: 18, maxWidth: 500 }}>
-          <View style={{ width: 40, height: 3, borderRadius: 2, backgroundColor: HERO_BRASS }} />
+          <View style={{ width: 40, height: 3, borderRadius: 3, backgroundColor: HERO_BRASS }} />
           <Text style={{ color: tx, fontSize: 40, fontWeight: '800', letterSpacing: -1.1, lineHeight: 46 }}>{c.head}</Text>
           <Text style={{ color: soft, fontSize: 16, lineHeight: 25 }}>{c.text}</Text>
           <View style={{ gap: 14, marginTop: 8 }}>
             {c.points.map(([icon, title, sub]) => (
               <View key={title} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#FFFFFF1A', borderWidth: 1, borderColor: '#FFFFFF2E', alignItems: 'center', justifyContent: 'center' }}>
+                <View style={{ width: 38, height: 38, borderRadius: 6, backgroundColor: '#FFFFFF1A', borderWidth: 1, borderColor: '#FFFFFF2E', alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name={icon} size={18} color={HERO_BRASS} />
                 </View>
                 <View style={{ flex: 1 }}>

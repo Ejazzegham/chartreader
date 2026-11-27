@@ -24,7 +24,7 @@ export default function Landing({ stacked = false }: { stacked?: boolean }) {
       <HeroFx />
       <Wrap {...wrapProps}>
         {!stacked && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <LogoMark size={44} radius={10} />
+          <LogoMark size={44} radius={6} />
           <View>
             <Text style={{ color: tx, fontSize: 20, fontWeight: '700', letterSpacing: -0.2 }}>Chart Reader</Text>
             <Text style={{ color: HERO_BRASS, fontSize: 10, fontWeight: '700', letterSpacing: 2.2 }}>ANALYZE · LEARN · TRADE</Text>

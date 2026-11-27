@@ -23,7 +23,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
   const toggle = (k: string) => onStudies(studies.includes(k) ? studies.filter((x) => x !== k) : [...studies, k]);
 
   const IconBtn = ({ name, onPress, on }: { name: string; onPress: () => void; on?: boolean }) => (
-    <Pressable onPress={onPress} hitSlop={6} style={({ pressed }) => ({ width: 36, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent + '26' : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.7 : 1 })}>
+    <Pressable onPress={onPress} hitSlop={6} style={({ pressed }) => ({ width: 36, height: 36, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent + '26' : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.7 : 1 })}>
       <Icon name={name} size={18} color={on ? th.accent : th.text} />
     </Pressable>
   );
@@ -33,7 +33,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
       {/* header */}
       <Card style={{ padding: 12, gap: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={{ width: 38, height: 38, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22', borderWidth: 1, borderColor: th.accent + '66' }}>
+          <View style={{ width: 38, height: 38, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.accent + '22', borderWidth: 1, borderColor: th.accent + '66' }}>
             <Icon name="stats-chart" size={20} color={th.accent} />
           </View>
           <View style={{ flex: 1 }}>
@@ -52,7 +52,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
             {TFS.map((x) => {
               const on = x.k === tf;
               return (
-                <Pressable key={x.k} onPress={() => onTf(x.k)} style={({ pressed }) => ({ minWidth: 46, height: 34, paddingHorizontal: 12, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.8 : 1 })}>
+                <Pressable key={x.k} onPress={() => onTf(x.k)} style={({ pressed }) => ({ minWidth: 46, height: 34, paddingHorizontal: 12, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.8 : 1 })}>
                   <Text style={{ color: on ? th.onAccent : th.text, fontWeight: '900', fontSize: 12.5 }}>{x.label}</Text>
                 </Pressable>
               );
@@ -67,7 +67,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
             {TV_STYLES.map((x) => {
               const on = x.k === cstyle;
               return (
-                <Pressable key={x.k} onPress={() => onStyle(x.k)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 8, backgroundColor: on ? th.accent + '26' : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.8 : 1 })}>
+                <Pressable key={x.k} onPress={() => onStyle(x.k)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 6, height: 34, paddingHorizontal: 12, borderRadius: 6, backgroundColor: on ? th.accent + '26' : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.8 : 1 })}>
                   <Icon name={x.icon} size={15} color={on ? th.accent : th.dim} />
                   <Text style={{ color: on ? th.accent : th.text, fontWeight: '800', fontSize: 12.5 }}>{x.label}</Text>
                 </Pressable>
@@ -78,7 +78,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
       </Card>
 
       {/* the chart */}
-      <View style={{ borderRadius: 8, borderWidth: 1, borderColor: th.line, overflow: 'hidden', backgroundColor: th.panel }}>
+      <View style={{ borderRadius: 6, borderWidth: 1, borderColor: th.line, overflow: 'hidden', backgroundColor: th.panel }}>
         <ChartWeb key={`${symbol}-${tf}-${cstyle}-${studies.join('')}-${th.bg}-${reload}`} html={html} height={height} onSymbol={onSymbol} onTouching={onTouching} />
       </View>
 
@@ -100,7 +100,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
         {studies.length > 0 && !open && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
             {TV_STUDIES.filter((x) => studies.includes(x.k)).map((x) => (
-              <Pressable key={x.k} onPress={() => toggle(x.k)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, height: 30, paddingHorizontal: 10, borderRadius: 8, backgroundColor: th.accent + '22', borderWidth: 1, borderColor: th.accent + '66' }}>
+              <Pressable key={x.k} onPress={() => toggle(x.k)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, height: 30, paddingHorizontal: 10, borderRadius: 6, backgroundColor: th.accent + '22', borderWidth: 1, borderColor: th.accent + '66' }}>
                 <Text style={{ color: th.accent, fontWeight: '800', fontSize: 12 }}>{x.label}</Text>
                 <Icon name="close" size={13} color={th.accent} />
               </Pressable>
@@ -111,10 +111,10 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
         {open && (
           <View style={{ gap: 12 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Pressable onPress={() => onStudies(['rsi', 'macd', 'bb'])} style={{ flex: 1, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
+              <Pressable onPress={() => onStudies(['rsi', 'macd', 'bb'])} style={{ flex: 1, height: 36, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair }}>
                 <Text style={{ color: th.text, fontWeight: '800', fontSize: 12.5 }}>Quick set · RSI, MACD, Bollinger</Text>
               </Pressable>
-              <Pressable onPress={() => onStudies([])} disabled={!studies.length} style={{ width: 90, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair, opacity: studies.length ? 1 : 0.4 }}>
+              <Pressable onPress={() => onStudies([])} disabled={!studies.length} style={{ width: 90, height: 36, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: th.panel2, borderWidth: 1, borderColor: th.hair, opacity: studies.length ? 1 : 0.4 }}>
                 <Text style={{ color: th.sell, fontWeight: '800', fontSize: 12.5 }}>Clear all</Text>
               </Pressable>
             </View>
@@ -125,7 +125,7 @@ export default function TradingViewPanel({ symbol, symId, tf, onTf, studies, onS
                   {TV_STUDIES.filter((x) => x.g === g.g).map((x) => {
                     const on = studies.includes(x.k);
                     return (
-                      <Pressable key={x.k} onPress={() => toggle(x.k)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 11, borderRadius: 8, backgroundColor: on ? th.accent : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.8 : 1 })}>
+                      <Pressable key={x.k} onPress={() => toggle(x.k)} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 5, height: 34, paddingHorizontal: 11, borderRadius: 6, backgroundColor: on ? th.accent : th.panel2, borderWidth: 1, borderColor: on ? th.accent : th.hair, opacity: pressed ? 0.8 : 1 })}>
                         {on && <Icon name="checkmark" size={14} color={th.onAccent} />}
                         <Text style={{ color: on ? th.onAccent : th.text, fontWeight: '800', fontSize: 12.5 }}>{x.label}</Text>
                       </Pressable>
