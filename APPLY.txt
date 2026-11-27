@@ -1,2 +1,0 @@
-Crypto Exchanges page. Copy every file here over the same path in your project (App.tsx, nav.ts, i18n.ts, Desktop.web.tsx, DirectoryBody.tsx, propFirms.ts, CHANGES.md also hold the earlier pages' changes). Nothing to delete, no new packages.
-To edit exchanges: src/cryptoExchanges.ts. Then: npm run build:web
