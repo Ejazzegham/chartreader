@@ -9,7 +9,7 @@ import { Screen, Field, Dim, Btn, Segment, Icon, confirmAction, AppHeader, HeroB
 import { useWindowDimensions, useLayout } from '../win';
 import { auth } from '../firebase';
 import { TFS } from '../markets';
-import { THEMES, themeId } from '../theme';
+import { THEMES, STYLES, themeId, themeLabel } from '../theme';
 import { LANGS } from '../i18n';
 import { PAY, PLANS, getServer, setServer, pushTest, APP_DOWNLOAD_URL } from '../license';
 import PayBox from '../PayBox';
@@ -321,19 +321,19 @@ export default function Settings() {
         {/* ---------- Appearance ---------- */}
         <Section icon="color-palette-outline" title="Appearance" sub="Customize the look and feel of your platform.">
           <Grid wide={wide} cols={2}>
-            <Tile icon="contrast-outline" label={t('theme')}><Pick value={themeId(settings.theme)} options={Object.keys(THEMES).map((id) => ({ k: id, label: t('th_' + id) }))} onChange={(k) => setSettings({ theme: k })} /></Tile>
+            <Tile icon="contrast-outline" label={t('theme')}><Pick value={themeId(settings.theme)} options={Object.keys(THEMES).map((id) => ({ k: id, label: themeLabel(id) }))} onChange={(k) => setSettings({ theme: k })} /></Tile>
             <Tile icon="time-outline" label="Default timeframe"><Pick value={settings.defTf} options={TFS} onChange={(k) => setSettings({ defTf: k })} /></Tile>
           </Grid>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
             {Object.entries(THEMES).map(([id, tm]) => {
               const on = themeId(settings.theme) === id;
               return (
-                <Pressable key={id} onPress={() => setSettings({ theme: id })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '13%' : '47%', flexGrow: 1, minWidth: 110, borderRadius: 6, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel2, padding: 8, gap: 8, opacity: pressed ? 0.85 : 1 })}>
-                  <LinearGradient colors={[tm.back, tm.back]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 52, borderRadius: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
+                <Pressable key={id} onPress={() => setSettings({ theme: id })} accessibilityRole="button" accessibilityState={{ selected: on }} style={({ pressed }) => ({ flexBasis: wide ? '15%' : '47%', flexGrow: 1, minWidth: 110, borderRadius: 6, borderWidth: on ? 2 : 1, borderColor: on ? th.accent : th.line, backgroundColor: th.panel2, padding: 8, gap: 8, opacity: pressed ? 0.85 : 1 })}>
+                  <LinearGradient colors={[tm.back, STYLES[tm.style || 'aurora'].glows[0], STYLES[tm.style || 'aurora'].glows[2]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 52, borderRadius: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, direction: 'ltr', borderWidth: 1, borderColor: th.hair, overflow: 'hidden' }}>
                     {[tm.panel, tm.accent, tm.accent2].map((c, i) => <View key={i} style={{ width: i ? 14 : 26, height: 16, borderRadius: 6, backgroundColor: c, borderWidth: i ? 0 : 1, borderColor: tm.line }} />)}
                   </LinearGradient>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text style={{ color: th.text, fontWeight: '800', fontSize: 12.5 }} numberOfLines={1}>{t('th_' + id)}</Text>
+                    <Text style={{ color: th.text, fontWeight: '800', fontSize: 12.5 }} numberOfLines={1}>{themeLabel(id)}</Text>
                     {on && <Icon name="checkmark-circle" size={17} color={th.accent} />}
                   </View>
                 </Pressable>
