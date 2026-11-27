@@ -72,8 +72,8 @@ function Btn2({ label, onPress, solid, tone, icon, disabled }: { label: string; 
     <Pressable disabled={disabled} onPress={onPress} style={((st: any) => ({
       flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, height: 38, paddingHorizontal: 16, borderRadius: 6, borderWidth: solid ? 1 : 1.5,
       borderColor: solid ? 'rgba(255,255,255,0.28)' : c + 'CC',
-      backgroundColor: solid ? '#2563EB' : d ? (st.hovered ? '#1B2150' : '#141943') : (st.hovered ? '#F1F5FF' : '#FFFFFF'),
-      ...(solid ? { backgroundImage: 'linear-gradient(135deg,#2563EB,#7C3AED,#C026D3)', boxShadow: '0 10px 22px -12px rgba(124,58,237,0.9), inset 0 1px 0 rgba(255,255,255,0.22)', filter: st.hovered ? 'brightness(1.08)' : 'none' } : { boxShadow: d ? '0 8px 18px -12px rgba(0,0,0,0.8)' : '0 8px 18px -14px rgba(11,27,63,0.5)' }),
+      backgroundColor: solid ? '#2563EB' : d ? (st.hovered ? '#1A2233' : '#121826') : (st.hovered ? '#F1F5FF' : '#FFFFFF'),
+      ...(solid ? { backgroundImage: 'linear-gradient(135deg,#3B82F6,#2563EB)', boxShadow: '0 10px 22px -12px rgba(37,99,235,0.9), inset 0 1px 0 rgba(255,255,255,0.22)', filter: st.hovered ? 'brightness(1.08)' : 'none' } : { boxShadow: d ? '0 8px 18px -12px rgba(0,0,0,0.8)' : '0 8px 18px -14px rgba(11,27,63,0.5)' }),
       opacity: disabled ? 0.45 : 1, cursor: 'pointer', transition: 'all 140ms ease',
     })) as any}>
       {!!icon && <Icon name={icon} size={15} color={solid ? '#FFFFFF' : c} />}

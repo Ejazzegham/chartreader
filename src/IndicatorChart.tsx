@@ -19,7 +19,7 @@ type ChartType = 'candle' | 'ha' | 'line';
 type Saved = { on: IndId[]; hidden: boolean; type: ChartType; volDefault?: boolean };
 const KEY = 'chart_ind_v2';
 const DEFAULT: Saved = { on: ['ema20', 'ema50', 'vol'], hidden: false, type: 'candle', volDefault: true }; // Volume is on by default, like TradingView
-const C = { ema200: '#38BDF8', sma20: '#FB923C', sma50: '#A3E635', boll: '#60A5FA', vwap: '#F472B6', tenkan: '#38BDF8', kijun: '#F43F5E', ma: '#C084FC' };
+const C = { ema200: '#38BDF8', sma20: '#FB923C', sma50: '#60A5FA', boll: '#60A5FA', vwap: '#F472B6', tenkan: '#38BDF8', kijun: '#F43F5E', ma: '#C084FC' };
 const PANE_H = 92;
 
 // Candle chart for the Analysis View: indicators drawn on the price (overlays) and under it (panes). Every one can be switched on or off,

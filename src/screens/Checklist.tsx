@@ -37,7 +37,7 @@ const TILES: { icon: string; c: [string, string] }[] = [
   { icon: 'shield-half', c: ['#F05252', '#DC2626'] },
   { icon: 'aperture', c: ['#3B5B93', '#3B5B93'] },
   { icon: 'newspaper', c: ['#FBBF24', '#F97316'] },
-  { icon: 'time', c: ['#3B5B93', '#7C3AED'] },
+  { icon: 'time', c: ['#3B5B93', '#2563EB'] },
   { icon: 'sparkles', c: ['#14B8A6', '#0EA5E9'] },
 ];
 const TIPS = [
@@ -296,8 +296,8 @@ export default function Checklist() {
   );
 
   const quick = [
-    { icon: 'create-outline', c: ['#3B5B93', '#7C3AED'] as [string, string], t: 'Use Risk & TP Planner', d: 'Plan your risk and targets', tab: 4 },
-    { icon: 'analytics', c: ['#6366F1', '#4F46E5'] as [string, string], t: 'View Market Analysis', d: 'Find the best opportunities', tab: 1 },
+    { icon: 'create-outline', c: ['#3B5B93', '#2563EB'] as [string, string], t: 'Use Risk & TP Planner', d: 'Plan your risk and targets', tab: 4 },
+    { icon: 'analytics', c: ['#3B82F6', '#2563EB'] as [string, string], t: 'View Market Analysis', d: 'Find the best opportunities', tab: 1 },
     { icon: 'book', c: ['#3B5B93', '#3B5B93'] as [string, string], t: 'Open Journal', d: 'Track your trades & notes', tab: 3 },
     { icon: 'apps', c: ['#3B5B93', '#3B5B93'] as [string, string], t: 'Explore Tools', d: 'More trading utilities', tab: 8 },
   ];

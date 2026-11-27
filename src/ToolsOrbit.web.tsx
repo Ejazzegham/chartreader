@@ -7,7 +7,6 @@ import type { Theme } from './theme';
 // Same props as before (th, top, items, onClose), so Desktop.web.tsx needs no change. Click the scrim or press Esc (handled by the top bar) to close.
 export type OrbitItem = { id: string; label: string; icon: string; on: boolean; badge: number; go: () => void };
 
-const BLUE = '#1677FF', VIOLET = '#773BFF';
 const GROUPS: { name: string; hint: string; ids: string[] }[] = [
   { name: 'Trade', hint: 'Plan and review', ids: ['4', '9', '5'] },
   { name: 'Markets', hint: 'Stay informed', ids: ['8', '13', '19', '18', '17'] },
@@ -76,19 +75,19 @@ const CSS = `
 
 export default function ToolsOrbit({ th, top, items, onClose }: { th: Theme; top: number; items: OrbitItem[]; onClose: () => void }) {
   const dk = th.dark;
-  const acc = dk ? '#A3E635' : '#4F46E5';
+  const acc = dk ? '#60A5FA' : '#2563EB';
   const v: any = {
-    '--ink': dk ? '#FFFFFF' : '#0F1736', '--dim': dk ? '#B9C4AA' : '#56618A', '--sell': th.sell, '--acc': acc, '--accbg': dk ? 'rgba(163,230,53,.14)' : 'rgba(79,70,229,.1)',
-    '--panel': dk ? '#12170E' : '#FFFFFF', '--chip': dk ? '#1B2215' : '#F4F5FD', '--chiph': dk ? '#242D1C' : '#E9ECFA',
-    '--line': dk ? '#38432E' : '#DADFF0', '--hair': dk ? 'rgba(255,255,255,.08)' : 'rgba(17,26,58,.08)',
-    '--scrim': dk ? 'rgba(6,9,4,.62)' : 'rgba(22,24,64,.38)', '--sh': dk ? 'rgba(0,0,0,.7)' : 'rgba(40,40,120,.45)',
-    '--rim': dk ? 'linear-gradient(135deg,rgba(163,230,53,.55),rgba(255,255,255,.06) 40%,rgba(250,204,21,.4))' : `linear-gradient(135deg,${BLUE},rgba(255,255,255,.7) 45%,${VIOLET})`,
-    '--glow': dk ? 'rgba(163,230,53,.18)' : 'rgba(119,59,255,.16)',
-    '--grad': dk ? 'linear-gradient(145deg,#C6F135,#7FB914)' : `linear-gradient(145deg,#5AA2FF,${BLUE} 55%,#2B4FE0)`,
-    '--gradv': dk ? 'linear-gradient(145deg,#FDE047,#D8A90B)' : `linear-gradient(145deg,#A98BFF,${VIOLET} 55%,#4B22D8)`,
-    '--tg': dk ? 'rgba(163,230,53,.6)' : 'rgba(22,119,255,.65)', '--tgv': dk ? 'rgba(250,204,21,.55)' : 'rgba(119,59,255,.65)',
+    '--ink': th.text, '--dim': th.dim, '--sell': th.sell, '--acc': acc, '--accbg': dk ? 'rgba(96,165,250,.14)' : 'rgba(37,99,235,.1)',
+    '--panel': th.panel, '--chip': th.panel2, '--chiph': dk ? '#243044' : '#E8EDF5',
+    '--line': th.line, '--hair': th.hair,
+    '--scrim': dk ? 'rgba(3,6,12,.66)' : 'rgba(15,23,42,.32)', '--sh': dk ? 'rgba(0,0,0,.7)' : 'rgba(15,23,42,.35)',
+    '--rim': dk ? 'linear-gradient(135deg,rgba(96,165,250,.5),rgba(255,255,255,.06) 45%,rgba(96,165,250,.2))' : 'linear-gradient(135deg,rgba(37,99,235,.5),rgba(15,23,42,.08) 50%,rgba(37,99,235,.25))',
+    '--glow': dk ? 'rgba(59,130,246,.16)' : 'rgba(37,99,235,.10)',
+    '--grad': 'linear-gradient(145deg,#60A5FA,#3B82F6 55%,#2563EB)',
+    '--gradv': 'linear-gradient(145deg,#3B82F6,#2563EB 55%,#1D4ED8)',
+    '--tg': 'rgba(37,99,235,.55)', '--tgv': 'rgba(29,78,216,.55)',
   };
-  const ic = dk ? '#10150B' : '#FFFFFF';
+  const ic = '#FFFFFF';
   const byId = new Map(items.map((i) => [i.id, i]));
   const known = new Set(GROUPS.flatMap((g) => g.ids));
   const extra = items.filter((i) => !known.has(i.id)); // any item not listed above lands in an "More" group
@@ -105,7 +104,7 @@ export default function ToolsOrbit({ th, top, items, onClose }: { th: Theme; top
               <div><div className="tm-h">Tools</div><div className="tm-s">Everything you need to plan, track and trade smarter</div></div>
             </div>
             <div className="tm-x"><span>Close</span><span className="tm-k">ESC</span>
-              <button type="button" className="tm-cl" aria-label="Close tools menu" onClick={onClose}><Icon name="close" size={18} color={dk ? '#FFFFFF' : '#0F1736'} /></button>
+              <button type="button" className="tm-cl" aria-label="Close tools menu" onClick={onClose}><Icon name="close" size={18} color={th.text} /></button>
             </div>
           </div>
           <div className="tm-g">

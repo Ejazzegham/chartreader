@@ -340,30 +340,30 @@ export default function TradingView() {
           return (
             <Pressable key={it.i} accessibilityRole="button" onPress={() => setAct(it.i)} style={((st: any) => ({
               flex: desk ? 1 : undefined, minWidth: 0, gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 6, borderWidth: on ? 1.5 : 1, cursor: 'pointer', overflow: 'hidden',
-              borderColor: on ? th.accent : st.hovered ? th.accent + '88' : (dk ? 'rgba(255,255,255,0.14)' : 'rgba(40,50,130,0.16)'),
+              borderColor: on ? th.accent : st.hovered ? th.accent + '88' : (dk ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.16)'),
               backgroundColor: solid,
-              boxShadow: on ? `0 14px 30px -14px ${th.accent}CC, inset 0 1px 0 rgba(255,255,255,${dk ? 0.1 : 0.9})` : (dk ? '0 10px 24px -16px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 10px 24px -16px rgba(60,50,140,0.45), inset 0 1px 0 rgba(255,255,255,0.9)'),
+              boxShadow: on ? `0 14px 30px -14px ${th.accent}CC, inset 0 1px 0 rgba(255,255,255,${dk ? 0.1 : 0.9})` : (dk ? '0 10px 24px -16px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06)' : '0 10px 24px -16px rgba(15,23,42,0.45), inset 0 1px 0 rgba(255,255,255,0.9)'),
               transform: [{ translateY: st.hovered && !on ? -1 : 0 }], transitionProperty: 'border-color, box-shadow, transform', transitionDuration: '180ms',
             })) as any}>
               {on && <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundImage: `linear-gradient(90deg, ${th.accent}, ${th.accent}33)` } as any} />}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 26, height: 26, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : (dk ? 'rgba(255,255,255,0.12)' : 'rgba(40,50,130,0.1)'), boxShadow: on ? `0 6px 12px -6px ${th.accent}` : 'none' } as any}>
-                  <Text style={{ color: on ? th.onAccent : (dk ? '#DCE3FF' : '#2B3563'), fontSize: 12.5, fontWeight: '800' }}>{it.i + 1}</Text>
+                <View style={{ width: 26, height: 26, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? th.accent : (dk ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.1)'), boxShadow: on ? `0 6px 12px -6px ${th.accent}` : 'none' } as any}>
+                  <Text style={{ color: on ? th.onAccent : (dk ? '#DCE3FF' : '#64748B'), fontSize: 12.5, fontWeight: '800' }}>{it.i + 1}</Text>
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text numberOfLines={1} style={{ color: dk ? '#FFFFFF' : '#111A3A', fontSize: 16, fontWeight: '800', letterSpacing: 0.2 }}>{it.s.name}</Text>
+                  <Text numberOfLines={1} style={{ color: dk ? '#FFFFFF' : '#0F172A', fontSize: 16, fontWeight: '800', letterSpacing: 0.2 }}>{it.s.name}</Text>
                   {!!it.s.sub && <Text numberOfLines={1} style={{ color: dk ? '#9FB0DA' : '#5A6690', fontSize: 10.5, fontWeight: '600', letterSpacing: 0.8, marginTop: 1, textTransform: 'uppercase' }}>{it.s.sub}</Text>}
                 </View>
                 {best.i === it.i && it.c > 0 && <View style={{ paddingHorizontal: 7, height: 20, borderRadius: 6, backgroundColor: th.buy + '26', borderWidth: 1, borderColor: th.buy + '55', justifyContent: 'center' }}><Text style={{ color: th.buy, fontSize: 9.5, fontWeight: '800', letterSpacing: 0.8 }}>STRONGEST</Text></View>}
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <Text numberOfLines={1} style={{ color: dk ? '#FFFFFF' : '#111A3A', fontSize: 21, fontWeight: '800', letterSpacing: 0.2, fontVariant: ['tabular-nums'] }}>{it.r ? it.r.price.toFixed(it.r.dec) : '—'}</Text>
+                <Text numberOfLines={1} style={{ color: dk ? '#FFFFFF' : '#0F172A', fontSize: 21, fontWeight: '800', letterSpacing: 0.2, fontVariant: ['tabular-nums'] }}>{it.r ? it.r.price.toFixed(it.r.dec) : '—'}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, height: 24, borderRadius: 6, backgroundColor: cc + '22', borderWidth: 1, borderColor: cc + '55' }}>
                   <Icon name={up ? 'caret-up' : 'caret-down'} size={12} color={cc} />
                   <Text style={{ color: cc, fontSize: 12.5, fontWeight: '800', fontVariant: ['tabular-nums'] }}>{up ? '+' : ''}{it.c.toFixed(2)}%</Text>
                 </View>
               </View>
-              <View style={{ height: 4, borderRadius: 3, backgroundColor: dk ? 'rgba(255,255,255,0.1)' : 'rgba(40,50,130,0.1)', overflow: 'hidden' }}><View style={{ width: `${Math.max(6, (Math.abs(it.c) / max) * 100)}%`, height: 4, borderRadius: 3, backgroundColor: cc }} /></View>
+              <View style={{ height: 4, borderRadius: 3, backgroundColor: dk ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.1)', overflow: 'hidden' }}><View style={{ width: `${Math.max(6, (Math.abs(it.c) / max) * 100)}%`, height: 4, borderRadius: 3, backgroundColor: cc }} /></View>
             </Pressable>
           );
         })}

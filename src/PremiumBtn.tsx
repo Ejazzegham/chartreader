@@ -12,7 +12,7 @@ export type PremiumKind = 'buy' | 'sell' | 'skip' | 'refine' | 'take';
 const GRAD: Record<'buy' | 'sell' | 'refine', [string, string, string?]> = {
   buy: ['#10B981', '#047857'],
   sell: ['#F43F5E', '#BE123C'],
-  refine: ['#2563EB', '#7C3AED', '#C026D3'],
+  refine: ['#2563EB', '#1D4ED8'],
 };
 
 export default function PremiumBtn({ kind, label, icon, onPress, disabled, busy, height = 52, flex, accessibilityLabel }: {
@@ -28,7 +28,7 @@ export default function PremiumBtn({ kind, label, icon, onPress, disabled, busy,
       <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} disabled={off} onPress={onPress}
         style={((st: any) => ({
           ...(flex ? { flex } : null), height, minWidth: 96, borderRadius: 6, borderWidth: 1.5, borderColor: st.hovered ? edge : edge + 'CC',
-          backgroundColor: th.dark ? (st.hovered ? '#1B2150' : '#141943') : (st.hovered ? '#FFF1F4' : '#FFFFFF'),
+          backgroundColor: th.dark ? (st.hovered ? '#1A2233' : '#121826') : (st.hovered ? '#FFF1F4' : '#FFFFFF'),
           alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 16, opacity: off ? 0.5 : st.pressed ? 0.85 : 1,
           cursor: 'pointer', ...(web ? { boxShadow: th.dark ? '0 10px 24px -14px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)' : '0 10px 24px -16px rgba(11,27,63,0.45)', transition: 'all 140ms ease' } : null),
         })) as any}>

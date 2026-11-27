@@ -28,19 +28,19 @@ const build = (b: Base): Theme => ({
   hair: b.hair ?? mix(b.panel, b.dark ? '#FFFFFF' : b.text, b.dark ? 0.08 : 0.08),
 });
 
-// Two themes only: Light and Dark.
-//  Light: purple + blue backdrop, every box (cards, panels, sheets, menus) is solid white.
-//  Dark : light-lime-green + lime-yellow backdrop, every box is solid dark.
-// The backdrop (src/LiveBackdrop.web.tsx) is a slowly drifting colour mesh; STYLES holds its colours.
+// Two themes only: Light and Dark. Plain, professional palettes: a flat page background, solid panels, and one blue accent.
+//  Light: soft grey-white page, white panels, slate text, blue accent.
+//  Dark : deep navy-black page, slightly lighter navy panels, light slate text, blue accent.
+// STYLES keeps the page base colour (src/LiveBackdrop.web.tsx paints it flat) and two swatch shades used by the Settings theme picker.
 // buy / sell / gold / poi stay as trading colours (green, red, amber, violet) so a buy never looks like a sell.
 export const STYLES: Record<string, { name: string; base: string; glows: string[]; light: [string, string]; dark: [string, string] }> = {
-  light: { name: 'Light', base: '#5B3FD9', glows: ['#7C3AED', '#2563EB', '#A855F7', '#3B82F6'], light: ['#4F46E5', '#7C3AED'], dark: ['#4F46E5', '#7C3AED'] },
-  dark:  { name: 'Dark',  base: '#B6E34A', glows: ['#A3E635', '#D9F25A', '#C6F135', '#E6F76B'], light: ['#4D7C0F', '#A16207'], dark: ['#A3E635', '#FACC15'] },
+  light: { name: 'Light', base: '#F4F6FA', glows: ['#FFFFFF', '#E2E8F0'], light: ['#2563EB', '#1D4ED8'], dark: ['#2563EB', '#1D4ED8'] },
+  dark:  { name: 'Dark',  base: '#0B0F17', glows: ['#121826', '#1A2233'], light: ['#3B82F6', '#60A5FA'], dark: ['#3B82F6', '#60A5FA'] },
 };
 const TRADE = { light: { buy: '#059669', sell: '#E11D48', gold: '#B7791F', poi: '#7C3AED' }, dark: { buy: '#34D399', sell: '#FB7185', gold: '#F8D06A', poi: '#C084FC' } };
 const BASE: Record<string, Base> = {
-  light: { dark: false, glass: false, style: 'light', back: STYLES.light.base, bg: '#F4F6FF', panel: '#FFFFFF', solid: '#FFFFFF', panel2: '#F1F3FB', hair: '#E6E9F5', line: '#D5DAEC', text: '#0A1022', dim: '#2B364D', accent: STYLES.light.dark[0], accent2: STYLES.light.dark[1], onAccent: '#FFFFFF', ...TRADE.light },
-  dark:  { dark: true,  glass: false, style: 'dark',  back: STYLES.dark.base,  bg: '#0E120A', panel: '#161B12', solid: '#161B12', panel2: '#20271A', hair: '#2A3322', line: '#38432E', text: '#FFFFFF', dim: '#C9D3BC', accent: STYLES.dark.dark[0], accent2: STYLES.dark.dark[1], onAccent: '#0B1205', ...TRADE.dark },
+  light: { dark: false, glass: false, style: 'light', back: STYLES.light.base, bg: '#F4F6FA', panel: '#FFFFFF', solid: '#FFFFFF', panel2: '#F1F4F9', hair: '#E8ECF3', line: '#D8DEE9', text: '#0F172A', dim: '#475569', accent: STYLES.light.dark[0], accent2: STYLES.light.dark[1], onAccent: '#FFFFFF', ...TRADE.light },
+  dark:  { dark: true,  glass: false, style: 'dark',  back: STYLES.dark.base,  bg: '#0B0F17', panel: '#121826', solid: '#121826', panel2: '#1A2233', hair: '#1F2937', line: '#2A3447', text: '#F1F5F9', dim: '#94A3B8', accent: STYLES.dark.dark[0], accent2: STYLES.dark.dark[1], onAccent: '#FFFFFF', ...TRADE.dark },
 };
 
 export const THEMES: Record<string, Theme> = Object.fromEntries(Object.entries(BASE).map(([k, v]) => [k, build(v)]));

@@ -37,7 +37,7 @@ export function usePal() {
     head: th.text, body: th.dim,
     blue: th.accent, brass: th.accent2, soft: th.accent + (d ? '26' : '14'),
     shadow: d ? '#000000' : '#0B1B3F',
-    onBack: d ? '#14210A' : '#F5F8FF', onBackDim: d ? '#2F4216' : '#E4E9FF', onBackAccent: d ? '#3F6212' : '#F9D5FF', onBackLine: d ? '#14210A33' : '#FFFFFF33', // text on the bare backdrop: light text on the purple/blue backdrop (Light theme), dark text on the lime backdrop (Dark theme)
+    onBack: th.text, onBackDim: th.dim, onBackAccent: th.accent, onBackLine: th.line, // text that sits directly on the flat page background follows the theme
   };
 }
 
@@ -61,8 +61,8 @@ type Setup = ReturnType<typeof useSetup>;
 // ---------- small building blocks
 export function Panel({ children, style }: { children: React.ReactNode; style?: any }) {
   const P = usePal();
-  // Glass panel: frosted blur, a hairline edge, a soft lift and a thin blue-violet-pink strip along the top edge.
-  return <View style={[{ backgroundColor: P.card, borderRadius: 6, borderWidth: 1, borderColor: P.border, boxShadow: P.dark ? '0 18px 40px -22px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)' : '0 18px 40px -22px rgba(11,27,63,0.35), inset 0 1px 0 rgba(255,255,255,0.9)', backgroundImage: 'linear-gradient(90deg,#3B82F6,#A855F7,#EC4899)', backgroundSize: '100% 3px', backgroundRepeat: 'no-repeat', ...glassWeb } as any, style]}>{children}</View>;
+  // Glass panel: frosted blur, a hairline edge, a soft lift and a thin blue strip along the top edge.
+  return <View style={[{ backgroundColor: P.card, borderRadius: 6, borderWidth: 1, borderColor: P.border, boxShadow: P.dark ? '0 18px 40px -22px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)' : '0 18px 40px -22px rgba(11,27,63,0.35), inset 0 1px 0 rgba(255,255,255,0.9)', backgroundImage: 'linear-gradient(90deg,#3B82F6,#2563EB)', backgroundSize: '100% 3px', backgroundRepeat: 'no-repeat', ...glassWeb } as any, style]}>{children}</View>;
 }
 export const Pill = ({ text, tone }: { text: string; tone?: string }) => {
   const P = usePal(), c = tone ?? P.brass;
@@ -196,7 +196,7 @@ export function ChartHeader({ s, sub, price, onPick }: { s: Setup; sub?: string;
       {price && !!s.quote && <Text style={{ color: c >= 0 ? th.buy : th.sell, fontSize: 12.5, fontWeight: '700' }}>{`${c >= 0 ? '+' : '−'}${Math.abs(c).toFixed(2)}%`}</Text>}
       <Pressable onPress={() => toggleFav(s.sym.id)} hitSlop={8} style={{ cursor: 'pointer' } as any}><Icon name={fav ? 'star' : 'star-outline'} size={19} color={fav ? th.gold : P.body} /></Pressable>
       {open && !!onPick && (
-        <View style={{ position: 'absolute', top: 48, left: 0, width: 330, maxWidth: '100%', padding: 8, gap: 8, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? '#141943' : '#FFFFFF', zIndex: 100, boxShadow: '0 24px 50px -18px rgba(0,0,0,0.75)' } as any}>
+        <View style={{ position: 'absolute', top: 48, left: 0, width: 330, maxWidth: '100%', padding: 8, gap: 8, borderRadius: 6, borderWidth: 1, borderColor: P.border, backgroundColor: P.dark ? '#121826' : '#FFFFFF', zIndex: 100, boxShadow: '0 24px 50px -18px rgba(0,0,0,0.75)' } as any}>
           <TextInput value={q} onChangeText={setQ} placeholder="Search pair, coin or index…" placeholderTextColor={P.body + 'AA'} autoFocus
             style={{ height: 38, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: P.border, color: P.head, fontSize: 13.5, outlineStyle: 'none' } as any} />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
