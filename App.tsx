@@ -26,7 +26,6 @@ import About from './src/screens/About';
 import ManualTrade from './src/screens/ManualTrade';
 import RightSidebar from './src/RightSidebar';
 import TradeHistory from './src/TradeHistory';
-import TradeHistoryPage from './src/screens/TradeHistoryPage';
 import TradingView from './src/screens/TradingView';
 import NotificationCenter from './src/NotificationCenter';
 import AdminPanel from './src/screens/AdminPanel';
@@ -51,7 +50,13 @@ const Go = (method: string, slot: number) => function Go() {
   useEffect(() => { if (tab === slot) { setAmethod(method); setTab(1); } }, [tab]);
   return null;
 };
-const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community, TradeHistoryPage, TradingView]; // same order as NAV in src/nav.ts
+// Trade History was merged into the History page (tab 5). Its old slot (21) keeps the tab numbers stable and forwards there.
+const GoHistory = function GoHistory() {
+  const { tab, setTab } = useApp();
+  useEffect(() => { if (tab === 21) setTab(5); }, [tab]);
+  return null;
+};
+const COMPS = [Home, Analysis, Markets, Journal, Risk, History, Settings, Go('ict', 7), ForexHours, Performance, Go('topdown', 10), Checklist, Go('scanner', 12), News, Guide, About, ManualTrade, PropFirms, Brokers, CryptoExchanges, Community, GoHistory, TradingView]; // same order as NAV in src/nav.ts
 const TABS = NAV.map((n, i) => ({ key: n.key, icon: n.icon, Comp: COMPS[i] }));
 
 // Every page stays mounted (so charts keep their state). The one you open fades and rises in.

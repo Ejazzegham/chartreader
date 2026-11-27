@@ -54,7 +54,6 @@ export default function RightSidebar() {
   const adminItem = lic.admin || lic.adminEmail
     ? row('admin', lic.admin ? 'shield-checkmark' : 'lock-closed', lic.admin ? 'Admin panel' : 'Unlock admin', lic.admin ? 'Users, payments and server key' : 'Confirm your email to unlock', false, () => { setMenu(false); if (lic.admin) setAdminOpen(true); else setTab(0); }, { tint: lic.admin ? th.accent : th.gold })
     : null;
-  const historyItem = row('tradeHistory', 'receipt', t('tabTradeHistory'), `${journal.length} ${t('closedTradesWord')}`, false, () => { setMenu(false); setHistOpen(true); }, { tint: th.gold });
   const section = (label: string) => (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10, marginBottom: 4, marginStart: 6 }}>
       <Text style={{ color: th.dim, fontSize: 10, fontWeight: '800', letterSpacing: 1.2 }}>{label.toUpperCase()}</Text>
@@ -103,7 +102,7 @@ export default function RightSidebar() {
           {!!adminItem && section('Admin')}
           {adminItem}
           {section(t('navPages'))}
-          <View style={{ gap: 2 }}>{NAV.map((n, i) => (n.group === 'main' ? item(i) : null))}{historyItem}</View>
+          <View style={{ gap: 2 }}>{NAV.map((n, i) => (n.group === 'main' ? item(i) : null))}</View>
           {section(t('navProTools'))}
           <View style={{ gap: 2 }}>{NAV.map((n, i) => (n.group === 'pro' ? item(i) : null))}</View>
         </ScrollView>

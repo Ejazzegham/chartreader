@@ -15,13 +15,13 @@ const POS: Record<string, [number, number]> = {
   '13': [-238, -274], '19': [242, -272],                                          // News, Crypto Exchanges
   help: [-578, -130], '4': [-163, -132], '11': [162, -132], '18': [587, -128],    // Help Chat, Risk & TP Planner, Trade Checklist, Forex Brokers
   '8': [-323, 0], '9': [322, 0],                                                  // Forex Market Hours, Performance
-  '6': [-598, 130], hist: [-163, 138], '5': [162, 138], '17': [592, 132],          // Settings, Trade History, Analysis History, Prop Firms
+  '6': [-598, 130], '5': [0, 138], '17': [592, 132],                              // Settings, History, Prop Firms
   '15': [-243, 296], '14': [242, 296],                                            // About Us, How to Use
 };
 const ARCS: [string, string][] = [['13', 'help'], ['19', '18'], ['6', '15'], ['17', '14']]; // soft curves between the outer cards
 // Solid white icons for each tool, and which cards get the violet / the blue icon orb.
 const GLYPH: Record<string, string> = { 'help-circle': 'play-circle', 'chatbubbles-outline': 'chatbubble-ellipses', receipt: 'document-text' };
-const VIOLET_IDS = new Set(['19', 'help', '11', '5', '17', '15']); // Crypto, Help Chat, Checklist, Analysis History, Prop Firms, About Us; the rest are blue
+const VIOLET_IDS = new Set(['19', 'help', '11', '5', '17', '15']); // Crypto, Help Chat, Checklist, History, Prop Firms, About Us; the rest are blue
 
 const CSS = `
 .to{position:fixed;left:0;right:0;top:0;bottom:0;z-index:30;overflow:hidden;direction:ltr;font-family:Inter,Geist,'SF Pro Display',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;animation:to-in .25s ease-out both}

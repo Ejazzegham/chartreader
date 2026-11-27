@@ -19,7 +19,7 @@ const DAY = 864e5;
 const startOfDay = (d: number) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); };
 
 // page = the website's Trade History page (its own hero, like every other page); without it this is the phone's full-screen window.
-export function TradeHistoryView({ page }: { page?: boolean }) {
+export function TradeHistoryView({ page, embedded }: { page?: boolean; embedded?: boolean }) {
   const { th, t, rtl, histOpen, setHistOpen, journal, setTab, settings } = useApp();
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<Period>('all');
@@ -36,7 +36,7 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
       .sort((a, b) => b.date - a.date);
   }, [journal, period, result, side, q]);
 
-  if (!page && !histOpen) return null;
+  if (!page && !embedded && !histOpen) return null;
 
   const n = rows.length, wins = rows.filter((j) => j.pnl > 0).length, net = rows.reduce((a, j) => a + j.pnl, 0);
   const gw = rows.filter((j) => j.pnl > 0).reduce((a, j) => a + j.pnl, 0), gl = Math.abs(rows.filter((j) => j.pnl < 0).reduce((a, j) => a + j.pnl, 0));
@@ -163,6 +163,23 @@ export function TradeHistoryView({ page }: { page?: boolean }) {
           )}
     </>
   );
+
+  if (embedded) {
+    return (
+      <>
+        <View style={{ gap: 12, padding: 16, borderRadius: 6, borderWidth: 1, borderColor: th.line, backgroundColor: th.panel, direction: rtl ? 'rtl' : 'ltr', ...glassWeb }}>
+          {journal.length > 0 && (
+            <Pressable onPress={exportCsv} accessibilityRole="button" accessibilityLabel={t('thExport')} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-end', height: 34, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: th.accent + '88', backgroundColor: th.accent + '1A' }}>
+              <Icon name="share-outline" size={16} color={th.accent} />
+              <Text style={{ color: th.accent, fontWeight: '800', fontSize: 12.5 }}>{t('thExport')}</Text>
+            </Pressable>
+          )}
+          {content}
+        </View>
+        {openTrade && <TradeDetail key={openTrade.id} j={openTrade} onClose={() => setOpen(null)} />}
+      </>
+    );
+  }
 
   if (page) {
     const exportBtn = journal.length > 0 ? (

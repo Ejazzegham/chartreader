@@ -151,7 +151,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
   const supRef = useRef({ since: 0, init: false, chats: 0, pays: 0, binit: false }), helpRef = useRef(false), badgeRef = useRef<() => void>(() => {});
   const [histOpen, setHistOpenRaw] = useState(false);
   // The website shows Trade History as a page (tab 21, with its own hero like every other page); the phone apps keep the full-screen window.
-  const setHistOpen = (v: boolean) => { if (v && Platform.OS === 'web') { setMenu(false); setTab(NAV.findIndex((n) => n.key === 'tabTradeHistory')); } else setHistOpenRaw(v); };
+  const setHistOpen = (v: boolean) => { if (v) { setMenu(false); setTab(5); } else setHistOpenRaw(false); }; // Trade History now lives on the merged History page (tab 5)
   const [notes, _notes] = useState<Note[]>([]);
   const notesRef = useRef<Note[]>([]);
   const [notesOpen, setNotesOpen] = useState(false);

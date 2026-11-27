@@ -3,9 +3,10 @@ import { View, Text, Pressable } from 'react-native';
 import { useApp } from '../store';
 import { Screen, Card, Body, Btn, Badge, Icon, EmptyState, confirmAction } from '../ui';
 import { TP_SPLIT } from '../gemini';
+import { TradeHistoryView } from '../TradeHistory';
 
 // Saved "Analysis of this chart" results (the market screen saves each one automatically).
-export default function History() {
+function AnalysisList() {
   const { th, t, history, removeItem, clearHistory, settings, setTab } = useApp();
   const [open, setOpen] = useState<string | null>(null);
   const dec = (n: number) => (Math.abs(n) >= 100 ? 2 : Math.abs(n) >= 1 ? 4 : 5);
@@ -13,9 +14,7 @@ export default function History() {
   const row = (k: string, v: string, c?: string) => <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, paddingVertical: 3 }}><Text style={{ flex: 1, minWidth: 0, color: th.dim, fontSize: 13 }}>{k}</Text><Text style={{ flexShrink: 1, maxWidth: '62%', textAlign: 'right', color: c ?? th.text, fontWeight: '800', fontSize: 13.5 }}>{v}</Text></View>;
 
   return (
-    <Screen fx="history" icon="time" tag="Chart Reader" title={settings.lang === 'en' ? 'Analysis History' : t('tabHistory')}
-      subtitle={settings.lang === 'en' ? `Every chart analysis you run is saved here automatically, with its bias, entry, stop loss and take-profit levels. Reopen a past setup, compare it with what the market did and learn from it${history.length ? ` · ${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : ''}.` : (history.length ? `${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}` : undefined)}
-      features={settings.lang === 'en' ? [{ icon: 'save-outline', title: 'Saved automatically', sub: 'Each result is kept for you' }, { icon: 'locate-outline', title: 'Full trade levels', sub: 'Entry, stop loss and targets' }, { icon: 'git-compare-outline', title: 'Review and compare', sub: 'See how past setups played out' }] : undefined}>
+    <>
       {history.length === 0 && <EmptyState icon="time-outline" title={settings.lang === 'en' ? 'No saved analyses yet' : t('tabHistory')} body="Open a pair in Markets and tap the analysis button. Every result is saved here." action={t('tabMarkets')} onAction={() => setTab(2)} />}
       <View style={{ gap: 12 }}>
         {history.map((i) => {
@@ -51,6 +50,37 @@ export default function History() {
           );
         })}
         {history.length > 0 && <Btn ghost danger icon="trash-outline" label={t('clearAll')} onPress={() => confirmAction(t('clearAll') + '?', 'All saved analyses are removed from this phone.', clearHistory, t('clearAll'), t('cancel'))} />}
+      </View>
+    </>
+  );
+}
+
+// One History page: closed trades and saved chart analyses, switched with the tabs at the top.
+export default function History() {
+  const { th, t, history, journal, settings } = useApp();
+  const [view, setView] = useState<'trades' | 'analyses'>('trades');
+  const en = settings.lang === 'en';
+  const seg = (k: 'trades' | 'analyses', label: string, n: number, icon: string) => {
+    const on = view === k;
+    return (
+      <Pressable key={k} onPress={() => setView(k)} accessibilityRole="button" accessibilityState={{ selected: on }}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 44, borderRadius: 6, borderWidth: 1, borderColor: on ? th.accent : th.line, backgroundColor: on ? th.accent : th.panel }}>
+        <Icon name={icon} size={17} color={on ? th.onAccent : th.dim} />
+        <Text style={{ color: on ? th.onAccent : th.text, fontWeight: '800', fontSize: 14 }}>{label}</Text>
+        <Text style={{ color: on ? th.onAccent : th.dim, fontWeight: '800', fontSize: 12.5 }}>{n}</Text>
+      </Pressable>
+    );
+  };
+  return (
+    <Screen fx="history" icon="time" tag="Chart Reader" title={en ? 'History' : t('tabHistory')}
+      subtitle={en ? `Everything you have done, in one place. Trades shows every closed trade with totals, filters, daily results and CSV export. Analyses shows each chart analysis you ran, with its bias, entry, stop loss and targets · ${journal.length} closed ${journal.length === 1 ? 'trade' : 'trades'} · ${history.length} saved ${history.length === 1 ? 'analysis' : 'analyses'}.` : `${journal.length} ${t('closedTradesWord')} · ${history.length}`}
+      features={en ? [{ icon: 'receipt-outline', title: 'Trade history', sub: 'Closed trades, filters and CSV export' }, { icon: 'analytics-outline', title: 'Analysis history', sub: 'Every saved setup with its levels' }, { icon: 'git-compare-outline', title: 'Review and compare', sub: 'See how past setups played out' }] : undefined}>
+      <View style={{ gap: 12 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {seg('trades', en ? 'Trades' : t('tabTradeHistory'), journal.length, 'receipt-outline')}
+          {seg('analyses', en ? 'Analyses' : t('statAnalyses'), history.length, 'analytics-outline')}
+        </View>
+        {view === 'trades' ? <TradeHistoryView embedded /> : <AnalysisList />}
       </View>
     </Screen>
   );

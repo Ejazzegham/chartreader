@@ -233,7 +233,7 @@ const PRO_EN: Record<string, string> = {
   tabScanner: "Scanner", navDescScanner: "Scan many markets at once and rank the best setups",
   tabNews: "News", navDescNews: "Economic calendar plus forex, crypto and Deriv headlines",
   navDescHome: "Dashboard, market pulse and stats", navDescAnalyze: "Screenshot analysis with ICT refined entry", navDescMarkets: "Live forex (with DXY, gold and silver), every crypto pair and Deriv",
-  navDescJournal: "Log and review your trades", navDescRisk: "Position size with a 3-step take profit ladder", navDescHistory: "Your saved analyses",
+  navDescJournal: "Log and review your trades", navDescRisk: "Position size with a 3-step take profit ladder", navDescHistory: "Your closed trades and saved analyses",
   navDescSettings: "Profile, theme, language and security", navDescIct: "ICT, SMC, VSA and chart patterns on live candles, merged into one refined entry",
   navDescKz: "Which sessions are open now, in your time zone", navDescPerf: "Win rate, profit factor and expectancy from your journal",
   needPay: "Your free trial has ended. Subscribe in Settings to unlock analysis.", subscription: "Subscription", trialLeft: "Free trial", paidActive: "Active until", expired: "Your free trial has ended. Charts stay free, analysis is locked.", weekly: "Weekly", monthly: "Monthly", payNetwork: "Network", sendUsdt: "Send USDT (the exact plan amount or more) to this address:", amountLabel: "Amount to pay", addrTap: "Press and hold the address to copy it", txId: "Transaction hash (TxID)", verifyPay: "Verify payment", paidOk: "Payment confirmed. All features unlocked.", adminKey: "Analysis API key (server)", saveKey: "Save key to server", keySaved: "Key saved on the server.", adminOnly: "Admin",
