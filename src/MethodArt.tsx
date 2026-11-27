@@ -2,7 +2,8 @@ import { useApp } from './store';
 import React from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Rect, Line, Circle } from 'react-native-svg';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 // Every analysis method: name, one-line help, its colour pair and its glyph. The icon is a glossy gradient tile with a white glyph.
 export type MKey = 'all' | 'cr' | 'ict' | 'smc' | 'topdown' | 'scanner' | 'vsa' | 'candle' | 'pat' | 'scalp' | 'liquidity' | 'entry' | 'momentum' | 'planner' | 'settings';

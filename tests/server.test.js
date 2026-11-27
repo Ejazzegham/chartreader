@@ -1,6 +1,6 @@
 // Payments + support chat (server side). Run: node tests/server.test.js   (no network, no packages)
 const assert = require('assert'), { spawn } = require('child_process'), fs = require('fs'), os = require('os'), path = require('path');
-const mkPayments = require('../server/payments'), mkSupport = require('../server/support'), mkTranslate = require('../server/translate');
+const mkPayments = require('../worker/src/server/payments'), mkSupport = require('../worker/src/server/support'), mkTranslate = require('../worker/src/server/translate');
 let fails = 0;
 const ok = async (name, fn) => { try { await fn(); console.log('ok  ', name); } catch (e) { fails++; console.log('FAIL', name, '-', e.message); } };
 const rejects = async (p, re) => { try { await p; } catch (e) { assert.match(e.message, re); return; } throw new Error('expected an error ' + re); };
@@ -191,7 +191,7 @@ const hex = (c) => c.repeat(64), bsc = (c) => '0x' + hex(c);
     emails: { 'boss@x.com': 'adm', 'user@x.com': 'usr', 'u2@x.com': 'usr2' }, devices: {}, ipTrials: {}, tx: {}, usage: {}, secret: 'x'.repeat(32),
     sessions: { TADM: { pid: 'adm', admin: true, email: 'boss@x.com' }, TUSR: { pid: 'usr', admin: false, email: 'user@x.com' }, TUSR2: { pid: 'usr2', admin: false, email: 'u2@x.com' } } }));
   const port = 18000 + Math.floor(Math.random() * 1000);
-  const srv = spawn(process.execPath, [path.join(__dirname, '../server/server.js')], { env: { ...process.env, PORT: String(port), DB_FILE: file, ADMIN_EMAILS: 'boss@x.com', FIREBASE_PROJECT_ID: 'demo', INBOUND_SECRET: 'sek', CHAT_MAX_IMAGE_MB: '1', CHAT_MAX_VIDEO_MB: '2', PRICE_CHECK_MS: '3600000', SCAN_MS: '3600000' }, stdio: 'ignore' });
+  const srv = spawn(process.execPath, [path.join(__dirname, '../worker/src/server/server.js')], { env: { ...process.env, PORT: String(port), DB_FILE: file, ADMIN_EMAILS: 'boss@x.com', FIREBASE_PROJECT_ID: 'demo', INBOUND_SECRET: 'sek', CHAT_MAX_IMAGE_MB: '1', CHAT_MAX_VIDEO_MB: '2', PRICE_CHECK_MS: '3600000', SCAN_MS: '3600000' }, stdio: 'ignore' });
   const call = async (p, body = {}, tok = '', hdr = {}) => { const r = await fetch(`http://127.0.0.1:${port}${p}`, { method: 'POST', headers: { 'content-type': 'application/json', ...(tok ? { authorization: 'Bearer ' + tok } : {}), ...hdr }, body: JSON.stringify(body) }); return { s: r.status, j: await r.json().catch(() => ({})) }; };
   for (let i = 0; i < 40; i++) { try { await fetch(`http://127.0.0.1:${port}/health`); break; } catch { await new Promise((r) => setTimeout(r, 150)); } }
   try {
@@ -230,41 +230,7 @@ const hex = (c) => c.repeat(64), bsc = (c) => '0x' + hex(c);
       assert.equal((await call('/status', {}, 'TUSR')).j.status, 'paid');
     });
 
-    // ---- chat attachments: photos and videos ----
-    const up = async (buf, tok = '') => { const r = await fetch(`http://127.0.0.1:${port}/support/upload`, { method: 'POST', headers: { 'content-type': 'application/octet-stream', ...(tok ? { authorization: 'Bearer ' + tok } : {}) }, body: buf }); return { s: r.status, j: await r.json() }; };
-    const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(100, 7)]);
-    const MP4 = (n) => Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from('ftypisom'), Buffer.alloc(n, 1)]);
-    const getMedia = (id, hdr = {}) => fetch(`http://127.0.0.1:${port}/media/${id}`, { headers: hdr });
-    await ok('server: a photo is uploaded, sent in the chat, shown to the admin by its link, and the link supports Range', async () => {
-      assert.equal((await up(PNG)).s, 401); // needs a login
-      const u = await up(PNG, 'TUSR'); assert.equal(u.s, 200); assert.equal(u.j.media.kind, 'image'); assert.equal(u.j.media.mime, 'image/png'); assert.equal(u.j.media.size, PNG.length);
-      const sent = await call('/support/send', { text: '', media: u.j.media.id }, 'TUSR'); assert.equal(sent.s, 200); assert.equal(sent.j.message.media.id, u.j.media.id); assert.equal(sent.j.message.text, '');
-      const th = (await call('/admin/support/thread', { key: 'usr' }, 'TADM')).j; assert.equal(th.msgs[th.msgs.length - 1].media.kind, 'image');
-      assert.match((await call('/admin/support/list', {}, 'TADM')).j.threads[0].last.text, /Photo/); // a photo without words still shows in the list
-      const r = await getMedia(u.j.media.id); assert.equal(r.status, 200); assert.equal(r.headers.get('content-type'), 'image/png'); assert.equal(r.headers.get('x-content-type-options'), 'nosniff'); assert.equal(Buffer.from(await r.arrayBuffer()).equals(PNG), true);
-      const pr = await getMedia(u.j.media.id, { range: 'bytes=10-19' }); assert.equal(pr.status, 206); assert.equal(pr.headers.get('content-range'), `bytes 10-19/${PNG.length}`); assert.equal((await pr.arrayBuffer()).byteLength, 10);
-      assert.equal((await getMedia(u.j.media.id, { range: 'bytes=9999-' })).status, 416);
-      assert.equal((await getMedia('0'.repeat(32))).status, 404); assert.equal((await getMedia('..%2Fdb.json')).status, 404);
-    });
-    await ok('server: only photos and videos are accepted, by their first bytes (HTML / SVG / scripts are refused whatever the phone says)', async () => {
-      for (const bad of ['<html><script>alert(1)</script></html>', '<svg xmlns="http://www.w3.org/2000/svg"><script>1</script></svg>', 'GIF', '']) assert.equal((await up(Buffer.from(bad + ' '.repeat(40)), 'TUSR')).s, 415, bad.slice(0, 8));
-      assert.equal((await up(Buffer.from('<svg/>'), 'TUSR')).s, 415); // tiny file
-    });
-    await ok('server: size limits (here 1 MB photo / 2 MB video), told to the phone as a normal answer', async () => {
-      assert.equal((await up(Buffer.concat([PNG, Buffer.alloc(1.5 * 1048576)]), 'TUSR')).s, 413); // photo too large
-      assert.equal((await up(MP4(1.5 * 1048576), 'TUSR')).s, 200); // the same size is fine as a video
-      const big = await up(MP4(2.6 * 1048576), 'TUSR'); assert.equal(big.s, 413); assert.match(big.j.error, /too large/);
-    });
-    await ok('server: a file can be attached by its owner only, once; the admin can reply with a video and the user receives it', async () => {
-      const u = await up(MP4(500), 'TUSR'); assert.equal(u.j.media.kind, 'video'); assert.equal(u.j.media.mime, 'video/mp4');
-      assert.match((await call('/support/send', { text: 'mine now', media: u.j.media.id }, 'TUSR2')).j.error, /not found/); // someone else's upload
-      assert.equal((await call('/support/send', { text: 'with video', media: u.j.media.id }, 'TUSR')).s, 200);
-      assert.match((await call('/support/send', { text: 'again', media: u.j.media.id }, 'TUSR')).j.error, /not found/); // already used
-      assert.equal((await call('/support/send', { text: '' }, 'TUSR')).s, 400); // nothing at all
-      const a = await up(MP4(300), 'TADM'); assert.equal((await call('/admin/support/reply', { key: 'usr', text: '', media: a.j.media.id }, 'TADM')).s, 200);
-      assert.equal((await call('/admin/support/reply', { key: 'usr', text: 'x', media: u.j.media.id }, 'TADM')).s, 400); // used by the user, not the admin's
-      const pull = (await call('/support/pull', { since: 0 }, 'TUSR')).j; assert.equal(pull.msgs[pull.msgs.length - 1].media.kind, 'video'); assert.equal(pull.msgs[pull.msgs.length - 1].from, 'admin');
-    });
+    // chat photos / videos are stored by the Cloudflare Worker (Durable Object), so they are tested by worker/test/e2e.js, not here
     await ok('server: when no Gemini key is saved, the admin is told where to put it (the user gets the plain message)', async () => {
       assert.match((await call('/translate', { text: 'hi', to: 'ur' }, 'TADM')).j.error, /Admin panel > Setup/);
       assert.match((await call('/translate', { text: 'hi', to: 'ur' }, 'TUSR')).j.error, /not available right now/);

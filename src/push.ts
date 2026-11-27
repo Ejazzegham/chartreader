@@ -3,10 +3,10 @@
 import { Platform } from 'react-native';
 import { pushRegister, pushUnregister } from './license';
 
-export const CHANNEL = 'alarm_v1'; // the server sends to this channel (server/alerts.js)
+export const CHANNEL = 'alarm_v1'; // the server sends to this channel (worker/src/server/alerts.js)
 export const CHAT_CHANNEL = 'support_v1'; // chat replies and payment answers: normal notification sound, not the trading alarm
-export const DIGEST_CHANNEL = 'digest_v1'; // the "analysis every 90 s" notification: silent, low importance, so it never rings like an alarm (server/alerts.js)
-export const INFO_CHANNEL = 'info_v1'; // news and daily high / low breaks: normal notification sound, not the trading alarm (server/alerts.js)
+export const DIGEST_CHANNEL = 'digest_v1'; // the "analysis every 90 s" notification: silent, low importance, so it never rings like an alarm (worker/src/server/alerts.js)
+export const INFO_CHANNEL = 'info_v1'; // news and daily high / low breaks: normal notification sound, not the trading alarm (worker/src/server/alerts.js)
 export type PushState = 'on' | 'denied' | 'unsupported' | 'error';
 
 let N: any = null, token = '';

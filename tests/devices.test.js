@@ -1,5 +1,5 @@
 // One email = one phone + one computer at a time (the website counts as a computer). Spawns the real server with a fake Firebase.
-// Spawns the real server. A fake Firebase "certificate" server and a signed token stand in for Google. Run: node tests/register.test.js
+// Spawns the real server. A fake Firebase key server and a signed token stand in for Google. Run: node tests/register.test.js
 const assert = require('assert'), http = require('http'), crypto = require('crypto'), os = require('os'), path = require('path'), { spawn } = require('child_process');
 const DAY = 864e5, PROJECT = 'test-project', PORT = 18000 + Math.floor(Math.random() * 1000), CERT_PORT = PORT + 1000;
 const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
@@ -8,9 +8,9 @@ const token = (uid, email) => { const now = Math.floor(Date.now() / 1000), h = b
 let fails = 0; const ok = async (n, f) => { try { await f(); console.log('ok  ', n); } catch (e) { fails++; console.log('FAIL', n, '-', e.message); } };
 
 (async () => {
-  const certs = http.createServer((_q, r) => { r.setHeader('content-type', 'application/json'); r.end(JSON.stringify({ k1: publicKey.export({ type: 'spki', format: 'pem' }) })); }).listen(CERT_PORT);
-  const srv = spawn('node', ['server/server.js'], { env: { ...process.env, PORT: String(PORT), DB_FILE: path.join(os.tmpdir(), 'reg-' + Date.now() + '.json'), FIREBASE_PROJECT_ID: PROJECT, FIREBASE_CERTS_URL: `http://127.0.0.1:${CERT_PORT}/`, TRIALS_PER_IP_DAY: '99' }, stdio: ['ignore', 'pipe', 'pipe'] });
-  await new Promise((res, rej) => { srv.stdout.on('data', (d) => /license server on/.test(String(d)) && res()); srv.on('exit', () => rej(new Error('server did not start'))); setTimeout(() => rej(new Error('server start timeout')), 8000); });
+  const certs = http.createServer((_q, r) => { r.setHeader('content-type', 'application/json'); r.end(JSON.stringify({ keys: [{ ...publicKey.export({ format: 'jwk' }), kid: 'k1', alg: 'RS256', use: 'sig' }] })); }).listen(CERT_PORT);
+  const srv = spawn('node', ['worker/src/server/server.js'], { env: { ...process.env, PORT: String(PORT), DB_FILE: path.join(os.tmpdir(), 'reg-' + Date.now() + '.json'), FIREBASE_PROJECT_ID: PROJECT, FIREBASE_JWK_URL: `http://127.0.0.1:${CERT_PORT}/`, TRIALS_PER_IP_DAY: '99' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  for (let i = 0; i < 60; i++) { try { await fetch(`http://127.0.0.1:${PORT}/health`); break; } catch { if (i === 59) throw new Error('server start timeout'); await new Promise((r) => setTimeout(r, 150)); } } // wait until the server answers
 
   // one person (uid1 / u1@x.com) on different devices. kind: 'mobile' | 'web'; fresh: true = typed the password just now, false = background renewal
   const dev = async (device, kind, fresh, who = 1) => { const r = await fetch(`http://127.0.0.1:${PORT}/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idToken: token('uid' + who, `u${who}@x.com`), deviceId: device, ...(kind ? { kind } : {}), ...(fresh === undefined ? {} : { fresh }) }) }); return { status: r.status, j: await r.json() }; };

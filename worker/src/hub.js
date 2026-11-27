@@ -1,4 +1,4 @@
-// The Durable Object: ONE instance runs your whole old server (server/server.js) inside Cloudflare. It keeps the database in memory,
+// The Durable Object: ONE instance runs your whole server (src/server/server.js) inside Cloudflare. It keeps the database in memory,
 // saves it to its own storage after every request, and runs the background alerts / scanner from alarms (a Worker has no setInterval).
 import { DurableObject } from 'cloudflare:workers';
 import fsShim from '../shims/fs.js';

@@ -20,7 +20,7 @@ const DAY = 864e5, NOW = 1_800_000_000_000;
   // ---- which failures count as "server not there" (the only ones that may start a provisional trial) ----
   const realFetch = (globalThis as any).fetch; const answer = (status: number, body: string) => { (globalThis as any).fetch = async () => ({ ok: status < 400, status, json: async () => JSON.parse(body) }); };
   const attempt = async () => { try { await registerLic('tok'); return null; } catch (e) { return e; } };
-  answer(404, '<html>ngrok offline</html>'); ok('ngrok "tunnel offline" HTML page counts as server down', isNetworkError(await attempt()));
+  answer(404, '<html>tunnel offline</html>'); ok('a "tunnel offline" HTML page counts as server down', isNetworkError(await attempt()));
   answer(502, '{"error":"bad gateway"}'); ok('a 5xx counts as server down', isNetworkError(await attempt()));
   (globalThis as any).fetch = async () => { throw new TypeError('Network request failed'); }; ok('no connection counts as server down', isNetworkError(await attempt()));
   answer(400, '{"error":"Too many new accounts from this network today. Try again tomorrow."}'); ok('the server saying NO is not "down": no free provisional trial', !isNetworkError(await attempt()));

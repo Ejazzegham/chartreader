@@ -13,7 +13,7 @@ export const SUPPORT_EMAIL = 'bahutechnology@gmail.com';
 export const APP_DOWNLOAD_URL = 'https://play.google.com/store/apps/details?id=com.chartreader.app';
 
 export type Lic = { token: string; admin: boolean; adminEmail?: boolean; status: 'trial' | 'paid' | 'expired' | 'admin'; entitled: boolean; trialEnd: number; paidUntil: number; now?: number; provisional?: boolean };
-export const TRIAL_MS = 3 * 864e5; // same length as the server's TRIAL (server/server.js)
+export const TRIAL_MS = 3 * 864e5; // same length as the server's TRIAL (worker/src/server/server.js)
 export const NO_LIC: Lic = { token: '', admin: false, status: 'expired', entitled: false, trialEnd: 0, paidUntil: 0 };
 
 // ---- trial without the license server ----
@@ -45,12 +45,10 @@ export const syncClock = (serverNow?: number) => { if (typeof serverNow === 'num
 export async function loadClock() { const v = Number(await SecureStore.getItemAsync(SEEN_KEY).catch(() => '')); if (v > seen) seen = v; }
 export const saveClock = () => { SecureStore.setItemAsync(SEEN_KEY, String(trustedNow())).catch(() => {}); };
 
-// The address can be changed inside the app (Settings > Server address), so a new tunnel or host never needs an app update.
 // The server is the Cloudflare Worker (folder `worker/`). It answers browsers directly (CORS is open), so the website and the phone use the same address.
 // The address can still be changed inside the app (Settings > Server address) without an app update.
 export const IS_WEB_APP = Platform.OS === 'web';
-export const WEB_BASE = '/srv';
-const DEFAULT_BASE = SERVER; // the Worker answers browsers directly (CORS is open), so the website no longer needs the /srv pass-through
+const DEFAULT_BASE = SERVER;
 export const deviceKind: 'web' | 'mobile' = IS_WEB_APP ? 'web' : 'mobile'; // one email may be signed in on one phone and one computer at a time
 let base = DEFAULT_BASE;
 // Called when the server says this device was signed out because the same email signed in on another device of the same kind.

@@ -16,14 +16,13 @@ The same app now also runs in a browser (Chrome, Safari, Edge, Firefox). The pho
 **Phone or tablet browser (under 900 px):** the phone layout with the bottom bar, full width (centred, at most 640 px on a tablet).
 The layout rules are in `src/win.web.ts`; the sidebar, top bar and right panel are in `src/Desktop.web.tsx`; the home dashboard is `src/DesktopHome.web.tsx`; what the dashboard is showing (pair, method, timeframe, market) is in `src/dash.ts`; the landing page is `src/Landing.tsx`.
 
-## 1. Update your server first (needed for the website)
+## 1. The server is the Cloudflare Worker
 
-Copy the new `server/proxy.js` and the updated `server/server.js` to the machine that runs your server, then restart it.
+The website and the phone app talk to the Worker in the `worker/` folder (setup: `worker/README.md`). Nothing has to be switched on, and there is no tunnel.
 
-- `server/proxy.js` (new): browsers block most sites (CORS), so the backup prices (Yahoo), the economic calendar and the headlines
-  go through your server at `/proxy?u=...`. It only reads a short list of known sites over https, caches for 20 s, and limits each visitor to 240 requests a minute.
-- `server/server.js`: now answers the browser's pre-check (it allows the `ngrok-skip-browser-warning` header and `GET`/`POST`) and calls the proxy.
-- The server address in `src/license.ts` (`SERVER`) must be **https** (an http address is blocked on an https website). Visitors can also change it in Settings > Server address.
+- The Worker also answers `/proxy?u=...`: browsers block most sites (CORS), so the backup prices (Yahoo), the economic calendar and the headlines go through it. It only reads a short list of known sites over https, caches for 20 s, and limits each visitor to 240 requests a minute.
+- The Worker allows the browser's pre-check (CORS is open), so the website calls it directly.
+- The address in `src/license.ts` (`SERVER`) must be **https**. Visitors can also change it in Settings > Server address.
 
 ## 2. Build the website
 
@@ -53,7 +52,7 @@ The site must be served over **https** (the app's PIN hashing and the licence de
 
 VSA reads real traded volume, not spread. Crypto: Binance spot volume. Forex, gold, silver, DXY: volume of the matching CME / COMEX / ICE futures contract (spot forex has no central exchange). Deriv synthetic indices have no market volume, so VSA reads spread there and says so. The VSA screen names the volume source. Details: `src/volume.ts`, `src/volumeFeed.ts` and CHANGES.md.
 
-**Copy to your server and restart it:** `server/alerts.js`, `server/proxy.js`, `server/build-analysis.js` and the whole `server/analysis/` folder (`net.js`, `fallback.js`, `vsa.js`). Without it the website and app use real volume, but the server's background alerts still score VSA from spread.
+After you change the analysis code in `src/`, run `npm run build:server` (it rebuilds `worker/src/server/analysis/`) and deploy the Worker (`cd worker`, then `npx wrangler deploy`). Until then the Worker's background alerts score VSA with the older copy.
 
 ## What is different in the browser
 
@@ -73,22 +72,18 @@ VSA reads real traded volume, not spread. Crypto: Binance spot volume. Forex, go
 ## Tests
 
 - `npm`-free unit tests: `npx tsx --tsconfig tests/tsconfig.json tests/proxy.test.ts` (and the other `tests/*.test.ts`).
-- Browser test (needs `pip install playwright && playwright install chromium`):
-  `npm run build:web`, serve `dist` on port 8099, then `python3 tests/web/smoke.py`. It logs in with a faked Firebase and server, and checks the column, saved login,
-  pop-up, confirm box, proxy, chart and mouse-wheel zoom.
 
 
 ## Keeping the website in step with the app (v2.11)
 
 The website and the phone app are ONE codebase. Web-only files end in `.web.tsx` / `.web.ts` or are named in WEB.md above (Desktop, DesktopHome, Frame, Landing, LiveCandles, dash, dialog, net, win, secureStore, Modal). Everything else is the app's own code.
 When the app changes, copy the new `src/` over and re-apply only these web hooks: App.tsx (Frame + DesktopShell), screens/Home.tsx (DesktopHome wrapper), ChartZoom.tsx (wheel + hover), markets.ts (dialog + IS_WEB), fallback.ts (xfetch), and the imports `Modal`, `showAlert`, `shareText`, `useWindowDimensions`, `secureStore` instead of the react-native / expo ones. Then run: `npx tsc --noEmit`, the tests, `npx expo export --platform web`, and `python3 tests/web/smoke.py` (serve `dist` on port 8099 first).
-Server: `server/server.js` needs the CORS headers and `await proxy(req, res)` line (see CHANGES.md).
 
 
 ## Server address, rewrites and the device rule (v2.17)
 
-- The website calls `/srv/...` and `/mailer` on its own address. `vercel.json` (Vercel) and `netlify.toml` (Netlify) pass them to the server (`https://mockup-borrowing-overprice.ngrok-free.dev`, the SERVER constant in `src/license.ts`) and to the Netlify email function. Keep the three in step if the server address changes.
-- The server decides who may be signed in: one phone + one computer per email (see CHANGES.md). Deploy the new `server/` folder for it to work.
+- The website calls the Worker directly (`SERVER` in `src/license.ts`). Only `/mailer` goes through the host: `vercel.json` (Vercel) and `netlify.toml` (Netlify) pass it to the Netlify email function. Keep those two in step if that function's address changes.
+- The Worker decides who may be signed in: one phone + one computer per email (see CHANGES.md).
 
 
 ## Look and feel (calm and classy)

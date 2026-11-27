@@ -27,7 +27,6 @@ const BASE: Record<Lang, Record<string, string>> = {
     slDist: "Stop distance", reward: "Potential reward", calcNote: "Convert units to lots or stake using your broker's contract size.",
     fillAll: "Fill in balance, risk, entry and stop loss.",
     apiKey: "Analysis API key", apiHint: "Free at aistudio.google.com/apikey", theme: "Color theme", language: "Language", model: "Model",
-    th_midnight: "Midnight", th_ocean: "Ocean", th_sunset: "Sunset", th_forest: "Forest", th_daylight: "Daylight",
   },
   ur: {
     tabAnalyze: "تجزیہ", tabHistory: "ہسٹری", tabTools: "رسک", tabSettings: "سیٹنگز",
@@ -44,7 +43,6 @@ const BASE: Record<Lang, Record<string, string>> = {
     slDist: "اسٹاپ کا فاصلہ", reward: "ممکنہ منافع", calcNote: "یونٹس کو اپنے بروکر کے کنٹریکٹ سائز کے مطابق لاٹ یا اسٹیک میں بدلیں۔",
     fillAll: "بیلنس، رسک، انٹری اور اسٹاپ لاس بھریں۔",
     apiKey: "Analysis API key", apiHint: "aistudio.google.com/apikey پر مفت", theme: "رنگوں کی تھیم", language: "زبان", model: "ماڈل",
-    th_midnight: "مڈنائٹ", th_ocean: "اوشن", th_sunset: "سن سیٹ", th_forest: "فاریسٹ", th_daylight: "ڈے لائٹ",
   },
   hi: {
     tabAnalyze: "विश्लेषण", tabHistory: "इतिहास", tabTools: "रिस्क", tabSettings: "सेटिंग्स",
@@ -61,7 +59,6 @@ const BASE: Record<Lang, Record<string, string>> = {
     slDist: "स्टॉप की दूरी", reward: "संभावित लाभ", calcNote: "यूनिट को अपने ब्रोकर के कॉन्ट्रैक्ट साइज़ के अनुसार लॉट या स्टेक में बदलें।",
     fillAll: "बैलेंस, रिस्क, एंट्री और स्टॉप लॉस भरें।",
     apiKey: "Analysis API key", apiHint: "aistudio.google.com/apikey पर मुफ़्त", theme: "रंग थीम", language: "भाषा", model: "मॉडल",
-    th_midnight: "मिडनाइट", th_ocean: "ओशन", th_sunset: "सनसेट", th_forest: "फ़ॉरेस्ट", th_daylight: "डेलाइट",
   },
   nl: {
     tabAnalyze: "Analyse", tabHistory: "Geschiedenis", tabTools: "Risico", tabSettings: "Instellingen",
@@ -78,7 +75,6 @@ const BASE: Record<Lang, Record<string, string>> = {
     slDist: "Stopafstand", reward: "Mogelijke winst", calcNote: "Reken eenheden om naar lots of inzet met de contractgrootte van je broker.",
     fillAll: "Vul saldo, risico, instap en stop-loss in.",
     apiKey: "Analyse API-sleutel", apiHint: "Gratis via aistudio.google.com/apikey", theme: "Kleurthema", language: "Taal", model: "Model",
-    th_midnight: "Middernacht", th_ocean: "Oceaan", th_sunset: "Zonsondergang", th_forest: "Bos", th_daylight: "Daglicht",
   },
   ar: {
     tabAnalyze: "تحليل", tabHistory: "السجل", tabTools: "المخاطرة", tabSettings: "الإعدادات",
@@ -95,7 +91,6 @@ const BASE: Record<Lang, Record<string, string>> = {
     slDist: "مسافة الوقف", reward: "العائد المحتمل", calcNote: "حوّل الوحدات إلى لوت أو رهان حسب حجم العقد لدى وسيطك.",
     fillAll: "أدخل الرصيد والمخاطرة والدخول ووقف الخسارة.",
     apiKey: "مفتاح API للتحليل", apiHint: "مجاني على aistudio.google.com/apikey", theme: "سمة الألوان", language: "اللغة", model: "النموذج",
-    th_midnight: "منتصف الليل", th_ocean: "المحيط", th_sunset: "الغروب", th_forest: "الغابة", th_daylight: "ضوء النهار",
   },
   es: {
     tabAnalyze: "Analizar", tabHistory: "Historial", tabTools: "Riesgo", tabSettings: "Ajustes",
@@ -112,13 +107,11 @@ const BASE: Record<Lang, Record<string, string>> = {
     slDist: "Distancia del stop", reward: "Beneficio potencial", calcNote: "Convierte las unidades a lotes o stake según el tamaño de contrato de tu bróker.",
     fillAll: "Completa saldo, riesgo, entrada y stop loss.",
     apiKey: "Clave API de análisis", apiHint: "Gratis en aistudio.google.com/apikey", theme: "Tema de color", language: "Idioma", model: "Modelo",
-    th_midnight: "Medianoche", th_ocean: "Océano", th_sunset: "Atardecer", th_forest: "Bosque", th_daylight: "Luz de día",
   },
 };
 
 const EXTRA: Record<Lang, Record<string, string>> = {
   en: {
-    th_mint: "Mint", th_blossom: "Blossom",
     tabHome: "Home", tabMarkets: "Markets", tabJournal: "Journal",
     welcome: "Welcome!", createAccount: "Create account", login: "Log in", signup: "Sign up", fullName: "Full name", email: "Email", password: "Password",
     remember: "Remember me", newUser: "New user?", haveAcct: "Already have an account?",
@@ -132,7 +125,6 @@ const EXTRA: Record<Lang, Record<string, string>> = {
     navStyle: "Navigation style", navBottom: "Bottom bar", navSide: "Side bar", pinLock: "PIN lock", setPin: "Set PIN", removePin: "Remove PIN", account: "Account",
   },
   ur: {
-    th_mint: "منٹ", th_blossom: "بلاسم",
     tabHome: "ہوم", tabMarkets: "مارکیٹس", tabJournal: "جرنل",
     welcome: "خوش آمدید!", createAccount: "اکاؤنٹ بنائیں", login: "لاگ اِن", signup: "سائن اپ", fullName: "پورا نام", email: "ای میل", password: "پاسورڈ",
     remember: "مجھے یاد رکھیں", newUser: "نئے صارف؟", haveAcct: "پہلے سے اکاؤنٹ ہے؟",
@@ -146,7 +138,6 @@ const EXTRA: Record<Lang, Record<string, string>> = {
     navStyle: "نیویگیشن انداز", navBottom: "نیچے کی بار", navSide: "سائیڈ بار", pinLock: "PIN لاک", setPin: "PIN لگائیں", removePin: "PIN ہٹائیں", account: "اکاؤنٹ",
   },
   hi: {
-    th_mint: "मिंट", th_blossom: "ब्लॉसम",
     tabHome: "होम", tabMarkets: "मार्केट", tabJournal: "जर्नल",
     welcome: "स्वागत है!", createAccount: "अकाउंट बनाएँ", login: "लॉग इन", signup: "साइन अप", fullName: "पूरा नाम", email: "ईमेल", password: "पासवर्ड",
     remember: "मुझे याद रखें", newUser: "नए उपयोगकर्ता?", haveAcct: "पहले से अकाउंट है?",
@@ -160,7 +151,6 @@ const EXTRA: Record<Lang, Record<string, string>> = {
     navStyle: "नेविगेशन शैली", navBottom: "नीचे की बार", navSide: "साइड बार", pinLock: "PIN लॉक", setPin: "PIN सेट करें", removePin: "PIN हटाएँ", account: "अकाउंट",
   },
   nl: {
-    th_mint: "Munt", th_blossom: "Bloesem",
     tabHome: "Home", tabMarkets: "Markten", tabJournal: "Dagboek",
     welcome: "Welkom!", createAccount: "Account maken", login: "Inloggen", signup: "Registreren", fullName: "Volledige naam", email: "E-mail", password: "Wachtwoord",
     remember: "Onthoud mij", newUser: "Nieuw hier?", haveAcct: "Al een account?",
@@ -174,7 +164,6 @@ const EXTRA: Record<Lang, Record<string, string>> = {
     navStyle: "Navigatiestijl", navBottom: "Onderbalk", navSide: "Zijbalk", pinLock: "Pincodeslot", setPin: "Pincode instellen", removePin: "Pincode verwijderen", account: "Account",
   },
   ar: {
-    th_mint: "نعناعي", th_blossom: "زهري",
     tabHome: "الرئيسية", tabMarkets: "الأسواق", tabJournal: "اليوميات",
     welcome: "مرحبًا!", createAccount: "إنشاء حساب", login: "تسجيل الدخول", signup: "إنشاء حساب", fullName: "الاسم الكامل", email: "البريد الإلكتروني", password: "كلمة المرور",
     remember: "تذكّرني", newUser: "مستخدم جديد؟", haveAcct: "لديك حساب بالفعل؟",
@@ -188,7 +177,6 @@ const EXTRA: Record<Lang, Record<string, string>> = {
     navStyle: "نمط التنقل", navBottom: "شريط سفلي", navSide: "شريط جانبي", pinLock: "قفل PIN", setPin: "تعيين PIN", removePin: "إزالة PIN", account: "الحساب",
   },
   es: {
-    th_mint: "Menta", th_blossom: "Flor",
     tabHome: "Inicio", tabMarkets: "Mercados", tabJournal: "Diario",
     welcome: "¡Bienvenido!", createAccount: "Crear cuenta", login: "Iniciar sesión", signup: "Registrarse", fullName: "Nombre completo", email: "Correo", password: "Contraseña",
     remember: "Recordarme", newUser: "¿Nuevo aquí?", haveAcct: "¿Ya tienes cuenta?",
@@ -234,7 +222,6 @@ const MARKETS_EN: Record<string, string> = {
 
 // v2.0 Pro features. Other languages fall back to English until translated (Urdu has the navigation labels).
 const PRO_EN: Record<string, string> = {
-  th_light: "Light", th_dark: "Dark", th_glassNight: "Glass Night", th_glassFrost: "Glass Frost", th_glassAurora: "Glass Aurora", th_glassRose: "Glass Rose", th_glassObsidian: "Glass Obsidian", th_glassClean: "Clean Light", th_glassPearl: "Glass Pearl",
   tabManual: "Paper Trade", navDescManual: "Practice trading on live prices with virtual money, like MetaTrader 5: SELL / BUY, then stop loss, take profit and partial closes from the chart",
   tabIct: "ICT Lab", tabKillzones: "Forex Market Hours", tabCommunity: "Community", navDescCommunity: "Discuss the markets and share trade ideas with other traders", tabPropFirms: "Prop Firms", tabBrokers: "Forex Brokers", tabCrypto: "Crypto Exchanges", navDescCrypto: "Leading centralized and decentralized exchanges with official links", navDescBrokers: "Major forex brokers with official website links", navDescPropFirms: "Ranked funded-trading firms with official website links", tabPerf: "Performance", tabTopDown: "Top-Down", navDescTopDown: "Pick any 3 timeframes: direction, zone and entry", tabTools: "Risk & TP Planner", calcTitle: "Risk & TP planner", th_royal: "Royal Gold", th_graphite: "Graphite", th_cloud: "Cloud",
   navPages: "PAGES", navProTools: "PRO TOOLS",

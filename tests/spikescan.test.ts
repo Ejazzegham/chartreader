@@ -1,6 +1,6 @@
 // Server scan with the "spike pairs only" switch: only Boom / Crash are analysed, and a trade against the spike is never listed.
 // Synthetic candles, so this checks the rules and the plumbing, not accuracy.
-const alertsModule: any = require('../server/alerts.js');
+const alertsModule: any = require('../worker/src/server/alerts.js');
 const os: any = require('os'), path: any = require('path');
 let fails = 0; const ok = (n: string, c: boolean) => { console.log((c ? 'PASS ' : 'FAIL ') + n); if (!c) fails++; };
 let seed = 9; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };

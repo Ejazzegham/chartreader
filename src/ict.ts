@@ -2,7 +2,7 @@ import type { Candle } from './markets';
 import { atr, pivots, ladder, zoneSpent } from './ta';
 
 // =====================================================================================
-// ICT / Smart Money engine (runs on the phone and, built by server/build-analysis.js, on the server scanner).
+// ICT / Smart Money engine (runs on the phone and, built by worker/scripts/build-analysis.js, on the server scanner).
 // It follows the "ICT Trading: A to Z" process step by step:
 //   1 higher-timeframe bias   2 draw on liquidity   3 liquidity pools and PD arrays   4 killzone
 //   5 liquidity sweep against the bias   6 market structure shift (MSS) with displacement

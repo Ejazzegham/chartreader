@@ -1,5 +1,5 @@
-// Daily high / low breaks and news alerts (server/alerts.js). Run: node tests/daylevels.test.js
-const alertsModule = require('../server/alerts.js');
+// Daily high / low breaks and news alerts (worker/src/server/alerts.js). Run: node tests/daylevels.test.js
+const alertsModule = require('../worker/src/server/alerts.js');
 const os = require('os'), path = require('path');
 let fails = 0;
 const ok = (c, m) => { if (!c) { fails++; console.log('FAIL', m); } else console.log('ok  ', m); };

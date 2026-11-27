@@ -90,15 +90,12 @@ Built with Expo and Expo Go. New accounts get a 3-day free trial; after that the
 
 ## Subscription, trial and admin (v2.2)
 0. **Firebase Auth (v2.3)**: in the Firebase console create a project, enable Authentication > Sign-in method > Email/Password, add a Web app, and paste its config into `src/firebase.ts`. Run `npm install` (adds the `firebase` package; `metro.config.js` is required for it to work in Expo).
-1. Run the license server (Node 18+, no npm install needed), behind https:
-   `cd server && FIREBASE_PROJECT_ID=your-project-id ADMIN_PASSCODE=choose-a-long-secret GEMINI_API_KEY=... TRUST_PROXY=1 node server.js`
-   The server now reads the user's email from a verified Firebase ID token instead of trusting the app. Optional: `REQUIRE_VERIFIED_EMAIL=1` to accept only confirmed emails.
-2. Set `SERVER` in `src/license.ts` to that URL.
-3. **Admin account**: `bahutechnology@gmail.com` is the built-in admin email (add more with `ADMIN_EMAILS=a@x.com,b@x.com`).
-   Sign up in the app with that email, open Settings > **Admin sign-in**, enter your `ADMIN_PASSCODE`. The email alone is not enough, so nobody else can take the admin account by typing your address. The passcode is kept in the phone's secure store, so the admin stays signed in, and it works on any phone you own.
+1. Deploy the server on Cloudflare (free, nothing to keep running): `cd worker`, `npm install`, `npx wrangler login`, `npx wrangler deploy` (full steps: `worker/README.md`). Settings are added with `npx wrangler secret put NAME`: `GEMINI_API_KEY` (the admin panel can also store the key), and optionally `ADMIN_EMAILS` and `REQUIRE_VERIFIED_EMAIL=1`. The Firebase project id is in `worker/wrangler.jsonc`. The server reads the user's email from a verified Firebase ID token instead of trusting the app.
+2. Set `SERVER` in `src/license.ts` to the address `deploy` prints.
+3. **Admin account**: `bahutechnology@gmail.com` is the built-in admin email (add more with `ADMIN_EMAILS=a@x.com,b@x.com`). An admin is an email on that list that Firebase has confirmed (click the link in the mailbox). There is no passcode.
 4. Admin sees in Settings: Gemini key + model (stored on the server, used for all users), a dashboard (users, paid, trial, expired, new in 24h, payments, latest users) and **Grant access** (add or remove days for any email).
 5. Free for 3 days. After that analysis stops, charts stay free. Plans: weekly $8, monthly $20 (USDT on TRON/TRC20 or BSC/BEP20). The server checks the TxID on-chain, so activation is automatic.
-6. One trial per email or device. Each user has a daily analysis cap (`DAILY_AI_LIMIT`, default 60) so one account cannot drain your Gemini quota. Wrong admin passcodes are rate limited (5 tries, then 15 minutes).
+6. One trial per email or device. Each user has a daily analysis cap (`DAILY_AI_LIMIT`, default 60) so one account cannot drain your Gemini quota.
 
 ## Changes in v2.3 (Firebase Auth)
 - Login and sign-up now use Firebase Auth. Your own server is kept: trials, USDT payments, admin, Gemini proxy and database are unchanged. Existing users keep their trial/subscription because they are still matched by email.
@@ -184,7 +181,7 @@ Settings > **Server address** (visible to the admin, or to anyone who sees a lic
 
 ## v3.0 - Lamp dock, premium charts, timeframe picker, discipline guard
 - **Lamp dock** (`src/Dock.tsx`): slim pill bar. A lamp sits on the top edge of the open page and throws a cone of light onto its icon; it slides and fades when you change page, the active icon switches to its filled version and pops. Dark themes: panel-coloured bar, accent-coloured light. Light themes: deep bar tinted by the theme's text colour, second accent as the light. Journal tab shows the number of waiting setups, plus a green dot while trades run.
-- **Chart zoom** (`src/ChartZoom.tsx`, maths in `src/zoomMath.ts`, tested in `tests/zoom.test.ts`), used by every chart (Analysis View, Scalping, ICT Lab, Top-Down):
+- **Chart zoom** (`src/ChartZoom.tsx`, maths in `src/vzoomMath.ts`, tested in `tests/vzoom.test.ts`), used by every chart (Analysis View, Scalping, ICT Lab, Top-Down):
   - pinch zooms around the point between your fingers (the candle under them stays put)
   - drag to pan, a flick keeps gliding (inertia)
   - pan up to 40% past the newest candle, so the last candle is not glued to the price axis

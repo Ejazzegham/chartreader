@@ -1,7 +1,7 @@
 // @ts-nocheck  (uses Node http / Buffer; the app itself has no Node typings)
 // The website's server proxy: allowlist, redirects, cache, size limit, CORS. Runs against a tiny local "upstream" server.
 // @ts-ignore plain JS module
-import makeProxy from '../server/proxy.js';
+import makeProxy from '../worker/src/server/proxy.js';
 import http from 'http';
 let fails = 0;
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m); } else console.log('ok  ', m); };

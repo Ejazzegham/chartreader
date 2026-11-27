@@ -1,5 +1,5 @@
 // The optional "analysis every 90 s" notification: quiet channel, not in the bell, only when something was analysed, off unless switched on.
-const alertsModule: any = require('../server/alerts.js');
+const alertsModule: any = require('../worker/src/server/alerts.js');
 const os: any = require('os'), path: any = require('path');
 let fails = 0; const ok = (n: string, c: boolean) => { console.log((c ? 'PASS ' : 'FAIL ') + n); if (!c) fails++; };
 let seed = 5; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };

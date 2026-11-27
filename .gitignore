@@ -4,9 +4,9 @@ dist/
 *.apk
 *.aab
 .env
-server/db.json
-server/db.json.tmp
 *.tmp
-server/db.json.media/
 __pycache__/
-server/db.json.alerts.json
+# old Node server data (users, sessions, push tokens, media): never commit, in case a copy of it ever lands in this folder
+/server/
+db.json*
+.DS_Store

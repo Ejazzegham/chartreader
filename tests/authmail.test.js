@@ -4,13 +4,13 @@ const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', { modulusLen
 const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
 let fails = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fails++; };
 
-const mailPath = path.join(__dirname, '../server/mail.js'), amPath = path.join(__dirname, '../server/authmail.js');
+const mailPath = path.join(__dirname, '../mail/mail.js'), amPath = path.join(__dirname, '../mail/authmail.js');
 const fresh = () => { delete require.cache[mailPath]; delete require.cache[amPath]; return require(amPath); };
 const mail = require(mailPath);
 
 // ---- templates ----
 const names = Object.keys(mail.SUBJECT);
-ok(names.length === 3 && names.every((n) => fs.existsSync(path.join(__dirname, '../server/emails', n + '.html'))), 'three templates exist: confirm-signup, reset-password, change-email');
+ok(names.length === 3 && names.every((n) => fs.existsSync(path.join(__dirname, '../mail/emails', n + '.html'))), 'three templates exist: confirm-signup, reset-password, change-email');
 const vars = { ConfirmationURL: 'https://s.netlify.app/?mode=x&oobCode=A', Email: 'a@b.com', NewEmail: 'n@b.com', Token: '123456', SiteURL: 'https://s.netlify.app' };
 ok(names.every((n) => { const m = mail.render(n, vars); return !/\{\{/.test(m.html) && m.html.includes('Chart') && m.subject; }), 'every template renders with no placeholder left');
 ok(mail.render('change-email', vars).html.includes('n@b.com'), 'new-email placeholder is filled');

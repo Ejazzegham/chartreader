@@ -2,7 +2,7 @@
 // Run: npx tsx --tsconfig tests/tsconfig.json tests/alerts.test.ts
 declare const require: any;
 declare const process: any;
-const alertsModule: any = require('../server/alerts.js');
+const alertsModule: any = require('../worker/src/server/alerts.js');
 const os: any = require('os'), path: any = require('path'), fs: any = require('fs');
 
 let fails = 0;

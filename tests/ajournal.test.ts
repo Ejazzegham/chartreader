@@ -1,10 +1,10 @@
 // A and A+ scanner setups: the server's push says the grade and carries the full setup, and the app copies only fresh A / A+ ones into the Journal.
 // The analysis is replaced by a fixed answer (synthetic candles cannot reliably make an A+ setup), so this checks the rules and the plumbing.
 const os: any = require('os'), path: any = require('path');
-const refine: any = require('../server/analysis/refine'), verdict: any = require('../server/analysis/verdict');
+const refine: any = require('../worker/src/server/analysis/refine'), verdict: any = require('../worker/src/server/analysis/verdict');
 refine.analyzeAll = () => ({ combo: { side: 'buy', score: 88, entry: 100, sl: 99, tps: [101, 102, 103], zoneBottom: 99.5, zoneTop: 100, htf: 'with', basis: 'ICT zone', plan: { status: 'limit', inZone: true, distAtr: 0.2, trigger: 'Buy limit at 100', cancelIf: 'Cancel above 101' }, checks: [{ ok: true, text: 'Order block' }, { ok: false, text: 'nope' }] } });
 verdict.qualify = (_a: any, o: any) => (o.id === 'R_50' ? { trade: false, level: null, grade: null, reasons: ['weak'], verdict: { agree: [] } } : { trade: true, level: 'near', grade: o.id === 'BOOM1000' ? 'A+' : 'A', reasons: [], verdict: { agree: ['ICT', 'SMC', 'VSA'] } });
-const alertsModule: any = require('../server/alerts.js');
+const alertsModule: any = require('../worker/src/server/alerts.js');
 import { setupsToLog, SETUP_MAX_AGE } from '../src/inboxSetups';
 let fails = 0; const ok = (n: string, c: boolean) => { console.log((c ? 'PASS ' : 'FAIL ') + n); if (!c) fails++; };
 const mk = (n: number, g: number, end: number) => { let p = 100; return Array.from({ length: n }, (_, i) => { const o = p; p += Math.sin(i / 8) * 0.3; return { t: end - (n - i) * g, o, c: p, h: Math.max(o, p) + 0.1, l: Math.min(o, p) - 0.1 }; }); };
