@@ -11,8 +11,9 @@ import { tvSymbol, tvHtml, TV_STUDIES, TV_STYLES, TV_GROUPS, TV_EXTRA, TVX, look
 import ChartWeb from '../ChartWeb';
 import { useDash } from '../dash';
 import { NAV } from '../nav';
+import MarketOverview from '../MarketOverview';
 
-// The TradingView page (tab 22, next to Markets). A pro charting workspace:
+// The TradingView page (tab 22). It replaces the old Markets page on the website (tab 2 forwards here). A pro charting workspace:
 //  - market picker (Watchlist / Forex / Crypto / Deriv / Indices, live prices, star)
 //  - 1, 2 or 4 charts at once (compare pairs), each with its own pair; timeframes can be linked or independent
 //  - pro timeframe bar (1m ... 1M), chart styles, indicators with quick sets, time zone, compare presets
@@ -409,7 +410,7 @@ export default function TradingView() {
   );
 
   return (
-    <Screen fx="tradingview" icon="stats-chart" tag="Markets / TradingView" title={t('tabTradingView')} subtitle="A pro charting workspace: compare up to four pairs at once, pro timeframes, drawing tools, indicators and every market."
+    <Screen fx="tradingview" icon="stats-chart" tag="Markets" title={t('tabTradingView')} subtitle="Every market, live prices and pro charts in one place: compare up to four pairs, pick any timeframe, add indicators and draw."
       features={[{ icon: 'grid-outline', title: 'Multi-chart compare', sub: '1, 2 or 4 pairs at once' }, { icon: 'time-outline', title: 'Pro timeframes', sub: '1 minute to 1 month' }, { icon: 'pencil', title: 'Drawing tools', sub: 'Trend lines, Fibonacci, zones' }]}>
       {desk ? (
         <View style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
@@ -419,6 +420,7 @@ export default function TradingView() {
       ) : (
         <View style={{ gap: 12 }}>{picker}{main}</View>
       )}
+      {desk && <MarketOverview active={active} onPick={pickSym} />}
       <Modal visible={pseudo} animationType="fade" onRequestClose={() => setPseudo(false)}>
         <View style={{ flex: 1, backgroundColor: th.bg, paddingTop: desk ? 0 : 44 }}>{pseudo && workspace}</View>
       </Modal>

@@ -1,3 +1,8 @@
+## Markets + TradingView merged into one page: "TradingView"
+- The website now has a single **TradingView** page (tab 22). The separate Markets page is gone from the top bar and footer; the old Markets slot (tab 2) forwards to TradingView on the website, so every old "Explore Markets / View All Markets" button still works. The phone keeps its own Markets list.
+- Removed the duplicates: the Markets hero, category cards, Top Watchlist, Market Explorer list and the Live Market Chart (the TradingView page already has the market picker with search, categories and watchlist, and the full chart workspace).
+- Kept what was only on Markets and moved it under the charts as **Market Overview**: sessions, forex sentiment, top movers (tap one to open it on the active chart), heatmap, latest news and today's facts. New file `src/MarketOverview.web.tsx`; `src/MarketsHome*.tsx` deleted.
+
 ## Website: Journal merged into Paper Trade
 
 - The Journal page and the Paper Trade page are now one page on the website, named **Paper Trade** (tab 16). The "Journal" entry is gone from the top bar and the footer; the old Journal slot (tab 3) forwards to Paper Trade on a wide screen. The phone and narrow windows keep their own Journal screen.

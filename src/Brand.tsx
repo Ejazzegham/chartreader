@@ -6,8 +6,8 @@ const MARK = require('../assets/logo-mark.png');
 const FULL = require('../assets/logo-full.png');
 
 // The logo has dark navy parts, so it always sits on a white tile (readable on every theme).
-export const LogoMark = ({ size = 72, radius = 8 }: { size?: number; radius?: number }) => (
-  <View style={{ width: size, height: size, borderRadius: radius, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', padding: size * 0.12 }}>
+export const LogoMark = ({ size = 72, radius = 8, bare = false }: { size?: number; radius?: number; bare?: boolean }) => (
+  <View style={{ width: size, height: size, borderRadius: radius, backgroundColor: bare ? 'transparent' : '#FFFFFF', alignItems: 'center', justifyContent: 'center', padding: bare ? 0 : size * 0.12 }}>
     <Image source={MARK} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
   </View>
 );

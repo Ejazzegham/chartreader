@@ -8,7 +8,6 @@ import { useLayout } from '../win';
 import { SYMBOLS, Sym, useFeed, chg, isBad, isClosed, toggleFav, flags, catalog, setWatch, runDiagnostics, symOf, Diag, bnState, loadCrypto } from '../markets';
 import { QUOTES } from '../crypto';
 import { SymbolSheet, Coin } from '../MarketWidgets';
-import MarketsHome from '../MarketsHome';
 
 const CATS: [string, string][] = [['fav', 'watchlist'], ['forex', 'catForex'], ['deriv', 'catDeriv'], ['crypto', 'catCrypto'], ['indices', 'catIndices']];
 const PAGE = 60;
@@ -46,8 +45,9 @@ function Diagnostics({ open, onClose }: { open: boolean; onClose: () => void }) 
 }
 
 export default function Markets() {
-  const { th, t, tab } = useApp();
-  const { quotes, db, status } = useFeed(tab === 2);
+  const { th, t, tab, setTab } = useApp();
+  const desk = useLayout().mode === 'desktop';
+  const { quotes, db, status } = useFeed(tab === 2 && !desk);
   const [cat, setCat] = useState('forex');
   const [quote, setQuote] = useState('USDT');
   const [q, setQ] = useState('');
@@ -67,15 +67,15 @@ export default function Markets() {
   const favIds = db.favs;
   const favKey = favIds.join(',');
   useEffect(() => {
-    setWatch('markets', tab === 2 ? [...new Set([...list.map((s) => s.id), ...favIds])] : []);
+    setWatch('markets', tab === 2 && !desk ? [...new Set([...list.map((s) => s.id), ...favIds])] : []);
     return () => setWatch('markets', []);
   }, [tab === 2, key, favKey]);
   const live = status === 'live';
-  const desk = useLayout().mode === 'desktop';
   const nCrypto = SYMBOLS.filter((s) => s.cat === 'crypto').length;
 
-  // website: the Global Markets page (src/MarketsHome.web.tsx); the phone keeps the list below
-  if (desk) return <><MarketsHome active={tab === 2} onSelect={setSel} /><SymbolSheet sym={sel} onClose={() => setSel(null)} /></>;
+  // website: Markets and TradingView are one page (tab 22), so this slot forwards there; the phone keeps the list below
+  useEffect(() => { if (desk && tab === 2) setTab(22); }, [desk, tab]);
+  if (desk) return null;
 
   return (
     <Screen fx="markets" icon="pulse" title={t('tabMarkets')} subtitle={`${catalog.loaded ? catalog.count : 0} Deriv · ${bnState.loaded ? bnState.count : 0} crypto pairs`}>

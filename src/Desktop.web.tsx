@@ -16,10 +16,10 @@ import ToolsOrbit, { OrbitItem } from './ToolsOrbit.web';
 // Home is a dashboard (DesktopHome.web.tsx).
 export const useDesktop = () => useLayout().mode === 'desktop';
 
-const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['Markets', 2, 'pulse-outline'], ['TradingView', 22, 'stats-chart-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Paper Trade (tabManual), which also holds the Journal; Risk & TP Planner (4) is the first entry of the Tools menu
-const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [13, 'newspaper'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
+const LINKS: [string, number, string][] = [['Home', 0, 'home-outline'], ['Analysis', 1, 'analytics-outline'], ['TradingView', 22, 'stats-chart-outline'], ['News', 13, 'newspaper-outline'], ['Community', 20, 'people-outline'], ['Paper Trade', 16, 'swap-vertical']]; // 16 = Paper Trade (tabManual), which also holds the Journal; Risk & TP Planner (4) is the first entry of the Tools menu
+const TOOLS: [number, string][] = [[4, 'calculator'], [8, 'globe'], [17, 'briefcase'], [18, 'business'], [19, 'logo-bitcoin'], [9, 'stats-chart'], [5, 'time'], [14, 'help-circle'], [15, 'information-circle'], [6, 'settings']];
 
-const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 9, 5]], ['MARKETS', [8, 13, 19, 18, 17]], ['SUPPORT', [14, 6, 'help']]]; // tab numbers from NAV; 'help' opens Help chat
+const TOOL_GROUPS: [string, (number | string)[]][] = [['TRADE', [4, 9, 5]], ['MARKETS', [8, 19, 18, 17]], ['SUPPORT', [14, 6, 'help']]]; // tab numbers from NAV; 'help' opens Help chat
 const toolIcon: Record<number, string> = Object.fromEntries(TOOLS);
 
 // Premium Liquid Glass top bar: a floating frosted-glass bar (94% wide, 82 px tall, 26 px corners) with the brand on the left, the page links
@@ -114,9 +114,7 @@ function TopNav() {
         </View>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: padX, gap: slim ? 2 : 6 }}>
           <Pressable onPress={() => setTab(0)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, cursor: 'pointer' } as any}>
-            <View style={{ width: 40, height: 40, borderRadius: 6, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', boxShadow: '0 10px 22px -10px rgba(15,23,42,0.55), inset 0 -2px 6px rgba(37,99,235,0.08)' } as any}>
-              <LogoMark size={32} radius={6} />
-            </View>
+            <LogoMark size={40} radius={0} bare />
             {L.full >= 350 && <View>
               <Text style={{ color: ink, fontSize: 17, fontWeight: '800', letterSpacing: -0.3 }} numberOfLines={1}>Chart Reader</Text>
               {!slim && <Text style={{ color: dk ? '#94A3B8' : '#64748B', fontSize: 9, fontWeight: '600', letterSpacing: 2.4, marginTop: 0 }} numberOfLines={1}>TRADING ANALYSIS</Text>}

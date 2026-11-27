@@ -34,8 +34,8 @@ export function Footer({ w, go }: { w: number; go: (t: number, market?: string) 
               {social.map((n) => <View key={n} style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#FFFFFF1F', alignItems: 'center', justifyContent: 'center' }}><Icon name={n} size={14} color="#FFFFFF" /></View>)}
             </View>
           </View>
-          {col('Quick Links', [['Home', () => go(0)], ['Analysis', () => go(1)], ['Markets', () => go(2)], ['Paper Trade', () => go(16)], ['Risk & TP Planner', () => go(4)], ['Tools', () => go(9)]])}
-          {col('Markets', [['Forex', () => go(2, 'forex')], ['Crypto', () => go(2, 'crypto')], ['Metals', () => go(2, 'metals')], ['Deriv', () => go(2, 'deriv')], ['Candles', () => go(1, 'candle')], ['Top-Down', () => go(1, 'topdown')]])}
+          {col('Quick Links', [['Home', () => go(0)], ['Analysis', () => go(1)], ['TradingView', () => go(22)], ['Paper Trade', () => go(16)], ['Risk & TP Planner', () => go(4)], ['Tools', () => go(9)]])}
+          {col('Markets', [['Forex', () => go(22)], ['Crypto', () => go(22)], ['Metals', () => go(22)], ['Deriv', () => go(22)], ['Candles', () => go(1, 'candle')], ['Top-Down', () => go(1, 'topdown')]])}
           {col('Support', [['Help Center', () => setHelpOpen(true)], ['Contact Us', () => setHelpOpen(true)], ['Terms of Service', () => Linking.openURL('/terms.html')], ['Privacy Policy', () => Linking.openURL('/privacy.html')], ['Disclaimer', () => Linking.openURL('/disclaimer.html')]])}
           <View style={{ width: w >= 900 ? 230 : '100%', gap: 10 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>Stay Updated</Text>
