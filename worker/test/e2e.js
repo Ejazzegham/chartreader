@@ -1,0 +1,36 @@
+// End-to-end test: fake Google keys + the real Worker code running in workerd. Run with: bash test/run.sh
+const crypto = require('crypto'), http = require('http');
+const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'k1', alg: 'RS256', use: 'sig' };
+http.createServer((q, r) => { r.setHeader('content-type', 'application/json'); r.end(JSON.stringify({ keys: [jwk] })); }).listen(9911);
+const b = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+const token = (email, sub, extra = {}) => { const now = Math.floor(Date.now() / 1000), h = b({ alg: 'RS256', kid: 'k1', typ: 'JWT' }), p = b({ aud: 'chart-reader-45c13', iss: 'https://securetoken.google.com/chart-reader-45c13', sub, email, email_verified: true, iat: now, exp: now + 3600, ...extra }); return h + '.' + p + '.' + crypto.createSign('RSA-SHA256').update(h + '.' + p).sign(privateKey).toString('base64url'); };
+const U = 'http://localhost:8799';
+const call = async (path, body, tok, raw) => { const r = await fetch(U + path, { method: 'POST', headers: { 'content-type': raw ? 'application/octet-stream' : 'application/json', ...(tok ? { authorization: 'Bearer ' + tok } : {}) }, body: raw || JSON.stringify(body || {}) }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t.slice(0, 120); } return [r.status, j]; };
+const show = (name, s, v) => console.log(String(s).padEnd(4), name.padEnd(22), typeof v === 'string' ? v : JSON.stringify(v).slice(0, 150));
+(async () => {
+  let [s, lic] = await call('/register', { idToken: token('newuser@example.com', 'uid-new-1'), deviceId: 'device-test-12345', kind: 'web', fresh: true, name: 'Test User' });
+  show('register (new user)', s, { status: lic.status, entitled: lic.entitled, hasToken: !!lic.token, error: lic.error });
+  const T = lic.token;
+  let r = await call('/register', { idToken: token('x@y.com', 'u2').slice(0, -8) + 'AAAAAAAA', deviceId: 'device-test-999' }); show('forged token', r[0], r[1]);
+  r = await call('/sync/put', { data: { journal: [1, 2, 3] } }, T); show('cloud backup save', r[0], r[1]);
+  r = await call('/sync/get', {}, T); show('cloud backup load', r[0], r[1]);
+  r = await call('/profile/put', { name: 'Test User', phone: '+92 300 1234567' }, T); show('profile', r[0], r[1]);
+  const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(3000, 7)]);
+  const up = await call('/support/upload', null, T, png); show('chat photo upload', up[0], up[1]);
+  r = await call('/support/send', { text: 'hello from test', media: up[1].media && up[1].media.id }, T); show('support message', r[0], r[1]);
+  const mr = await fetch(U + '/media/' + up[1].media.id, { headers: { range: 'bytes=0-9' } }); show('photo (range request)', mr.status, mr.headers.get('content-range') + ' bytes=' + (await mr.arrayBuffer()).byteLength);
+  r = await call('/support/pull', { since: 0 }, T); show('support pull', r[0], r[1]);
+  r = await call('/community/feed', {}, T); show('community feed', r[0], r[1]);
+  r = await call('/alerts/sync', { alerts: [{ id: 'a1', sym: 'EURUSD', price: 1.2, dir: 'above' }] }, T); show('alerts sync', r[0], r[1]);
+  r = await call('/pay', { network: 'TRON', txid: 'a'.repeat(64), wallet: 'TX', plan: 'weekly' }, T); show('payment claim', r[0], r[1]);
+  r = await call('/gemini/gemini-x', { contents: [] }, T); show('gemini proxy', r[0], r[1]);
+  const adm = await call('/register', { idToken: token('bahutechnology@gmail.com', 'uid-admin-1'), deviceId: 'device-admin-12345', kind: 'web', fresh: true }); show('admin register', adm[0], { status: adm[1].status, admin: adm[1].admin });
+  r = await call('/admin/stats', {}, adm[1].token); show('admin stats', r[0], { users: r[1].users, trial: r[1].trial, keySet: r[1].keySet, pays: (r[1].pays || []).length });
+  r = await call('/status', {}, T); show('status', r[0], r[1]);
+  const pr = await fetch(U + '/proxy?u=' + encodeURIComponent('https://api.alternative.me/fng/')); show('proxy (offline here)', pr.status, (await pr.text()).slice(0, 80));
+  r = await call('/push/register', { token: 'ExponentPushToken[abcdefghijklmnopqrstuv]' }, T); show('push register', r[0], r[1]);
+  console.log('waiting 35 s for background alarm ticks ...'); await new Promise((x) => setTimeout(x, 35000));
+  process.exit(0);
+})().catch((e) => { console.log('ERR', e); process.exit(1); });
+setTimeout(() => { console.log('TIMEOUT'); process.exit(2); }, 120000);

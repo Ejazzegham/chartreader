@@ -1,0 +1,19 @@
+{
+  "name": "chart-reader-api",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "alias": {
+    "fs": "./shims/fs.js", "node:fs": "./shims/fs.js",
+    "http": "./shims/http.js", "node:http": "./shims/http.js"
+  },
+  "durable_objects": { "bindings": [{ "name": "HUB", "class_name": "Hub" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Hub"] }],
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "vars": {
+    "FIREBASE_PROJECT_ID": "chart-reader-45c13",
+    "TRUST_PROXY": "1",
+    "CHAT_MAX_VIDEO_MB": "12",
+    "CHAT_MAX_IMAGE_MB": "6"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "chart-reader-api",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "sh test/run.sh"
+  },
+  "devDependencies": {
+    "wrangler": "^4.168.0"
+  },
+  "private": true,
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261123.1": true
+  }
+}
