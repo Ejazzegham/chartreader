@@ -1,3 +1,4 @@
+import { getServer } from './license';
 import { useEffect, useState } from 'react';
 import { Vibration } from 'react-native';
 import { notify as notice, askNotifyPermission } from './dialog';
@@ -538,14 +539,14 @@ export async function runDiagnostics(): Promise<Diag[]> {
     try {
       const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 10000);
       try {
-        const r = await fetch(url, { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
+        const r = await fetch(url, { signal: ctl.signal });
         const ok = r.status !== 404 && r.status < 500; // an answer of any kind (even "wrong method") means the road to it works
         return { name, ok, detail: ok ? `Reachable in ${Date.now() - t0} ms (HTTP ${r.status})` : r.status === 404 ? `Not found (404): ${hint}` : `The other side answered HTTP ${r.status}: it is down or not set up` };
       } finally { clearTimeout(to); }
     } catch (e: any) { return { name, ok: false, detail: e?.name === 'AbortError' ? 'No answer in 10s' : (e?.message ?? 'Network error') }; }
   };
   return Promise.all([
-    ...(IS_WEB ? [same('Chart Reader server', '/srv/health', 'check the /srv rewrite in vercel.json'), same('Email service', '/mailer', 'check the /mailer rewrite in vercel.json')] : []),
+    ...(IS_WEB ? [same('Chart Reader server', getServer() + '/health', 'check SERVER in src/license.ts and that the Worker is deployed'), same('Email service', '/mailer', 'check the /mailer rewrite in vercel.json')] : []),
     wsTest(EPS[0], 'Deriv live feed (new API)'),
     wsTest(EPS[1], 'Deriv live feed (legacy)'),
     wsTest(EPS[2], 'Deriv live feed (binary.com)'),

@@ -2,8 +2,9 @@ import { Platform } from 'react-native';
 import * as SecureStore from './secureStore';
 import * as Crypto from 'expo-crypto';
 
-// Put the public URL of server/server.js here (must be https for release builds).
-export const SERVER = 'https://smile-demotion-daylong.ngrok-free.dev';
+// The address of your Cloudflare Worker (the folder `worker/`). After `npx wrangler deploy` it prints this address; paste it here, e.g.
+// https://chart-reader-api.YOUR-NAME.workers.dev  (see worker/README.md). Until it is replaced, the app says the server is not set up.
+export const SERVER = 'https://chart-reader-api.chartreader.workers.dev';
 export const PAY = { TRON: 'TKvEQSzioWQGZBHdrzSLGWUnmQhJsEHUhA', BSC: '0xd7065772295fb0d563c1c6b00e4464bcd4b03f81' };
 export const PLANS = { weekly: 8, monthly: 20 };
 // The address people can write to. Emails sent here reach the admin panel (see EMAIL_TO_APP.md in the server folder).
@@ -45,12 +46,11 @@ export async function loadClock() { const v = Number(await SecureStore.getItemAs
 export const saveClock = () => { SecureStore.setItemAsync(SEEN_KEY, String(trustedNow())).catch(() => {}); };
 
 // The address can be changed inside the app (Settings > Server address), so a new tunnel or host never needs an app update.
-// The website does NOT call the server address directly: browsers block that (CORS, and the free ngrok page that stops browsers). Its calls go to the
-// same address as the page (/srv/...), and Vercel / Netlify pass them on to the server (see vercel.json / netlify.toml). A custom address set in
-// Settings still works and is called directly. The phone calls the server directly as before.
+// The server is the Cloudflare Worker (folder `worker/`). It answers browsers directly (CORS is open), so the website and the phone use the same address.
+// The address can still be changed inside the app (Settings > Server address) without an app update.
 export const IS_WEB_APP = Platform.OS === 'web';
 export const WEB_BASE = '/srv';
-const DEFAULT_BASE = IS_WEB_APP ? WEB_BASE : SERVER;
+const DEFAULT_BASE = SERVER; // the Worker answers browsers directly (CORS is open), so the website no longer needs the /srv pass-through
 export const deviceKind: 'web' | 'mobile' = IS_WEB_APP ? 'web' : 'mobile'; // one email may be signed in on one phone and one computer at a time
 let base = DEFAULT_BASE;
 // Called when the server says this device was signed out because the same email signed in on another device of the same kind.
@@ -94,7 +94,7 @@ export async function pingVisit(): Promise<VisitCounts | null> {
   visitSent = true;
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
-    const r = await fetch(base + '/public/visit', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' }, body: JSON.stringify({ vid, beat: seen }) });
+    const r = await fetch(base + '/public/visit', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vid, beat: seen }) });
     const j = await r.json().catch(() => null);
     return r.ok && j && typeof j.visitors === 'number' ? j : null;
   } catch { return null; } finally { clearTimeout(to); }
@@ -107,7 +107,7 @@ export async function getSignupMap(range: { from?: number; to?: number } = {}): 
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
   try {
     const qs = [range.from != null ? 'from=' + range.from : '', range.to != null ? 'to=' + range.to : ''].filter(Boolean).join('&');
-    const r = await fetch(base + '/public/signups' + (qs ? '?' + qs : ''), { signal: ctl.signal, headers: { 'ngrok-skip-browser-warning': '1' } });
+    const r = await fetch(base + '/public/signups' + (qs ? '?' + qs : ''), { signal: ctl.signal, });
     const txt = await r.text(); let j: any = null; try { j = JSON.parse(txt); } catch {}
     if (!r.ok) { signupDiag = `${base}/public/signups answered HTTP ${r.status}: ${txt.replace(/\s+/g, ' ').slice(0, 90)}`; return null; }
     if (!j || !Array.isArray(j.countries) || !Array.isArray(j.places)) { signupDiag = 'the answer is not the signup numbers (is the server on the new server.js?): ' + txt.replace(/\s+/g, ' ').slice(0, 90); return null; }
@@ -123,12 +123,12 @@ async function post(path: string, body: any, token = '', ms = 25000) {
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), ms);
   let r: Response;
   try {
-    r = await fetch(base + path, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, body: JSON.stringify(body) });
+    r = await fetch(base + path, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, body: JSON.stringify(body) });
   } catch (e: any) {
     throw net(e?.name === 'AbortError' ? 'The server took too long to answer. Check your connection and try again.' : 'Cannot reach the server. Check your internet connection and try again.');
   } finally { clearTimeout(to); }
   const j = await r.json().catch(() => null);
-  // Our server always answers in JSON. An HTML page (ngrok "tunnel offline", a proxy error) or a 5xx means the server itself is not there.
+  // Our server always answers in JSON. An HTML page (a proxy error page) or a 5xx means the server itself is not there.
   if (j === null || r.status >= 500) throw net(r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'The server is not running right now. Try again in a minute.', r.status);
   // 'Not found' (no full stop) is the server's catch-all: it does not know this route at all, so it is running an OLD version of server/ (missing the newest files).
   if (r.status === 404 && j.error === 'Not found') throw Object.assign(new Error('The server is out of date and does not have this feature yet. Update and restart the server (the server folder), then try again.'), { network: false, status: 404, path });
@@ -182,13 +182,13 @@ export type ChatMsg = { id: number; from: 'user' | 'admin'; text: string; at: nu
 export const supportSend = (token: string, text: string, media = ''): Promise<{ message: ChatMsg }> => post('/support/send', { text, media }, token);
 // Photo / video of the chat. The file is sent as raw bytes (not base64 inside JSON), so a video of 25 MB does not become 33 MB of text.
 export const mediaUrl = (m: ChatMedia) => `${base}/media/${m.id}`;
-export const MEDIA_HEADERS = { 'ngrok-skip-browser-warning': '1' };
+export const MEDIA_HEADERS = {};
 export async function uploadChatMedia(token: string, uri: string): Promise<ChatMedia> {
   if (base.includes('YOUR-SERVER-URL')) throw new Error('License server is not set up yet. Set the server address in Settings.');
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 180000); // a video on a slow mobile line can take minutes
   try {
     const blob = await (await fetch(uri)).blob();
-    const r = await fetch(base + '/support/upload', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/octet-stream', Authorization: 'Bearer ' + token, ...MEDIA_HEADERS }, body: blob });
+    const r = await fetch(base + '/support/upload', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/octet-stream', Authorization: 'Bearer ' + token }, body: blob });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || (r.status >= 500 ? 'The server is having a problem. Try again in a minute.' : 'Upload failed'));
     return j.media;

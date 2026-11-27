@@ -18,7 +18,7 @@ async function askGemini(key: string, model: string, parts: any[]): Promise<stri
   try {
     res = await fetch(`${getServer()}/gemini/${encodeURIComponent(model)}`, {
       method: 'POST', signal: ctl.signal,
-      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1', Authorization: 'Bearer ' + key },
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
       body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } }),
     });
   } catch (e: any) {

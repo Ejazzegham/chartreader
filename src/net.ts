@@ -7,5 +7,5 @@ export const IS_WEB = Platform.OS === 'web';
 export function xfetch(url: string, init: RequestInit = {}): Promise<Response> {
   if (!IS_WEB) return fetch(url, init);
   const { headers: _drop, ...rest } = init; // a browser may not set User-Agent, and extra headers would force a pre-check
-  return fetch(`${getServer()}/proxy?u=${encodeURIComponent(url)}`, { ...rest, headers: { 'ngrok-skip-browser-warning': '1' } });
+  return fetch(`${getServer()}/proxy?u=${encodeURIComponent(url)}`, rest);
 }
