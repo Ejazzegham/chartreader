@@ -276,13 +276,13 @@ function Inner() {
       </View>
       <Text style={{ color: MUTED, fontSize: 15, marginTop: 4, marginBottom: 10 }}>{sel ? 'Newest members from this country.' : 'New members appear here as they join.'}</Text>
       {recent.length ? recent.map((m, i) => (
-        <Pressable key={i} onPress={() => select(m.cc)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 11, borderTopWidth: 1, borderTopColor: LINE }}>
-          <Flag cc={m.cc} w={42} />
+        <Pressable key={i} onPress={() => select(m.cc)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1, borderTopColor: LINE }}>
+          <Flag cc={m.cc} w={26} />
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text numberOfLines={1} style={{ color: INK, fontSize: 16.5, fontWeight: '700' }}>{m.name}</Text>
-            <Text numberOfLines={1} style={{ color: MUTED, fontSize: 13.5 }}>{nameOf(m.cc)}</Text>
+            <Text numberOfLines={1} style={{ color: INK, fontSize: 13.5, fontWeight: '700' }}>{m.name}</Text>
+            <Text numberOfLines={1} style={{ color: MUTED, fontSize: 11.5 }}>{nameOf(m.cc)}</Text>
           </View>
-          <Text style={{ color: MUTED, fontSize: 14.5 }}>{ago(m.t)}</Text>
+          <Text style={{ color: MUTED, fontSize: 12 }}>{ago(m.t)}</Text>
         </Pressable>
       )) : <Text style={{ color: MUTED, fontSize: 14, paddingVertical: 10, borderTopWidth: 1, borderTopColor: LINE }}>{sel ? 'No recent members to list for this country.' : 'No members in this period yet.'}</Text>}
       {recentAll.length > 5 ? (
@@ -377,7 +377,7 @@ function Inner() {
     <View
       onLayout={(e) => setW0(Math.round(e.nativeEvent.layout.width))}
       accessibilityLabel={`${data.total} members in ${data.countries.length} countries`}
-      style={{ borderRadius: 30, overflow: 'hidden', padding: wide ? 28 : 14, gap: wide ? 22 : 14, borderWidth: 1, borderColor: '#C9DBFF', backgroundColor: '#D6E5FF', backgroundImage: HERO_BG ? `linear-gradient(90deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0) 70%), url(${HERO_BG})` : 'linear-gradient(135deg,#EAF2FF 0%,#D3E3FF 45%,#B5CFFF 100%)', backgroundSize: 'cover', backgroundPosition: 'center' } as any}
+      style={{ borderRadius: 6, overflow: 'hidden', padding: wide ? 28 : 14, gap: wide ? 22 : 14, borderWidth: 1, borderColor: '#C9DBFF', backgroundColor: '#D6E5FF', backgroundImage: HERO_BG ? `linear-gradient(90deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0) 70%), url(${HERO_BG})` : 'linear-gradient(135deg,#EAF2FF 0%,#D3E3FF 45%,#B5CFFF 100%)', backgroundSize: 'cover', backgroundPosition: 'center' } as any}
     >
       {!HERO_BG ? (
         <>

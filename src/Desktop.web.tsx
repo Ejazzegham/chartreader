@@ -42,7 +42,7 @@ function TopNav() {
   const glassFx: any = { backdropFilter: 'blur(25px) saturate(180%)', WebkitBackdropFilter: 'blur(25px) saturate(180%)' };
   const chip = (s: any, extra: any = {}) => ({ backgroundColor: s.hovered ? (dk ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.72)') : (dk ? 'rgba(255,255,255,0.09)' : 'rgba(255,255,255,0.45)'), borderWidth: 1, borderColor: dk ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)', boxShadow: dk ? 'inset 0 1px 0 rgba(255,255,255,0.14)' : 'inset 0 1px 0 rgba(255,255,255,0.95), 0 6px 16px -10px rgba(60,50,140,0.4)', cursor: 'pointer', ...TRANS, ...extra }) as any;
   const toolTabs = [...TOOLS.map((x) => x[0]), HIST_TAB];
-  const padX = compact ? 12 : slim ? 14 : wide ? 28 : 20, radius = compact ? 14 : 18;
+  const padX = compact ? 12 : slim ? 14 : wide ? 28 : 20, radius = 6;
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); setTimeout(() => ref.current?.focus(), 30); } if (e.key === 'Escape') { setSearchOpen(false); setMenu(''); } };
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
@@ -116,7 +116,7 @@ function TopNav() {
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: padX, gap: slim ? 2 : 6 }}>
           <Pressable onPress={() => setTab(0)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, cursor: 'pointer' } as any}>
             <View style={{ width: 40, height: 40, borderRadius: 6, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.95)', boxShadow: '0 10px 22px -10px rgba(60,50,140,0.55), inset 0 -2px 6px rgba(119,59,255,0.08)' } as any}>
-              <LogoMark size={32} radius={9} />
+              <LogoMark size={32} radius={6} />
             </View>
             {L.full >= 350 && <View>
               <Text style={{ color: ink, fontSize: 17, fontWeight: '800', letterSpacing: -0.3 }} numberOfLines={1}>Chart Reader</Text>
